@@ -377,6 +377,7 @@ function Init()
 	AddWebsiteModule('404bb1f54c374a53bd850afdd6f873b3', 'ToonilyNet', 'https://toonily.net')
 	AddWebsiteModule('ae84d6cc416a473d85cf9fa416305378', 'SkyManga', 'https://skymanga.co')
 	AddWebsiteModule('c22df90060eb4d44b7baf89791745d5c', 'ManhuasWorld', 'https://manhuasworld.com')
+	AddWebsiteModule('I have no idea where this value comes from', 'AncientEmpireScan', 'https://www.ancientempirescan.site', cat) 
 
 	cat = 'Arabic-Scanlation'
 	AddWebsiteModule('7bda2905b61c49d1976777e9f2356361', '3asqOrg', 'https://3asq.org')
