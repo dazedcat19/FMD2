@@ -67,6 +67,9 @@ function LoveHugLogin()
 			MODULE.Account.Status = asUnknown
 			return false
 		end
+	else
+		MODULE.Account.Status = asUnknown
+		return false
 	end
 end
 
