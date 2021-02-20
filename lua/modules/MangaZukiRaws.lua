@@ -4,10 +4,10 @@
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                       = '6c116508a52448eeae4d09ff909c9d22'
-	m.Name                     = 'MangaZuki'
-	m.RootURL                  = 'https://mangazuki.co'
-	m.Category                 = 'English-Scanlation'
+	m.ID                       = '5d1a3c9e886f4e0b83894c8894914c24'
+	m.Name                     = 'MangaZukiRaws'
+	m.RootURL                  = 'https://raws.mangazuki.co'
+	m.Category                 = 'Raw'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetPageNumber          = 'GetPageNumber'
