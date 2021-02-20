@@ -39,9 +39,9 @@ function LoveHugLogin()
 	if HTTP.GET(MODULE.RootURL) then
 		local x = CreateTXQuery(HTTP.Document)
 
-		local isLoggedAlready = x.XPathString('//form[contains(@id, "logout")]/@action')
-		if isLoggedAlready ~= nil then
-			if HTTP.POST(MaybeFillHost(MODULE.RootURL, isLoggedAlready)) then
+		local isLoggedIn = x.XPathString('//form[contains(@id, "logout")]/@action')
+		if isLoggedIn ~= nil then
+			if HTTP.POST(MaybeFillHost(MODULE.RootURL, isLoggedIn)) then
 				HTTP.GET(MODULE.RootURL)
 				x = CreateTXQuery(HTTP.Document)
 			end
