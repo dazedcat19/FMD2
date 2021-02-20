@@ -12,11 +12,14 @@ function Init()
 		m.OnGetInfo                  = 'GetInfo'
 		m.OnGetPageNumber            = 'GetPageNumber'
 		m.OnBeforeDownloadImage      = 'BeforeDownloadImage'
+		return m
 	end
 	AddWebsiteModule('4c089029492f43c98d9f27a23403247b', 'HanaScan', 'https://hanascan.com')
 	AddWebsiteModule('010777f53bf2414fad039b9567c8a9ce', 'KissAway', 'https://kissaway.net')
 	AddWebsiteModule('794187d0e92e4933bf63812438d69017', 'Manhwa18', 'https://manhwa18.com')
-	AddWebsiteModule('9054606f128e4914ae646032215915e5', 'LoveHug', 'https://lovehug.net')
+	local m = AddWebsiteModule('9054606f128e4914ae646032215915e5', 'LoveHug', 'https://lovehug.net')
+	m.AccountSupport = true
+	m.OnLogin        = 'LoveHugLogin'
 
 	cat = 'English'
 	AddWebsiteModule('80427d9a7b354f04a8f432b345f0f640', 'MangaWeek', 'https://mangaweek.com')
@@ -28,6 +31,43 @@ function Init()
 	
 	cat = 'English-Scanlation'
 	AddWebsiteModule('7fb5fbed6d3a44fe923ecc7bf929e6cb', 'LHTranslation', 'https://lhtranslation.net')
+end
+
+function LoveHugLogin()
+	if MODULE.Account.Enabled == false then return false end
+	MODULE.Account.Status = asChecking
+	if HTTP.GET(MODULE.RootURL) then
+		local x = CreateTXQuery(HTTP.Document)
+
+		local isLoggedAlready = x.XPathString('//form[contains(@id, "logout")]/@action')
+		if isLoggedAlready ~= nil then
+			if HTTP.POST(MaybeFillHost(MODULE.RootURL, isLoggedAlready)) then
+				HTTP.GET(MODULE.RootURL)
+				x = CreateTXQuery(HTTP.Document)
+			end
+		end
+
+		local crypto = require 'fmd.crypto'
+		local token = x.XPathString('//form[contains(@class, "signin")]/@action')
+		local url = MaybeFillHost(MODULE.RootURL, token)
+		local payload = 'email=' .. crypto.EncodeURLElement(MODULE.Account.Username) ..
+						'&password=' .. crypto.EncodeURLElement(MODULE.Account.Password) ..
+						'&isRemember=1'
+
+		HTTP.Reset()
+		if HTTP.POST(url, payload) then
+			if (HTTP.ResultCode == 200 and HTTP.Document.ToString() == '...') then
+				MODULE.Account.Status = asValid
+				return true
+			else
+				MODULE.Account.Status = asInvalid
+				return false
+			end
+		else
+			MODULE.Account.Status = asUnknown
+			return false
+		end
+	end
 end
 
 function GetDirectoryPageNumber()
