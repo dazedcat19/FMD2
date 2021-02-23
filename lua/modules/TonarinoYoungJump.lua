@@ -59,7 +59,7 @@ end
 
 -- Get LINKS and NAMES from the manga list of the current website.
 function GetNameAndLink()
-	local currPage = diruls[MODULE.CurrentDirectoryIndex + 1]
+	local currPage = dirurls[MODULE.CurrentDirectoryIndex + 1]
 	if HTTP.GET(MaybeFillHost(MODULE.RootURL, currPage)) then
 		local x, v = CreateTXQuery(HTTP.Document)
 		for v in x.XPath('//div[@class="series-items"]/ul/li/a').Get() do
