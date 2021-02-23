@@ -59,7 +59,8 @@ end
 
 -- Get LINKS and NAMES from the manga list of the current website.
 function GetNameAndLink()
-	if HTTP.GET(MODULE.RootURL .. '/' .. dirurls[MODULE.CurrentDirectoryIndex + 1]) then
+	local currPage = diruls[MODULE.CurrentDirectoryIndex + 1]
+	if HTTP.GET(MaybeFillHost(MODULE.RootURL, currPage)) then
 		local x, v = CreateTXQuery(HTTP.Document)
 		for v in x.XPath('//div[@class="series-items"]/ul/li/a').Get() do
 			LINKS.Add(v.GetAttribute('href'))
@@ -114,7 +115,8 @@ function Init()
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetPageNumber          = 'GetPageNumber'
-  m.OnDownloadImage          = 'DownloadImage'
+	m.OnDownloadImage          = 'DownloadImage'
+	m.TotalDirectory           = #dirurls
 
   local fmd = require 'fmd.env'
 		local slang = fmd.SelectedLanguage
