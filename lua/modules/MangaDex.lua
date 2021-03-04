@@ -1,3 +1,4 @@
+htmlEntities = require('utils.htmlEntities')
 local API_PATH = '/api/v2' -- This is the path to the JSON API. Call the full url to look at the API documentation.
 local API_PARAMS = '?include=chapters' -- This parameter minimizes the calls to the API by combining the info and chapter parts into one call instead of two. Getting manga info should only be one call overall.
 local API_CHAPTER_PARAMS = '?saver=false' -- This parameter forces the API to always deliver the source images instead of the data-saver low quality images. Default of the API is actually false, but this prevents that you download data-saver images if the default will ever be changed.
@@ -27,7 +28,7 @@ function GetInfo()
 			MANGAINFO.CoverLink = x.XPathString('data/manga/mainCover', minfo)
 			MANGAINFO.Authors   = x.XPathStringAll('json(*).data.manga.author()')
 			MANGAINFO.Artists   = x.XPathStringAll('json(*).data.manga.artist()')
-			MANGAINFO.Summary   = x.XPathString('data/manga/description', minfo)
+			MANGAINFO.Summary   = htmlEntities.decode(x.XPathString('data/manga/description', minfo))
 			MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('data/manga/publication/status', minfo), '1', '2')
 
 			-- Fetch genre/demographic IDs and match them against an array with corresponding names:
