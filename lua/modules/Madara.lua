@@ -302,6 +302,7 @@ function Init()
 	AddWebsiteModule('813f780f2d3b41ab8de577aadcbd4d7a', 'ImmortalUpdates', 'https://immortalupdates.com')
 	AddWebsiteModule('5f60bc66acfa4605a3668857287eed1d', 'MangaGreat', 'https://mangagreat.com')
 	AddWebsiteModule('a3455b2005f8457f821acc93c2e821ab', 'PMScans', 'https://www.pmscans.com')
+	AddWebsiteModule('162d6885dfe4408ab56ea2b4484f9753', 'LynxScans', 'https://lynxscans.com')	
 
 	cat = 'French'
 	AddWebsiteModule('41867fa36f2f49959df9fef8aa53ffb5', 'WakaScan', 'https://wakascan.com')
