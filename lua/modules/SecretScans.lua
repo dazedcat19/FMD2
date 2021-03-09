@@ -45,7 +45,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '141a7dc7c72f4efdb311f689f16b1c71'
 	m.Name                     = 'SecretScans'
-	m.RootURL                  = 'https://secretscans.co'
+	m.RootURL                  = 'https://lynxscans.com'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
