@@ -77,7 +77,7 @@ function GetPageNumber()
 	local vm = {}
 	vm.CurChapter = json.decode(body:match('vm.CurChapter = ({.-});'))
 	vm.IndexName = '/manga/' .. body:match('vm.IndexName = "(.-)"')
-	vm.Var = body:match('vm.fortheregexguy = ".-";(.-) = ')
+	vm.Var = body:gsub("[\r\n\t]", ""):match('%;(%S+) = "%S+"%;vm.CHAPTERS = %[')
 	vm.CurPathName = body:match(''.. vm.Var ..' = "(.-)"')
 	vm.ChapterImage = function(ChapterString)
 		local Chapter = ChapterString:sub(2, -2)
