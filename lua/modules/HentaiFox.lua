@@ -9,6 +9,7 @@ function Init()
 		m.OnGetNameAndLink           = 'GetNameAndLink'
 		m.OnGetInfo                  = 'GetInfo'
 		m.OnGetPageNumber            = 'GetPageNumber'
+		m.OnBeforeDownloadImage      = 'BeforeDownloadImage'
 		m.SortedList                 = true
 		end
 	AddWebsiteModule('58a2dec76ebf43a5a9e7dc9b453e52e9', 'HentaiFox', 'https://hentaifox.com')
@@ -92,4 +93,9 @@ function GetPageNumber()
 	else
 		return false
 	end
+end
+
+function BeforeDownloadImage()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+	return true
 end

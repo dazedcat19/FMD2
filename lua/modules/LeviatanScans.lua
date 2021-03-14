@@ -54,5 +54,4 @@ function Init()
 		m.OnGetPageNumber          = 'GetPageNumber'
 	end
 	AddWebsiteModule('06e732a1ccdc4894877e5dee6e065df1', 'LeviatanScans',   'https://es.leviatanscans.com', 'Spanish-Scanlation')
-	AddWebsiteModule('d2ce33fc01f34981ac9d1f3756d1b81b', 'LeviatanScansEN', 'https://leviatanscans.com',    'English-Scanlation')
 end
