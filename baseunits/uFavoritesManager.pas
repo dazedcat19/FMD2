@@ -1142,6 +1142,7 @@ begin
     else
       Result := NaturalCompareStr(GetStr(Item1), GetStr(Item2));
   end;
+  if Result = 0 then Result := NaturalCompareStr(Item1.FavoriteInfo.Title, Item2.FavoriteInfo.Title);
 end;
 
 procedure TFavoriteManager.Sort(const AColumn: Integer);
