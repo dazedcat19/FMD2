@@ -1108,7 +1108,7 @@ function CompareFavoriteContainer(const Item1, Item2: TFavoriteContainer): Integ
       case ARow.FManager.SortColumn of
         1: Result := Title;
         2: Result := currentChapter;
-        3: Result := Website;
+        3: Result := Website + Title;
         4: Result := SaveTo;
         else
           Result := '';
