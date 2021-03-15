@@ -382,6 +382,7 @@ type
     miChapterListCheckSelected: TMenuItem;
     miI1: TMenuItem;
     miDownloadResume: TMenuItem;
+    miDownloadRedownload: TMenuItem;
     miDownloadDelete: TMenuItem;
     miChapterListUncheckAll: TMenuItem;
     pbWait: TPaintBox;
@@ -579,6 +580,7 @@ type
 
     procedure miDownloadDeleteCompletedClick(Sender: TObject);
     procedure miDownloadResumeClick(Sender: TObject);
+    procedure miDownloadRedownloadClick(Sender: TObject);
     procedure miDownloadStopClick(Sender: TObject);
     procedure miMangaListDeleteClick(Sender: TObject);
     procedure miMangaListDownloadAllClick(Sender: TObject);
@@ -3594,6 +3596,26 @@ begin
   end;
 end;
 
+procedure TMainForm.miDownloadRedownloadClick(Sender: TObject);
+var
+  xNode: PVirtualNode;
+begin
+  if vtDownload.SelectedCount > 0 then begin
+    DLManager.Lock;
+    try
+      xNode := vtDownload.GetFirstSelected();
+      while Assigned(xNode) do begin
+        DLManager.RedownloadTask(xNode^.Index);
+        xNode := vtDownload.GetNextSelected(xNode);
+      end;
+    finally
+      DLManager.UnLock;
+    end;
+    DLManager.CheckAndActiveTask();
+    UpdateVtDownload;
+  end;
+end;
+
 procedure TMainForm.miDownloadStopClick(Sender: TObject);
 var
   xNode: PVirtualNode;
@@ -3803,6 +3825,7 @@ procedure TMainForm.pmDownloadPopup(Sender: TObject);
 var
   iStop,
   iResume,
+  iRedownload,
   iEnable,
   iDisable: Boolean;
 
@@ -3812,6 +3835,7 @@ var
   begin
     iStop := False;
     iResume := False;
+    iRedownload := False;
     iEnable := False;
     iDisable := False;
     Node := vtDownload.GetFirstSelected();
@@ -3828,12 +3852,13 @@ var
           STATUS_STOP,
           STATUS_FAILED,
           STATUS_PROBLEM  : if not iResume then iResume := True;
+          STATUS_FINISH   : if not iRedownload then iRedownload := True;
           else;
         end;
       end
       else if not iEnable then
         iEnable := True;
-      if iStop and iResume and iStop and iEnable and iDisable then
+      if iStop and iResume and iRedownload and iEnable and iDisable then
         Break;
       Node := vtDownload.GetNextSelected(Node);
     end;
@@ -3847,6 +3872,7 @@ begin
     begin
       miDownloadStop.Enabled := False;
       miDownloadResume.Enabled := False;
+      miDownloadRedownload.Enabled := False;
       miDownloadDelete.Enabled := False;
       miDownloadDeleteTask.Enabled := False;
       miDownloadDeleteTaskData.Enabled := False;
@@ -3861,6 +3887,7 @@ begin
       ScanTasks;
       miDownloadStop.Enabled := iStop;
       miDownloadResume.Enabled := iResume;
+      miDownloadRedownload.Enabled := iRedownload;
       miDownloadDelete.Enabled := True;
       miDownloadDeleteTask.Enabled := True;
       miDownloadDeleteTaskData.Enabled := True;

@@ -242,6 +242,8 @@ type
     procedure CheckAndActiveTask(const isCheckForFMDDo: Boolean = False);
     // Active a stopped task.
     procedure SetTaskActive(const taskID: Integer);
+    // Redownload a finished task.
+    procedure RedownloadTask(const taskID: Integer);
     // Stop a download/wait task.
     procedure StopTask(const taskID: Integer; const isCheckForActive: Boolean =
       True; isWaitFor: Boolean = False);
@@ -1605,6 +1607,18 @@ begin
       Status := STATUS_WAIT;
       DBUpdateStatus;
     end;
+end;
+
+procedure TDownloadManager.RedownloadTask(const taskID: Integer);
+begin
+  with Items[taskID] do
+  if not(Running or (Status = STATUS_WAIT)) and Enabled and Assigned(DownloadInfo.Module) then
+  begin
+    DownloadInfo.Status := Format('[%d/%d] %s',[0,ChapterLinks.Count,RS_Waiting]);
+    Status := STATUS_WAIT;
+    ChaptersStatus := TStringList.Create;
+    DBUpdateStatus;
+  end;
 end;
 
 procedure TDownloadManager.CheckAndActiveTaskAtStartup;

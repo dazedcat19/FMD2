@@ -5285,6 +5285,12 @@ object MainForm: TMainForm
       ImageIndex = 12
       OnClick = miDownloadResumeClick
     end
+    object miDownloadRedownload: TMenuItem
+      Caption = 'Redownload'
+      Enabled = False
+      ImageIndex = 1
+      OnClick = miDownloadRedownloadClick
+    end
     object miDownloadEnable: TMenuItem
       Caption = 'Enable'
       OnClick = miDownloadEnableClick

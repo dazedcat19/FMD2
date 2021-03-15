@@ -283,6 +283,7 @@
 {"hash":139332791,"name":"tmainform.tschangelogtext.caption","sourcebytes":[67,104,97,110,103,101,108,111,103],"value":"Changelog"},
 {"hash":371552,"name":"tmainform.midownloadstop.caption","sourcebytes":[83,116,111,112],"value":"Stop"},
 {"hash":93105205,"name":"tmainform.midownloadresume.caption","sourcebytes":[82,101,115,117,109,101],"value":"Resume"},
+{"hash":115523268,"name":"tmainform.midownloadredownload.caption","sourcebytes":[82,101,100,111,119,110,108,111,97,100],"value":"Redownload"},
 {"hash":79984933,"name":"tmainform.midownloadenable.caption","sourcebytes":[69,110,97,98,108,101],"value":"Enable"},
 {"hash":185170277,"name":"tmainform.midownloaddisable.caption","sourcebytes":[68,105,115,97,98,108,101],"value":"Disable"},
 {"hash":78392485,"name":"tmainform.midownloaddelete.caption","sourcebytes":[68,101,108,101,116,101],"value":"Delete"},
