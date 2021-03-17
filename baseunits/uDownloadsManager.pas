@@ -1614,10 +1614,11 @@ begin
   with Items[taskID] do
   if not(Running or (Status = STATUS_WAIT)) and Enabled and Assigned(DownloadInfo.Module) then
   begin
-    DownloadInfo.Status := Format('[%d/%d] %s',[0,ChapterLinks.Count,RS_Waiting]);
+    CurrentDownloadChapterPtr := 0;
+    DownloadInfo.Status := Format('[%d/%d] %s',[CurrentDownloadChapterPtr,ChapterLinks.Count,RS_Waiting]);
     Status := STATUS_WAIT;
     ChaptersStatus := TStringList.Create;
-    DBUpdateStatus;
+    DBUpdate;
   end;
 end;
 
