@@ -8,5 +8,8 @@ Libraries compiled with `MSYS2/mingw-w64 gcc 9.2.0`:
 * PCRE 10.35-RC2
 * SQLite 3.33.0 with compile-time options `-DSQLITE_LIMIT_ATTACHED=125`
 
+Libraries compiled with `MSYS2/mingw-w64 gcc 10.2.0`:
+* Lua-protobuf, [master@75e3b51b8e8dda0343c9b4956e0c33b6eef44aa6](https://github.com/starwing/lua-protobuf/tree/75e3b51b8e8dda0343c9b4956e0c33b6eef44aa6)
+
 Binaries:
 * 7-Zip Standalone (7za.exe) 19.00
