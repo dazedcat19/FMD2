@@ -509,6 +509,7 @@ function TWebsiteModules.LocateModuleByHost(const AHost: String
   end;
 var
   h: String;
+  expr: TRegExpr;
 begin
   h := LowerCase(AHost);
   if Assigned(FLastLocateModule) and (Pos(h, FLastLocateModule.RootURL) <> 0) then
@@ -519,9 +520,11 @@ begin
     SplitURL(h, @h, nil, False, False);
     if h = '' then Exit;
     Result := PosModule(h);
-    // if host starts with www. try without it
-    if (Result = nil) and h.StartsWith('www.') then
+    // if host starts with www. or w**. try without it
+    expr := TRegExpr.Create('w+\d*');
+    if (Result = nil) and (h.StartsWith('www.') or expr.Exec(h)) then
       Result := PosModule(h.Substring(4));
+    expr.Free;
   end;
   if Assigned(Result) then
     InterlockedExchange(Pointer(FLastLocateModule), Pointer(Result));

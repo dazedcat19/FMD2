@@ -124,6 +124,6 @@ function Init()
 		m.AddOptionCheckBox('luaincluderaw', lang:get('includeraw'), false)
 	end
 	AddWebsiteModule('3b0d5c38081a4b21a39a388a3ec59197', 'MyToon', 'https://mytoon.net')
-	AddWebsiteModule('a9a8bd394d63495686794a8d427bda00', 'HolyManga', 'https://w23.holymanga.net')
+	AddWebsiteModule('a9a8bd394d63495686794a8d427bda00', 'HolyManga', 'https://www.holymanga.net')
 	AddWebsiteModule('f49e608b66994721a5ea992b56367d96', 'KooManga', 'https://ww7.koomanga.com')
 end
