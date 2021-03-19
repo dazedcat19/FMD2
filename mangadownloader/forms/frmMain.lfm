@@ -2780,7 +2780,7 @@ object MainForm: TMainForm
         Height = 500
         Top = 4
         Width = 845
-        ActivePage = tsConnections
+        ActivePage = tsGeneral
         Align = alTop
         Anchors = [akTop, akLeft, akRight, akBottom]
         BorderSpacing.Bottom = 16
