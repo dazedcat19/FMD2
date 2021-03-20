@@ -50,6 +50,7 @@ function getCover(x)
 	if img == '' then img = x.XPathString('//div[@itemprop="image"]/img/@data-lazy-src') end
 	if img == '' then img = x.XPathString('//div[@class="img"]/img[@itemprop="image"]/@src') end
 	if img == '' then img = x.XPathString('//div[@class="ims"]/img/@src') end
+	if img == '' then img = x.XPathString('//div[@class="komik_info-content-thumbnail"]/img/@src') end
 	return img
 end
 
@@ -75,6 +76,7 @@ function getAuthors(x)
 	if authors == '' then authors = x.XPathString('//td[contains(., "Author")]/following-sibling::td') end
 	if authors == '' then authors = x.XPathString('//li[contains(b, "Author")]//following-sibling::span') end
 	if authors == '' then authors = x.XPathString('//div[@class="spe"]/span[contains(., "Author")]/substring-after(., "Author")') end
+	if authors == '' then authors = x.XPathString('//span[contains(., "Author")]/substring-after(., ":")') end
 	return authors
 end
 
@@ -126,6 +128,7 @@ function getStatus(x)
 	if status == '' then status = x.XPathString('//div[@class="imptdt" and contains(.,"Status")]/i') end
 	if status == '' then status = x.XPathString('//td[contains(., "Status")]//following-sibling::td') end
 	if status == '' then status = x.XPathString('//div[@class="spe"]/span[starts-with(., "Status")]/substring-after(., "Status")') end
+	if status == '' then status = x.XPathString('//span[contains(., "Status")]/substring-after(., ":")') end
 	status = status:gsub('Finished', 'Completed'):gsub('Publishing', 'Ongoing')
 	status = status:gsub('Berjalan', 'Ongoing'):gsub('Tamat', 'Completed')
 	return status
@@ -143,6 +146,7 @@ function getSummary(x)
 	if summary == '' then summary = x.XPathString('//div[contains(@class,"animeinfo")]/div[@class="rm"]/span/string-join(.//text(),"")') end
 	if summary == '' then summary = x.XPathString('//*[@class="jds"]/p') end
 	if summary == '' then summary = x.XPathString('//*[@itemprop="description"]/string-join(.//text()[not(parent::script)],"")') end
+	if summary == '' then summary = x.XPathString('//*[@class="komik_info-description-sinopsis"]') end
 	summary = summary:gsub('.fb_iframe_widget_fluid_desktop iframe', ''):gsub('width: 100%% !important;', ''):gsub('{', ''):gsub('}', '')
 	return summary
 end
@@ -159,6 +163,8 @@ function getMangas(x)
 		x.XPathHREFTitleAll('//td[@class="jds"]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 	elseif MODULE.ID == '13c6434a0c2541b18abee83a2c72e8f5' or MODULE.ID == 'b53534f8443e420ea088594c53a3ff39' then -- MangaKane, Manhwaland
 		x.XPathHREFTitleAll('//div[@class="flexch-infoz"]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+	elseif MODULE.ID == 'b8206e754d4541689c1d367f7e19fd64' then -- KomikCast
+		x.XPathHREFAll('//div[@class="komik_info-chapters"]//a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 	else
 		-- common
 		local v for v in x.XPath('//*[@id="chapterlist"]//*[@class="eph-num"]/a').Get() do
@@ -212,6 +218,10 @@ function GetPageNumber()
 			x.XPathStringAll('//img/@src', TASK.PageLinks)
 		elseif MODULE.ID == 'b53534f8443e420ea088594c53a3ff39' then -- Manhwaland
 			x.XPathStringAll('//*[@class="reader-area"]//img[not(contains(@src,"data:image"))]/@src', TASK.PageLinks)
+		elseif MODULE.ID == 'b8206e754d4541689c1d367f7e19fd64' then -- KomikCast
+			x.XPathStringAll('//*[@class="main-reading-area"]/img/@src', TASK.PageLinks)
+		elseif MODULE.ID == '7103ae6839ea46ec80cdfc2c4b37c803' then -- AsuraScans
+			x.XPathStringAll('//*[@id="readerarea"]/p//img[contains(@loading,"lazy")]/@src', TASK.PageLinks)
 		else
 			if TASK.PageLinks.Count == 0 then x.XPathStringAll('//*[@class="reader-area"]//img/@src', TASK.PageLinks) end
 			if TASK.PageLinks.Count == 0 then x.XPathStringAll('//*[@id="readerarea"]//img/@src', TASK.PageLinks) end
@@ -247,6 +257,11 @@ function GetNameAndLink()
 		if not HTTP.GET(dirurl) then return net_problem end
 		local x = CreateTXQuery(HTTP.Document)
 		x.XPathHREFTitleAll('//*[@class="ranking1"]/a', LINKS, NAMES)
+	elseif MODULE.ID == 'b8206e754d4541689c1d367f7e19fd64' then -- KomikCast
+		local dirurl = MODULE.RootURL .. '/daftar-komik/?list'
+		if not HTTP.GET(dirurl) then return net_problem end
+		local x = CreateTXQuery(HTTP.Document)
+		x.XPathHREFAll('//*[@class="list-update"]//ul//a', LINKS, NAMES)
 	elseif MODULE.ID == '5c06401129894099bb6fc59c08a878d4' then -- Ngomik
 		local s, i, x
 		if MODULE.CurrentDirectoryIndex == 0 then
