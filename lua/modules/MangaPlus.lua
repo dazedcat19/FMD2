@@ -60,8 +60,10 @@ function GetInfo()
 	local function addChapter(table)
 	if table ~= nil then
 		for _,v in pairs(table) do
-		MANGAINFO.ChapterNames.Add(v["name"])
-		MANGAINFO.ChapterLinks.Add(v["chapterId"])
+			local chaptername = v["subTitle"]
+			if chaptername == "" then chaptername = v["name"] end
+			MANGAINFO.ChapterNames.Add(chaptername)
+			MANGAINFO.ChapterLinks.Add(v["chapterId"])
 		end
 	end
 	end
