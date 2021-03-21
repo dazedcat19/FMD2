@@ -73,12 +73,17 @@ begin
     modules.Sorted := false;
     modules.LoadFromFile('modules.txt');
     for i:=0 to modules.Count-1 do
-    begin
+      begin
       m:=modules[i].Split(' ');
       modules[i] := m[1]+'='+m[0];
-    end;
+      end;
     modules.Sorted := true;
     modules.CaseSensitive := false;
+  end
+  else
+    begin
+    writeln('modules.txt not found! Exiting... ');
+    exit;
   end;
 
 
