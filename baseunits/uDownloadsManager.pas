@@ -1540,7 +1540,7 @@ begin
     Result:=TTaskContainer.Create;
     Result.Order:=Items.Add(Result);
     Result.Manager:=Self;
-    Result.FStatus:=STATUS_STOP;
+    Result.FStatus:=STATUS_NONE;
     Result.CustomFileName:=OptionFilenameCustomRename;
   finally
     LeaveCriticalSection(CS_Task);
