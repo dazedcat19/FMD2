@@ -2,12 +2,9 @@
 -- Auxiliary Functions
 ----------------------------------------------------------------------------------------------------
 
--- Extract slug from script text
+-- Extract slug from URL
 function GetSlug(x)
-	local slug = x.XPathString('//script[contains(., "let slug")]')
-	slug = GetBetween('let slug', ';', slug)
-	slug = slug:gsub('"', ''):gsub('%s*=%s*', '')
-	return slug
+	return string.match(string.gsub(string.gsub(URL, "read", ""), "manga", ""), "/([%a-]+)/")
 end
 
 ----------------------------------------------------------------------------------------------------
