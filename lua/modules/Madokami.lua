@@ -76,7 +76,7 @@ function GetDirectoryPageNumber()
 	end
 	--create list for secend level
 	for index, item in pairs(temp_table_1stlv) do
-	    if index == 3 then break end
+	    --if index == 3 then break end
 		HTTP.GET(item)
 		if HTTP.ResultCode ~= 200 then
 		    CheckAuth()
@@ -93,7 +93,7 @@ function GetDirectoryPageNumber()
 	end
 	--create list for third level
 	for index, item in pairs(temp_table_2ndlv) do
-	    if index == 3 then break end
+	    --if index == 3 then break end
 		HTTP.GET(item)
 		if HTTP.ResultCode ~= 200 then
 		    CheckAuth()
