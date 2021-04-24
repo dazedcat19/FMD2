@@ -13,7 +13,7 @@ function getinfo()
 		MANGAINFO.Artists=x.XPathString('//h4[starts-with(./label,"Artista")]/substring-after(.,":")')
 		MANGAINFO.Genres=x.XPathString('//h4[starts-with(./label,"Gênero")]/substring-after(.,":")')
 		MANGAINFO.Summary=x.XPathString('//*[@class="panel-body"]')
-		x.XPathHREFAll('//*[contains(@class,"lancamento-linha")]/div[1]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+		x.XPathHREFAll('//*[contains(@class,"capitulos")]/div[1]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 		MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 		return no_error
 	else
@@ -59,7 +59,7 @@ function Init()
 	m.ID                       = '6fffdd27e49c47f9958ea98f2fdca0b1'
 	m.Category                 = 'Portuguese'
 	m.Name                     = 'UnionMangas'
-	m.RootURL                  = 'https://unionleitor.top'
+	m.RootURL                  = 'https://unionmangas.top'
 	m.OnGetInfo                = 'getinfo'
 	m.OnGetPageNumber          = 'getpagenumber'
 	m.OnGetNameAndLink         = 'getnameandlink'
