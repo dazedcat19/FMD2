@@ -189,7 +189,7 @@ function _m.solveChallenge(self, url)
 	local rc = HTTP.ResultCode
 
 	-- firewall blocked
-	if (rc == 403) and body:find('<span class="cf%-error%-code">1020</span>') then
+	if (rc == 403) and body:find('<span.->1020</span>') then
 		LOGGER.SendError('WebsitBypass[cloudflare]: Cloudflare has blocked this request (Code 1020 Detected)\r\n' .. url)
 		return -1
 	end
