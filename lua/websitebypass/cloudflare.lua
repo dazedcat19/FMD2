@@ -202,7 +202,7 @@ function _m.solveChallenge(self, url)
 		return -1
 	end
 	-- new IUAM challenge
-	if ((rc == 429) or (rc == 503)) and body:find('window%._cf_chl_opt={') then
+	if ((rc == 403) or (rc == 429) or (rc == 503)) and body:find('window%._cf_chl_opt={') then
 		if use_webdriver then
 			return self:solveWithWebDriver(url)
 		end
