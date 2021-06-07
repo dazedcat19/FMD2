@@ -19,15 +19,15 @@ msgstr "Auf neuste Version prüfen"
 
 #: checkupdate.rs_currentversion
 msgid "Installed Version"
-msgstr "Installierte version"
+msgstr "Installierte Version"
 
 #: checkupdate.rs_latestversion
 msgid "Latest Version   "
-msgstr "Neuste version "
+msgstr "Neuste Version "
 
 #: checkupdate.rs_newversionfound
 msgid "New Version found!"
-msgstr "Neu Version gefunden!"
+msgstr "Neue Version gefunden!"
 
 #: dbupdater.rs_buttoncancel
 msgctxt "dbupdater.rs_buttoncancel"
@@ -68,7 +68,7 @@ msgstr ""
 #: dbupdater.rs_faileditemstitle
 msgctxt "dbupdater.rs_faileditemstitle"
 msgid "Failed"
-msgstr "Gescheitert"
+msgstr "Fehlgeschlagen"
 
 #: dbupdater.rs_failedtosave
 #, object-pascal-format
@@ -86,7 +86,7 @@ msgstr "Bist du dir sicher, dass du den Account löschen willst?"
 
 #: frmaccountmanager.rs_checking
 msgid "Checking"
-msgstr "Prüfen"
+msgstr "Prüfe"
 
 #: frmaccountmanager.rs_invalid
 msgctxt "frmaccountmanager.rs_invalid"
@@ -104,7 +104,7 @@ msgstr "OK"
 
 #: frmaccountset.rs_cantbeempty
 msgid "Username or password can't be empty!"
-msgstr "Benutzername oder Passwort kann nicht leer sein!"
+msgstr "Benutzername oder Passwort darf nicht leer sein!"
 
 #: frmimportfavorites.rs_importcompleted
 msgid "Import completed."
@@ -134,19 +134,19 @@ msgstr "Herunterladen abschließen"
 
 #: frmluamodulesupdater.rs_modulesupdatedrestart
 msgid "Modules updated, restart now?"
-msgstr "Module geupdated, jetzt neustarten?"
+msgstr "Module aktualisiert, jetzt neustarten?"
 
 #: frmluamodulesupdater.rs_modulesupdatedtitle
 msgid "Modules updated!"
-msgstr "Module geupdated!"
+msgstr "Module aktualisiert!"
 
 #: frmluamodulesupdater.rs_newupdatefoundlostchanges
 msgid "Modules update found, any local changes will be lost, procced?"
-msgstr "Modul-Updates gefunden, alle lokalen Änderungen gehen verloren, fortfahren?"
+msgstr "Module-Aktualisierungen gefunden, alle lokalen Änderungen gehen verloren, fortfahren?"
 
 #: frmluamodulesupdater.rs_newupdatefoundtitle
 msgid "Modules update found!"
-msgstr "Module-Updates gefunden!"
+msgstr "Module-Aktualisierungen gefunden!"
 
 #: frmluamodulesupdater.rs_startdownloading
 msgid "Downloading..."
@@ -211,7 +211,7 @@ msgstr "Keine Verbindung zum Server."
 
 #: frmmain.rs_dlgcannotgetmangainfo
 msgid "Cannot get manga info. Please check your internet connection and try it again."
-msgstr "Keine Manga-Informationen abrufbar. Bitte prüfen Sie ihre Internetverbindung und versuchen Sie es erneut."
+msgstr "Keine Manga-Informationen abrufbar. Bitte überprüfen Sie ihre Internetverbindung und versuchen Sie es erneut."
 
 #: frmmain.rs_dlgdownloadcount
 msgid "Download count:"
@@ -231,11 +231,11 @@ msgstr "Sind Sie sicher, dass Sie alle abgeschlossenen Aufgaben löschen wollen?
 
 #: frmmain.rs_dlgremoveitem
 msgid "Are you sure you want to delete this item(s)?"
-msgstr "Sind Sie sicher, dass Sie dieses Items löschen wollen?"
+msgstr "Sind Sie sicher, dass Sie die Eintrage löschen wollen?"
 
 #: frmmain.rs_dlgremovetask
 msgid "Are you sure you want to delete the task(s)?"
-msgstr "Sind Sie sicher, dass Sie alle Aufgaben löschen wollen?"
+msgstr "Sind Sie sicher, dass Sie die Aufgabe(n) löschen wollen?"
 
 #: frmmain.rs_dlgsplitdownload
 msgctxt "frmmain.rs_dlgsplitdownload"
@@ -883,7 +883,7 @@ msgstr "Nur nach neuen Manga suchen"
 #: tmainform.cboptionautocheckfavdownload.caption
 msgctxt "tmainform.cboptionautocheckfavdownload.caption"
 msgid "Automatic download after finish checking"
-msgstr "Automatisch runterladen nach abgeschlossener Aktualisierung"
+msgstr "Automatisch herunterladen nach abgeschlossener Aktualisierung"
 
 #: tmainform.cboptionautocheckfavinterval.caption
 msgid "Auto check for new chapter in an interval"
@@ -918,7 +918,7 @@ msgstr "Aktiviere dies, falls du Probleme mit Unicode Zeichen in diesem Pfad has
 
 #: tmainform.cboptiondeletecompletedtasksonclose.caption
 msgid "Delete completed tasks on close"
-msgstr "Beim schließen abgeschlossene Aufgaben entfernen"
+msgstr "Beim Schließen abgeschlossene Aufgaben entfernen"
 
 #: tmainform.cboptiondigitchapter.caption
 msgid "Chapter"
