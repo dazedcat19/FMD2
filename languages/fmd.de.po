@@ -203,7 +203,7 @@ msgstr "Prüfe..."
 
 #: frmmain.rs_custom
 msgid "Custom"
-msgstr ""
+msgstr "Angepasst"
 
 #: frmmain.rs_dlgcannotconnecttoserver
 msgid "Cannot connect to the server."
@@ -358,11 +358,11 @@ msgstr "Im Gange"
 
 #: frmmain.rs_last6months
 msgid "Last 6 months"
-msgstr ""
+msgstr "Letzte 6 Monate"
 
 #: frmmain.rs_last7days
 msgid "Last 7 days"
-msgstr ""
+msgstr "Letzte 7 Tage"
 
 #: frmmain.rs_lblautochecknewchapterminute
 #, object-pascal-format
@@ -404,7 +404,7 @@ msgstr "Mode: Suche..."
 
 #: frmmain.rs_olderthan6months
 msgid "Older than 6 months"
-msgstr ""
+msgstr "Älter als 6 Monate"
 
 #: frmmain.rs_optioncompress
 msgid ""
@@ -452,7 +452,7 @@ msgstr "Pfad zur Software (z.B. C:\\MangaDownloader)"
 
 #: frmmain.rs_thismonth
 msgid "This month"
-msgstr ""
+msgstr "Dieser Monat"
 
 #: frmmain.rs_today
 msgid "Today"
@@ -586,7 +586,7 @@ msgstr "&Terminieren"
 
 #: simpleexception.scanthandleexception
 msgid "Can't handle exception"
-msgstr ""
+msgstr "Konnte den Fehler nicht behandeln"
 
 #: simpleexception.scheckboxignoreexception
 msgid "Ignore this exception for next time"
@@ -943,7 +943,7 @@ msgstr "Ordner basierend auf Manga-Namen generieren"
 
 #: tmainform.cboptionlivesearch.caption
 msgid "Enable live search (slow on long list)"
-msgstr "Aktiviere live search (langsam bei langen Listen)"
+msgstr "Aktiviere Live Suche (langsam bei langen Listen)"
 
 #: tmainform.cboptionminimizeonstart.caption
 msgid "Minimize on start"
@@ -963,7 +963,7 @@ msgstr "HTTP"
 
 #: tmainform.cboptionremovemanganamefromchapter.caption
 msgid "Remove manga name from chapter"
-msgstr "Entferne Manga-Name aus dem Kapitel"
+msgstr "Entferne Manga-Namen aus dem Kapitel"
 
 #: tmainform.cboptionshowballoonhint.caption
 msgid "Show balloon hint"
@@ -987,7 +987,7 @@ msgstr "Zeige Download-Symbolleiste"
 
 #: tmainform.cboptionshowdownloadtoolbardeleteall.caption
 msgid "Show \"Delete all completed tasks\" in downloads toolbar"
-msgstr "Zeige \"Lösche alle abgeschlossenen Aufgaben\" in Download-Symbolleiste"
+msgstr "Zeige \"Lösche alle abgeschlossenen Aufgaben\" in der Download-Symbolleiste"
 
 #: tmainform.cboptionshowdownloadtoolbarleft.caption
 msgid "Show left downloads toolbar"
@@ -1013,7 +1013,7 @@ msgstr "Lade keine Manga-Informationen, wenn die Liste sich aktualisiert (Filter
 
 #: tmainform.cboptionupdatelistremoveduplicatelocaldata.caption
 msgid "Remove duplicate local data when updating manga list"
-msgstr "Remove duplicate local data when updating manga list"
+msgstr "Lösche lokale Duplikate, wenn die Manga Liste aktualisiert wird"
 
 #: tmainform.cboptionuseproxy.caption
 msgid "Use proxy"
@@ -1021,7 +1021,7 @@ msgstr "Proxy benutzen"
 
 #: tmainform.cboptionvacuumdatabasesonexit.caption
 msgid "Vacuum databases on exit"
-msgstr ""
+msgstr "Bereinige Datenbank beim Beenden"
 
 #: tmainform.cbpngcompressionlevel.text
 msgctxt "tmainform.cbpngcompressionlevel.text"
@@ -1038,7 +1038,7 @@ msgstr "Für mehr Manga-Seiten, bitte geh in die Optionen->Manga-Seiten"
 
 #: tmainform.cbuseregexpr.caption
 msgid "Regular Expression"
-msgstr "Regular Expression"
+msgstr "Reguläre Ausdrücke"
 
 #: tmainform.cbwebpsaveas.text
 msgctxt "tmainform.cbwebpsaveas.text"
@@ -1068,7 +1068,7 @@ msgstr "Erwachsen"
 
 #: tmainform.ckfilteradult.hint
 msgid "Contains content that is suitable only for adults. Titles in this category may include prolonged scenes of intense violence and/or graphic sexual content and nudity."
-msgstr "Enthält Inhalte, die nur für Erwachsene geeignet sind. Titel in dieser Kategorie können eine ausgedehnte Szenen intensiver Gewalt und / oder grafisch-sexuelle Inhalte und Nacktheit beinhalten."
+msgstr "Enthält Inhalte, die nur für Erwachsene geeignet sind. Titel in dieser Kategorie können eine ausgedehnte Szenen intensiver Gewalt und/oder grafisch-sexuelle Inhalte und Nacktheit beinhalten."
 
 #: tmainform.ckfilteradventure.caption
 msgid "Adventure"
@@ -1260,7 +1260,7 @@ msgstr "Seinen"
 
 #: tmainform.ckfilterseinen.hint
 msgid "From Google: Seinen means 'young Man'. Manga and anime that specifically targets young adult males around the ages of 18 to 25 are seinen titles. The stories in seinen works appeal to university students and those in the working world. Typically the story lines deal with the issues of adulthood."
-msgstr "Von Google: Sein bedeutet wörtlich ‚junger Mann‘. Manga und Anime, die speziell auf junge, erwachsene Männer im Alter von 18 bis 25 abzielt. Die Geschichten in Seinen-Werken appellieren an Studenten und diejenigen in der Arbeitswelt. Normalerweise beschäftigen sich die Geschichten mit den Problem des Erwachsenseins."
+msgstr "Von Google: Seinen bedeutet wörtlich \"junger Mann\". Manga und Anime, die speziell auf junge, erwachsene Männer im Alter von 18 bis 25 abzielt. Die Geschichten in Seinen-Werken appellieren an Studenten und diejenigen in der Arbeitswelt. Normalerweise beschäftigen sich die Geschichten mit den Problem des Erwachsenseins."
 
 #: tmainform.ckfiltershotacon.caption
 msgid "Shotacon"
@@ -1302,23 +1302,23 @@ msgstr "Shounen Ai"
 
 #: tmainform.ckfiltershounenai.hint
 msgid "Often synonymous with yaoi, this can be thought of as somewhat less extreme. \"Boy''s Love\", so to speak"
-msgstr "Oft gleichbedeutend mit \"Yaoi\". Es kann als etwas weniger extrem betrachtet werden. „Boy's Love“, sozusagen"
+msgstr "Oft gleichbedeutend mit \"Yaoi\". Es kann als etwas weniger extrem betrachtet werden. \"Boy's Love\" sozusagen"
 
 #: tmainform.ckfiltersliceoflife.caption
 msgid "Slice of Life"
-msgstr "Alltag/Ein Stück aus dem Leben"
+msgstr "Alltag / Ein Stück aus dem Leben"
 
 #: tmainform.ckfiltersliceoflife.hint
 msgid "As the name suggests, this genre represents day-to-day tribulations of one/many character(s). These challenges/events could technically happen in real life and are often -if not all the time- set in the present timeline in a world that mirrors our own."
-msgstr "Wie der Name schon sagt, stellt dieses Genre die Tag-zu-Tag Sorgen eines/vieler Charakters/Charaktere dar. Diese Herausforderungen/Ereignisse könnten eigentlich im wirklichen Leben passieren und sind oft -Wenn nicht immer- in der gegenwärtigen Zeit, in einer uns gespiegelten Welt, angesiedelt."
+msgstr "Wie der Name schon sagt, stellt dieses Genre die Tag-zu-Tag Sorgen eines/vieler Charakters/Charaktere dar. Diese Herausforderungen / Ereignisse könnten eigentlich im wirklichen Leben passieren und sind oft - wenn nicht immer - in der gegenwärtigen Zeit, in einer uns gespiegelten Welt, angesiedelt."
 
 #: tmainform.ckfiltersmut.caption
 msgid "Smut"
-msgstr "Schweinekram"
+msgstr "Schweinskram"
 
 #: tmainform.ckfiltersmut.hint
 msgid "Deals with series that are considered profane or offensive, particularly with regards to sexual content."
-msgstr "Behandelt Serien, die als Profan oder Beleidigend betracht werden können, insbesondere im Hinblick auf sexuelle Inhalte."
+msgstr "Behandelt Serien, die als profan oder beleidigend betracht werden können, insbesondere im Hinblick auf sexuelle Inhalte."
 
 #: tmainform.ckfiltersports.caption
 msgid "Sports"
@@ -1326,7 +1326,7 @@ msgstr "Sport"
 
 #: tmainform.ckfiltersports.hint
 msgid "As the name suggests, anything sports related. Baseball, basketball, hockey, soccer, golf, and racing just to name a few."
-msgstr "Genre Sport = Sport. Welche eine Überraschung. Handelt von allem, was irgendwie Sport-Verwandt ist. Baseball, Basketball, Hockey, Fußball, Golf und Rennsport um nur einige zu nennen."
+msgstr "Genre Sport = Sport. Welche eine Überraschung. Handelt von allem, was irgendwie Sport-verwandt ist. Baseball, Basketball, Hockey, Fußball, Golf und Rennsport um nur einige zu nennen."
 
 #: tmainform.ckfiltersupernatural.caption
 msgid "Supernatural"
@@ -1373,7 +1373,7 @@ msgstr "Diese Arbeit beinhaltet in der Regel intime Beziehungen zwischen Frauen.
 #: tmainform.ckoptionsalwaysstarttaskfromfailedchapters.caption
 msgctxt "tmainform.ckoptionsalwaysstarttaskfromfailedchapters.caption"
 msgid "Always start task from failed chapters"
-msgstr ""
+msgstr "Die Aufgabe immer beim fehlgeschlagenen Kapitel beginnen"
 
 #: tmainform.ckpngsaveasjpeg.caption
 msgid "Save PNG as JPEG"
@@ -1410,7 +1410,7 @@ msgstr "Filter"
 
 #: tmainform.edfiltersummary.texthint
 msgid "Part of summary"
-msgstr "Zusammenfassungsteil"
+msgstr "Teil der Zusammenfassung"
 
 #: tmainform.edfiltertitle.texthint
 msgctxt "TMAINFORM.EDFILTERTITLE.TEXTHINT"
@@ -1429,7 +1429,7 @@ msgstr "Benutzerdefinierte Umbenennung"
 
 #: tmainform.edoptiondefaultpath.texthint
 msgid "Default download path"
-msgstr "Standarddownloadpfad"
+msgstr "Standard Download Pfad"
 
 #: tmainform.edoptionexternalparams.texthint
 msgctxt "tmainform.edoptionexternalparams.texthint"
@@ -1457,11 +1457,11 @@ msgstr "Benutzerdefinierte Umbenennung"
 
 #: tmainform.edoptionpass.texthint
 msgid "Proxy password"
-msgstr "Proxy-Passwort"
+msgstr "Proxy Passwort"
 
 #: tmainform.edoptionuser.texthint
 msgid "Proxy username"
-msgstr "Proxy-Benutzername"
+msgstr "Proxy Benutzername"
 
 #: tmainform.edsaveto.texthint
 msgctxt "TMAINFORM.EDSAVETO.TEXTHINT"
@@ -1518,19 +1518,19 @@ msgstr "Allgemeines"
 
 #: tmainform.gboptionsconnectiosmiscellaneous.caption
 msgid "Miscellaneous"
-msgstr ""
+msgstr "Sonstiges"
 
 #: tmainform.lbdefaultdownloadpath.caption
 msgid "Choose the default download path:"
-msgstr "Wähle den Standarddownloadpfad:"
+msgstr "Wähle den Standard Download Pfad:"
 
 #: tmainform.lbdownloadfiltercustomdatefrom.caption
 msgid "From:"
-msgstr ""
+msgstr "Von:"
 
 #: tmainform.lbdownloadfiltercustomdateto.caption
 msgid "To:"
-msgstr ""
+msgstr "An:"
 
 #: tmainform.lbdroptargetopacity.caption
 msgid "Opacity"
@@ -1648,7 +1648,7 @@ msgstr "Verbindungsunterbrechung (sekunden)"
 
 #: tmainform.lboptiondefaultuseragent.caption
 msgid "Default user-agent"
-msgstr ""
+msgstr "Standard User-Agent"
 
 #: tmainform.lboptionexternal.caption
 msgid "Open manga by using external program:"
@@ -1732,11 +1732,11 @@ msgstr ""
 
 #: tmainform.lboptionmaxbackgroundloudthreads.caption
 msgid "Max number of background load threads"
-msgstr ""
+msgstr "Maximale Anzahl an Hintergrund Lade Threads"
 
 #: tmainform.lboptionmaxfavoritethreads.caption
 msgid "Max number of favorite check at the same time"
-msgstr ""
+msgstr "Maximale Anzahl an Favoriten, welche zur selben Zeit überprüft werden"
 
 #: tmainform.lboptionmaxparallel.caption
 msgid "Number of downloaded tasks at the same time"
@@ -1744,7 +1744,7 @@ msgstr "Anzahl von Downloads zur selben Zeit"
 
 #: tmainform.lboptionmaxretry.caption
 msgid "Max number of retry on connection failure (-1 = always retry)"
-msgstr "Anzahl der erneuten Versuche, falls der Download Probleme hat (-1 =immer wiederholen)"
+msgstr "Maximale Anzahl der erneuten Versuche, falls der Download Probleme hat (-1 = immer wiederholen)"
 
 #: tmainform.lboptionmaxthread.caption
 msgid "Number of downloaded files per task at the same time"
@@ -1752,7 +1752,7 @@ msgstr "Anzahl der Download-Dateien je Aufgabe zur selben Zeit"
 
 #: tmainform.lboptionmaxupdatelistthreads.caption
 msgid "Max number of update list threads"
-msgstr ""
+msgstr "Maximale Anzahl an Threads, welche die Liste aktualisieren"
 
 #: tmainform.lboptionnewmangatime.caption
 msgid "New manga based on  it's update time (days)"
@@ -1770,7 +1770,7 @@ msgstr "PDF Qualitätsstufe"
 #: tmainform.lboptionpdfquality.hint
 msgctxt "TMAINFORM.LBOPTIONPDFQUALITY.HINT"
 msgid "100 = FlateEncode (lossless), lower = DCTEncode (lossy)"
-msgstr "100 = FlateEncode (Verlustfrei), Niedriger = DCTEncode (Verlustbehaftet)"
+msgstr "100 = FlateEncode (verlustfrei), Niedriger = DCTEncode (verlustbehaftet)"
 
 #: tmainform.lboptionpdfqualityhint.caption
 msgctxt "tmainform.lboptionpdfqualityhint.caption"
@@ -1791,7 +1791,7 @@ msgstr "Rename  digits"
 
 #: tmainform.lboptionretryfailedtask.caption
 msgid "Number of retry times if task failed"
-msgstr ""
+msgstr "Anzahl an erneuten Versuchen, wenn eine Aufgabe fehlschlägt"
 
 #: tmainform.lboptionuser.caption
 msgctxt "tmainform.lboptionuser.caption"
@@ -1883,7 +1883,7 @@ msgstr "Alles abwählen"
 
 #: tmainform.michapterlistuncheckselected.caption
 msgid "Uncheck selected"
-msgstr "Uncheck selected"
+msgstr "Ausgewählte abwählen"
 
 #: tmainform.midownloaddelete.caption
 msgctxt "tmainform.midownloaddelete.caption"
@@ -1919,7 +1919,7 @@ msgstr "Aktiviere"
 
 #: tmainform.midownloadmergecompleted.caption
 msgid "Merge completed tasks"
-msgstr "Verschmelze abgeschlossene Aufgaben"
+msgstr "Führe abgeschlossene Aufgaben zusammen"
 
 #: tmainform.midownloadopenfolder.caption
 msgctxt "tmainform.midownloadopenfolder.caption"
@@ -1933,7 +1933,7 @@ msgstr "Öffne ..."
 
 #: tmainform.midownloadredownload.caption
 msgid "Redownload"
-msgstr ""
+msgstr "Erneut herunterladen"
 
 #: tmainform.midownloadresume.caption
 msgid "Resume"
@@ -1960,7 +1960,7 @@ msgstr "Nach neuen Kapitel suchen"
 #: tmainform.mifavoritesdefaultaction.caption
 msgctxt "tmainform.mifavoritesdefaultaction.caption"
 msgid "Default Action"
-msgstr "Standardaktion"
+msgstr "Standard Aktion"
 
 #: tmainform.mifavoritesdefaultactionchecknewchapters.caption
 msgctxt "tmainform.mifavoritesdefaultactionchecknewchapters.caption"
@@ -2024,7 +2024,7 @@ msgstr "Nach neuen Kapitel suchen anhalten"
 #: tmainform.mifavoritestransferwebsite.caption
 msgctxt "tmainform.mifavoritestransferwebsite.caption"
 msgid "Transfer website"
-msgstr "Webseite übertragen"
+msgstr "Übertrage Webseite"
 
 #: tmainform.mifavoritesviewinfos.caption
 msgctxt "TMAINFORM.MIFAVORITESVIEWINFOS.CAPTION"
@@ -2047,7 +2047,7 @@ msgstr "Löschen"
 #: tmainform.mimangalistdownloadall.caption
 msgctxt "TMAINFORM.MIMANGALISTDOWNLOADALL.CAPTION"
 msgid "Download all"
-msgstr "Alles laden"
+msgstr "Alles herunterladen"
 
 #: tmainform.mimangalistviewinfos.caption
 msgid "View manga infos"
@@ -2055,7 +2055,7 @@ msgstr "Zeige Manga-Informationen"
 
 #: tmainform.mitrayafterdownloadfinish.caption
 msgid "After download finish"
-msgstr "After download finish"
+msgstr "Nach dem Beenden des Downloads"
 
 #: tmainform.mitrayexit.caption
 msgctxt "tmainform.mitrayexit.caption"
@@ -2069,7 +2069,7 @@ msgstr "Beenden"
 
 #: tmainform.mitrayfinishhibernate.caption
 msgid "Hibernate"
-msgstr "Hibernate"
+msgstr "Ruhezustand"
 
 #: tmainform.mitrayfinishnothing.caption
 msgid "Nothing"
@@ -2090,7 +2090,7 @@ msgstr "Alle fortsetzen"
 #: tmainform.mitrayshowdropbox.caption
 msgctxt "tmainform.mitrayshowdropbox.caption"
 msgid "Show Drop Box"
-msgstr "Show Drop Box"
+msgstr "Zeige Drop Box"
 
 #: tmainform.mitraystopall.caption
 msgid "Stop all"
@@ -2103,7 +2103,7 @@ msgstr "Lade alle Listen aufeinmal vom Server"
 #: tmainform.mnfiltergenreallcheck.caption
 msgctxt "tmainform.mnfiltergenreallcheck.caption"
 msgid "Check all"
-msgstr "Check all"
+msgstr "Alle auswählen"
 
 #: tmainform.mnfiltergenreallindeterminate.caption
 msgid "Indeterminate all"
@@ -2112,7 +2112,7 @@ msgstr "Indeterminate all"
 #: tmainform.mnfiltergenrealluncheck.caption
 msgctxt "tmainform.mnfiltergenrealluncheck.caption"
 msgid "Uncheck all"
-msgstr "Uncheck all"
+msgstr "Alle abwählen"
 
 #: tmainform.mnupdate1click.caption
 msgid "Update all lists at once"
@@ -2120,7 +2120,7 @@ msgstr "Aktualisiere alle Listen gleichzeitig"
 
 #: tmainform.mnupdatedownfromserver.caption
 msgid "Download manga list from server"
-msgstr "Download manga list from server"
+msgstr "Lade die Manga Liste vom Server herunter"
 
 #: tmainform.mnupdatelist.caption
 msgctxt "TMAINFORM.MNUPDATELIST.CAPTION"
@@ -2129,7 +2129,7 @@ msgstr "Aktualisiere Manga-Liste"
 
 #: tmainform.rball.caption
 msgid "Have all genre checked"
-msgstr "Have all genre checked"
+msgstr "Alle Genres müssen ausgewählt sein"
 
 #: tmainform.rbfavoritesshowall.caption
 msgctxt "tmainform.rbfavoritesshowall.caption"
@@ -2148,7 +2148,7 @@ msgstr "Aktiviert"
 
 #: tmainform.rbone.caption
 msgid "Have one of genres checked"
-msgstr "Have one of genres checked"
+msgstr "Eins der Genres muss ausgewählt sein"
 
 #: tmainform.rgdroptargetmode.caption
 msgid "Mode"
@@ -2161,7 +2161,7 @@ msgstr "Speichere geladene Kapitel als"
 #: tmainform.seoptionpdfquality.hint
 msgctxt "tmainform.seoptionpdfquality.hint"
 msgid "100 = FlateEncode (lossless), lower = DCTEncode (lossy)"
-msgstr "100 = FlateEncode (Verlustfrei), Niedriger = DCTEncode (Verlustbehaftet)"
+msgstr "100 = FlateEncode (verlustfrei), Niedriger = DCTEncode (verlustbehaftet)"
 
 #: tmainform.tbdownloaddeletecompleted.caption
 msgctxt "tmainform.tbdownloaddeletecompleted.caption"
@@ -2178,7 +2178,7 @@ msgstr "Alle anhalten"
 
 #: tmainform.tbmidownloadmovebottom.hint
 msgid "Move selected item(s) to bottom"
-msgstr "Verschiebe markierte Einträge ganz nach unten"
+msgstr "Verschiebe markierte Einträge zur untersten Stelle"
 
 #: tmainform.tbmidownloadmovedown.hint
 msgid "Move selected item(s) down"
@@ -2186,7 +2186,7 @@ msgstr "Verschiebe markierte Einträge nach unten"
 
 #: tmainform.tbmidownloadmovetop.hint
 msgid "Move selected item(s) to top"
-msgstr "Verschiebe markierte Einträge ganz nach oben"
+msgstr "Verschiebe markierte Einträge zur obersten Stelle"
 
 #: tmainform.tbmidownloadmoveup.hint
 msgid "Move selected item(s) up"
@@ -2198,7 +2198,7 @@ msgstr "Alle schließen"
 
 #: tmainform.tbwebsitesexpandall.caption
 msgid "Expand All"
-msgstr "Alle Öffnen"
+msgstr "Alle öffnen"
 
 #: tmainform.tbwebsitesselectall.caption
 msgid "Select All"
@@ -2284,7 +2284,7 @@ msgstr "Speichern unter"
 
 #: tmainform.tsupdate.caption
 msgid "Updates"
-msgstr "Updates"
+msgstr "Aktualisierungen"
 
 #: tmainform.tsview.caption
 msgid "View"
@@ -2348,7 +2348,7 @@ msgstr "Hinzugefügt"
 
 #: tmainform.vtdownload.header.columns[7].text
 msgid "Last downloaded date"
-msgstr ""
+msgstr "Letztes Herunterlade Datum"
 
 #: tmainform.vtfavorites.header.columns[0].text
 msgid "#"
@@ -2380,11 +2380,11 @@ msgstr "Hinzugefügt"
 
 #: tmainform.vtfavorites.header.columns[6].text
 msgid "Last checked date"
-msgstr ""
+msgstr "Letztes Überprüfungs Datum"
 
 #: tmainform.vtfavorites.header.columns[7].text
 msgid "Last updated date"
-msgstr ""
+msgstr "Letztes Aktualisierungs Datum"
 
 #: tnewchapter.btcancel.caption
 msgctxt "TNEWCHAPTER.BTCANCEL.CAPTION"
@@ -2492,7 +2492,7 @@ msgstr "&Aktualisiere"
 
 #: tupdatedialogform.caption
 msgid "New Version Found"
-msgstr ""
+msgstr "Neue Version gefunden"
 
 #: tupdatedialogform.lbmessage.caption
 msgid ""
@@ -2520,7 +2520,7 @@ msgstr "Einstellungsname"
 
 #: udownloadsmanager.rs_compressing
 msgid "Compressing..."
-msgstr "Kompressiere..."
+msgstr "Komprimiere..."
 
 #: udownloadsmanager.rs_disabled
 msgctxt "udownloadsmanager.rs_disabled"
@@ -2534,7 +2534,7 @@ msgstr "Lade herunter"
 #: udownloadsmanager.rs_failed
 msgctxt "udownloadsmanager.rs_failed"
 msgid "Failed"
-msgstr "Gescheitert"
+msgstr "Fehlgeschlagen"
 
 #: udownloadsmanager.rs_failedtocreatedir
 msgid "Failed to create directory!"
@@ -2587,7 +2587,7 @@ msgstr "&Entfernen"
 
 #: ufavoritesmanager.rs_dlgcompletedmangacaption
 msgid "Found completed manga(s)"
-msgstr ""
+msgstr "Abgeschlossene Manga(s) gefunden"
 
 #: ufavoritesmanager.rs_dlgfavoritescheckisrunning
 msgid "Favorites check is running!"
@@ -2596,7 +2596,7 @@ msgstr "Favoriten werden überprüft!"
 #: ufavoritesmanager.rs_dlgnewchaptercaption
 msgctxt "ufavoritesmanager.rs_dlgnewchaptercaption"
 msgid "Found new chapter(s)"
-msgstr ""
+msgstr "Neue Kapitel gefunden"
 
 #: ufavoritesmanager.rs_favoritehasnewchapter
 #, object-pascal-format
@@ -2606,12 +2606,12 @@ msgstr "%s <%s> hat %d neue(s) Kapitel."
 #: ufavoritesmanager.rs_lblmangawillberemoved
 #, object-pascal-format
 msgid "%d completed manga(s) will be removed:"
-msgstr ""
+msgstr "%d abgeschlossene Manga(s) werden entfernt:"
 
 #: ufavoritesmanager.rs_lblnewchapterfound
 #, object-pascal-format
 msgid "Found %d new chapter from %d manga(s):"
-msgstr "Fand %d neue Kapitel von %d Manga(s)"
+msgstr "%d neue Kapitel von %d Manga(s) gefunden:"
 
 #: usilentthread.rs_silentthreadloadstatus
 #, object-pascal-format
@@ -2662,7 +2662,7 @@ msgstr "Entferne Duplikate aus lokalen Daten"
 
 #: uupdatethread.rs_removingduplicatefromnewtitle
 msgid "Removing duplicate from new title(s)"
-msgstr "Entferne Suplikate aus neuen Titeln"
+msgstr "Entferne Duplikate aus neuen Titeln"
 
 #: uupdatethread.rs_savingdata
 msgid "Saving data"
@@ -2674,7 +2674,7 @@ msgstr "Synchronisiere Daten"
 
 #: uupdatethread.rs_updatinglist
 msgid "Updating list"
-msgstr "Liste erneuern"
+msgstr "Aktualisiere Liste"
 
 #: webp.serrloadfailed
 #, object-pascal-format
