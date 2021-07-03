@@ -323,6 +323,7 @@ function Init()
 	AddWebsiteModule('b94734480a0e4f25a21c0f01cd5e9779', 'XuNScans', 'https://reader.xunscans.xyz')
 	AddWebsiteModule('e8ef6a7e02bd405785d504b60d5ee55e', 'ImperfectComic', 'https://imperfectcomic.com')
 	AddWebsiteModule('5aca1e42e8544aff8420b617c7a3983e', 'ComicDom', 'https://comicdom.org')
+	AddWebsiteModule('4e56f26935a74ffca73f698fa4c9de5c', 'HScans', 'https://hscans.com')
 
 	cat = 'French'
 	AddWebsiteModule('41867fa36f2f49959df9fef8aa53ffb5', 'WakaScan', 'https://wakascan.com')
