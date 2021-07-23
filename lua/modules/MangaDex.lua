@@ -269,7 +269,7 @@ function GetInfo()
 						local scanlators = ' [' .. table.concat(groups, ", ") .. ']'
 
 						-- Remove title if user option is disabled:
-						if opttitle == false then title = '' end
+						if title ~= '' and title ~= nil and title ~= 'null' then title = ' - ' .. title else title = '' end
 
 						-- Add prefix to title if it's not empty:
 						if title ~= '' then title = ' - ' .. title end
