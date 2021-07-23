@@ -269,10 +269,10 @@ function GetInfo()
 						local scanlators = ' [' .. table.concat(groups, ", ") .. ']'
 
 						-- Remove title if user option is disabled:
-						if title ~= '' and title ~= nil and title ~= 'null' then title = ' - ' .. title else title = '' end
+						if opttitle == false then title = '' end
 
 						-- Add prefix to title if it's not empty:
-						if title ~= '' then title = ' - ' .. title end
+						if title ~= '' and title ~= nil and title ~= 'null' then title = ' - ' .. title else title = '' end
 
 						-- Format volume and chapter strings if not empty:
 						volume = volume ~= 'null' and string.format('Vol. %s ', volume) or ''
