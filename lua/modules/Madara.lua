@@ -377,6 +377,9 @@ function Init()
 	AddWebsiteModule('73cfa250c661470c81428d99cdb8a140', 'MangaCrab', 'https://mangacrab.com')
 	AddWebsiteModule('ed8828b5ea52499c9217435d1b6cd437', 'InmortalScan', 'https://manga.mundodrama.site')
 	AddWebsiteModule('29714bf99a7e4dafa8bd6f88ca0b7b5e', 'StickHorse', 'https://www.stickhorse.cl')
+	AddWebsiteModule('df82ea6b9f1442e580320d8449ca5ab6', 'Sksubs', 'https://sksubs.net')
+	AddWebsiteModule('0259ab177b494d67a2945321ff50b8bf', 'HFusionScanlation', 'https://h.fusionscanlation.com')
+	AddWebsiteModule('c59285fdab344262bb6ae8a6a2687277', 'TecnoScan', 'https://tecnoscann.com')
 
 	cat = 'Webcomics'
 	AddWebsiteModule('2e6196018ffc4c92bc7ff332e41d52d4', 'ManyToon', 'https://manytoon.me')
