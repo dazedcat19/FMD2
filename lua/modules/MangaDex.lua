@@ -286,8 +286,12 @@ function GetInfo()
 						-- Append language id if user option is set to "All":
 						if optlangid == nil then language = string.format(' [%s]', language) else language = '' end
 
-						-- Remove group names if option is disabled:
-						if optgroup == false then scanlators = '' end
+						-- Set a fixed value if chapter doesn't have any group assigned or remove group names if option is disabled:
+						if optgroup then
+							if groupids.Count == 0 then scanlators = ' [no group]' end
+						else
+							scanlators = ''
+						end
 
 						-- Add chapter name and link to the manga info list:
 						MANGAINFO.ChapterLinks.Add(x.XPathString('data/id', chapters.Get(ic)))
