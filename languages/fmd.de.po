@@ -2107,7 +2107,7 @@ msgstr "Alle auswählen"
 
 #: tmainform.mnfiltergenreallindeterminate.caption
 msgid "Indeterminate all"
-msgstr "Indeterminate all"
+msgstr "Alle zurücksetzen"
 
 #: tmainform.mnfiltergenrealluncheck.caption
 msgctxt "tmainform.mnfiltergenrealluncheck.caption"
