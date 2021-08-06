@@ -68,11 +68,10 @@ function GetNameAndLink()
 		[4] = 'cancelled'
 	}
 	local contentrating = {
-		[1] = 'none',
-		[2] = 'safe',
-		[3] = 'suggestive',
-		[4] = 'erotica',
-		[5] = 'pornographic'
+		[1] = 'safe',
+		[2] = 'suggestive',
+		[3] = 'erotica',
+		[4] = 'pornographic'
 	}
 	
 	-- Delay this task if configured:
