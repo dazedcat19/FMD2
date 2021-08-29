@@ -336,6 +336,7 @@ function Init()
 	AddWebsiteModule('1b102a7854e64a45bab1aa8462582f17', 'ItsYourRightManhua', 'https://itsyourightmanhua.com')
 	AddWebsiteModule('fb042c961d06479582edb2fa582e3a41', 'ReaperScans', 'https://reaperscans.com')
 	AddWebsiteModule('b38c7f7e79164060b0a7da37476e0e9c', 'Manhuaga', 'https://manhuaga.com')
+	AddWebsiteModule('5b0c4c616c7f4a759d40d5b6924e535b', 'SetsuScans', 'https://setsuscans.com/')
 
 	cat = 'French'
 	AddWebsiteModule('41867fa36f2f49959df9fef8aa53ffb5', 'WakaScan', 'https://wakascan.com')
