@@ -172,7 +172,7 @@ function getMangas(x)
 		x.XPathHREFTitleAll('//div[@class="flexch-infoz"]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 	elseif MODULE.ID == 'b8206e754d4541689c1d367f7e19fd64' then -- KomikCast
 		x.XPathHREFAll('//div[@class="komik_info-chapters"]//a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
-	elseif MODULE.ID == 'fb34a56c83f54b19b57a9a92070fe899' then -- FlameScans
+	elseif MODULE.ID == 'fb34a56c83f54b19b57a9a92070fe899' or MODULE.ID == 'f794803973af4e5daab21683d4de873a' then -- FlameScans, LuminousScans
 		local v for v in x.XPath('//*[@id="chapterlist"]//li/a').Get() do
 			MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
 			MANGAINFO.ChapterNames.Add(x.XPathString('div/div/span[@class="chapternum"]',v))
@@ -229,7 +229,6 @@ function GetPageNumber()
 			if TASK.PageLinks.Count == 0 then x.XPathStringAll('//*[@id="readerarea"]/p//img/@src', TASK.PageLinks) end
 			if TASK.PageLinks.Count == 0 then x.XPathStringAll('//*[@id="readerarea"]/div//img/@src', TASK.PageLinks) end
 			if TASK.PageLinks.Count == 0 then x.XPathStringAll('//*[@id="readerarea"]//a/@href', TASK.PageLinks) end
-			if TASK.PageLinks.Count == 0 then x.XPathStringAll('//*[@id="readerarea"]//img/@src', TASK.PageLinks) end
 			if TASK.PageLinks.Count == 0 then x.XPathStringAll('//*[@id="readerareaimg"]//img/@src', TASK.PageLinks) end
 			if TASK.PageLinks.Count == 0 then x.XPathStringAll('//*[@id="imgholder"]//img/@src', TASK.PageLinks) end
 			if TASK.PageLinks.Count == 0 then x.XPathStringAll('//*[@class="entry-content"]//img/@src', TASK.PageLinks) end
@@ -294,7 +293,11 @@ function GetNameAndLink()
 			['41294a121062494489adfa601c442ef8'] = '/manga-list/?list', -- LegionAsia
 			['b53534f8443e420ea088594c53a3ff39'] = '/manhwa-list/', -- Manhwaland
 			['ff17b64aa945403dae45706753235872'] = '/latest-update/?list', -- KomikNesia
-			['5474e31b24ab4908a5258176d1f24f67'] = '/komik/list-mode/' -- ManhwaTaro
+			['5474e31b24ab4908a5258176d1f24f67'] = '/komik/list-mode/', -- ManhwaTaro
+			['f794803973af4e5daab21683d4de873a'] = '/series/list-mode/', -- LuminousScans
+			['86588503fd9e4277802c998cbccbc983'] = '/manga/list-mode/', -- AlphaScans
+			['275b85bdaafb47fdbc40f51d2bea99e8'] = '/manga/list-mode/' -- TheApolloTeam
+
 		}
 		local dirurl = '/manga/list-mode/'
 		if dirs[MODULE.ID] ~= nil then
@@ -384,6 +387,9 @@ function Init()
 	AddWebsiteModule('a3455b2005f8457f821acc93c2e821ab', 'PMScans', 'https://reader.pmscans.com')
 	AddWebsiteModule('568f2731188d4f058c5542e89603a030', 'AzureManga', 'https://azuremanga.com')
 	AddWebsiteModule('f8c92a9a83f64deebee5ec58b7b15bdf', 'xCaliBRScans', 'https://xcalibrscans.com')
+	AddWebsiteModule('f794803973af4e5daab21683d4de873a', 'LuminousScans', 'https://www.luminousscans.com')
+	AddWebsiteModule('86588503fd9e4277802c998cbccbc983', 'AlphaScans', 'https://alpha-scans.org')
+	AddWebsiteModule('275b85bdaafb47fdbc40f51d2bea99e8', 'TheApolloTeam', 'https://theapollo.team')
 
 	cat = 'Spanish'
 	AddWebsiteModule('41294a121062494489adfa601c442ef8', 'LegionAsia', 'https://legionasia.com')
