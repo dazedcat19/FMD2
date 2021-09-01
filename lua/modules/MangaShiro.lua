@@ -294,10 +294,7 @@ function GetNameAndLink()
 			['b53534f8443e420ea088594c53a3ff39'] = '/manhwa-list/', -- Manhwaland
 			['ff17b64aa945403dae45706753235872'] = '/latest-update/?list', -- KomikNesia
 			['5474e31b24ab4908a5258176d1f24f67'] = '/komik/list-mode/', -- ManhwaTaro
-			['f794803973af4e5daab21683d4de873a'] = '/series/list-mode/', -- LuminousScans
-			['86588503fd9e4277802c998cbccbc983'] = '/manga/list-mode/', -- AlphaScans
-			['275b85bdaafb47fdbc40f51d2bea99e8'] = '/manga/list-mode/' -- TheApolloTeam
-
+			['f794803973af4e5daab21683d4de873a'] = '/series/list-mode/' -- LuminousScans
 		}
 		local dirurl = '/manga/list-mode/'
 		if dirs[MODULE.ID] ~= nil then
