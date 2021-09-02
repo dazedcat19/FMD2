@@ -244,7 +244,7 @@ function GetInfo()
 			-- The API has a limit of 500 chapters per request.
 			-- The first request provides the overall total of the query, which will be used to check if there are still some chapters left to fetch.
 			while total > offset do
-			if HTTP.GET(API_URL .. '/manga/' .. mid .. '/feed' .. '?limit=' .. limitparam .. '&offset=' .. offset .. langparam .. '&includes[]=scanlation_group&order[chapter]=asc') then
+			if HTTP.GET(API_URL .. '/manga/' .. mid .. '/feed' .. '?limit=' .. limitparam .. '&offset=' .. offset .. langparam .. '&contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica&contentRating[]=pornographic&includes[]=scanlation_group&order[chapter]=asc') then
 				local x = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString()))
 				local chapters = x.XPath('json(*).results()')
 				total = tonumber(x.XPathString('json(*).total'))
