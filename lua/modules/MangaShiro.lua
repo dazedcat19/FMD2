@@ -21,7 +21,12 @@ end
 
 function getTitle(x)
 	local title = ''
-	if MODULE.ID == 'b53534f8443e420ea088594c53a3ff39' then title = x.XPathString('//div[@class="thumb"]/img/@alt') end
+
+	local titles = {
+		['b53534f8443e420ea088594c53a3ff39'] = '//div[@class="thumb"]/img/@alt', -- Manhwaland
+		['b5512eeeebbe4aa1a9194f58e8401ca2'] = '//div[@class="thumb"]/img/@alt', -- KumaScans
+	}
+	if titles[MODULE.ID] ~= nil then title = x.XPathString(titles[MODULE.ID]) end
 	if title == '' then title = x.XPathString('//*[@id="judul"]/h1') end
 	if title == '' then title = x.XPathString('//*[@id="judul_komik"]/h1') end
 	if title == '' then title = x.XPathString('//div[@class="infox"]/h1') end
