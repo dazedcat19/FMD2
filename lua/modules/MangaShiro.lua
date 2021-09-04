@@ -10,7 +10,7 @@ function GetInfo()
 		MANGAINFO.Status    = MangaInfoStatusIfPos(getStatus(x))
 		MANGAINFO.Summary   = getSummary(x)
 		getMangas(x)
-		MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
+		reverseLinksAndChapters()
 		HTTP.Reset()
 		HTTP.Headers.Values['Referer'] = MANGAINFO.URL
 		return no_error
@@ -328,6 +328,16 @@ function BeforeDownloadImage()
 	return true
 end
 
+function reverseLinksAndChapters()
+	local doNotReverse = {
+		['4657d79e63dc4a9082a46b7981bde1b9'] = '' -- MangaBoruto
+	}
+	if doNotReverse[MODULE.ID] == nil then
+		MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
+	end
+	return true
+end
+
 function Init()
 	local cat = 'Indonesian'
 	local function AddWebsiteModule(id, name, url)
@@ -377,6 +387,7 @@ function Init()
 	AddWebsiteModule('489dff6a5f894b6a9c1eed46feeec72e', 'WordHero', 'https://wordhero.my.id')
 	AddWebsiteModule('5474e31b24ab4908a5258176d1f24f67', 'ManhwaTaro', 'https://manhwataro.xyz')
 	AddWebsiteModule('180a930232614f81816720cefeea7954', 'KoMBatch', 'https://kombatch.com')
+	AddWebsiteModule('4657d79e63dc4a9082a46b7981bde1b9', 'MangaBoruto', 'https://mangaboruto.xyz')
 
 	cat = 'Raw'
 	AddWebsiteModule('21b0dfcb262d4ae28520679165282666', 'Rawkuma', 'https://rawkuma.com')

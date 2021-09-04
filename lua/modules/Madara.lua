@@ -352,7 +352,6 @@ function Init()
 	AddWebsiteModule('deafed31465943078a7b67ddf4885fda', 'KomikTap', 'https://manhwa.komiktap.co')
 	AddWebsiteModule('fce276573cab499fad96374d1df22121', 'Mangceh', 'https://mangceh.me')
 	AddWebsiteModule('1da2819dd79f4967a12953495ec52afe', 'Manhwaid', 'https://manhwaid.co')
-	AddWebsiteModule('4657d79e63dc4a9082a46b7981bde1b9', 'MangaBoruto', 'https://mangaboruto.xyz')
 	AddWebsiteModule('545acbf017814caab2b6bb28e48779fa', 'MGKomik', 'https://mgkomik.com')
 
 	cat = 'H-Sites'
