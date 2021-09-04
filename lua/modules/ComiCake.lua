@@ -11,7 +11,6 @@ function Init()
 		m.OnGetDirectoryPageNumber  = 'GetDirectoryPageNumber'
 	end
 	AddWebsiteModule('380e42a9e93e488abcd74cf47b2cf148', 'LetItGoScans', 'https://reader.letitgo.scans.today')
-	AddWebsiteModule('14ac824309034a6495fc4f91873aeb30', 'ProjectTime', 'https://read.ptscans.com')
 	AddWebsiteModule('02a1221995a54021b084687364cbff50', 'WhimSubs', 'https://whimsubs.xyz')
 end
 
