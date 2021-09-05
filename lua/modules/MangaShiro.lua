@@ -29,7 +29,6 @@ function getTitle(x)
 	if title == '' then title = x.XPathString('//div[@class="info1"]/*') end
 	if title == '' then title = x.XPathString('//div[@class="mangainfo"]/h1') end
 	if title == '' then title = x.XPathString('//h2[@class="entry-title"]') end
-	if title == '' then title = x.XPathString('//main[@id="site-content"]//div[@class="uk-width-2-3@m"]/div') end -- ProjectTime
 	if title == '' then title = x.XPathString('//h1') end
 	if title == '' then title = x.XPathString('//h2') end
 	title = title:gsub('Bahasa Indonesia$', ''):gsub(' Indonesia|Baca"', ''):gsub('Bahasa Indonesia', ''):gsub('Komik', ''):gsub(' Raw', ''):gsub(' Indonesia Terbaru','')
@@ -56,7 +55,6 @@ function getCover(x)
 	if img == '' then img = x.XPathString('//div[@class="ims"]/img/@src') end
 	if img == '' then img = x.XPathString('//div[@class="komik_info-content-thumbnail"]/img/@src') end
 	if img == '' then img = x.XPathString('//img[@class="shadow"]/@src') end
-	if img == '' then img = x.XPathString('//main[@id="site-content"]//div[contains(@class, "uk-width-1-3@m")]/img/@src') end -- ProjectTime
 	return img
 end
 
@@ -153,7 +151,6 @@ function getSummary(x)
 	if summary == '' then summary = x.XPathString('//*[@class="jds"]/p') end
 	if summary == '' then summary = x.XPathString('//*[@itemprop="description"]/string-join(.//text()[not(parent::script)],"")') end
 	if summary == '' then summary = x.XPathString('//*[@class="komik_info-description-sinopsis"]') end
-	if summary == '' then summary = x.XPathString('//main[@id="site-content"]//div[@class="uk-width-2-3@m"]/p[2]') end -- ProjectTime
 	summary = summary:gsub('.fb_iframe_widget_fluid_desktop iframe', ''):gsub('width: 100%% !important;', ''):gsub('{', ''):gsub('}', '')
 	return summary
 end
@@ -195,7 +192,6 @@ function getMangas(x)
 		if MANGAINFO.ChapterLinks.Count == 0 then x.XPathHREFAll('//div[contains(@class, "bxcl")]//li//*[contains(@class,"lchx")]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames) end
 		if MANGAINFO.ChapterLinks.Count == 0 then x.XPathHREFAll('//div[contains(@class, "lchx")]//li//*[contains(@class,"bxcl")]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames) end
 		if MANGAINFO.ChapterLinks.Count == 0 then x.XPathHREFAll('//*[@class="lchx"]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames) end
-		if MANGAINFO.ChapterLinks.Count == 0 then x.XPathHREFAll('//a[contains(@class, "uk-link-reset")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames) end -- ProjectTime
 	end
 end
 
@@ -238,7 +234,6 @@ function GetPageNumber()
 			if TASK.PageLinks.Count == 0 then x.XPathStringAll('//*[@class="entry-content"]//img/@src', TASK.PageLinks) end
 			if TASK.PageLinks.Count == 0 then x.XPathStringAll('//*[@class="bc"]/img/@src', TASK.PageLinks) end
 			if TASK.PageLinks.Count == 0 then x.XPathStringAll('//*[@id="chimg"]/img/@data-lazy-src', TASK.PageLinks) end
-			if TASK.PageLinks.Count == 0 then x.XPathStringAll('//*[@id="wreader"]//img/@data-src', TASK.PageLinks) end -- ProjectTime
 		end
 		for i = 0, TASK.PageLinks.Count - 1 do -- Bypass 'i0.wp.com' image CDN to ensure original images are loaded directly from host
 			TASK.PageLinks[i] = TASK.PageLinks[i]:gsub("i%d.wp.com/", "")
@@ -299,8 +294,7 @@ function GetNameAndLink()
 			['b53534f8443e420ea088594c53a3ff39'] = '/manhwa-list/', -- Manhwaland
 			['ff17b64aa945403dae45706753235872'] = '/latest-update/?list', -- KomikNesia
 			['5474e31b24ab4908a5258176d1f24f67'] = '/komik/list-mode/', -- ManhwaTaro
-			['f794803973af4e5daab21683d4de873a'] = '/series/list-mode/', -- LuminousScans
-			['14ac824309034a6495fc4f91873aeb30'] = '/manga/' -- ProjectTime
+			['f794803973af4e5daab21683d4de873a'] = '/series/list-mode/' -- LuminousScans
 		}
 		local dirurl = '/manga/list-mode/'
 		if dirs[MODULE.ID] ~= nil then
@@ -319,7 +313,6 @@ function GetNameAndLink()
 		if LINKS.Count == 0 then x.XPathHREFAll('//*[@class="ls4j"]//a', LINKS, NAMES) end
 		if LINKS.Count == 0 then x.XPathHREFAll('//*[@class="listttl"]//a', LINKS, NAMES) end
 		if LINKS.Count == 0 then x.XPathHREFAll('//*[@class="Manga" or @class="Manhwa"]/a', LINKS, NAMES) end
-		if LINKS.Count == 0 then x.XPathHREFAll('//div[contains(@class, "uk-card-body")]//a', LINKS, NAMES) end
 	end
 	return no_error
 end
@@ -394,7 +387,6 @@ function Init()
 	AddWebsiteModule('f794803973af4e5daab21683d4de873a', 'LuminousScans', 'https://www.luminousscans.com')
 	AddWebsiteModule('86588503fd9e4277802c998cbccbc983', 'AlphaScans', 'https://alpha-scans.org')
 	AddWebsiteModule('275b85bdaafb47fdbc40f51d2bea99e8', 'TheApolloTeam', 'https://theapollo.team')
-	AddWebsiteModule('14ac824309034a6495fc4f91873aeb30', 'ProjectTime', 'https://ptscans.tw')
 
 	cat = 'Spanish'
 	AddWebsiteModule('41294a121062494489adfa601c442ef8', 'LegionAsia', 'https://legionasia.com')
