@@ -415,6 +415,7 @@ function Init()
 	AddWebsiteModule('529038945bc84174b4be556b922bfb4a', 'OniScans', 'https://www.oniscans.com')
 	AddWebsiteModule('529038924bc84174b4be556b922bfb4a', 'ShadowMangas', 'https://shadowmangas.com')
 	AddWebsiteModule('760d177b1f6d4763a08971c0c1b5572b', 'OlympusScanlation', 'https://olympusscanlation.com')
+	AddWebsiteModule('a08tter98y97k9er008971c0c1b55705', 'RaikiScan', 'https://raikiscan.com')
 
 	cat = 'English'
 	AddWebsiteModule('421be2f0d918493e94f745c71090f359', 'Mangafast', 'https://mangafast.net')
