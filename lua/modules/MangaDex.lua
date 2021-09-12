@@ -203,9 +203,9 @@ function GetInfo()
 		if mstatus == 'ok' then
 			MANGAINFO.Title     = x.XPathString('data/attributes/title/en', minfo)
 			MANGAINFO.Summary   = x.XPathString('data/attributes/description/en', minfo)
-			MANGAINFO.Authors   = x.XPathStringAll('json(*).relationships()[type="author"].attributes.name')
-			MANGAINFO.Artists   = x.XPathStringAll('json(*).relationships()[type="artist"].attributes.name')
-			MANGAINFO.CoverLink = COVER_URL .. '/' .. mid .. '/' .. x.XPathString('json(*).relationships()[type="cover_art"].attributes.fileName')
+			MANGAINFO.Authors   = x.XPathStringAll('json(*).data.relationships()[type="author"].attributes.name')
+			MANGAINFO.Artists   = x.XPathStringAll('json(*).data.relationships()[type="artist"].attributes.name')
+			MANGAINFO.CoverLink = COVER_URL .. '/' .. mid .. '/' .. x.XPathString('json(*).data.relationships()[type="cover_art"].attributes.fileName')
 
 			-- Fetch genre, demographic, and rating:
 			MANGAINFO.Genres    = x.XPathStringAll('json(*).data.attributes.tags().attributes.name.en')
@@ -246,14 +246,14 @@ function GetInfo()
 			while total > offset do
 			if HTTP.GET(API_URL .. '/manga/' .. mid .. '/feed' .. '?limit=' .. limitparam .. '&offset=' .. offset .. langparam .. '&contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica&contentRating[]=pornographic&includes[]=scanlation_group&order[chapter]=asc') then
 				local x = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString()))
-				local chapters = x.XPath('json(*).results()')
+				local chapters = x.XPath('json(*).data()')
 				total = tonumber(x.XPathString('json(*).total'))
 				offset = offset + tonumber(x.XPathString('json(*).limit'))
 				for ic = 1, chapters.Count do
 					local ignore = false
 
 					-- Check if the group that released the chapter is on the built-in ignore list, otherwise skip the chapter:
-					local groupids = x.XPath('json(*).results()[' .. ic .. '].relationships()[type="scanlation_group"]')
+					local groupids = x.XPath('json(*).data()[' .. ic .. '].relationships()[type="scanlation_group"]')
 					local groups = {}
 					if ignore == false then
 						for gid = 1, groupids.Count do
@@ -266,10 +266,10 @@ function GetInfo()
 					end
 
 					if ignore == false then
-						local volume     = x.XPathString('data/attributes/volume', chapters.Get(ic))
-						local chapter    = x.XPathString('data/attributes/chapter', chapters.Get(ic))
-						local title      = x.XPathString('data/attributes/title', chapters.Get(ic))
-						local language   = x.XPathString('data/attributes/translatedLanguage', chapters.Get(ic))
+						local volume     = x.XPathString('attributes/volume', chapters.Get(ic))
+						local chapter    = x.XPathString('attributes/chapter', chapters.Get(ic))
+						local title      = x.XPathString('attributes/title', chapters.Get(ic))
+						local language   = x.XPathString('attributes/translatedLanguage', chapters.Get(ic))
 						local scanlators = ' [' .. table.concat(groups, ", ") .. ']'
 
 						-- Remove title if user option is disabled:
@@ -296,7 +296,7 @@ function GetInfo()
 						end
 
 						-- Add chapter name and link to the manga info list:
-						MANGAINFO.ChapterLinks.Add(x.XPathString('data/id', chapters.Get(ic)))
+						MANGAINFO.ChapterLinks.Add(x.XPathString('id', chapters.Get(ic)))
 						MANGAINFO.ChapterNames.Add(volume .. chapter .. title .. language .. scanlators)
 					end
 				end
