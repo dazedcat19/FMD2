@@ -30,7 +30,7 @@ function Init()
 	AddWebsiteModule('9b325c488f6f443281b39315d6fa72d0', 'Manhwa18Net', 'https://manhwa18.net')
 	
 	cat = 'English-Scanlation'
-	AddWebsiteModule('7fb5fbed6d3a44fe923ecc7bf929e6cb', 'LHTranslation', 'https://lhtranslation.net')
+	AddWebsiteModule('7fb5fbed6d3a44fe923ecc7bf929e6cb', 'LHTranslationArchive', 'https://archive.lhtranslation.net')
 	AddWebsiteModule('8313871a984b4b6c8de41860fc5ec96e', 'KSGroupScans', 'https://ksgroupscans.com')
 end
 

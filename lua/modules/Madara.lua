@@ -136,7 +136,7 @@ function Modules.Madara()
 		TASK.PageLinks.Clear()
 		local aurl = MaybeFillHost(MODULE.RootURL, URL)
 		if string.find(aurl, 'style=list', 1, true) == nil then
-			aurl = aurl .. '?style=list'
+			aurl = string.gsub(aurl, '?style=paged', '') .. '?style=list'
 		end
 		if HTTP.GET(aurl) then
 			local x = CreateTXQuery(HTTP.Document)
@@ -343,6 +343,7 @@ function Init()
 	AddWebsiteModule('b38c7f7e79164060b0a7da37476e0e9c', 'Manhuaga', 'https://manhuaga.com')
 	AddWebsiteModule('5b0c4c616c7f4a759d40d5b6924e535b', 'SetsuScans', 'https://setsuscans.com')
 	AddWebsiteModule('825fa36408ca4f7ab2eb7c4ad7777aca', 'LevelerScans', 'https://levelerscans.xyz')
+	AddWebsiteModule('37538acb3171418bbf5a52b3e255afb6', 'LHTranslation', 'https://lhtranslation.net')
 
 	cat = 'French'
 	AddWebsiteModule('41867fa36f2f49959df9fef8aa53ffb5', 'WakaScan', 'https://wakascan.com')
