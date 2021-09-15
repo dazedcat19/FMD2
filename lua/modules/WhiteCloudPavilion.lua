@@ -3,7 +3,7 @@
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.MangaReaderOnline'
-DirectoryParameters = '/manga/free/changeMangaList?type=text'
+DirectoryParameters = '/manga/patreon/changeMangaList?type=text'
 -- XPathTokenStatus    = 'Status'       --> Override template variable by uncommenting this line.
 -- XPathTokenAuthors   = 'Author(s)'    --> Override template variable by uncommenting this line.
 -- XPathTokenArtists   = 'Artist(s)'    --> Override template variable by uncommenting this line.
@@ -42,7 +42,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'd7b50edfda2d4dc69eae3e1c1886000d'
 	m.Name                     = 'WhiteCloudPavilion'
-	m.RootURL                  = 'https://whitecloudpavilion.com'
+	m.RootURL                  = 'https://www.whitecloudpavilion.com'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetNameAndLink         = 'GetNameAndLink'

@@ -158,12 +158,13 @@ function GetPageNumber()
 		local x = CreateTXQuery(HTTP.Document)
 		if MODULE.ID == 'f488bcb1911b4f21baa1ab65ef9ca61c' then -- HeroScan
 			x.XPathStringAll('//img[contains(@class, "chapter-img")]/@data-original', TASK.PageLinks)
-		elseif MODULE.ID == '010777f53bf2414fad039b9567c8a9ce' or MODULE.ID == '9054606f128e4914ae646032215915e5' or MODULE.ID == '694ff34a6ae4469fbdaecf8d3aebb6eb' then -- KissAway, WeLoveManga, ManhuaScan
+		elseif MODULE.ID == '010777f53bf2414fad039b9567c8a9ce' or MODULE.ID == '694ff34a6ae4469fbdaecf8d3aebb6eb' then -- KissAway, ManhuaScan
 			local v for v in x.XPath('//img[contains(@class, "chapter-img")]/@data-aload').Get() do
 				TASK.PageLinks.Add(MaybeFillHost(MODULE.RootURL, v.ToString()))
 			end
 		else
-			x.XPathStringAll('//img[contains(@class, "chapter-img")]/@src', TASK.PageLinks)
+			x.XPathStringAll('//img[contains(@class, "chapter-img")]/@data-src', TASK.PageLinks)
+			if TASK.PageLinks.count == 0 then x.XPathStringAll('//img[contains(@class, "chapter-img")]/src', TASK.PageLinks) end
 		end
 	else
 		return false
