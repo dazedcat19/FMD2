@@ -492,4 +492,5 @@ function Init()
 	AddWebsiteModule('e4a3a8ed254e4e9a9113693c098bb743', 'MangaFenix', 'https://manga-fenix.com')
 	AddWebsiteModule('a8ad2a81768742caa7135047f28c2b00', 'SwordManga', 'https://swordmanga.com')
 	AddWebsiteModule('rrad2a81768742caa7135047f282b777', 'MangaMonarca', 'https://mangamonarca.xyz')
+	AddWebsiteModule('48822a81768742caa7135047f282bf57', 'TiempodeWebeo', 'https://tiempodewebeo.com')
 end
