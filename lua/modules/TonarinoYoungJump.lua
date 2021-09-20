@@ -107,8 +107,6 @@ end
 ----------------------------------------------------------------------------------------------------
 
 function Init()
-	local m = NewWebsiteModule()
-
 	local function AddWebsiteModule(id, name, url)
 		local m = NewWebsiteModule()
 		m.ID                    = id
@@ -120,13 +118,8 @@ function Init()
 		m.OnGetPageNumber       = 'GetPageNumber'
 		m.OnDownloadImage       = 'DownloadImage'
 		m.TotalDirectory        = #dirurls
-	end
 
-	AddWebsiteModule('88fb782a9c234fde82b0de32f710ce3f', 'TonarinoYoungJump', 'https://tonarinoyj.jp')
-	AddWebsiteModule('38970b3ea00eef239f022af15de81413', 'ShonenJumpPlus', 'https://shonenjumpplus.com')
-	AddWebsiteModule('9d03aafe067a535c50ac81dcbc0574be', 'Comic-days', 'https://comic-days.com')
-
-	local fmd = require 'fmd.env'
+		local fmd = require 'fmd.env'
 		local slang = fmd.SelectedLanguage
 		local lang = {
 			['en'] = {
@@ -143,4 +136,8 @@ function Init()
 				end
 		}
 		m.AddOptionCheckBox('luashowprivate', lang:get('showprivate'), false)
+	end
+	AddWebsiteModule('88fb782a9c234fde82b0de32f710ce3f', 'TonarinoYoungJump', 'https://tonarinoyj.jp')
+	AddWebsiteModule('38970b3ea00eef239f022af15de81413', 'ShonenJumpPlus', 'https://shonenjumpplus.com')
+	AddWebsiteModule('9d03aafe067a535c50ac81dcbc0574be', 'Comic-days', 'https://comic-days.com')
 end
