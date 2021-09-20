@@ -27,7 +27,7 @@ function GetInfo()
 
 		if lastChapter < 50 then lastChapter = 50 end
 
-		while lastChapter > 1 do 
+		while lastChapter > 1 do
 			local url = MaybeFillHost(MODULE.RootURL, string.format(chapterListQuery, aggregateId, lastChapter))
 			if not HTTP.GET(url) then break end
 			x.ParseHTML(json.decode(HTTP.Document.ToString()).html)
@@ -108,17 +108,25 @@ end
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                       = '88fb782a9c234fde82b0de32f710ce3f'
-	m.Name                     = 'TonarinoYoungJump'
-	m.RootURL                  = 'https://tonarinoyj.jp'
-	m.Category                 = 'Raw'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnDownloadImage          = 'DownloadImage'
-	m.TotalDirectory           = #dirurls
 
-  local fmd = require 'fmd.env'
+	local function AddWebsiteModule(id, name, url)
+		local m = NewWebsiteModule()
+		m.ID                    = id
+		m.Name                  = name
+		m.RootURL               = url
+		m.Category              = 'Raw'
+		m.OnGetInfo             = 'GetInfo'
+		m.OnGetNameAndLink      = 'GetNameAndLink'
+		m.OnGetPageNumber       = 'GetPageNumber'
+		m.OnDownloadImage       = 'DownloadImage'
+		m.TotalDirectory        = #dirurls
+	end
+
+	AddWebsiteModule('88fb782a9c234fde82b0de32f710ce3f', 'TonarinoYoungJump', 'https://tonarinoyj.jp')
+	AddWebsiteModule('38970b3ea00eef239f022af15de81413', 'ShonenJumpPlus', 'https://shonenjumpplus.com')
+	AddWebsiteModule('9d03aafe067a535c50ac81dcbc0574be', 'Comic-days', 'https://comic-days.com')
+
+	local fmd = require 'fmd.env'
 		local slang = fmd.SelectedLanguage
 		local lang = {
 			['en'] = {
