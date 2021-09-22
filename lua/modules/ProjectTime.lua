@@ -11,6 +11,8 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnLogin                  = 'Login'
+	m.AccountSupport           = true
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -25,6 +27,7 @@ DirectoryPagination = '/manga'
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
+	CheckAuth()
 	if not HTTP.GET(MODULE.RootURL .. DirectoryPagination) then return net_problem end
 
 	CreateTXQuery(HTTP.Document).XPathHREFAll('//div[contains(@class, "uk-card-body")]//a', LINKS, NAMES)
@@ -34,6 +37,7 @@ end
 
 -- Get info and chapter list for current manga.
 function GetInfo()
+	CheckAuth()
 	if not HTTP.GET(MaybeFillHost(MODULE.RootURL, URL)) then return net_problem end
 
 	local x = CreateTXQuery(HTTP.Document)
@@ -49,9 +53,50 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
+	CheckAuth()
 	if not HTTP.GET(MaybeFillHost(MODULE.RootURL, URL)) then return net_problem end
 
 	CreateTXQuery(HTTP.Document).XPathStringAll('//*[@id="wreader"]//img/@data-src', TASK.PageLinks)
 
 	return no_error
+end
+
+function CheckAuth()
+	HTTP.GET(MODULE.RootURL)
+	local x = CreateTXQuery(HTTP.Document)
+	if x.XPathString('//div[@class="page-header"]') == 'Login' then Login() end
+end
+
+function Login()
+	MODULE.ClearCookies()
+	MODULE.Account.Status = asChecking
+	local login_url = MODULE.RootURL .. '/login'
+	local crypto = require 'fmd.crypto'
+	if not HTTP.GET(login_url) then
+		MODULE.Account.Status = asUnknown
+		return false
+	end
+
+	HTTP.Reset()
+
+	HTTP.Headers.Values['Content-Type'] = 'application/x-www-form-urlencoded'
+	local payload = 'password=' .. crypto.EncodeURLElement(MODULE.Account.Password) .. '&username=' .. crypto.EncodeURLElement(MODULE.Account.Username)
+
+	HTTP.POST(login_url, payload)
+	if HTTP.ResultCode == 200 then
+		local x = CreateTXQuery(HTTP.Document)
+		if x.XPathString('//div[@class="page-header"]') == 'Login success!' then
+			MODULE.Account.Cookies = HTTP.Cookies
+			MODULE.Account.Status = asValid
+			return true
+		else
+			MODULE.Account.Cookies = ''
+			MODULE.Account.Status = asInvalid
+			return false
+		end
+	else
+		MODULE.Account.Status = asUnknown
+		return false
+	end
+	return true
 end
