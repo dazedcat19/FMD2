@@ -164,7 +164,7 @@ function GetPageNumber()
 			end
 		else
 			x.XPathStringAll('//img[contains(@class, "chapter-img")]/@data-src', TASK.PageLinks)
-			if TASK.PageLinks.count == 0 then x.XPathStringAll('//img[contains(@class, "chapter-img")]/src', TASK.PageLinks) end
+			if TASK.PageLinks.Count == 0 then x.XPathStringAll('//img[contains(@class, "chapter-img")]/src', TASK.PageLinks) end
 		end
 	else
 		return false
