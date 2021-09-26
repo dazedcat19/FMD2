@@ -165,7 +165,7 @@ function GetInfo()
 				-- If the GUID (v5) has not been mapped yet, get it from the legacy endpoint of the API:
 				HTTP.MimeType = 'application/json'
 				if HTTP.POST(API_URL .. '/legacy/mapping', '{"type":"manga", "ids":[' .. mid .. ']}') then
-					newid = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString())).XPathString('json(*)()[1].data.attributes.newId')
+					newid = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString())).XPathString('json(*).data()[1].attributes.newId')
 					print('MangaDex: Legacy ID Mapping has been executed. The new ID is: ' .. newid)
 					if newid ~= nil then -- If a valid GUID (v5) has been returned, map it to the global mapping table and save it to the mapping file.
 						MAPPING[mid] = newid
