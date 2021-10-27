@@ -364,7 +364,8 @@ end
 function IgnoreChaptersByGroupId(id)
 	local groups = {
 		["4f1de6a2-f0c5-4ac5-bce5-02c7dbb67deb"] = "MangaPlus",
-		["8d8ecf83-8d42-4f8c-add8-60963f9f28d9"] = "Comikey"
+		["8d8ecf83-8d42-4f8c-add8-60963f9f28d9"] = "Comikey",
+		["5fed0576-8b94-4f9a-b6a7-08eecd69800d"] = "Azuki Manga"
 	}
 
 	if groups[id] ~= nil then
