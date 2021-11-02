@@ -3,7 +3,7 @@
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.Genkan'
--- DirectoryPagination = '/'   --> Override template variable by uncommenting this line.
+DirectoryPagination = '/web/comics?page='
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions

@@ -95,6 +95,8 @@ function Modules.Madara()
 					MANGAINFO.ChapterLinks.Add(x.XPathString('a/@href', v))
 					MANGAINFO.ChapterNames.Add(x.XPathString('a/text()[not(parent::span)]', v))
 				end
+			elseif MODULE.ID == '287f665620664e468d4e05f5d76f5a43' then -- ResetScans
+				x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]//a[1]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 			else
 				x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 			end
