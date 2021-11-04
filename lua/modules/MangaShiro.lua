@@ -262,6 +262,14 @@ function GetNameAndLink()
 			LINKS.Add(v.GetAttribute('href'))
 			NAMES.Add(x.XPathString('h3', v))
 		end
+	elseif MODULE.ID == 'fb34a56c83f54b19b57a9a92070fe899' then -- FlameScan
+		local dirurl = MODULE.RootURL .. '/series/list-mode/'
+		if not HTTP.GET(dirurl) then return net_problem end
+		local x = CreateTXQuery(HTTP.Document)
+		local v for v in x.XPath('//*[@class="blix"]//a').Get() do
+			LINKS.Add(v.GetAttribute('href'):gsub("%/[1-9]+-", "/"))
+			NAMES.Add(x.XPathString('normalize-space(.)', v))
+		end
 	elseif MODULE.ID == 'b8206e754d4541689c1d367f7e19fd64' then -- KomikCast
 		local dirurl = MODULE.RootURL .. '/daftar-komik/?list'
 		if not HTTP.GET(dirurl) then return net_problem end
@@ -301,7 +309,6 @@ function GetNameAndLink()
 			['ff17b64aa945403dae45706753235872'] = '/latest-update/?list', -- KomikNesia
 			['5474e31b24ab4908a5258176d1f24f67'] = '/komik/list-mode/', -- ManhwaTaro
 			['f794803973af4e5daab21683d4de873a'] = '/series/list-mode/', -- LuminousScans
-			['fb34a56c83f54b19b57a9a92070fe899'] = '/series/list-mode/' -- FlameScans
 		}
 		local dirurl = '/manga/list-mode/'
 		if dirs[MODULE.ID] ~= nil then
