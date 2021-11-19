@@ -90,7 +90,7 @@ function Modules.Madara()
 					MANGAINFO.ChapterLinks.Add(x.XPathString('a/@href', v))
 					MANGAINFO.ChapterNames.Add(x.XPathString('a/text()[normalize-space()]', v))
 				end
-			elseif MODULE.ID == 'ac42a85566244b7e836679491ce679e6' or MODULE.ID == '123fa1ed637e469b8cb4a154965a6423' then -- YugenMangas
+			elseif MODULE.ID == 'ac42a85566244b7e836679491ce679e6' or MODULE.ID == '123fa1ed637e469b8cb4a154965a6423' then -- YugenMangas, DragonTranslation
 				local v for v in x.XPath('//li[contains(@class, "wp-manga-chapter")]').Get() do
 					MANGAINFO.ChapterLinks.Add(x.XPathString('a/@href', v))
 					MANGAINFO.ChapterNames.Add(x.XPathString('a/text()[not(parent::span)]', v))
@@ -165,7 +165,7 @@ function Modules.Madara()
 				end
 			elseif MODULE.ID == '7f1b637a525940db9459f1cbf2f7cfc3' then -- Manga18fx
 				x.XPathStringAll('//div[@class="read-content"]/img/@src', TASK.PageLinks)
-			elseif MODULE.ID == '123fa1ed637aswet8cb4a154965a6423' then -- leermanga
+			elseif MODULE.ID == '123fa1ed637aswet8cb4a154965a6423' then -- LeerManga
 				x.XPathStringAll('//*[@id="images_chapter"]//img/@data-src', TASK.PageLinks)
 			else
 				x.XPathStringAll('//div[contains(@class, "page-break")]/img/@data-src', TASK.PageLinks)
