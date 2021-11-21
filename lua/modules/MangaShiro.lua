@@ -413,6 +413,7 @@ function Init()
 	AddWebsiteModule('f794803973af4e5daab21683d4de873a', 'LuminousScans', 'https://www.luminousscans.com')
 	AddWebsiteModule('86588503fd9e4277802c998cbccbc983', 'AlphaScans', 'https://alpha-scans.org')
 	AddWebsiteModule('275b85bdaafb47fdbc40f51d2bea99e8', 'TheApolloTeam', 'https://theapollo.team')
+	AddWebsiteModule('15fc68c57ce141f497b872af157d72ac', 'ShimadaScans', 'https://shimadascans.com')
 
 	cat = 'Spanish'
 	AddWebsiteModule('41294a121062494489adfa601c442ef8', 'LegionAsia', 'https://legionasia.com')
