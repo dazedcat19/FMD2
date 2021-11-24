@@ -221,7 +221,7 @@ function GetPageNumber()
 		elseif MODULE.ID == '7103ae6839ea46ec80cdfc2c4b37c803' then -- AsuraScans
 			local v for v in x.XPath('//*[@id="readerarea"]/p/img').Get() do
 				if string.find(v.GetAttribute('src'), "panda") == nil then
-					TASK.PageLinks.Add(v.GetAttribute('src'))
+					TASK.PageLinks.Add(v.GetAttribute('data-src'))
 				end
 			end
 		else
