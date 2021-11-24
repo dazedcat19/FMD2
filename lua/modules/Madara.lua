@@ -86,7 +86,7 @@ function Modules.Madara()
 					MANGAINFO.ChapterNames.Add(name)
 				end
 			elseif MODULE.ID == 'fb042c961d06479582edb2fa582e3a41' then -- ReaperScans
-				local v for v in x.XPath('//li[contains(@class, "wp-manga-chapter")]/chapter-link').Get() do
+				local v for v in x.XPath('//div[contains(@class, "chapter-link")]').Get() do
 					MANGAINFO.ChapterLinks.Add(x.XPathString('a/@href', v))
 					MANGAINFO.ChapterNames.Add(x.XPathString('a/text()[normalize-space()]', v))
 				end
