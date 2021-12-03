@@ -28,6 +28,8 @@ function Modules.Madara()
 				MANGAINFO.Title=x.XPathStringAll('//div[@class="post-title post-sigle-title"]/*[self::h1 or self::h2 or self::h3]/text()', '')
 			elseif MODULE.Name == 'GetManhwa' then
 				MANGAINFO.Title=x.XPathStringAll('//div[@class="post-title-dpage"]/h3')
+			elseif MODULE.ID == '73cfa250c661470c81428d99cdb8a140' then --MangaCrab
+				MANGAINFO.Title=x.XPathStringAll('//*[@id="manga-title"]/h1/text()')				
 			end
 			MANGAINFO.CoverLink=x.XPathString('//div[@class="summary_image"]//img/@data-src')
 			if MANGAINFO.CoverLink == '' then
