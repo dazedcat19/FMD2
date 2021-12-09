@@ -219,7 +219,11 @@ function GetPageNumber()
 		elseif MODULE.ID == 'b8206e754d4541689c1d367f7e19fd64' then -- KomikCast
 			x.XPathStringAll('//*[@class="main-reading-area"]/img/@src', TASK.PageLinks)
 		elseif MODULE.ID == '7103ae6839ea46ec80cdfc2c4b37c803' then -- AsuraScans
-			x.XPathStringAll('//*[@id="readerarea"]//img/@src', TASK.PageLinks) 
+			local v for v in x.XPath('//*[@id="readerarea"]/p/img').Get() do
+				if string.find(v.GetAttribute('src'), "panda") == nil then
+					TASK.PageLinks.Add(v.GetAttribute('src'))
+				end
+			end
 		else
 			-- common
 			x.ParseHTML(GetBetween('run(', ');', x.XPathString('//script[contains(., "ts_reader")]')))
