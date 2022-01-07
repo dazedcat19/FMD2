@@ -42,9 +42,9 @@ function GetPageNumber()
 	TASK.PageLinks.Clear()
 	if HTTP.GET(MaybeFillHost(MODULE.RootURL, URL)) then
 		local x=CreateTXQuery(HTTP.Document)
-		x.XPathStringAll('//*[contains(@class,"entry-content")]//img/@data-src', TASK.PageLinks)
+		x.XPathStringAll('//*[contains(@class,"entry-content")]//img/@data-lazy-src', TASK.PageLinks)
 		if TASK.PageLinks.Count == 0 then
-			x.XPathStringAll('//div[@class="separator" and @style]//img/@data-src', TASK.PageLinks)
+			x.XPathStringAll('//div[@class="separator" and @style]//img/@data-lazy-src', TASK.PageLinks)
 		end
 	else
 		return false
