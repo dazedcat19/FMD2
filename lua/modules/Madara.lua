@@ -359,6 +359,7 @@ function Init()
 	AddWebsiteModule('37538acb3171418bbf5a52b3e255afb6', 'LHTranslation', 'https://lhtranslation.net')
 	AddWebsiteModule('a6e1277d9b8b4f99afb2de63f4718eb9', 'JiroComics', 'https://jirocomics.com')
 	AddWebsiteModule('f4aba5424ddd4ed6a1b6245f08c64573', 'PlatinumScans', 'https://platinumscans.com')
+	AddWebsiteModule('b56aa544ddd4ed6a1b6245f08c64123', 'Mangas20', 'https://mangas20.com')
 
 	cat = 'French'
 	AddWebsiteModule('41867fa36f2f49959df9fef8aa53ffb5', 'WakaScan', 'https://wakascan.com')
