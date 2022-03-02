@@ -169,6 +169,8 @@ function Modules.Madara()
 				x.XPathStringAll('//div[@class="read-content"]/img/@src', TASK.PageLinks)
 			elseif MODULE.ID == '123fa1ed637aswet8cb4a154965a6423' then -- LeerManga
 				x.XPathStringAll('//*[@id="images_chapter"]//img/@data-src', TASK.PageLinks)
+			elseif MODULE.ID == '283a39fb8ac44c41a3bd7080c5dd73cf' then -- Manhuaus
+				x.XPathStringAll('//div[@class="reading-content"]//img/@data-src', TASK.PageLinks)
 			else
 				x.XPathStringAll('//div[contains(@class, "page-break")]/img/@data-src', TASK.PageLinks)
 			end
