@@ -76,9 +76,11 @@ var
 begin
   u := TUserData(luaClassGetObject(L));
   if lua_gettop(L) = 2 then
-    lua_pushstring(L, u.XPathString(luaToString(L, 1),
-      TLuaIXQValue(luaToUserData(L, 2)).FIXQValue))
-  else
+  begin
+    S := u.XPathString(luaToString(L, 1),
+      TLuaIXQValue(luaToUserData(L, 2)).FIXQValue);
+    lua_pushstring(L, S)
+  end else
   begin
     S := u.XPathString(luaToString(L, 1));
     lua_pushstring(L, S);
