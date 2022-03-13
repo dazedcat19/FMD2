@@ -206,9 +206,10 @@ end;
 function luaToString(const L: Plua_State; const idx: Integer): String;
 var
   slen: size_t;
+  P: PAnsiChar;
 begin
-  Result := lua_tolstring(L, idx, @slen);
-  SetLength(Result, slen);
+  P := lua_tolstring(L, idx, @slen);
+  Result := P;
 end;
 
 function LuaToTypeString(const L: Plua_State; const idx: Integer): String;

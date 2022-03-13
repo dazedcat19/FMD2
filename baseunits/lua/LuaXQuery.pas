@@ -72,31 +72,38 @@ end;
 function xquery_xpathstring(L: Plua_State): Integer; cdecl;
 var
   u: TUserData;
+  S: String;
 begin
   u := TUserData(luaClassGetObject(L));
   if lua_gettop(L) = 2 then
     lua_pushstring(L, u.XPathString(luaToString(L, 1),
       TLuaIXQValue(luaToUserData(L, 2)).FIXQValue))
   else
-    lua_pushstring(L, u.XPathString(luaToString(L, 1)));
+  begin
+    S := u.XPathString(luaToString(L, 1));
+    lua_pushstring(L, S);
+  end;
   Result := 1;
 end;
 
 function xquery_xpathstringall(L: Plua_State): Integer; cdecl;
 var
   u: TUserData;
+  S: String;
 begin
   Result := 0;
   u := TUserData(luaClassGetObject(L));
   case lua_gettop(L) of
     1: begin
-         lua_pushstring(L, u.XPathStringAll(luaToString(L, 1)));
+         S := u.XPathStringAll(luaToString(L, 1));
+         lua_pushstring(L, S);
          Result := 1;
        end;
     2: begin
          if lua_isstring(L, 2) then
          begin
-           lua_pushstring(L, u.XPathStringAll(luaToString(L, 1), luaToString(L, 2)));
+           S := u.XPathStringAll(luaToString(L, 1), luaToString(L, 2));
+           lua_pushstring(L, S);
            Result := 1;
          end
          else
@@ -109,8 +116,9 @@ begin
     3: begin
          if lua_isstring(L, 2) then
          begin
-           lua_pushstring(L, u.XPathStringAll(luaToString(L, 1), luaToString(L, 2),
-             TLuaIXQValue(luaToUserData(L, 3)).FIXQValue));
+           S := u.XPathStringAll(luaToString(L, 1), luaToString(L, 2),
+             TLuaIXQValue(luaToUserData(L, 3)).FIXQValue);
+           lua_pushstring(L, S);
            Result := 1;
          end
          else
