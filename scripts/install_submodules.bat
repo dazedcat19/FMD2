@@ -20,7 +20,7 @@ lazbuild --add-package-link synalist-code/laz_synapse.lpk
 lazbuild --add-package-link dcpcrypt/dcpcrypt.lpk
 lazbuild --add-package-link internettools/internettools.lpk
 lazbuild --add-package-link richmemo/richmemopackage.lpk
-lazbuild --add-package-link richmemo/ide/richmemo_design.lpk
+lazbuild --build-ide= --add-package richmemo/ide/richmemo_design.lpk
 lazbuild --build-ide= --add-package multilog/multiloglaz.lpk
 
 cd ..
