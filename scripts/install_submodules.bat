@@ -1,3 +1,5 @@
+cd ..
+
 mkdir 3rd
 
 cd 3rd
