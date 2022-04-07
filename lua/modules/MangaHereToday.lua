@@ -16,6 +16,9 @@ function Init()
 	end
 	AddWebsiteModule('8212f7c50ebe478bb344d16e8ab20adc', 'MangaHereToday', 'http://mangahere.today')
 	AddWebsiteModule('d1958f8b85cb494abe69deb151d1a89d', 'MangaNelos', 'http://manganelos.com')
+
+	cat = 'Spanish'
+	AddWebsiteModule('c67d163c51b24bc498e777e2b0d810d2', 'LeerCapitulo', 'https://www.leercapitulo.com')
 end
 
 ----------------------------------------------------------------------------------------------------
