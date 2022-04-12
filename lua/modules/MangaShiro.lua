@@ -423,6 +423,7 @@ function Init()
 	AddWebsiteModule('15fc68c57ce141f497b872af157d72ac', 'ShimadaScans', 'https://shimadascans.com')
 	AddWebsiteModule('f291e782dab54867a26a161934277177', 'ShiniScan', 'https://shiniscan.com')
 	AddWebsiteModule('3593adad980d454abe489c42e7158032', 'RealmScans', 'https://realmscans.com')
+	AddWebsiteModule('f53627f1cad44232ac9dbc02a613aeb5', 'MajesticScans', 'https://majesticscans.com')
 
 	cat = 'Spanish'
 	AddWebsiteModule('41294a121062494489adfa601c442ef8', 'LegionAsia', 'https://legionasia.com')
