@@ -21,9 +21,6 @@ function Modules.Madara()
 			end
 
 			MANGAINFO.Title=x.XPathStringAll('//div[@class="post-title"]/*[self::h1 or self::h2 or self::h3]/text()', '')
-			if string.match(MANGAINFO.Title:upper(), ' RAW$') ~= nil then
-				MANGAINFO.Title = MANGAINFO.Title:sub(1, -5)
-			end
 			if MODULE.Name == 'ArtemisNF' then
 				MANGAINFO.Title=x.XPathStringAll('//div[@class="post-title post-sigle-title"]/*[self::h1 or self::h2 or self::h3]/text()', '')
 			elseif MODULE.Name == 'GetManhwa' then
@@ -31,6 +28,12 @@ function Modules.Madara()
 			end
 			if MANGAINFO.Title == '' then
 				MANGAINFO.Title = x.XPathStringAll('//*[@id="manga-title"]/h1/text()')
+			end
+			if string.match(MANGAINFO.Title:upper(), ' RAW$') ~= nil then
+				MANGAINFO.Title = MANGAINFO.Title:sub(1, -5)
+			end
+			if string.match(MANGAINFO.Title:upper(), ' – MANHUAUS') ~= nil then
+				MANGAINFO.Title = MANGAINFO.Title:sub(1, -14)
 			end
 			MANGAINFO.CoverLink=x.XPathString('//div[@class="summary_image"]//img/@data-src')
 			if MANGAINFO.CoverLink == '' then
