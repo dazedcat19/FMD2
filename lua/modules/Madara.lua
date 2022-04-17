@@ -21,9 +21,6 @@ function Modules.Madara()
 			end
 
 			MANGAINFO.Title=x.XPathStringAll('//div[@class="post-title"]/*[self::h1 or self::h2 or self::h3]/text()', '')
-			if string.match(MANGAINFO.Title:upper(), ' RAW$') ~= nil then
-				MANGAINFO.Title = MANGAINFO.Title:sub(1, -5)
-			end
 			if MODULE.Name == 'ArtemisNF' then
 				MANGAINFO.Title=x.XPathStringAll('//div[@class="post-title post-sigle-title"]/*[self::h1 or self::h2 or self::h3]/text()', '')
 			elseif MODULE.Name == 'GetManhwa' then
@@ -31,6 +28,12 @@ function Modules.Madara()
 			end
 			if MANGAINFO.Title == '' then
 				MANGAINFO.Title = x.XPathStringAll('//*[@id="manga-title"]/h1/text()')
+			end
+			if string.match(MANGAINFO.Title:upper(), ' RAW$') ~= nil then
+				MANGAINFO.Title = MANGAINFO.Title:sub(1, -5)
+			end
+			if string.match(MANGAINFO.Title:upper(), ' – MANHUAUS') ~= nil then
+				MANGAINFO.Title = MANGAINFO.Title:sub(1, -14)
 			end
 			MANGAINFO.CoverLink=x.XPathString('//div[@class="summary_image"]//img/@data-src')
 			if MANGAINFO.CoverLink == '' then
@@ -376,6 +379,7 @@ function Init()
 	AddWebsiteModule('c34264a0b72a49b58f2a4e9476f2fd15', 'Mangas20', 'https://mangas20.com')
 	AddWebsiteModule('1a88330492134d828d9549f14f67bfdd', 'ManhuaDragon', 'https://manhuadragon.com')
 	AddWebsiteModule('5e8a01ec43e24ed28372bab7f2c2c531', 'DragonTea', 'https://dragontea.ink')
+	AddWebsiteModule('1bc20f34e9c8466bbf5898a89c374a3b', 'MangaBoss', 'https://mangaboss.org')
 
 	cat = 'French'
 	AddWebsiteModule('41867fa36f2f49959df9fef8aa53ffb5', 'WakaScan', 'https://wakascan.com')

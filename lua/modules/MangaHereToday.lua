@@ -16,6 +16,9 @@ function Init()
 	end
 	AddWebsiteModule('8212f7c50ebe478bb344d16e8ab20adc', 'MangaHereToday', 'http://mangahere.today')
 	AddWebsiteModule('d1958f8b85cb494abe69deb151d1a89d', 'MangaNelos', 'http://manganelos.com')
+
+	cat = 'Spanish'
+	AddWebsiteModule('c67d163c51b24bc498e777e2b0d810d2', 'LeerCapitulo', 'https://www.leercapitulo.com')
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -72,7 +75,7 @@ function GetPageNumber()
 	local x = CreateTXQuery(HTTP.Document)
 	local json = x.XPathString('//p[@id="arraydata"]')
 	for i in json:gmatch('(.-),') do
-		TASK.PageLinks.Add(i)
+		TASK.PageLinks.Add(i:gsub("cdn.statically.io/img/", ""))
 	end
 
 	return no_error
