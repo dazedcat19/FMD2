@@ -175,7 +175,7 @@ function getMangas(x)
 		x.XPathHREFAll('//div[@class="komik_info-chapters"]//a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 	elseif MODULE.ID == 'fb34a56c83f54b19b57a9a92070fe899' then -- FlameScans
 		local v for v in x.XPath('//*[@id="chapterlist"]//li/a').Get() do
-			MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
+			MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'):gsub("%/[0-9]+-", "/"))
 			MANGAINFO.ChapterNames.Add(x.XPathString('div/div/span[@class="chapternum"]',v))
 		end
 	elseif MODULE.ID == 'f8c92a9a83f64deebee5ec58b7b15bdf' then -- xCaliBRScans
@@ -270,7 +270,7 @@ function GetNameAndLink()
 		if not HTTP.GET(dirurl) then return net_problem end
 		local x = CreateTXQuery(HTTP.Document)
 		local v for v in x.XPath('//*[@class="blix"]//a').Get() do
-			LINKS.Add(v.GetAttribute('href'):gsub("%/[1-9]+-", "/"))
+			LINKS.Add(v.GetAttribute('href'):gsub("%/[0-9]+-", "/"))
 			NAMES.Add(x.XPathString('normalize-space(.)', v))
 		end
 	elseif MODULE.ID == 'b8206e754d4541689c1d367f7e19fd64' then -- KomikCast
