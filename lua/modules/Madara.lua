@@ -383,6 +383,7 @@ function Init()
 	AddWebsiteModule('1bc20f34e9c8466bbf5898a89c374a3b', 'MangaBoss', 'https://mangaboss.org')
 	AddWebsiteModule('ca3c550ab0f249d0accf06286e908cbe', 'ManhuaPlanet', 'https://manhuaplanet.com')
 	AddWebsiteModule('47292820ced14adfbdcb3d5412ebed9f', 'ManhuaPlusOnline', 'https://manhuaplus.online')
+	AddWebsiteModule('4d4affa9d7684180b64fe6c65f3f5b5d', 'DarkScans', 'https://drakescans.com')
 
 	cat = 'French'
 	AddWebsiteModule('41867fa36f2f49959df9fef8aa53ffb5', 'WakaScan', 'https://wakascan.com')
