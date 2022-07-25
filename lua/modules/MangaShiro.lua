@@ -437,6 +437,7 @@ function Init()
 	AddWebsiteModule('3593adad980d454abe489c42e7158032', 'RealmScans', 'https://realmscans.com')
 	AddWebsiteModule('a51ebfb8979045d589cd867c48a095c0', 'ManhwaFreak', 'https://manhwafreak.com')
 	AddWebsiteModule('f53627f1cad44232ac9dbc02a613aeb5', 'MajesticScans', 'https://majesticscans.com')
+	AddWebsiteModule('f01040ee781d4ae1929031419b97d2e0', 'VoidScans', 'https://void-scans.com')
 
 	cat = 'Spanish'
 	AddWebsiteModule('41294a121062494489adfa601c442ef8', 'LegionAsia', 'https://legionasia.com')
