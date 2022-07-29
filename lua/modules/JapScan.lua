@@ -65,7 +65,7 @@ function Init()
 	m.ID               = '7859a25e6e1940cebf719a521646a948'
 	m.Category         = 'French'
 	m.Name             = 'Japscan'
-	m.RootURL          = 'http://www.japscan.co'
+	m.RootURL          = 'http://www.japscan.me'
 	m.LastUpdated      = 'April 6, 2018'
 	m.OnGetInfo        = 'getinfo'
 	m.OnGetPageNumber  = 'getpagenumber'
