@@ -86,10 +86,7 @@ function Modules.Madara()
 			elseif MODULE.ID == 'adaa36e7f591470685788d0e8ae31230' then -- TraduccionesAmistosas
 				local v for v in x.XPath('//li[contains(@class, "wp-manga-chapter")]').Get() do
 					MANGAINFO.ChapterLinks.Add(x.XPathString('a/@href', v))
-					local rem  = x.XPathString('span', v)
-					local name = x.XPathString('normalize-space(.)', v)
-					name = name:match("(.*)" .. rem .. "$")
-					MANGAINFO.ChapterNames.Add(name)
+					MANGAINFO.ChapterNames.Add(x.XPathString('a/text()[normalize-space()]', v))
 				end
 			elseif MODULE.ID == 'fb042c961d06479582edb2fa582e3a41' then -- ReaperScans
 				local v for v in x.XPath('//div[@class="chapter-link"]/a').Get() do
