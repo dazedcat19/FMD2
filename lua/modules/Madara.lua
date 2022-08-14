@@ -83,11 +83,6 @@ function Modules.Madara()
 				x.XPathHREFAll('//li[contains(@class, "wp-manga-hapter")]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 			elseif MODULE.ID == '7f1b637a525940db9459f1cbf2f7cfc3' then -- Manga18fx
 				x.XPathHREFAll('//ul[@class="row-content-chapter"]//a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
-			elseif MODULE.ID == 'adaa36e7f591470685788d0e8ae31230' then -- TraduccionesAmistosas
-				local v for v in x.XPath('//li[contains(@class, "wp-manga-chapter")]').Get() do
-					MANGAINFO.ChapterLinks.Add(x.XPathString('a/@href', v))
-					MANGAINFO.ChapterNames.Add(x.XPathString('a/text()[normalize-space()]', v))
-				end
 			elseif MODULE.ID == 'fb042c961d06479582edb2fa582e3a41' then -- ReaperScans
 				local v for v in x.XPath('//div[@class="chapter-link"]/a').Get() do
 					MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
