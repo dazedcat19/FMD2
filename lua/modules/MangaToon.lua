@@ -6,15 +6,15 @@ function getinfo()
 	end
 	if HTTP.GET(MANGAINFO.URL) then
 		x=CreateTXQuery(HTTP.Document)
-		MANGAINFO.Title = x.XPathString('//div[@class="detail-top-left"]/h1')
-		MANGAINFO.CoverLink=x.XPathString('//div[@class="detail-top-right"]/img/@src')
+		MANGAINFO.Title = x.XPathString('//div[@class="detail-title-bg"]/span')
+		MANGAINFO.CoverLink=x.XPathString('//div[@class="detail-img"]/img/@src')
 		MANGAINFO.Authors=x.XPathString('//div[@class="detail-top-left"]//div[@class="created-by"]')
 		MANGAINFO.Genres=x.XPathString('//div[@class="detail-top-left"]//div[@class="top-comics-type]')
-		local chapters = x.XPath('//div[@class="episodes-wrap"]/a')
+		local chapters = x.XPath('//div[@class="episodes-wrap-new"]/a')
 		for i = 1, chapters.Count do
 			local v1 = chapters.Get(i)
 			MANGAINFO.ChapterLinks.Add(v1.GetAttribute('href'))
-			MANGAINFO.ChapterNames.Add(x.XPathString('.//div[@class="episode-title"]', v1))
+			MANGAINFO.ChapterNames.Add(x.XPathString('.//div[@class="episode-title-new"]', v1))
 		end
 		return no_error
 	else
@@ -24,7 +24,7 @@ end
 
 function getpagenumber()
 	if HTTP.GET(MaybeFillHost(MODULE.RootURL,URL)) then
-		CreateTXQuery(HTTP.Document).XPathStringAll('//div[@class="pictures"]//img/@src', TASK.PageLinks)
+		CreateTXQuery(HTTP.Document).XPathStringAll('//div[@class="pictures"]//img/@data-original', TASK.PageLinks)
 
 		if TASK.PageNumber == 1 then
 			TASK.PageNumber = 0
@@ -79,6 +79,6 @@ function Init()
 	AddWebsiteModule('e203bd33bcfe4d2b919e696fa5de6f63', 'MangaToon', 'https://mangatoon.mobi', 'English')
 	AddWebsiteModule('9f34de1c70824222802b25e656086da8', 'MangaToonID', 'https://mangatoon.mobi/id', 'Indonesian')
 	AddWebsiteModule('3bdf6d8182ed43ecb7102156a520add5', 'MangaToonVI', 'https://mangatoon.mobi/vi', 'Vietnamese')
-	AddWebsiteModule('fba3900561d2464b8a242b37a0f42f4a', 'MangaToonSP', 'https://mangatoon.mobi/es', 'Spanish')
+	--AddWebsiteModule('fba3900561d2464b8a242b37a0f42f4a', 'MangaToonSP', 'https://mangatoon.mobi/es', 'Spanish')
 	AddWebsiteModule('9fd7c7954eea4addaf2d283135c20222', 'MangaToonCN', 'https://mangatoon.mobi/cn', 'Webcomics')
 end
