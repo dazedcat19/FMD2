@@ -141,11 +141,11 @@ function GetNameAndLink()
 		end
 	end
 	local x = CreateTXQuery(HTTP.Document)
-	local v = x.XPathStringAll('//table[@id="index-table"]/tbody/tr/td[1]/a[not(ends-with(.,".txt") or ends-with(.,".zip") or ends-with(.,".rar"))]')
+	local v = x.XPathStringAll('//table[@id="index-table"]/tbody/tr/td[1]/a[not(ends-with(.,".txt") or ends-with(.,".zip") or ends-with(.,".rar") or ends-with(.,".cbz"))]')
 	for i in string.gmatch(v:gsub(', ',','), '([^,]+)') do
 	    NAMES.Add(i:gsub('/$',''))
 	end
-	local v = x.XPathStringAll('//table[@id="index-table"]/tbody/tr/td[1]/a[not(ends-with(.,".txt") or ends-with(.,".zip") or ends-with(.,".rar"))]/@href')
+	local v = x.XPathStringAll('//table[@id="index-table"]/tbody/tr/td[1]/a[not(ends-with(.,".txt") or ends-with(.,".zip") or ends-with(.,".rar") or ends-with(.,".cbz"))]/@href')
 	for i in string.gmatch(v, '([^, ]+)') do
 		LINKS.Add(i)
 	end

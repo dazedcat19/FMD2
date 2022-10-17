@@ -16,6 +16,7 @@ function Init()
 	AddWebsiteModule('fa8bb4d1ceea4c8fa0e98c00755f95d4', 'Manganato', 'https://chapmanganato.com')
 	AddWebsiteModule('ed4175a390e74aedbe4b4f622f3767c6', 'MangaKakalots', 'https://mangakakalots.com')
 	AddWebsiteModule('2234588abb544fc6a279c7811f2a9733', 'MangaBat', 'https://m.mangabat.com')
+	AddWebsiteModule('0625a58a9af94a99a8a5cff216ce27f0', 'ReadMangaBat', 'https://readmangabat.com')
 end
 
 function GetInfo()
@@ -107,7 +108,9 @@ function GetDirectoryPageNumber()
 		else
 			return net_problem
 		end
-	elseif MODULE.ID == '2234588abb544fc6a279c7811f2a9733' then -- mangabat
+	elseif (MODULE.ID == '2234588abb544fc6a279c7811f2a9733') -- mangabat
+			or (MODULE.ID == '0625a58a9af94a99a8a5cff216ce27f0') -- readmangabat
+	then
 		if HTTP.GET(MODULE.RootURL .. '/manga-list-all?type=newest') then
 			PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//a[contains(@class, "page-last")]/@href'):match('.-//.-/.-/(%d+)'))
 			return no_error
@@ -136,7 +139,9 @@ function GetNameAndLink()
 		else
 			return net_problem
 		end
-	elseif MODULE.ID == '2234588abb544fc6a279c7811f2a9733' then -- mangabat
+	elseif (MODULE.ID == '2234588abb544fc6a279c7811f2a9733') -- mangabat
+			or (MODULE.ID == '0625a58a9af94a99a8a5cff216ce27f0') -- readmangabat
+	then
 		if HTTP.GET(MODULE.RootURL .. '/manga-list-all/' .. (URL + 1)) then
 			local x = CreateTXQuery(HTTP.Document)
 			x.XPathHREFTitleAll('//div[@class="panel-list-story"]/div[@class="list-story-item"]/a', LINKS, NAMES)
