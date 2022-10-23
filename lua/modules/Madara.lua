@@ -317,7 +317,7 @@ function Init()
 
 	cat = 'English'
 	AddWebsiteModule('4bce5afe51b646c6b0d30329a069ee83', 'IsekaiScan', 'https://isekaiscan.com')
-	AddWebsiteModule('e9f7ec544bb146bd966ef2dd10bda097', 'MangaKomi', 'https://mangakomi.com')
+	AddWebsiteModule('e9f7ec544bb146bd966ef2dd10bda097', 'MangaKomi', 'https://mangakomi.io')
 	AddWebsiteModule('da2696a55d66491093c8fed44cc862fc', 'MangaZukiWhatStatus', 'https://whatstatus.co')
 	AddWebsiteModule('b0b9bb6881b54db9a9f55d97ad2412cf', 'MangaZukiOnline', 'https://www.mangazuki.online')
 	AddWebsiteModule('bc9f265005764a729a937792b59ec0e8', 'MangaZukiSite', 'https://www.mangazuki.site')
