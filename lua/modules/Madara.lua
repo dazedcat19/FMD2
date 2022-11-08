@@ -110,6 +110,12 @@ function Modules.Madara()
 				HTTP.Headers.Values['Content-Length'] = '0'
 				if HTTP.POST(MANGAINFO.URL .. 'ajax/chapters') then
 					local x = CreateTXQuery(HTTP.Document)
+					if MODULE.ID == 'd2ce33fc01f34981ac9d1f3756d1b81b' then -- LeviatanScansEN
+						local v for v in x.XPath('//li[contains(@class, "wp-manga-chapter")]').Get() do
+							MANGAINFO.ChapterLinks.Add(x.XPathString('a/@href', v))
+							MANGAINFO.ChapterNames.Add(x.XPathString('a/text()[not(parent) and normalize-space()]', v))
+						end
+					end
 					x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[1]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 					if MANGAINFO.ChapterLinks.Count == 0 then
 						local v for v in x.XPath('//div[@class="chapter-link"]/a').Get() do
@@ -362,7 +368,7 @@ function Init()
 	AddWebsiteModule('598672e8158d4fd781bea8d426534695', 'GourmetScans', 'https://gourmetscans.net')
 	AddWebsiteModule('813f780f2d3b41ab8de577aadcbd4d7a', 'ImmortalUpdates', 'https://immortalupdates.com')
 	AddWebsiteModule('5f60bc66acfa4605a3668857287eed1d', 'MangaGreat', 'https://mangagreat.com')
-	AddWebsiteModule('d2ce33fc01f34981ac9d1f3756d1b81b', 'LeviatanScansEN', 'https://leviatanscans.com')
+	AddWebsiteModule('d2ce33fc01f34981ac9d1f3756d1b81b', 'LeviatanScansEN', 'https://en.leviatanscans.com')
 	AddWebsiteModule('1b7fba26de3e49d7af3ab6549921c567', 'SKScans', 'https://skscans.com')
 	AddWebsiteModule('716dab165a0f4f80b0ee49a4518866a2', 'GrazeScans', 'https://grazescans.com')
 	AddWebsiteModule('4eff54457e544446a33c569d2b85ced0', 'TritiniaScans', 'https://tritinia.com')
