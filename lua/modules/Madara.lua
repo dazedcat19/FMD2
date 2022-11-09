@@ -113,7 +113,7 @@ function Modules.Madara()
 					if MODULE.ID == 'd2ce33fc01f34981ac9d1f3756d1b81b' then -- LeviatanScansEN
 						local v for v in x.XPath('//li[contains(@class, "wp-manga-chapter")]').Get() do
 							MANGAINFO.ChapterLinks.Add(x.XPathString('a/@href', v))
-							MANGAINFO.ChapterNames.Add(x.XPathString('a/text()[not(parent) and normalize-space()]', v))
+							MANGAINFO.ChapterNames.Add(x.XPathString('a/text()[not(parent::span)]', v))
 						end
 					end
 					x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[1]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
