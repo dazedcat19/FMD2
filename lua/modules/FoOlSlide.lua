@@ -162,7 +162,11 @@ function getimageurl()
 	end
 	if getWithCookie(MaybeFillHost(MODULE.RootURL, s)) then
 		x = CreateTXQuery(HTTP.Document)
-		TASK.PageLinks[WORKID] = x.XPathString('//div[@id="page"]//img/@src')
+		if MODULE.ID == '1df9cf8bde734241b6daed49616e4181' then --patyscans
+			TASK.PageLinks[WORKID] = x.XPathString('//div[@class="page"]//img/@src')
+		else
+			TASK.PageLinks[WORKID] = x.XPathString('//div[@id="page"]//img/@src')
+		end
 	end
 	return result
 end
