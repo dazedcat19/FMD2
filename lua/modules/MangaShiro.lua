@@ -449,6 +449,7 @@ function Init()
 	AddWebsiteModule('f01040ee781d4ae1929031419b97d2e0', 'VoidScans', 'https://void-scans.com')
 	AddWebsiteModule('752cda75b5e24f6ab4256079c564eba2', 'OmegaScans', 'https://omegascans.org')
 	AddWebsiteModule('e8ef6a7e02bd405785d504b60d5ee55e', 'ImperfectComic', 'https://imperfectcomic.org')
+	AddWebsiteModule('3b9b01c5fde14e00a540dda2c60ada36', 'NightScans', 'https://nightscans.org')
 
 	cat = 'Spanish'
 	AddWebsiteModule('41294a121062494489adfa601c442ef8', 'LegionAsia', 'https://legionasia.com')
