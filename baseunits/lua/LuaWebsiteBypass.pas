@@ -143,6 +143,8 @@ function WebsiteBypassRequest(const AHTTP: THTTPSendThread; const AMethod, AURL:
 var
   localLuaHandler,
   L: TLuaHandler;
+  host, link: String;
+  m: TModuleContainer;
 begin
   if (checkantibot_dump = nil) or (websitebypass_dump = nil) then
   begin
@@ -170,6 +172,13 @@ begin
 
       try
         Result := WebsiteBypassGetAnswer(L, AMethod, AURL);
+        if Result then
+          SplitURL(AURL, @host, @link);
+          host := LowerCase(host);
+          m := Modules.LocateModuleByHost(Host);
+          m.Settings.Enabled := True;
+          m.Settings.HTTP.Cookies := AHTTP.Cookies.Text;
+          m.Settings.HTTP.UserAgent := AHTTP.UserAgent;
       finally
         LeaveCriticalsection(AWebsiteBypass.Guardian);
       end;
