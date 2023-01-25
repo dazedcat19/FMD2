@@ -171,14 +171,16 @@ begin
       L.LoadObject('HTTP', AHTTP, @luaHTTPSendThreadAddMetaTable);
 
       try
+        SplitURL(AURL, @host, @link);
+        host := LowerCase(host);
+        m := Modules.LocateModuleByHost(Host);
+        m.Settings.HTTP.Cookies := '';
         Result := WebsiteBypassGetAnswer(L, AMethod, AURL);
         if Result then
-          SplitURL(AURL, @host, @link);
-          host := LowerCase(host);
-          m := Modules.LocateModuleByHost(Host);
           m.Settings.Enabled := True;
-          m.Settings.HTTP.Cookies := AHTTP.Cookies.Text;
+          m.Settings.HTTP.Cookies := StringReplace(AHTTP.Cookies.Text, #13#10, ';', [rfReplaceAll, rfIgnoreCase]);
           m.Settings.HTTP.UserAgent := AHTTP.UserAgent;
+          Result := AHTTP.HTTPRequest(AMethod, AURL);
       finally
         LeaveCriticalsection(AWebsiteBypass.Guardian);
       end;

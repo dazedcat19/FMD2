@@ -3537,6 +3537,7 @@ object MainForm: TMainForm
                 Height = 23
                 Top = 31
                 Width = 52
+                MaxValue = 5
                 MinValue = -1
                 ParentFont = False
                 ParentShowHint = False
