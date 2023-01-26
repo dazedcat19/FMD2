@@ -177,10 +177,16 @@ begin
         m.Settings.HTTP.Cookies := '';
         Result := WebsiteBypassGetAnswer(L, AMethod, AURL);
         if Result then
+        begin
           m.Settings.Enabled := True;
           m.Settings.HTTP.Cookies := StringReplace(AHTTP.Cookies.Text, #13#10, ';', [rfReplaceAll, rfIgnoreCase]);
           m.Settings.HTTP.UserAgent := AHTTP.UserAgent;
-          Result := AHTTP.HTTPRequest(AMethod, AURL);
+          if TLuaWebsiteModule(TModuleContainer(m).LuaModule).Storage['reload'].Contains('true') then
+          begin
+            AHTTP.Reset();
+            Result := AHTTP.HTTPRequest(AMethod, AURL);
+          end;
+        end;
       finally
         LeaveCriticalsection(AWebsiteBypass.Guardian);
       end;

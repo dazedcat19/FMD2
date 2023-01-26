@@ -213,7 +213,7 @@ function _m.solveWithWebDriver2(self, url, headless)
 	
 	if not parsed_result then
 		LOGGER.SendError("WebsitBypass[cloudflare]: webdriver2 failed to parse response\r\n" .. url)
-		return 0
+		return -1
 	end
 	
 	HTTP.FollowRedirection = false
@@ -273,6 +273,12 @@ function fileExist(s)
 	return r
 end
 
+function creatReloadStrings()
+	local stringTable = {}
+	table.insert(stringTable, "Error code <span>1020</span>")
+	return stringTable
+end
+
 function _m.bypass(self, METHOD, URL)
 	duktape = require 'fmd.duktape'
 	crypto = require 'fmd.crypto'
@@ -303,6 +309,7 @@ function _m.bypass(self, METHOD, URL)
 	local result = 0
 	local maxretry = 3
 	if HTTP.RetryCount > maxretry then maxretry = HTTP.RetryCount end
+	MODULE.Storage["reload"] = "false"
 
 	while maxretry > 0 do
 		result = self:solveChallenge(URL)
@@ -319,14 +326,17 @@ function _m.bypass(self, METHOD, URL)
 	HTTP.RetryCount = maxretry
 
 	if result == 2 then -- need to reload
+		HTTP.Request(METHOD, URL)
+		--x = CreateTXQuery(HTTP.Document)
+		--print("-Cookies: " .. HTTP.Cookies.Text)
+		--print("-Body: " .. x.XPathString('//body'))
 		if customcloudflare then
-			--HTTP.Request(METHOD, URL)
-			--x = CreateTXQuery(HTTP.Document)
-			--print("-Cookies: " .. HTTP.Cookies.Text)
-			--print("-Body: " .. x.XPathString('//body'))
-		end
-		if URL:find(".jpg") == 0 and URL:find(".png") == 0 and URL:find(".gif") == 0 and URL:find(".webp") == 0 then
-			return HTTP.Request(METHOD, URL)
+			local response = HTTP.Document.ToString()
+			for k, v in pairs(creatReloadStrings()) do
+				if response:find(v) then
+					MODULE.Storage["reload"] = "true"
+				end
+			end
 		end
 	end
 	return (result >= 1)
