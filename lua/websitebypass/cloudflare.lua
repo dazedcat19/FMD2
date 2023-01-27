@@ -275,7 +275,7 @@ end
 
 function creatReloadStrings()
 	local stringTable = {}
-	table.insert(stringTable, "Error code <span>1020</span>")
+	table.insert(stringTable, "Attention Required! | Cloudflare")
 	return stringTable
 end
 
