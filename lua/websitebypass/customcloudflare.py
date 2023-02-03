@@ -9,7 +9,7 @@ def installPip(log=print):
     """
     log("Installing pip, the standard Python Package Manager, first")
     from os     import remove
-    from urllib import urlretrieve
+    from urllib.request import urlretrieve
     urlretrieve("https://bootstrap.pypa.io/get-pip.py", "get-pip.py")
     call(["python", "get-pip.py"])
 
@@ -32,7 +32,7 @@ def getPip(log=print):
     if not isfile(pipPath):
         installPip(log)
         if not isfile(pipPath):
-            raise("Failed to find or install pip!")
+            raise RuntimeError("Failed to find or install pip!")
     return pipPath
 
 def installIfNeeded(moduleName, nameOnPip=None, notes="", log=print):
@@ -43,6 +43,8 @@ def installIfNeeded(moduleName, nameOnPip=None, notes="", log=print):
     if moduleName not in [tuple_[1] for tuple_ in iter_modules()]:
         log("Installing " + moduleName + notes + " Library for Python")
         call([getPip(log), "install", nameOnPip if nameOnPip else moduleName])
+    if moduleName == "playwright":
+        call("playwright install")
 
 import sys
 import json

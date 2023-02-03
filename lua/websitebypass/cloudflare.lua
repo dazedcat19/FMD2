@@ -192,6 +192,11 @@ function _m.solveWithWebDriver2(self, url, headless)
 	print(string.format('WebsitBypass[cloudflare]: using webdriver "%s" "%s" "%s" "%s"', customwebdriver_exe, py_customcloudflare, rooturl, headless))
 	_status, result, _errors = require("fmd.subprocess").RunCommandHide(customwebdriver_exe, py_customcloudflare, rooturl, headless)
 	
+	if _errors and not _errors == "" then
+		LOGGER.SendError("WebsitBypass[cloudflare]: " .. _errors)
+		return -1
+	end
+	
 	if result:find("cf challenge fail") then
 		print(result)
 		return 0
