@@ -393,6 +393,7 @@ function Init()
 	AddWebsiteModule('397614b7e4ec4a67b455f5b2d2cd94ab', 'ManhuaManhwa', 'https://manhuamanhwa.com')
 	AddWebsiteModule('0c031b0c3a154d65b085c91a1732ffdb', 'MangaRolls', 'https://mangarolls.com')
 	AddWebsiteModule('4900e6bfedcf45a08a5407436ddd78c2', 'MangaKing', 'https://mangaking.net')
+	AddWebsiteModule('ba20dccc488d4abbab4f672937fe4b5e', 'AstraScans', 'https://astrascans.com')
 
 	cat = 'French'
 	AddWebsiteModule('41867fa36f2f49959df9fef8aa53ffb5', 'WakaScan', 'https://wakascan.com')
