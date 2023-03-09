@@ -317,6 +317,7 @@ function _m.bypass(self, METHOD, URL)
 	MODULE.Storage["reload"] = "false"
 
 	while maxretry > 0 do
+		maxretry = maxretry - 1
 		result = self:solveChallenge(URL)
 		if result ~= 0 then break end
 		if HTTP.Terminated then break end
