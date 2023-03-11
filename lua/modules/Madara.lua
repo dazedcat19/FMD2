@@ -547,5 +547,4 @@ function Init()
 	AddWebsiteModule('123fa1ed637e469b8cb4a154965a6423', 'DragonTranslation', 'https://dragontranslation.com')
 	AddWebsiteModule('123fa1ed637aswet8cb4a154965a6423', 'LeerManga', 'https://leermanga.net')
 	AddWebsiteModule('123fa1edherenscansa4a154965a6423', 'HerenScan', 'https://herenscan.com')
-	AddWebsiteModule('760d177b1f6d4763a08971c0c1b5572b', 'OlympusScanlation', 'https://olympusscanlation.com')
 end
