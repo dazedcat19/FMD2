@@ -93,7 +93,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                = '7d12ff8d54d44137adbdf8fbe6f49bee'
 	m.Name              = 'GuyaMoe'
-	m.RootURL           = 'https://guya.moe'
+	m.RootURL           = 'https://guya.cubari.moe'
 	m.Category          = 'English'
 	m.OnGetNameAndLink  = 'GetNameAndLink'
 	m.OnGetInfo         = 'GetInfo'
