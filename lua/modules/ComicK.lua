@@ -1,11 +1,11 @@
-local API_URL = 'https://api.comick.fun'
-local CDN_URL = 'https://meo.comick.pictures'
+local API_URL = 'https://api.comick.app'
+local CDN_URL = 'https://meo3.comick.pictures'
 
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                         = '214e30f0afec420cafddefe22b4d973c'
 	m.Name                       = 'ComicK'
-	m.RootURL                    = 'https://comick.fun'
+	m.RootURL                    = 'https://comick.app'
 	m.Category                   = 'English'
 	m.OnGetNameAndLink           = 'GetNameAndLink'
 	m.OnGetInfo                  = 'GetInfo'
@@ -37,7 +37,7 @@ function Init()
 end
 
 function GetNameAndLink()
-	if HTTP.GET(API_URL .. '/search?page=' .. (URL + 1) .. '&sort=uploaded') then
+	if HTTP.GET(API_URL .. '/v1.0/search/?page=' .. (URL + 1) .. '&sort=uploaded') then
 		local x = CreateTXQuery(HTTP.Document)
 		if x.XPathString('json(*)().title') == '' then return no_error end
 		local v for v in x.XPath('json(*)()').Get() do
@@ -67,21 +67,22 @@ function GetInfo()
 		if demographic ~= '' then demographic = demographic .. ', ' end
 		MANGAINFO.Genres     = demographic .. x.XPathStringAll('json(*).genres().name')
 
-		local mangaId   = x.XPathString('json(*).comic.id')
+		local mangaId   = x.XPathString('json(*).comic.hid')
 		local optgroup  = MODULE.GetOption('showscangroup')
 		local optlang   = MODULE.GetOption('lang')
 		local optlangid = FindLanguage(optlang)
 		local page = 1
+		local langparam
+
+		if optlangid == nil then langparam = '' else langparam = '&lang=' .. optlangid end
+
 		while true do
-			if HTTP.GET(API_URL .. '/comic/' .. mangaId .. '/chapter?page=' .. tostring(page)) then
+			if HTTP.GET(API_URL .. '/comic/' .. mangaId .. '/chapters?page=' .. tostring(page) .. langparam) then
 				local x = CreateTXQuery(HTTP.Document)
 				if x.XPathString('json(*).chapters().title') == '' then break end
 				local chapters = x.XPath('json(*).chapters()')
 				for ic = 1, chapters.Count do
 					local ignore = false
-
-					local language = x.XPathString('lang', chapters.Get(ic))
-					if (optlangid ~= language) and (optlang > 0) then ignore = true end
 
 					local groupids = x.XPath('json(*).chapters()[' .. ic .. '].group_name()')
 					local groups = {}
