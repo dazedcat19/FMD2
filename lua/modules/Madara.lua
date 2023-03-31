@@ -451,6 +451,7 @@ function Init()
 	AddWebsiteModule('0259ab177b494d67a2945321ff50b8bf', 'HFusionScanlation', 'https://h.fusionscanlation.com')
 	AddWebsiteModule('c59285fdab344262bb6ae8a6a2687277', 'TecnoScan', 'https://tecnoscann.com')
 	AddWebsiteModule('5ad6ebfe79f04b3b954829180052cb9e', 'SamuraiScan', 'https://samuraiscan.com')
+	AddWebsiteModule('a29b6757649f4683b72d2e669d9fbffc', 'MHscans', 'https://mhscans.com/')
 
 	cat = 'Webcomics'
 	AddWebsiteModule('2e6196018ffc4c92bc7ff332e41d52d4', 'ManyToon', 'https://manytoon.me')
