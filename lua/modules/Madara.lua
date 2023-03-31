@@ -396,6 +396,7 @@ function Init()
 	AddWebsiteModule('ba20dccc488d4abbab4f672937fe4b5e', 'AstraScans', 'https://astrascans.com')
 	AddWebsiteModule('e84127c9687d4bed8658922ee9feb9a1', 'Anshascans', 'https://anshscans.org')
 	AddWebsiteModule('a09b6757649f4683b72d2e669d9fbffc', 'ParagonScans', 'https://paragonscans.com')
+	AddWebsiteModule('a19b6757649f4683b72d2e669d9fbffc', 'Mangaeffect', 'https://mangaeffect.com')
 
 	cat = 'French'
 	AddWebsiteModule('41867fa36f2f49959df9fef8aa53ffb5', 'WakaScan', 'https://wakascan.com')
