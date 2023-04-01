@@ -329,7 +329,7 @@ function GetNameAndLink()
 			['ff17b64aa945403dae45706753235872'] = '/latest-update/?list', -- KomikNesia
 			['5474e31b24ab4908a5258176d1f24f67'] = '/komik/list-mode/', -- ManhwaTaro
 			['f794803973af4e5daab21683d4de873a'] = '/series/list-mode/', -- LuminousScans
-			['edf6b037808442508a3aaeb1413699bf'] = '/daftar-komik/?list', -- KomikIndoID
+			['edf6b037808442508a3aaeb1413699bf'] = '/daftar-manga/?list', -- KomikIndoID
 			['b09c78407f8046bf94cb587541d4cb45'] = '/series/list-mode/' -- ManhwaIndo
 		}
 		local dirurl = '/manga/list-mode/'
@@ -420,7 +420,7 @@ function Init()
 	AddWebsiteModule('5474e31b24ab4908a5258176d1f24f67', 'ManhwaTaro', 'https://manhwataro.xyz')
 	AddWebsiteModule('180a930232614f81816720cefeea7954', 'KoMBatch', 'https://kombatch.com')
 	AddWebsiteModule('4657d79e63dc4a9082a46b7981bde1b9', 'MangaBoruto', 'https://mangaboruto.xyz')
-	AddWebsiteModule('edf6b037808442508a3aaeb1413699bf', 'KomikIndoID', 'https://komikindo.id')
+	AddWebsiteModule('edf6b037808442508a3aaeb1413699bf', 'KomikIndoID', 'https://komikindo.pro')
 	AddWebsiteModule('55cefd61a4144b56874108a666857ff0', 'WorldRomanceTranslation', 'https://wrt.my.id')
 	AddWebsiteModule('b09c78407f8046bf94cb587541d4cb45', 'ManhwaIndo', 'https://manhwaindo.id')
 
