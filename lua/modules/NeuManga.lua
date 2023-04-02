@@ -2,25 +2,18 @@ function GetInfo()
 	MANGAINFO.URL=MaybeFillHost(MODULE.RootURL,URL)
 	if HTTP.GET(MANGAINFO.URL) then
 		local x=CreateTXQuery(HTTP.Document)
-		if MANGAINFO.Title == '' then
-			MANGAINFO.Title=x.XPathString('//h1[@itemprop="headline"]')
-			MANGAINFO.Title=MANGAINFO.Title:gsub('^Baca Manga','')
-			MANGAINFO.Title=MANGAINFO.Title:gsub('Bahasa Indonesia$','')
-			MANGAINFO.Title=MANGAINFO.Title:gsub('Manga','')
-			MANGAINFO.Title=MANGAINFO.Title:gsub('^Manga','')
-			MANGAINFO.Title=MANGAINFO.Title:gsub('Manga$','')
-		end
-		MANGAINFO.CoverLink=MaybeFillHost(MODULE.RootURL, x.XPathString('//img[@class="imagemg"]/@src'))
-		MANGAINFO.Status = MangaInfoStatusIfPos(x.XPathString('//span[@class="hentry"]/span[contains(., "Status")]/a'))
-		MANGAINFO.Authors = x.XPathStringAll('//span[@class="hentry"]/span[contains(., "Author")]/a')
-		MANGAINFO.Artists = x.XPathStringAll('//span[@class="hentry"]/span[contains(., "Artist")]/a')
-		MANGAINFO.Genres = x.XPathStringAll('//span[@class="hentry"]/span[contains(., "Genre")]/a')
-		MANGAINFO.Summary = x.XPathStringAll('//div[contains(@class,"summary")]/text()', '')
-		local v=x.XPath('//div[@id="scans"]//div[@class="item-content"]/a')
+		MANGAINFO.Title=x.XPathString('//div[@class="series-title"]/h2')
+		MANGAINFO.CoverLink=MaybeFillHost(MODULE.RootURL, x.XPathString('//div[@class="series-thumb"]/img/@src'))
+		MANGAINFO.Status = MangaInfoStatusIfPos(x.XPathString('//div[@class="series-infoz block"]/span[@class="status Ongoing" or @class="status Completed"]'))
+		MANGAINFO.Authors = x.XPathString('//ul[@class="series-infolist"]/li[contains(b, "Author")]/span')
+		MANGAINFO.Artists = x.XPathString('//ul[@class="series-infolist"]/li[contains(b, "Artist")]/span')
+		MANGAINFO.Genres = x.XPathStringAll('//div[@class="series-genres"]/a')
+		MANGAINFO.Summary = x.XPathStringAll('//div[@class="series-synops"]/p')
+		local v=x.XPath('//div[@class="series-chapter"]/ul[@class="series-chapterlist"]//a')
 		for i=1, v.Count do
 				local v1=v.Get(i)
 				MANGAINFO.ChapterLinks.Add(v1.GetAttribute('href'))
-				MANGAINFO.ChapterNames.Add(x.XPathString('h3', v1))
+				MANGAINFO.ChapterNames.Add(x.XPathString('span', v1))
 		end
 		MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 		return no_error
@@ -32,11 +25,10 @@ end
 function GetPageNumber()
 	TASK.PageLinks.Clear()
 	TASK.PageNumber = 0
-	HTTP.Cookies.Values['age_confirmed'] = '1'
-	local u = MaybeFillHost(MODULE.RootURL,URL):gsub('/+$', '') .. '/_/1'
+	local u = MaybeFillHost(MODULE.RootURL,URL)
 	if HTTP.GET(u) then
 		local x=CreateTXQuery(HTTP.Document)
-		x.XPathStringAll('//img[@class="imagechap"]/@data-src', TASK.PageLinks)
+		x.XPathStringAll('//div[@class="reader-area"]//img/@src', TASK.PageLinks)
 		return true
 	else
 		return false
@@ -44,9 +36,9 @@ function GetPageNumber()
 end
 
 function GetNameAndLink()
-	if HTTP.GET(MODULE.RootURL..'/manga') then
+	if HTTP.GET(MODULE.RootURL..'/manga-list') then
 		x=CreateTXQuery(HTTP.Document)
-		x.XPathHREFAll('//div[@class="alplist"]/li/a', LINKS, NAMES)
+		x.XPathHREFAll('//div[@class="container"]/div[@class="mangalist-blc"]//li/a', LINKS, NAMES)
 		return no_error
 	else
 		return net_problem
@@ -58,7 +50,7 @@ function Init()
 	m.ID = '43b1be881e5c4661b984b84ba8f208a6'
 	m.Category='Indonesian'
 	m.Name='NeuManga'
-	m.RootURL='https://neumanga.tv'
+	m.RootURL='https://neumanga.net'
 	m.OnGetInfo='GetInfo'
 	m.OnGetPageNumber='GetPageNumber'
 	m.OnGetNameAndLink='GetNameAndLink'
