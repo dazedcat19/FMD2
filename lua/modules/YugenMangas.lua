@@ -3,21 +3,36 @@
 ----------------------------------------------------------------------------------------------------
 
 function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = 'ac42a85566244b7e836679491ce679e6'
-	m.Name                     = 'YugenMangas'
-	m.RootURL                  = 'https://yugenmangas.com'
-	m.Category                 = 'Spanish'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
+	function AddWebsiteModule(id, name, url)
+		local m = NewWebsiteModule()
+		m.ID                       = id
+		m.Name                     = name
+		m.RootURL                  = url
+		m.Category                 = 'Spanish'
+		m.OnGetNameAndLink         = 'GetNameAndLink'
+		m.OnGetInfo                = 'GetInfo'
+		m.OnGetPageNumber          = 'GetPageNumber'
+	end
+	AddWebsiteModule('ac42a85566244b7e836679491ce679e6', 'YugenMangas', 'https://yugenmangas.com')
+	AddWebsiteModule('ac42a85566244b7e836679491ce679ey', 'Punuprojects', 'https://punuprojects.com')
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
+local API_URL = 'https://api.yugenmangas.com'
 
-API_URL = 'https://api.yugenmangas.com'
+function getapi(website)
+	local apis  = {
+		['YugenMangas']        = API_URL,
+		['Punuprojects']       = 'https://api.punuprojects.com'
+	}
+	if apis[website] ~= nil then
+		return apis[website]
+	else
+		return API_URL
+	end
+end
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -26,7 +41,7 @@ API_URL = 'https://api.yugenmangas.com'
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
 	HTTP.MimeType = 'application/json'
-	if not HTTP.POST(API_URL .. '/series/querysearch', '{"order":"asc", "type":"Comic"}') then return net_problem end
+	if not HTTP.POST(getapi(MODULE.Name) .. '/series/querysearch', '{"order":"asc", "type":"Comic"}') then return net_problem end
 
 	local x = CreateTXQuery(HTTP.Document)
 	local v for v in x.XPath('json(*)()').Get() do
@@ -39,12 +54,12 @@ end
 
 -- Get info and chapter list for current manga.
 function GetInfo()
-	local u = API_URL .. '/series/' .. URL:match('/series/(.-)$')
+	local u = getapi(MODULE.Name) .. '/series/' .. URL:match('/series/(.-)$')
 	if not HTTP.GET(u) then return net_problem end
 
 	local x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Title     = x.XPathString('json(*).title')
-	MANGAINFO.CoverLink = API_URL .. '/' .. x.XPathString('json(*).thumbnail')
+	MANGAINFO.CoverLink = getapi(MODULE.Name) .. '/' .. x.XPathString('json(*).thumbnail')
 	MANGAINFO.Authors   = x.XPathString('json(*).author')
 	MANGAINFO.Genres    = x.XPathStringAll('json(*).tags().name')
 	MANGAINFO.Summary   = x.XPathString('json(*).description')
@@ -59,11 +74,11 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	if not HTTP.GET(API_URL .. '/series/chapter' .. URL) then return net_problem end
+	if not HTTP.GET(getapi(MODULE.Name) .. '/series/chapter' .. URL) then return net_problem end
 
 	local x = CreateTXQuery(HTTP.Document)
 	local v for v in x.XPath('json(*).content.images()').Get() do
-		TASK.PageLinks.Add(API_URL .. '/' .. v.ToString())
+		TASK.PageLinks.Add(v.ToString())
 	end
 
 	return no_error
