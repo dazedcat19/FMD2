@@ -232,6 +232,10 @@ function GetPageNumber()
 			x.XPathStringAll('//*[@id="Baca_Komik"]//img/@src', TASK.PageLinks)
 		elseif MODULE.ID == 'ec1a1ad5301f414592f0ba0402024813' then -- Doujindesu
 			x.XPathStringAll('//div[@class="main"]//img/@src', TASK.PageLinks)
+		elseif MODULE.ID == '61e0a07a01ea45cf8909a2cfc5442659' then -- senpaiediciones
+			local fixedjson = GetBetween('run(', ')', x.XPathString('//script[contains(., "ts_reader")]')):gsub('!0','true'):gsub('!1','false')
+			x.ParseHTML(fixedjson)
+			x.XPathStringAll('json(*).sources()[1].images()', TASK.PageLinks)			
 		else
 			-- common
 			x.ParseHTML(GetBetween('run(', ');', x.XPathString('//script[contains(., "ts_reader")]')))
