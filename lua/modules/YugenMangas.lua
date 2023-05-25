@@ -78,7 +78,11 @@ function GetPageNumber()
 
 	local x = CreateTXQuery(HTTP.Document)
 	local v for v in x.XPath('json(*).content.images()').Get() do
-		TASK.PageLinks.Add(v.ToString())
+		if string.find(v.ToString(), "yugenmangas.com") then
+			TASK.PageLinks.Add(v.ToString())
+		else
+			TASK.PageLinks.Add(getapi(MODULE.Name) .. '/' .. v.ToString())
+		end
 	end
 
 	return no_error
