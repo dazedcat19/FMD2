@@ -328,7 +328,6 @@ function GetNameAndLink()
 			['009bf49bc17a4a2a8e1c79cce6867651'] = '/manga/?list', -- KomikIndo
 			['56f905ea80e24c4f8bbc37e05de2ad9a'] = '/manga/?list', -- Mangakyo
 			['0e45db2650604f74a0caeb7c1d69a749'] = '/manga/?list', -- MangaSWAT
-			['41294a121062494489adfa601c442ef8'] = '/manga-list/?list', -- LegionAsia
 			['b53534f8443e420ea088594c53a3ff39'] = '/series/list-mode', -- Manhwaland
 			['ff17b64aa945403dae45706753235872'] = '/latest-update/?list', -- KomikNesia
 			['5474e31b24ab4908a5258176d1f24f67'] = '/komik/list-mode/', -- ManhwaTaro
@@ -457,7 +456,6 @@ function Init()
 	AddWebsiteModule('e5fb41d65454402499e5cadcf18cd1c2', 'AnigliScans', 'https://anigliscans.com')
 
 	cat = 'Spanish'
-	AddWebsiteModule('41294a121062494489adfa601c442ef8', 'LegionAsia', 'https://legionasia.com')
 	AddWebsiteModule('363066add92f4043b39d2009b442ab32', 'PhoenixFansub', 'https://phoenixfansub.com')
 	AddWebsiteModule('9f756fcbfa114ea4a9abb578004edf31', 'SkyMangas', 'https://skymangas.com')
 	AddWebsiteModule('c8e02b7aaac1412180db86374fc799a8', 'ManhwasNet', 'https://manhwas.net')
