@@ -2,16 +2,18 @@ local alphalist = '#ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 function GetNameAndLink()
 	local s, i, j, x, v
+	print('here')
 	if MODULE.CurrentDirectoryIndex == 0 then
 		s = '0-9'
 	else
 		i = MODULE.CurrentDirectoryIndex + 1
 		s = alphalist:sub(i, i)
 	end
+	print(MODULE.RootURL .. '/category/' .. s .. '_latest_' .. (URL + 1) .. '.html')
 	if HTTP.GET(MODULE.RootURL .. '/category/' .. s .. '_latest_' .. (URL + 1) .. '.html') then
 		i = 1
 		x = CreateTXQuery(HTTP.Document)
-		for v in x.XPath('//*[@class="page-all-count"]/text()').Get() do
+		for v in x.XPath('//*[@class="page-all-count"]').Get() do
 			j = tonumber(v.ToString()) or 1
 			if j > i then i = j end
 		end
