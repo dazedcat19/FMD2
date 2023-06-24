@@ -28,8 +28,8 @@ function GetNameAndLink()
 	if not HTTP.GET(MODULE.RootURL .. DirectoryPagination .. '?page=' .. (URL + 1)) then return net_problem end
 
 	local x = CreateTXQuery(HTTP.Document)
-	if x.XPathString('//div[contains(@class, "p-3")]/a[2]') == '' then return no_error end
-	x.XPathHREFAll('//div[contains(@class, "p-3")]/a[2]', LINKS, NAMES)
+	if x.XPathString('//li//a[1]') == '' then return no_error end
+	x.XPathHREFAll('//li//a[1]', LINKS, NAMES)
 	UPDATELIST.CurrentDirectoryPageNumber = UPDATELIST.CurrentDirectoryPageNumber + 1
 
 	return no_error
@@ -40,15 +40,15 @@ function GetInfo()
 	if not HTTP.GET(MaybeFillHost(MODULE.RootURL, URL)) then return net_problem end
 
 	local x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//div[contains(@class, "container")]//h1')
-	MANGAINFO.CoverLink = x.XPathString('//div[contains(@class, "overflow-hidden")]/img/@src')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@aria-label="card"]//div[./dt="Source Status"]/dd'))
-	MANGAINFO.Summary   = x.XPathString('//div[@aria-label="card"]//p')
+	MANGAINFO.Title     = x.XPathString('//title')
+	MANGAINFO.CoverLink = x.XPathString('//div[@aria-label="card"]//img/@src')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//section/div[@aria-label="card"]//div[./dt="Release Status"]/dd'))
+	MANGAINFO.Summary   = x.XPathString('//section/div[@aria-label="card"]//p[1]')
 
 	local p = 1
-	local pages = tonumber(x.XPathString('//span[contains(@class, "z-0")]/span[last()-1]/button')) or 1
+	local pages = tonumber(x.XPathString('//nav//span[last()-1]/button')) or 1
 	while true do
-		local v for v in x.XPath('//div[contains(@class, "mt-6")]//ul[@role="list"]//a').Get() do
+		local v for v in x.XPath('//li[contains(@*, "comic-chapter-list")]/a').Get() do
 			MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
 			MANGAINFO.ChapterNames.Add(x.XPathString('(.//p)[1]', v))
 		end
