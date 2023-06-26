@@ -100,6 +100,9 @@ function Modules.Madara()
 				end
 			elseif MODULE.ID == '287f665620664e468d4e05f5d76f5a43' then -- ResetScans
 				x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/div/a[1]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+			elseif MODULE.ID == 'df435a30cf8a44cb8e684e99d1b84b5d' then -- TempleScan
+				MANGAINFO.Title   = x.XPathString('//div[@id="mangazinho"]/h1')
+				MANGAINFO.Summary = x.XPathString('//div[contains(./h5, "Summary")]//p')
 			else
 				x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 			end
@@ -217,12 +220,19 @@ function Modules.Madara()
 	function Madara:getnameandlink()
 		local perpage = '1500'
 		local q = 'action=madara_load_more&page='.. URL ..'&template=madara-core%2Fcontent%2Fcontent-archive&vars%5Bpost_type%5D=wp-manga&vars%5Berror%5D=&vars%5Bm%5D=&vars%5Bp%5D=0&vars%5Bpost_parent%5D=&vars%5Bsubpost%5D=&vars%5Bsubpost_id%5D=&vars%5Battachment%5D=&vars%5Battachment_id%5D=0&vars%5Bname%5D=&vars%5Bstatic%5D=&vars%5Bpagename%5D=&vars%5Bpage_id%5D=0&vars%5Bsecond%5D=&vars%5Bminute%5D=&vars%5Bhour%5D=&vars%5Bday%5D=0&vars%5Bmonthnum%5D=0&vars%5Byear%5D=0&vars%5Bw%5D=0&vars%5Bcategory_name%5D=&vars%5Btag%5D=&vars%5Bcat%5D=&vars%5Btag_id%5D=&vars%5Bauthor%5D=&vars%5Bauthor_name%5D=&vars%5Bfeed%5D=&vars%5Btb%5D=&vars%5Bpaged%5D=1&vars%5Bmeta_key%5D=&vars%5Bmeta_value%5D=&vars%5Bpreview%5D=&vars%5Bs%5D=&vars%5Bsentence%5D=&vars%5Btitle%5D=&vars%5Bfields%5D=&vars%5Bmenu_order%5D=&vars%5Bembed%5D=&vars%5Bignore_sticky_posts%5D=false&vars%5Bsuppress_filters%5D=false&vars%5Bcache_results%5D=true&vars%5Bupdate_post_term_cache%5D=true&vars%5Blazy_load_term_meta%5D=true&vars%5Bupdate_post_meta_cache%5D=true&vars%5Bposts_per_page%5D='.. perpage ..'&vars%5Bnopaging%5D=false&vars%5Bcomments_per_page%5D=50&vars%5Bno_found_rows%5D=false&vars%5Border%5D=ASC&vars%5Borderby%5D=post_title&vars%5Btemplate%5D=archive&vars%5Bsidebar%5D=full&vars%5Bpost_status%5D=publish'
+		local chapter_path = '//div[contains(@class, "post-title")]/*[self::h5 or self::h3]/a'
+
+		if MODULE.ID == 'df435a30cf8a44cb8e684e99d1b84b5d' then -- TempleScan
+			q = 'action=madara_load_more&page='.. URL ..'&template=madara-core%2Fcontent%2Fcontent-archive&vars%5Bpost_type%5D=wp-manga'
+			chapter_path = '//div[contains(@class, "series-box")]/a'
+		end
+
 		HTTP.MimeType = 'application/x-www-form-urlencoded; charset=UTF-8'
 		if HTTP.POST(MODULE.RootURL .. '/wp-admin/admin-ajax.php', q) then
 			if HTTP.Headers.Values['Content-Length'] == '0' then return no_error end
 			local x = CreateTXQuery(HTTP.Document)
-			if x.XPath('//div[contains(@class, "post-title")]/*[self::h5 or self::h3]/a').Count == 0 then return no_error end
-			x.XPathHREFAll('//div[contains(@class, "post-title")]/*[self::h5 or self::h3]/a', LINKS, NAMES)
+			if x.XPath(chapter_path).Count == 0 then return no_error end
+			x.XPathHREFAll(chapter_path, LINKS, NAMES)
 			UPDATELIST.CurrentDirectoryPageNumber = UPDATELIST.CurrentDirectoryPageNumber + 1
 			return no_error
 		else
@@ -396,6 +406,7 @@ function Init()
 	AddWebsiteModule('e84127c9687d4bed8658922ee9feb9a1', 'Anshascans', 'https://anshscans.org')
 	AddWebsiteModule('a09b6757649f4683b72d2e669d9fbffc', 'ParagonScans', 'https://paragonscans.com')
 	AddWebsiteModule('a19b6757649f4683b72d2e669d9fbffc', 'Mangaeffect', 'https://mangaeffect.com')
+	AddWebsiteModule('df435a30cf8a44cb8e684e99d1b84b5d', 'TempleScan', 'https://templescan.net')
 
 	cat = 'French'
 	AddWebsiteModule('41867fa36f2f49959df9fef8aa53ffb5', 'WakaScan', 'https://wakascan.com')
