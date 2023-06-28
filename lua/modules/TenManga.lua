@@ -1,27 +1,20 @@
-local alphalist = '#ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+local AlphaList = '#ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+local DirectoryPagination = '/category/'
 
 function GetNameAndLink()
-	local s, i, j, x, v
-	print('here')
+	local s, i, x
 	if MODULE.CurrentDirectoryIndex == 0 then
 		s = '0-9'
 	else
 		i = MODULE.CurrentDirectoryIndex + 1
-		s = alphalist:sub(i, i)
+		s = AlphaList:sub(i, i)
 	end
-	print(MODULE.RootURL .. '/category/' .. s .. '_latest_' .. (URL + 1) .. '.html')
-	if HTTP.GET(MODULE.RootURL .. '/category/' .. s .. '_latest_' .. (URL + 1) .. '.html') then
-		i = 1
-		x = CreateTXQuery(HTTP.Document)
-		for v in x.XPath('//*[@class="page-all-count"]').Get() do
-			j = tonumber(v.ToString()) or 1
-			if j > i then i = j end
-		end
-		UPDATELIST.CurrentDirectoryPageNumber = i
-		x.XPathHREFTitleAll('//*[@class="book-right-td"]/a', LINKS, NAMES)
-	else
-		return net_problem
-	end
+	if not HTTP.GET(MODULE.RootURL .. DirectoryPagination .. s .. '_latest_' .. (URL + 1) .. '.html') then return net_problem end
+	x = CreateTXQuery(HTTP.Document)
+	x.XPathHREFTitleAll('//*[@class="book-right-td"]/a[1]', LINKS, NAMES)
+	UPDATELIST.CurrentDirectoryPageNumber = tonumber(x.XPathString('//*[@class="page-all-count"]'):match('(%d+) pages')) or 1
+
+	return no_error
 end
 
 function GetInfo()
@@ -41,8 +34,7 @@ function GetInfo()
 			MANGAINFO.ChapterLinks.Add(x.XPathString('a/@href', chapters.Get(ic)))
 			MANGAINFO.ChapterNames.Add(x.XPathString('.//td[@class="chp-idx"]/text()', chapters.Get(ic)))
 		end
-		MANGAINFO.ChapterLinks.Reverse()
-		MANGAINFO.ChapterNames.Reverse()
+		MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 		return no_error
 	else
 		return net_problem
@@ -60,8 +52,7 @@ end
 
 function GetImageURL()
 	if HTTP.GET(MaybeFillHost(MODULE.RootURL, URL):gsub('/+$', '-' .. (WORKID + 1))) then
-		local x = CreateTXQuery(HTTP.Document)
-		TASK.PageLinks[WORKID] = x.XPathString('//img[contains(@class, "manga_pic")]/@src')
+		TASK.PageLinks[WORKID] = CreateTXQuery(HTTP.Document).XPathString('//img[contains(@class, "manga_pic")]/@src')
 		return true
 	else
 		return false
@@ -78,5 +69,5 @@ function Init()
 	m.OnGetInfo                  = 'GetInfo'
 	m.OnGetPageNumber            = 'GetPageNumber'
 	m.OnGetImageURL              = 'GetImageURL'
-	m.TotalDirectory             = alphalist:len()
+	m.TotalDirectory             = AlphaList:len()
 end
