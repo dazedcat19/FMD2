@@ -21,6 +21,7 @@ end
 
 function getTitle(x)
 	local title = ''
+	if title == '' then title = x.XPathString('//h1[@class="entry-title"]') end
 	if title == '' then title = x.XPathString('//div[@class="thumb"]/img/@alt') end
 	if title == '' then title = x.XPathString('//*[@id="judul"]/h1') end
 	if title == '' then title = x.XPathString('//*[@id="judul_komik"]/h1') end
@@ -84,6 +85,7 @@ function getAuthors(x)
 	if authors == '' then authors = x.XPathString('//li[contains(b, "Author")]//following-sibling::span') end
 	if authors == '' then authors = x.XPathString('//div[@class="spe"]/span[contains(., "Author")]/substring-after(., "Author")') end
 	if authors == '' then authors = x.XPathString('//span[contains(., "Author")]/substring-after(., ":")') end
+	if authors == '' then authors = x.XPathString('//div[contains(., "Author")]/i') end
 	return authors
 end
 
@@ -92,6 +94,7 @@ function getArtists(x)
 	if artists == '' then artists = x.XPathString('//div[@class="spe"]//span[starts-with(.,"Artist")]/substring-after(.,":")') end
 	if artists == '' then artists = x.XPathString('//div[@class="fmed"]/b[starts-with(.,"Artist")]//following-sibling::span') end
 	if artists == '' then artists = x.XPathString('//td[contains(., "Artist")]/following-sibling::td') end
+	if artists == '' then artists = x.XPathString('//div[contains(., "Artist")]/i') end
 	return artists
 end
 
@@ -137,6 +140,7 @@ function getStatus(x)
 	if status == '' then status = x.XPathString('//td[contains(., "Status")]//following-sibling::td') end
 	if status == '' then status = x.XPathString('//div[@class="spe"]/span[starts-with(., "Status")]/substring-after(., "Status")') end
 	if status == '' then status = x.XPathString('//span[contains(., "Status")]/substring-after(., ":")') end
+	if status == '' then status = x.XPathString('//div[contains(., "Status")]/i') end
 	status = status:gsub('Finished', 'Completed'):gsub('Publishing', 'Ongoing')
 	status = status:gsub('Berjalan', 'Ongoing'):gsub('Tamat', 'Completed')
 	return status
@@ -144,6 +148,7 @@ end
 
 function getSummary(x)
 	local summary = ''
+	-- if summary == '' then summary = x.XPathString('//*[@itemprop="itemprop"]/script/text()'):match('var description = "(.-)"') end
 	if summary == '' then summary = x.XPathString('//div[@class="series-synops"]/string-join(.//text(),"")') end
 	if summary == '' then summary = x.XPathString('//div[@class="sinopsis"]/p') end
 	if summary == '' then summary = x.XPathString('//*[@class="desc"]/string-join(.//text(),"")') end
@@ -315,6 +320,7 @@ function GetNameAndLink()
 	else
 		-- full text based list
 		local dirs = {
+			['3593adad980d454abe489c42e7158032'] = '/series/', -- RealmScans
 			['49602ce189e844f49bfe78f7a1484dbe'] = '/manga-lists/', -- MangaKid
 			['ca571825056b4850bd3693e4e1437997'] = '/daftar-komik-manga-bahasa-indonesia.html', -- Mangacan
 			['fb5bd3aa549f4aefa112a8fe7547d2a9'] = '/manga-list/', -- MangaIndo
@@ -352,6 +358,7 @@ function GetNameAndLink()
 		if LINKS.Count == 0 then x.XPathHREFAll('//*[@class="ls4j"]//a', LINKS, NAMES) end
 		if LINKS.Count == 0 then x.XPathHREFAll('//*[@class="listttl"]//a', LINKS, NAMES) end
 		if LINKS.Count == 0 then x.XPathHREFAll('//*[@class="Manga" or @class="Manhwa"]/a', LINKS, NAMES) end
+		if LINKS.Count == 0 then x.XPathHREFAll('//*[@class="bsx"]/a', LINKS, NAMES) end
 	end
 	return no_error
 end
@@ -446,7 +453,7 @@ function Init()
 	AddWebsiteModule('275b85bdaafb47fdbc40f51d2bea99e8', 'TheApolloTeam', 'https://theapollo.team')
 	AddWebsiteModule('15fc68c57ce141f497b872af157d72ac', 'ShimadaScans', 'https://shimadascans.com')
 	AddWebsiteModule('f291e782dab54867a26a161934277177', 'ShiniScan', 'https://shiniscan.com')
-	AddWebsiteModule('3593adad980d454abe489c42e7158032', 'RealmScans', 'https://realmscans.com')
+	AddWebsiteModule('3593adad980d454abe489c42e7158032', 'RealmScans', 'https://realmscans.xyz')
 	AddWebsiteModule('a51ebfb8979045d589cd867c48a095c0', 'ManhwaFreak', 'https://manhwafreak.com')
 	AddWebsiteModule('f53627f1cad44232ac9dbc02a613aeb5', 'MajesticScans', 'https://majesticscans.com')
 	AddWebsiteModule('f01040ee781d4ae1929031419b97d2e0', 'VoidScans', 'https://void-scans.com')
