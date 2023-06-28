@@ -44,7 +44,7 @@ def installIfNeeded(moduleName, nameOnPip=None, notes="", log=print):
         log("Installing " + moduleName + notes + " Library for Python")
         call([getPip(log), "install", nameOnPip if nameOnPip else moduleName])
     if moduleName == "playwright":
-        call("playwright install")
+        call("python -m playwright install")
 
 import sys
 import json
