@@ -13,14 +13,14 @@ function Init()
 		m.OnGetInfo                = 'GetInfo'
 		m.OnGetPageNumber          = 'GetPageNumber'
 	end
-	AddWebsiteModule('ac42a85566244b7e836679491ce679e6', 'YugenMangas', 'https://yugenmangas.com')
+	AddWebsiteModule('ac42a85566244b7e836679491ce679e6', 'YugenMangas', 'https://yugenmangas.net')
 	AddWebsiteModule('ac42a85566244b7e836679491ce679ey', 'Punuprojects', 'https://punuprojects.com')
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
-local API_URL = 'https://api.yugenmangas.com'
+local API_URL = 'https://api.yugenmangas.net'
 
 function getapi(website)
 	local apis  = {
@@ -79,6 +79,8 @@ function GetPageNumber()
 	local x = CreateTXQuery(HTTP.Document)
 	local v for v in x.XPath('json(*).content.images()').Get() do
 		if string.find(v.ToString(), "yugenmangas.com") then
+			TASK.PageLinks.Add(v.ToString())
+	    	elseif string.find(v.ToString(), "yugenmangas.net") then
 			TASK.PageLinks.Add(v.ToString())
 		else
 			TASK.PageLinks.Add(getapi(MODULE.Name) .. '/' .. v.ToString())
