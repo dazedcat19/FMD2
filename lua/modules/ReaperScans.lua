@@ -40,7 +40,7 @@ function GetInfo()
 	if not HTTP.GET(MaybeFillHost(MODULE.RootURL, URL)) then return net_problem end
 
 	local x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//title')
+	MANGAINFO.Title     = x.XPathString('//*[contains(@class, "container")]//h1')
 	MANGAINFO.CoverLink = x.XPathString('//div[@aria-label="card"]//img/@src')
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//section/div[@aria-label="card"]//div[./dt="Release Status"]/dd'))
 	MANGAINFO.Summary   = x.XPathString('//section/div[@aria-label="card"]//p[1]')
