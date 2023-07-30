@@ -58,6 +58,7 @@ function getCover(x)
 	if img == '' then img = x.XPathString('//div[@class="komik_info-content-thumbnail"]/img/@src') end
 	if img == '' then img = x.XPathString('//img[@class="shadow"]/@src') end
 	if img == '' then img = x.XPathString('//div[@class="wrapper"]//figure[@class="thumbnail"]//img/@src') end
+	if img == '' then img = x.XPathString('//meta[@itemprop="image"]/@content') end
 	return img
 end
 
@@ -84,6 +85,7 @@ function getAuthors(x)
 	if authors == '' then authors = x.XPathString('//li[contains(b, "Author")]//following-sibling::span') end
 	if authors == '' then authors = x.XPathString('//div[@class="spe"]/span[contains(., "Author")]/substring-after(., "Author")') end
 	if authors == '' then authors = x.XPathString('//span[contains(., "Author")]/substring-after(., ":")') end
+	if authors == '' then authors = x.XPathString('//span[@itemprop="author"]') end
 	return authors
 end
 
@@ -92,6 +94,7 @@ function getArtists(x)
 	if artists == '' then artists = x.XPathString('//div[@class="spe"]//span[starts-with(.,"Artist")]/substring-after(.,":")') end
 	if artists == '' then artists = x.XPathString('//div[@class="fmed"]/b[starts-with(.,"Artist")]//following-sibling::span') end
 	if artists == '' then artists = x.XPathString('//td[contains(., "Artist")]/following-sibling::td') end
+	if artists == '' then artists = x.XPathString('//div[contains(., "Artist")]/i') end
 	return artists
 end
 
@@ -117,6 +120,7 @@ function getGenres(x)
 	if genre == '' then genre = x.XPathStringAll('//table[@class="inftable"]//tr[contains(td, "Genres")]/td/a') end
 	if genre == '' then genre = x.XPathStringAll('//div[@class="series-genres"]/a') end
 	if genre == '' then genre = x.XPathStringAll('//div[@class="tags"]/a') end
+	if genre == '' then genre = x.XPathStringAll('//a[@class="property-item"]') end
 	return genre
 end
 
@@ -137,6 +141,7 @@ function getStatus(x)
 	if status == '' then status = x.XPathString('//td[contains(., "Status")]//following-sibling::td') end
 	if status == '' then status = x.XPathString('//div[@class="spe"]/span[starts-with(., "Status")]/substring-after(., "Status")') end
 	if status == '' then status = x.XPathString('//span[contains(., "Status")]/substring-after(., ":")') end
+	if status == '' then status = x.XPathString('//span[contains(., "Status")]/strong') end
 	status = status:gsub('Finished', 'Completed'):gsub('Publishing', 'Ongoing')
 	status = status:gsub('Berjalan', 'Ongoing'):gsub('Tamat', 'Completed')
 	return status
@@ -185,6 +190,11 @@ function getMangas(x)
 		local v for v in x.XPath('//*[@id="chapterlist"]//*[@class="eph-num"]/a').Get() do
 			MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
 			MANGAINFO.ChapterNames.Add(x.XPathString('../span[@class="chapternum"]',v))
+		end
+	elseif MODULE.ID == '9660f56e5e7e4b89a3b2597ca8238b04' then -- MangaDemon
+		local v for v in x.XPath('//*[@class="chapter-list"]//a').Get() do
+			MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
+			MANGAINFO.ChapterNames.Add(x.XPathString('strong[@class="chapter-title"]',v))
 		end
 	else
 		-- common
@@ -236,6 +246,8 @@ function GetPageNumber()
 			local fixedjson = GetBetween('run(', ')', x.XPathString('//script[contains(., "ts_reader")]')):gsub('!0','true'):gsub('!1','false')
 			x.ParseHTML(fixedjson)
 			x.XPathStringAll('json(*).sources()[1].images()', TASK.PageLinks)			
+		elseif MODULE.ID == '9660f56e5e7e4b89a3b2597ca8238b04' then -- MangaDemon
+			x.XPathStringAll('//img[@class="imgholder"]/@src', TASK.PageLinks)
 		else
 			-- common
 			x.ParseHTML(GetBetween('run(', ');', x.XPathString('//script[contains(., "ts_reader")]')))
@@ -453,6 +465,7 @@ function Init()
 	AddWebsiteModule('752cda75b5e24f6ab4256079c564eba2', 'OmegaScans', 'https://omegascans.org')
 	AddWebsiteModule('3b9b01c5fde14e00a540dda2c60ada36', 'NightScans', 'https://nightscans.org')
 	AddWebsiteModule('e5fb41d65454402499e5cadcf18cd1c2', 'AnigliScans', 'https://anigliscans.com')
+	AddWebsiteModule('9660f56e5e7e4b89a3b2597ca8238b04', 'MangaDemon', 'https://mangademon.org')
 
 	cat = 'Spanish'
 	AddWebsiteModule('363066add92f4043b39d2009b442ab32', 'PhoenixFansub', 'https://phoenixfansub.com')
