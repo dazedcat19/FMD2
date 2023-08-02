@@ -45,7 +45,7 @@ function GetPageNumber()
 	if not HTTP.GET(u) then return net_problem end
 
 	x = CreateTXQuery(HTTP.Document)
-	x.XPathStringAll('//div[contains(@class, "entry-content")]/div//img/@src', TASK.PageLinks)
+	x.XPathStringAll('//div[contains(@class, "entry-content")]//div//img/@src', TASK.PageLinks)
 
 	return no_error
 end
