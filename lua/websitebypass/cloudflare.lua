@@ -188,20 +188,18 @@ function _m.solveWithWebDriver2(self, url, headless)
 	local rooturl = url:match('(https?://[^/]+)') or url
 
 	local result = nil
-	--print(string.format('WebsitBypass[cloudflare]: using webdriver "%s" "%s" "%s" "%s"', customwebdriver_exe, py_customcloudflare, rooturl, HTTP.UserAgent))
-	print(string.format('WebsitBypass[cloudflare]: using webdriver "%s" "%s" "%s" "%s"', customwebdriver_exe, py_customcloudflare, rooturl, headless))
-	_status, result, _errors = require("fmd.subprocess").RunCommandHide(customwebdriver_exe, py_customcloudflare, rooturl, headless)
+	print(string.format('WebsitBypass[cloudflare]: using webdriver "%s" "%s" "%s"', customwebdriver_exe, py_customcloudflare, rooturl))
+	_status, result, _errors = require("fmd.subprocess").RunCommandHide(customwebdriver_exe, py_customcloudflare, rooturl)
 	
-	if _errors and not _errors == "" then
-		LOGGER.SendError("WebsitBypass[cloudflare]: " .. _errors)
+	if not _status then
+		LOGGER.SendError("WebsitBypass[cloudflare]: Please make sure FlareSolverr is running.")
 		return -1
 	end
 	
-	if result:find("cf challenge fail") then
+	if result:find("Error") then
 		print(result)
 		return 0
 	end
-	print("cf challenge success")
 	
 	local parsed_result = {}
 
@@ -233,7 +231,7 @@ function _m.solveWithWebDriver2(self, url, headless)
 		if key == 'user_agent' then
 			HTTP.Headers.Values['user-agent'] = value
 			HTTP.UserAgent = value
-		else
+		elseif key == "cf_clearance" or key == "csrftoken" then
 			HTTP.Headers.Values['cookie'] = HTTP.Headers.Values['cookie'] .. key .. '=' .. value .. ';'
 			HTTP.Headers.Values['Set-Cookie'] = HTTP.Headers.Values['cookie'] .. key .. '=' .. value .. ';'
 			HTTP.Cookies.Values[key] = value
@@ -293,6 +291,7 @@ function _m.bypass(self, METHOD, URL)
 	local py_cloudflare = [[lua\websitebypass\cloudflare.py]]
 	local js_cloudflare = [[lua\websitebypass\cloudflare.js]]
 	py_customcloudflare = [[lua\websitebypass\customcloudflare.py]]
+	flaresolverr = [[lua\websitebypass\flaresolverr\flaresolverr.exe]]
 	customcloudflare = false
 	if fileExist([[lua\websitebypass\use_webdriver]]) then
 		if fileExist(py_cloudflare) then
@@ -304,7 +303,7 @@ function _m.bypass(self, METHOD, URL)
 			webdriver_exe = 'node'
 			webdriver_script = js_cloudflare
 		end
-		if fileExist(py_customcloudflare) then
+		if fileExist(py_customcloudflare) and fileExist(flaresolverr) then
 			use_webdriver = true
 			customcloudflare = true
 			customwebdriver_exe = 'python'
