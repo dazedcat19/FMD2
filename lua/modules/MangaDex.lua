@@ -13,8 +13,8 @@ function Init()
 	m.OnGetNameAndLink   = 'GetNameAndLink'
 	m.OnGetInfo          = 'GetInfo'
 	m.OnGetPageNumber    = 'GetPageNumber'
-	m.MaxTaskLimit       = 1
-	m.MaxConnectionLimit = 2
+	m.MaxTaskLimit       = 2
+	m.MaxConnectionLimit = 4
 
 	local fmd = require 'fmd.env'
 	local slang = fmd.SelectedLanguage
@@ -253,6 +253,13 @@ function GetInfo()
 				for ic = 1, chapters.Count do
 					local ignore = false
 
+					-- Ignore chapter if it has no pages or an external link
+					local pages = x.XPathString('attributes/pages', chapters.Get(ic))
+					local external_url = x.XPathString('attributes/externalUrl', chapters.Get(ic))
+					if tonumber(pages) < 1 or external_url ~= 'null' then
+						ignore = true
+					end
+
 					-- Check if the group that released the chapter is on the built-in ignore list, otherwise skip the chapter:
 					local groupids = x.XPath('json(*).data()[' .. ic .. '].relationships()[type="scanlation_group"]')
 					local groups = {}
@@ -365,7 +372,8 @@ function IgnoreChaptersByGroupId(id)
 		["4f1de6a2-f0c5-4ac5-bce5-02c7dbb67deb"] = "MangaPlus",
 		["8d8ecf83-8d42-4f8c-add8-60963f9f28d9"] = "Comikey",
 		["5fed0576-8b94-4f9a-b6a7-08eecd69800d"] = "Azuki Manga",
-		["caa63201-4a17-4b7f-95ff-ed884a2b7e60"] = "INKR Comics"
+		["caa63201-4a17-4b7f-95ff-ed884a2b7e60"] = "INKR Comics",
+		["4ba19c33-6cc2-43ff-b157-5501b057fce7"] = "J-Novel Club"
 	}
 
 	if groups[id] ~= nil then
