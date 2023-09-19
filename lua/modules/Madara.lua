@@ -98,8 +98,6 @@ function Modules.Madara()
 					MANGAINFO.ChapterLinks.Add(x.XPathString('a/@href', v))
 					MANGAINFO.ChapterNames.Add(x.XPathString('a/text()[not(parent::span)]', v))
 				end
-			elseif MODULE.ID == '287f665620664e468d4e05f5d76f5a43' then -- ResetScans
-				x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/div/a[1]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 			elseif MODULE.ID == 'df435a30cf8a44cb8e684e99d1b84b5d' then -- TempleScan
 				MANGAINFO.Title   = x.XPathString('//div[@id="mangazinho"]/h1')
 				MANGAINFO.Summary = x.XPathString('//div[contains(./h5, "Summary")]//p')
@@ -118,18 +116,21 @@ function Modules.Madara()
 							MANGAINFO.ChapterLinks.Add(x.XPathString('a/@href', v))
 							MANGAINFO.ChapterNames.Add(x.XPathString('a/text()[not(parent::span)]', v))
 						end
-					end
-					x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[1]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
-					if MANGAINFO.ChapterLinks.Count == 0 then
-						local v for v in x.XPath('//div[@class="chapter-link"]/a').Get() do
-							MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
-							MANGAINFO.ChapterNames.Add(x.XPathString('p', v))
+					elseif MODULE.ID == '287f665620664e468d4e05f5d76f5a43' then -- ResetScans
+						x.XPathHREFAll('//div[contains(@class, "li__text")]/a[1]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+					else
+						x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[1]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+						if MANGAINFO.ChapterLinks.Count == 0 then
+							local v for v in x.XPath('//div[@class="chapter-link"]/a').Get() do
+								MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
+								MANGAINFO.ChapterNames.Add(x.XPathString('p', v))
+							end
 						end
-					end
-					if MANGAINFO.ChapterLinks.Count == 0 then
-						local v for v in x.XPath('//li[@class="chapter-li"]/a').Get() do
-							MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
-							MANGAINFO.ChapterNames.Add(x.XPathString('div/p', v))
+						if MANGAINFO.ChapterLinks.Count == 0 then
+							local v for v in x.XPath('//li[@class="chapter-li"]/a').Get() do
+								MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
+								MANGAINFO.ChapterNames.Add(x.XPathString('div/p', v))
+							end
 						end
 					end
 				end
