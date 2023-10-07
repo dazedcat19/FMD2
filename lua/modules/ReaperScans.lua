@@ -45,20 +45,17 @@ function GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//section/div[@aria-label="card"]//div[./dt="Release Status"]/dd'))
 	MANGAINFO.Summary   = x.XPathString('//section/div[@aria-label="card"]//p[1]')
 
-	local p = 1
 	local pages = tonumber(x.XPathString('//nav//span[last()-1]/button')) or 1
-	while true do
+	for page = 1, pages, 1 do
 		local v for v in x.XPath('//li[contains(@*, "comic-chapter-list")]/a').Get() do
 			MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
 			MANGAINFO.ChapterNames.Add(x.XPathString('(.//p)[1]', v))
 		end
-		p = p + 1
-		if p > pages then
-			break
-		elseif HTTP.GET(MaybeFillHost(MODULE.RootURL, URL .. '?page=' .. tostring(p))) then
+
+		if page > 1 then
+			HTTP.GET(MaybeFillHost(MODULE.RootURL, URL .. '?page=' .. tostring(page)))
 			x.ParseHTML(HTTP.Document)
-		else
-			break
+			HTTP.Headers.Values['Referer'] = MANGAINFO.URL
 		end
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
