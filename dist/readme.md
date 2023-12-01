@@ -7,7 +7,7 @@ Libraries compiled with `MSYS2/mingw-w64 gcc 9.2.0`:
 * PCRE 10.35-RC2
 
 Libraries compiled with `MSYS2/mingw-w64 gcc 10.3.0`:
-* SQLite 3.36.0 with compile-time options `-DSQLITE_LIMIT_ATTACHED=125`
+* SQLite 3.44.2 with compile-time options `-DSQLITE_LIMIT_ATTACHED=300`
 
 Libraries compiled with `MSVC 19.29.30136`:
 * LibWebP 1.2.0
