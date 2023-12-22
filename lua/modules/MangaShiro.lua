@@ -21,6 +21,7 @@ end
 
 function getTitle(x)
 	local title = ''
+	if title == '' then title = x.XPathString('//h1[@class="entry-title"]') end
 	if title == '' then title = x.XPathString('//div[@class="thumb"]/img/@alt') end
 	if title == '' then title = x.XPathString('//*[@id="judul"]/h1') end
 	if title == '' then title = x.XPathString('//*[@id="judul_komik"]/h1') end
@@ -442,7 +443,7 @@ function Init()
 	AddWebsiteModule('f8c92a9a83f64deebee5ec58b7b15bdf', 'xCaliBRScans', 'https://xcalibrscans.com')
 	AddWebsiteModule('f794803973af4e5daab21683d4de873a', 'LuminousScans', 'https://luminousscans.com')
 	AddWebsiteModule('15fc68c57ce141f497b872af157d72ac', 'ShimadaScans', 'https://shimadascans.com')
-	AddWebsiteModule('3593adad980d454abe489c42e7158032', 'RealmScans', 'https://realmscans.com')
+	AddWebsiteModule('3593adad980d454abe489c42e7158032', 'RealmScans', 'https://rizzcomic.com')
 	AddWebsiteModule('a51ebfb8979045d589cd867c48a095c0', 'ManhwaFreak', 'https://manhwafreak.com')
 	AddWebsiteModule('f01040ee781d4ae1929031419b97d2e0', 'VoidScans', 'https://void-scans.com')
 	AddWebsiteModule('3b9b01c5fde14e00a540dda2c60ada36', 'NightScans', 'https://nightscans.org')
