@@ -18,6 +18,7 @@ end
 ----------------------------------------------------------------------------------------------------
 
 API_URL = 'https://panel.ikigaimangas.com/api/swf'
+DirectoryPagination = '/series?page='
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -25,34 +26,33 @@ API_URL = 'https://panel.ikigaimangas.com/api/swf'
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	HTTP.MimeType = 'application/json'
-	if not HTTP.GET(API_URL .. '/series') then return net_problem end
+	local v, x = nil
+	if not HTTP.GET(API_URL .. DirectoryPagination .. (URL + 1) .. '&type=comic') then return net_problem end
 
-	local x = CreateTXQuery(HTTP.Document)
-	local v for v in x.XPath('json(*).data()').Get() do
-		LINKS.Add('series/' .. x.XPathString('slug', v))
+	x = CreateTXQuery(HTTP.Document)
+	for v in x.XPath('json(*).data()').Get() do
+		LINKS.Add('series/comic-' .. x.XPathString('slug', v))
 		NAMES.Add(x.XPathString('name', v))
 	end
+	UPDATELIST.CurrentDirectoryPageNumber = tonumber(x.XPathString('json(*).last_page')) or 1
 
 	return no_error
 end
 
 -- Get info and chapter list for current manga.
 function GetInfo()
-	local u = MaybeFillHost(MODULE.RootURL, URL)
-	local slug = string.gsub(u, "https://ikigaimangas%.com/series/comic%-", "")  
-	u = API_URL .. '/series/' .. slug
+	local u = API_URL .. '/series/' .. URL:match('/series/comic%-(.-)$')
 
 	if not HTTP.GET(u) then return net_problem end
 	
 	local x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Title     = x.XPathString('json(*).series.name')
 	MANGAINFO.CoverLink = x.XPathString('json(*).series.cover')
-	MANGAINFO.Authors   = x.XPathString('json(*).series.author')
 	MANGAINFO.Genres    = x.XPathStringAll('json(*).series.genres().name')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('json(*).series.status.name'), 'En Curso', 'Completa')
 	MANGAINFO.Summary   = x.XPathString('json(*).series.summary')
 
-	local u = u .. '/chapters?page=1'  
+	u = u .. '/chapters?page=1'  
 	while u do
 	  if not HTTP.GET(u) then return net_problem end
 	  x = CreateTXQuery(HTTP.Document)
