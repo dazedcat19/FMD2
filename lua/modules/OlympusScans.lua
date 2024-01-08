@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '760d177b1f6d4763a08971c0c1b5572b'
 	m.Name                     = 'OlympusScanlation'
-	m.RootURL                  = 'https://olympusscans.com'
+	m.RootURL                  = 'https://olympusvisor.com'
 	m.Category                 = 'Spanish'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -17,11 +17,12 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-API_URL = 'https://dashboard.olympusscans.com/api'
+API_URL = 'https://dashboard.olympusvisor.com/api'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
+
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
@@ -33,36 +34,42 @@ function GetNameAndLink()
 		LINKS.Add(MODULE.RootURL .. '/series/comic-' .. x.XPathString('slug', v))
 		NAMES.Add(x.XPathString('name', v))
 	end
-
 	return no_error
 end
 
 -- Get info and chapter list for current manga.
 function GetInfo()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
-	if not HTTP.GET(u) then return net_problem end
+	local slug = string.gsub(u, "https://olympusvisor%.com/series/comic%-", "") 
+	local jd = API_URL .. '/search?name=' .. slug
+
+	if not HTTP.GET(jd) then return net_problem end
 
 	local x = CreateTXQuery(HTTP.Document)
-	local script = x.XPathString('//script[contains(., "window.__NUXT__")]')
-	local scripts = script:match('data:(%b{})')
-	local s = scripts:match('data:(%b{})')
-
-	MANGAINFO.Title     = s:match('name:"(.-)"')
-	MANGAINFO.CoverLink = s:match('cover:"(.-)"'):gsub("\\u002F", "/")
-	MANGAINFO.Authors   = s:match('slug:"(.-)"')
-	MANGAINFO.Summary   = s:match('summary:"(.-)"')
-
-	local genres = {}
-	for name in s:match('genres:%[(.-)%]'):gmatch('{name:"(.-)"') do
-	    table.insert(genres, name)
+	local desiredSlug = slug 
+	local foundSlug = nil
+	local numIterations = 0
+	local v for v in x.XPath('json(*).data()').Get() do
+		MANGAINFO.Title     = x.XPathString('name', v)
+		MANGAINFO.CoverLink = x.XPathString('cover', v)
+	    foundSlug = x.XPathString('slug', v)
+	    slug = foundSlug -- Actualizar slug con el valor de foundSlug en cada iteración
+	    numIterations = numIterations + 1
+	    if foundSlug == desiredSlug then
+	        break
+	    end	
 	end
-	MANGAINFO.Genres    = table.concat(genres, ', ')
 
-	local slug = s:match('slug:"(.-)"')
-	local id = s:match('id:(%d+)')
-	local slug_read = URL:match("/series/(.*)")
-	local u = API_URL .. '/series/' .. slug .. '/chapters?page=1' 
+	if numIterations == 1 then
+	    MANGAINFO.Title = MANGAINFO.Title or x.XPathString('name', x)
+	    MANGAINFO.CoverLink = MANGAINFO.CoverLink or x.XPathString('cover', x)
+	end	
 
+	if slug == nil then
+		return net_problem
+	end
+
+	local u = API_URL .. '/series/' .. slug .. '/chapters?page=1'
 	while u do
 	  if not HTTP.GET(u) then return net_problem end
 	  x = CreateTXQuery(HTTP.Document)
@@ -82,7 +89,6 @@ end
 -- Get the page count for the current chapter.
 function GetPageNumber()
 	local u = API_URL .. '/series' .. URL .. '?type=comic'
-
 	if not HTTP.GET(u) then return net_problem end
 
 	local x = CreateTXQuery(HTTP.Document)
