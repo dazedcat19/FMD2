@@ -19,7 +19,7 @@ end
 
 
 API_URL = 'https://manhwawebbackend-production.up.railway.app'
-DirectoryPagination = '/manhwa/library?buscar=&estado=&tipo=&erotico=&demografia=&tag=&order_item=alfabetico&order_dir=desc&generes=&page='
+DirectoryPagination = '/manhwa/library?buscar=&estado=&tipo=&erotico=&demografia=&tag=&order_item=alfabetico&order_dir=desc&page='
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -27,16 +27,20 @@ DirectoryPagination = '/manhwa/library?buscar=&estado=&tipo=&erotico=&demografia
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local v, x = nil, s = 0
-	if not HTTP.GET(API_URL .. DirectoryPagination .. (URL + 1) ) then return net_problem end
+	local v, x = nil
+	if not HTTP.GET(API_URL .. DirectoryPagination .. (URL + 1) .. '&generes=') then return net_problem end
 
 	x = CreateTXQuery(HTTP.Document)
 	for v in x.XPath('json(*).data()').Get() do
-		LINKS.Add('series/comic-' .. x.XPathString('_id', v))
+		LINKS.Add('manhwa/' .. x.XPathString('_id', v))
 		NAMES.Add(x.XPathString('the_real_name', v))
 	end
-	UPDATELIST.CurrentDirectoryPageNumber = if x.XPathString('json(*).next') s++
 
+    if x.XPathString('json(*).next') == "true" then
+		UPDATELIST.CurrentDirectoryPageNumber = UPDATELIST.CurrentDirectoryPageNumber + 1
+    else
+        UPDATELIST.CurrentDirectoryPageNumber = 0
+    end
 	return no_error
 end
 
