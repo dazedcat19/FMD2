@@ -37,8 +37,19 @@ function getimageurl()
 	if WORKID>0 then
 	 s=s:gsub('/+$', '') .. '/'..(WORKID+1)..'.html'
 	end
+	
 	if HTTP.GET(MaybeFillHost(MODULE.RootURL,s)) then
-		TASK.PageLinks[WORKID]=CreateTXQuery(HTTP.Document).XPathString('//*[@id="viewer"]//img[@alt]/@src'):gsub('^//', 'http://')
+		x=CreateTXQuery(HTTP.Document)
+		if x.XPath('//*[@id="viewer"]//img[@alt]/@src').Count > 1 then
+			TASK.PageLinks.Clear()
+			x.XPathStringAll('//*[@id="viewer"]//img[@alt]/@src', TASK.PageLinks)
+			for i = 0, TASK.PageLinks.Count - 1 do
+				TASK.PageLinks[i] = TASK.PageLinks[i]:gsub('^//', 'http://')
+				i = i + 1
+			end
+		else
+			TASK.PageLinks[WORKID]=x.XPathString('//*[@id="viewer"]//img[@alt]/@src'):gsub('^//', 'http://')
+		end
 		return true
 	end
 	return false
