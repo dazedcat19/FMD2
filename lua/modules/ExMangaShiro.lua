@@ -59,6 +59,8 @@ function getCover(x)
 	if img == '' then img = x.XPathString('//div[@class="komik_info-content-thumbnail"]/img/@src') end
 	if img == '' then img = x.XPathString('//img[@class="shadow"]/@src') end
 	if img == '' then img = x.XPathString('//div[@class="wrapper"]//figure[@class="thumbnail"]//img/@src') end
+	if img == '' then img = x.XPathString('//a[@class="md-auto"]/img/@src') end
+	if img == '' then img = x.XPathString('//div[contains(@class,"p-8 relative")]//img/@src') end	
 	return img
 end
 
@@ -156,6 +158,7 @@ function getSummary(x)
 	if summary == '' then summary = x.XPathString('//*[@class="jds"]/p') end
 	if summary == '' then summary = x.XPathString('//*[@itemprop="description"]/string-join(.//text()[not(parent::script)],"")') end
 	if summary == '' then summary = x.XPathString('//*[@class="komik_info-description-sinopsis"]') end
+	if summary == '' then summary = x.XPathString('//section[@id="section-sinopsis"]/p/text()') end
 	summary = summary:gsub('.fb_iframe_widget_fluid_desktop iframe', ''):gsub('width: 100%% !important;', ''):gsub('{', ''):gsub('}', '')
 	return summary
 end
@@ -187,6 +190,18 @@ function getMangas(x)
 			MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
 			MANGAINFO.ChapterNames.Add(x.XPathString('../span[@class="chapternum"]',v))
 		end
+	elseif MODULE.Name == 'TempleScanSpa' then
+		local v for v in x.XPath('//*[@id="section-list-cap"]//a[2]').Get() do
+			MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
+			MANGAINFO.ChapterNames.Add(x.XPathString('.//div[@id="name"]',v))	
+		end
+	elseif MODULE.Name == 'ManwhasOnline' then
+		local v for v in x.XPath('//*[@id="section-list-cap"]//a[1]').Get() do
+			if x.XPathString('div[@id="name"]',v) ~= '' then
+				MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
+				MANGAINFO.ChapterNames.Add(x.XPathString('div[@id="name"]',v))	
+			end
+		end			
 	else
 		-- common
 		local v for v in x.XPath('//*[@id="chapterlist"]//*[@class="eph-num"]/a').Get() do
@@ -202,6 +217,7 @@ function getMangas(x)
 		if MANGAINFO.ChapterLinks.Count == 0 then x.XPathHREFAll('//div[contains(@class, "bxcl")]//li//*[contains(@class,"lchx")]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames) end
 		if MANGAINFO.ChapterLinks.Count == 0 then x.XPathHREFAll('//div[contains(@class, "lchx")]//li//*[contains(@class,"bxcl")]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames) end
 		if MANGAINFO.ChapterLinks.Count == 0 then x.XPathHREFAll('//*[@class="lchx"]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames) end
+		if MANGAINFO.ChapterLinks.Count == 0 then x.XPathHREFAll('//*[@id="myUL"]//*[@class="chapter"]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames) end
 	end
 end
 
@@ -248,9 +264,10 @@ function GetPageNumber()
 			if TASK.PageLinks.Count == 0 then x.XPathStringAll('//*[@class="bc"]/img/@src', TASK.PageLinks) end
 			if TASK.PageLinks.Count == 0 then x.XPathStringAll('//*[@id="chimg"]/img/@data-lazy-src', TASK.PageLinks) end
 			if TASK.PageLinks.Count == 0 then x.XPathStringAll('//*[@id="readerarea"]/img/@data-src', TASK.PageLinks) end
+			if TASK.PageLinks.Count == 0 then x.XPathStringAll('//section//img/@src', TASK.PageLinks) end
 		end
 		for i = 0, TASK.PageLinks.Count - 1 do -- Bypass 'i0.wp.com' image CDN to ensure original images are loaded directly from host
-			TASK.PageLinks[i] = TASK.PageLinks[i]:gsub("i%d.wp.com/", "")
+			TASK.PageLinks[i] = TASK.PageLinks[i]:gsub("i%d.wp.com/", ""):gsub("cdn.statically.io/img/", "")
 			i = i + 1
 		end
 		return true
@@ -414,6 +431,9 @@ function Init()
 	AddWebsiteModule('529038945bc84174b4be556b922bfb4a', 'OniScans', 'https://www.oniscans.com')
 	AddWebsiteModule('529038924bc84174b4be556b922bfb4a', 'ShadowMangas', 'https://shadowmangas.com')
 	AddWebsiteModule('a08tter98y97k9er008971c0c1b55705', 'RaikiScan', 'https://raikiscan.com')
+	AddWebsiteModule('uy8tter98y97k9er008971c0c1b557tr', 'DaoScan', 'https://tresdaos.com')
+	AddWebsiteModule('41294a121062494489sdqt601c542ef0', 'TempleScanSpa', 'https://templescanesp.net')
+	AddWebsiteModule('41294a121062494489rwra601c542efg', 'ManwhasOnline', 'https://manwhasonline.com')
 
 	cat = 'English'
 	AddWebsiteModule('421be2f0d918493e94f745c71090f359', 'Mangafast', 'https://mangafast.net')
