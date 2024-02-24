@@ -53,7 +53,7 @@ function GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('json(*).series.status.name'), 'En Curso', 'Completa')
 	MANGAINFO.Summary   = x.XPathString('json(*).series.summary')
 
-	u = u .. '/chapters?page=1'  
+	u = u .. '/chapters'  
 	while u do
 		if not HTTP.GET(u) then return net_problem end
 		
