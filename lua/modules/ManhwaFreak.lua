@@ -53,8 +53,12 @@ function GetInfo()
 	MANGAINFO.Summary   = x.XPathString('//div[@id="summary"]/p')
 
 	for v in x.XPath('//div[@class="chapter-li"]/a').Get() do
-		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
-		MANGAINFO.ChapterNames.Add(x.XPathString('div/div/p[1]', v))
+		-- Skip chapters which are locked
+		local locked = x.XPathString('div/svg/path/@d', v)
+		if locked == nil or locked == '' then
+			MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
+			MANGAINFO.ChapterNames.Add(x.XPathString('div/div/p[1]', v))
+		end
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
