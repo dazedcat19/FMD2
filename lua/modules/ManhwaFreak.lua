@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'a51ebfb8979045d589cd867c48a095c0'
 	m.Name                     = 'ManhwaFreak'
-	m.RootURL                  = 'https://manhwa-freak.com'
+	m.RootURL                  = 'https://freakcomic.com'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
