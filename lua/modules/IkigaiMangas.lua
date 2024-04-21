@@ -79,12 +79,10 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	if not HTTP.GET(API_URL .. '/chapters' .. URL) then return net_problem end
-
+	if not HTTP.GET(MODULE.RootURL .. '/capitulo/' .. URL) then return net_problem end
 	local x = CreateTXQuery(HTTP.Document)
-	local v for v in x.XPath('json(*).chapter.pages()').Get() do
-		TASK.PageLinks.Add(v.ToString())
-	end
-
+	local v for v in x.XPath('//div[contains(@class, "img")]/img').Get() do
+		TASK.PageLinks.Add(v.GetAttribute('src'))
+	end	
 	return no_error
 end
