@@ -42,7 +42,7 @@ end
 -- Get info and chapter list for current manga.
 function GetInfo()
 	local chapter, next_page, title, v, x = nil
-	local u = API_URL .. '/series/' .. URL:match('/series/comic%-(.-)$')
+	local u = API_URL .. '/series/' .. URL:match('/series/(.-)$')
 
 	if not HTTP.GET(u) then return net_problem end
 	
@@ -79,10 +79,10 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	if not HTTP.GET(MODULE.RootURL .. '/capitulo/' .. URL) then return net_problem end
-	local x = CreateTXQuery(HTTP.Document)
-	local v for v in x.XPath('//div[contains(@class, "img")]/img').Get() do
-		TASK.PageLinks.Add(v.GetAttribute('src'))
-	end	
+	HTTP.Cookies.Values['data-saving'] = '0'
+	if not HTTP.GET(MODULE.RootURL .. '/capitulo' .. URL) then return net_problem end
+
+	CreateTXQuery(HTTP.Document).XPathStringAll('//div[contains(@class, "img")]/img/@src', TASK.PageLinks)
+
 	return no_error
 end
