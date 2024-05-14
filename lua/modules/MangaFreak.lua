@@ -3,7 +3,7 @@ function getinfo()
 	if HTTP.GET(MANGAINFO.URL) then
 		local x=CreateTXQuery(HTTP.Document)
 		if MANGAINFO.Title == '' then
-			MANGAINFO.Title = x.XPathString('//div[@class="manga_series_data"]/h5')
+			MANGAINFO.Title = x.XPathString('//div[@class="manga_series_data"]/h1')
 		end
 		MANGAINFO.CoverLink = MaybeFillHost(MODULE.RootURL, x.XPathString('//div[@class="manga_series_image"]/img/@src'))
 		MANGAINFO.Genres=x.XPathStringAll('//div[@class="series_sub_genre_list"]/a')
