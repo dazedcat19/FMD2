@@ -42,7 +42,7 @@ protoc:load(readFile(target_file))
 
 -- Get info and chapter list for current manga.
 function GetInfo()
-	local url = MaybeFillHost(API_URL, "/api/title_detail?title_id=" .. URL:gsub("[^%d]",""))
+	local url = MaybeFillHost(API_URL, "/api/title_detailV3?title_id=" .. URL:gsub("[^%d]",""))
 
 	if not HTTP.GET(url) then return net_problem end
 
@@ -68,10 +68,16 @@ function GetInfo()
 	end
 	end
 
-	local first_list = data["success"]["titleDetailView"]["firstChapterList"]
-	local last_list = data["success"]["titleDetailView"]["lastChapterList"]
-	addChapter(first_list)
-	addChapter(last_list)
+	local list_groups = data["success"]["titleDetailView"]["chapterListGroup"]
+
+	if list_groups ~= nil then
+		for _,v in pairs(list_groups) do
+			local first_list = v["firstChapterList"]
+			if first_list ~= nil then addChapter(first_list) end
+			local last_list = v["lastChapterList"]
+			if last_list ~= nil then addChapter(last_list) end
+		end
+	end
 
 	return no_error
 end

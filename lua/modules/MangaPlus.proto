@@ -275,6 +275,12 @@ message SubscribedTitlesView {
   repeated Title titles = 1;
 }
 
+message ChapterListGroup {
+  repeated Chapter firstChapterList = 2;
+  repeated Chapter midChapterList = 3;
+  repeated Chapter lastChapterList = 4;
+}
+
 message TitleDetailView {
   optional Title title = 1;
   optional string titleImageUrl = 2;
@@ -294,6 +300,7 @@ message TitleDetailView {
   optional int32 rating = 16;
   optional bool chaptersDescending = 17;
   optional uint32 numberOfViews = 18;
+  repeated ChapterListGroup chapterListGroup = 28;
 }
 
 message TitleRankingView {
