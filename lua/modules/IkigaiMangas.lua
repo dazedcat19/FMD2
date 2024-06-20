@@ -3,14 +3,18 @@
 ----------------------------------------------------------------------------------------------------
 
 function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = 'ds42a85566244b7e836679491ce679e8'
-	m.Name                     = 'IkigaiMangas'
-	m.RootURL                  = 'https://ikigaimangas.com'
-	m.Category                 = 'Spanish'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
+	function AddWebsiteModule(id, name, url)
+		local m = NewWebsiteModule()
+		m.ID                       = id
+		m.Name                     = name
+		m.RootURL                  = url
+		m.Category                 = 'Spanish'
+		m.OnGetNameAndLink         = 'GetNameAndLink'
+		m.OnGetInfo                = 'GetInfo'
+		m.OnGetPageNumber          = 'GetPageNumber'
+	end
+	AddWebsiteModule('ds42a85566244b7e836679491ce679e8', 'Nocbro', 'https://nocbro.xyz')
+	AddWebsiteModule('c67d163c51b24bct98ertb8hh0d8sdtt', 'Ikigaiweb', 'https://es.ikigaiweb.lat/')
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -43,7 +47,9 @@ end
 function GetInfo()
 	local chapter, next_page, title, v, x = nil
 	local u = API_URL .. '/series/' .. URL:match('/series/(.-)$')
-
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+	HTTP.Headers.Values['Origin'] = MODULE.RootURL
+	
 	if not HTTP.GET(u) then return net_problem end
 	
 	x = CreateTXQuery(HTTP.Document)
@@ -80,7 +86,8 @@ end
 -- Get the page count for the current chapter.
 function GetPageNumber()
 	HTTP.Cookies.Values['data-saving'] = '0'
-	if not HTTP.GET(MODULE.RootURL .. '/capitulo' .. URL) then return net_problem end
+	HTTP.Cookies.Values['nsfw-mode'] = '1'
+	if not HTTP.GET(MODULE.RootURL .. '/capitulo/' .. URL) then return net_problem end
 
 	CreateTXQuery(HTTP.Document).XPathStringAll('//div[contains(@class, "img")]/img/@src', TASK.PageLinks)
 
