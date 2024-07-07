@@ -5,8 +5,8 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '3593adad980d454abe489c42e7158032'
-	m.Name                     = 'RizzComics'
-	m.RootURL                  = 'https://rizzcomic.com'
+	m.Name                     = 'RizzFables'
+	m.RootURL                  = 'https://rizzfables.com'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
