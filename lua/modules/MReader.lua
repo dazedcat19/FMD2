@@ -5,8 +5,8 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'd297f1eb6b784ded9b50d3b85cee5276'
-	m.Name                     = 'MangaNeko'
-	m.RootURL                  = 'https://www.mgeko.com'
+	m.Name                     = 'Mgeko'
+	m.RootURL                  = 'https://www.mgeko.cc'
 	m.Category                 = 'English'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
