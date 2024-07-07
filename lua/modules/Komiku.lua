@@ -40,7 +40,7 @@ function GetInfo()
 	Template.GetInfo()
 
 	x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//h1[@itemprop="name"]'):gsub('Komik', '')
+	MANGAINFO.Title     = x.XPathString('//span[@itemprop="name"]'):gsub('Komik', '')
 	MANGAINFO.CoverLink = x.XPathString('//div[@class="ims"]/img/@src')
 	MANGAINFO.Genres    = x.XPathStringAll('//ul[@class="genre"]//a')
 	MANGAINFO.Summary   = x.XPathString('//p[@class="desc"]')
