@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '86c14ab2b8774fa8a8461e07c3688a27'
 	m.Name                     = 'MangaWorld'
-	m.RootURL                  = 'https://www.mangaworld.in'
+	m.RootURL                  = 'https://www.mangaworld.ac'
 	m.Category                 = 'Italian'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
@@ -26,18 +26,18 @@ DirectoryPagination = '/archive?page='
 
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
-	if not HTTP.GET(MODULE.RootURL .. DirectoryPagination .. 1) then return net_problem end
+	if not HTTP.GET(MODULE.RootURL .. DirectoryPagination .. '1') then return net_problem end
 
-	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//ul[@class="pagination"]/li[last()]/a')) or 1
+	PAGENUMBER = tonumber(GetBetween('totalPages":', ',"v', CreateTXQuery(HTTP.Document).XPathString('//script[contains(., "totalPages")]'))) or 1
 
-  return no_error
+	return no_error
 end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
 	if not HTTP.GET(MODULE.RootURL .. DirectoryPagination .. (URL + 1)) then return net_problem end
 
-	CreateTXQuery(HTTP.Document).XPathHREFTitleAll('//div[@class="content"]//a', LINKS, NAMES)
+	CreateTXQuery(HTTP.Document).XPathHREFTitleAll('//div[@class="comics-grid"]/div/a', LINKS, NAMES)
 
 	return no_error
 end
@@ -53,7 +53,7 @@ function GetInfo()
 	MANGAINFO.Artists   = x.XPathStringAll('//span[contains(., "Artista")]/following-sibling::a')
 	MANGAINFO.Genres    = x.XPathStringAll('//span[contains(., "Generi")]/following-sibling::a')
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//span[contains(., "Stato")]/following-sibling::a'), 'In corso', 'Finito')
-	MANGAINFO.Summary   = x.XPathString('//div[contains(@class, "comic-description")]')
+	MANGAINFO.Summary   = x.XPathString('//div[@id="noidungm"]')
 
 	local v for v in x.XPath('//div[contains(@class, "volume-element")]').Get() do
         local w for w in x.XPath('div//div[@class="chapter"]', v).Get() do
