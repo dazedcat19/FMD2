@@ -45,7 +45,7 @@ function _M.GetInfo()
 
 	for v in x.XPath('//div[@id="chapterlist"]//div[@class="eph-num"]/a').Get() do
 		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
-		MANGAINFO.ChapterNames.Add(x.XPathString('span[@class="chapternum"]', v))
+		MANGAINFO.ChapterNames.Add(x.XPathString('span[@class="chapternum"]/normalize-space(.)', v))
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
