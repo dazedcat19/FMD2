@@ -15,6 +15,8 @@ function Init()
 	end
 	AddWebsiteModule('ds42a85566244b7e836679491ce679e8', 'Nocbro', 'https://nocbro.xyz')
 	AddWebsiteModule('c67d163c51b24bct98ertb8hh0d8sdtt', 'Ikigaiweb', 'https://es.ikigaiweb.lat/')
+	AddWebsiteModule('c67d163c51b24bct98ertb8hh0d8sdt1', 'Visualikigai', 'https://visualikigai.com')
+	AddWebsiteModule('c67d163c51b24bct98ertb8hh0d8sdt2', 'Meope', 'https://ikigaimangas.meope.com')
 end
 
 ----------------------------------------------------------------------------------------------------
