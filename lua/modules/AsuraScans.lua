@@ -61,7 +61,7 @@ function GetInfo()
 	MANGAINFO.Summary   = x.XPathString('//span[@class="font-medium text-sm text-[#A2A2A2]"]')
 
 	for v in x.XPath('//h3[contains(@class, "text-sm text-white font-medium")]/a').Get() do
-		MANGAINFO.ChapterLinks.Add('series/' .. v.GetAttribute('href'))
+		MANGAINFO.ChapterLinks.Add('series/' .. v.GetAttribute('href'):gsub('-(%w+)/chapter', '-/chapter'))
 		MANGAINFO.ChapterNames.Add(x.XPathString('text()', v))
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
