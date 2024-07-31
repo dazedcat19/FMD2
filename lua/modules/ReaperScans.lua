@@ -21,7 +21,7 @@ end
 
 API_URL = 'https://api.reaperscans.com'
 DirectoryPagination = '/query?page='
-DirectoryParameters = '&perPage=20&series_type=Comic&query_string=&order=desc&orderBy=created_at&adult=true&status=All&tags_ids=%5B%5D'
+DirectoryParameters = '&perPage=20&series_type=Comic&query_string=&order=desc&orderBy=created_at&adult=true'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
