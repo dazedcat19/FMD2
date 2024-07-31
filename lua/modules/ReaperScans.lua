@@ -8,54 +8,87 @@ function Init()
 	m.Name                     = 'ReaperScans'
 	m.RootURL                  = 'https://reaperscans.com'
 	m.Category                 = 'English-Scanlation'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.SortedList               = true
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-DirectoryPagination = '/comics'
+API_URL = 'https://api.reaperscans.com'
+DirectoryPagination = '/query?page='
+DirectoryParameters = '&perPage=20&series_type=Comic&query_string=&order=desc&orderBy=created_at&adult=true&status=All&tags_ids=%5B%5D'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
+-- Get the page count of the manga list of the current website.
+function GetDirectoryPageNumber()
+	if not HTTP.GET(API_URL .. DirectoryPagination .. 1 .. DirectoryParameters) then return net_problem end
+
+	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('json(*).meta.last_page')) or 1
+
+	return no_error
+end
+
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	if not HTTP.GET(MODULE.RootURL .. DirectoryPagination .. '?page=' .. (URL + 1)) then return net_problem end
+	local v, x = nil
+	local u = API_URL .. DirectoryPagination .. (URL + 1) .. DirectoryParameters
 
-	local x = CreateTXQuery(HTTP.Document)
-	if x.XPathString('//li//a[1]') == '' then return no_error end
-	x.XPathHREFAll('//li//a[1]', LINKS, NAMES)
-	UPDATELIST.CurrentDirectoryPageNumber = UPDATELIST.CurrentDirectoryPageNumber + 1
+	if not HTTP.GET(u) then return net_problem end
+
+	x = CreateTXQuery(HTTP.Document)
+	for v in x.XPath('json(*).data()').Get() do
+		LINKS.Add('series/' .. x.XPathString('series_slug', v))
+		NAMES.Add(x.XPathString('title', v))
+	end
 
 	return no_error
 end
 
 -- Get info and chapter list for current manga.
 function GetInfo()
-	if not HTTP.GET(MaybeFillHost(MODULE.RootURL, URL)) then return net_problem end
+	local id, name, pages, slug, title, v, x = nil
+	local page = 1
+	local u = API_URL .. '/series/' .. URL:match('/series/(.-)$')
 
-	local x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//*[contains(@class, "container")]//h1')
-	MANGAINFO.CoverLink = x.XPathString('//div[@aria-label="card"]//img/@src')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//section/div[@aria-label="card"]//div[./dt="Release Status"]/dd'))
-	MANGAINFO.Summary   = x.XPathString('//section/div[@aria-label="card"]//p[1]')
+	if not HTTP.GET(u) then return net_problem end
 
-	local pages = tonumber(x.XPathString('//nav//span[last()-1]/button')) or 1
-	for page = 1, pages, 1 do
-		local v for v in x.XPath('//li[contains(@*, "comic-chapter-list")]/a').Get() do
-			MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
-			MANGAINFO.ChapterNames.Add(x.XPathString('(.//p)[1]', v))
+	x = CreateTXQuery(HTTP.Document)
+	MANGAINFO.Title     = x.XPathString('json(*).title')
+	MANGAINFO.CoverLink = 'https://media.reaperscans.com/file/4SRBHm/' .. x.XPathString('json(*).thumbnail')
+	MANGAINFO.Authors   = x.XPathString('json(*).author')
+	MANGAINFO.Genres    = x.XPathStringAll('json(*).tags().name')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('json(*).status'))
+	MANGAINFO.Summary   = x.XPathString('json(*).description')
+
+	id = x.XPathString('json(*).id')
+	slug = x.XPathString('json(*).series_slug')
+	while true do
+		if HTTP.GET(API_URL .. '/chapter/query?page=' .. tostring(page) .. '&perPage=30&series_id=' .. id) then
+			x = CreateTXQuery(HTTP.Document)
+			pages = tonumber(x.XPathString('json(*).meta.last_page')) or 1
+			for v in x.XPath('json(*).data()').Get() do
+				name  = x.XPathString('chapter_name', v)
+				title = x.XPathString('chapter_title', v)
+
+				title = title ~= 'null' and title ~= '' and string.format(' - %s', title) or ''
+
+				MANGAINFO.ChapterLinks.Add(MODULE.RootURL .. '/series/' .. slug .. '/' .. x.XPathString('chapter_slug', v))
+				MANGAINFO.ChapterNames.Add(name .. title)
+			end
+		else
+			break
 		end
-
-		if page > 1 then
-			HTTP.GET(MaybeFillHost(MODULE.RootURL, URL .. '?page=' .. tostring(page)))
-			x.ParseHTML(HTTP.Document)
-			HTTP.Headers.Values['Referer'] = MANGAINFO.URL
+		page = page + 1
+		if page > pages then
+			break
 		end
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
@@ -67,7 +100,7 @@ end
 function GetPageNumber()
 	if not HTTP.GET(MaybeFillHost(MODULE.RootURL, URL)) then return net_problem end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('//img[contains(@class, "max-w-full")]/@src', TASK.PageLinks)
+	CreateTXQuery(HTTP.Document).XPathStringAll('//div[@class="container"]//img/@*[contains(., "https")]', TASK.PageLinks)
 
 	return no_error
 end
