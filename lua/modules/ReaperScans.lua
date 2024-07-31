@@ -80,7 +80,7 @@ function GetInfo()
 
 				title = title ~= 'null' and title ~= '' and string.format(' - %s', title) or ''
 
-				MANGAINFO.ChapterLinks.Add(MODULE.RootURL .. '/series/' .. slug .. '/' .. x.XPathString('chapter_slug', v))
+				MANGAINFO.ChapterLinks.Add('series/' .. slug .. '/' .. x.XPathString('chapter_slug', v))
 				MANGAINFO.ChapterNames.Add(name .. title)
 			end
 		else
