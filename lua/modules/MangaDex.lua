@@ -50,7 +50,7 @@ function Init()
 	local items = 'All'
 	local t = GetLangList()
 	for k, v in ipairs(t) do items = items .. '\r\n' .. v; end
-	m.AddOptionComboBox('lualang', lang:get('lang'), items, 11)
+	m.AddOptionComboBox('lualang', lang:get('lang'), items, 14)
 end
 
 function GetNameAndLink()
@@ -76,7 +76,7 @@ function GetNameAndLink()
 		[3] = 'erotica',
 		[4] = 'pornographic'
 	}
-	
+
 	-- Delay this task if configured:
 	Delay()
 
@@ -89,14 +89,14 @@ function GetNameAndLink()
 				local order = 'asc'
 
 				while total > offset do
-					sleep(5000)
+					sleep(4000)
 					if total > 10000 and offset >= 10000 and order == 'asc' then
 						offset = 0
 						order = 'desc'
 					end
 
 					if offset < 10000 and HTTP.GET(API_URL .. '/manga?limit=100&offset=' .. offset ..'&order[createdAt]=' .. order ..'&publicationDemographic[]=' .. dg .. '&status[]=' .. ms .. '&contentRating[]=' .. cr) then
-						UPDATELIST.UpdateStatusText('Loading page of ' .. dg .. '/' .. ms .. '/' .. cr .. ' (' .. order .. ')' or '')
+						UPDATELIST.UpdateStatusText('Loading page ' .. string.gsub(offset, '00', '') .. ' of ' .. dg .. '/' .. ms .. '/' .. cr .. ' (' .. order .. ')' or '')
 						local x = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString()))
 
 						local ninfo    = x.XPath('json(*)')
@@ -213,11 +213,11 @@ function GetInfo()
 			MANGAINFO.CoverLink = COVER_URL .. '/' .. mid .. '/' .. x.XPathString('json(*).data.relationships()[type="cover_art"].attributes.fileName') .. '.256.jpg'
 
 			-- Fetch genre, demographic, and rating:
-			MANGAINFO.Genres    = x.XPathStringAll('json(*).data.attributes.tags().attributes.name.en')
-			local demographic = GetDemographic(x.XPathString('json(*).data.attributes.publicationDemographic'))
-			if demographic ~= 'null' then MANGAINFO.Genres = MANGAINFO.Genres .. ', ' .. demographic end
-			local rating = GetRating(x.XPathString('json(*).data.attributes.contentRating'))
-			if rating ~= 'null' then MANGAINFO.Genres = MANGAINFO.Genres .. ', ' .. rating end
+			MANGAINFO.Genres = x.XPathStringAll('json(*).data.attributes.tags().attributes.name.en')
+			local demographic = x.XPathString('data/attributes/publicationDemographic', minfo):gsub("^%l", string.upper)
+			if demographic ~= 'Null' then MANGAINFO.Genres = MANGAINFO.Genres .. ', ' .. demographic end
+			local rating = x.XPathString('data/attributes/contentRating', minfo):gsub("^%l", string.upper)
+			if rating ~= 'Null' then MANGAINFO.Genres = MANGAINFO.Genres .. ', ' .. rating end
 
 			-- Set status to 'completed' if it's not 'ongoing' or 'hiatus'. The status 'cancelled' will also be set to 'completed':
 			local status = x.XPathString('data/attributes/status', minfo)
@@ -226,7 +226,7 @@ function GetInfo()
 			else
 				status = 'completed'
 			end
-			MANGAINFO.Status = MangaInfoStatusIfPos(status, 'ongoing', 'completed')
+			MANGAINFO.Status = MangaInfoStatusIfPos(status)
 
 			-- Get user defined options for fetching all chapters respecting these options:
 			local optgroup   = MODULE.GetOption('luashowscangroup')
@@ -394,48 +394,27 @@ function IgnoreChaptersByGroupId(id)
 	end
 end
 
-function GetDemographic(demographic)
-	local demographics = {
-		["shounen"] = "Shounen",
-		["shoujo"] = "Shoujo",
-		["seinen"] = "Seinen",
-		["josei"] = "Josei"
-	}
-	if demographics[demographic] ~= nil then
-		return demographics[demographic]
-	else
-		return demographic
-	end
-end
-
-function GetRating(rating)
-	local ratings = {
-		["safe"] = "Safe",
-		["suggestive"] = "Suggestive",
-		["erotica"] = "Erotica",
-		["pornographic"] = "Pornographic"
-	}
-	if ratings[rating] ~= nil then
-		return ratings[rating]
-	else
-		return rating
-	end
-end
-
 local Langs = {
+	["sq"] = "Albanian",
 	["ar"] = "Arabic",
+	["az"] = "Azerbaijani",
 	["bn"] = "Bengali",
 	["bg"] = "Bulgarian",
 	["my"] = "Burmese",
 	["ca"] = "Catalan",
 	["zh"] = "Chinese (Simp)",
 	["zh-hk"] = "Chinese (Trad)",
+	["hr"] = "Croatian",
 	["cs"] = "Czech",
 	["da"] = "Danish",
 	["nl"] = "Dutch",
 	["en"] = "English",
+	["eo"] = "Esperanto",
+	["et"] = "Estonian",
+	["tl"] = "Filipino",
 	["fi"] = "Finnish",
 	["fr"] = "French",
+	["ka"] = "Georgian",
 	["de"] = "German",
 	["el"] = "Greek",
 	["he"] = "Hebrew",
@@ -444,37 +423,32 @@ local Langs = {
 	["id"] = "Indonesian",
 	["it"] = "Italian",
 	["ja"] = "Japanese",
+	["kk"] = "Kazakh",
 	["ko"] = "Korean",
+	["la"] = "Latin",
 	["lt"] = "Lithuanian",
 	["ms"] = "Malay",
 	["mn"] = "Mongolian",
 	["ne"] = "Nepali",
 	["no"] = "Norwegian",
-	["NULL"] = "Other",
 	["fa"] = "Persian",
 	["pl"] = "Polish",
 	["pt-br"] = "Portuguese (Br)",
 	["pt"] = "Portuguese (Pt)",
 	["ro"] = "Romanian",
 	["ru"] = "Russian",
-	["sh"] = "Serbo-Croatian",
-	["es"] = "Spanish (Es)",
+	["sr"] = "Serbian",
+	["sk"] = "Slovak",
 	["es-la"] = "Spanish (LATAM)",
+	["es"] = "Spanish (Es)",
 	["sv"] = "Swedish",
-	["tl"] = "Tagalog",
+	["ta"] = "Tamil",
+	["te"] = "Telugu",
 	["th"] = "Thai",
 	["tr"] = "Turkish",
 	["uk"] = "Ukrainian",
 	["vi"] = "Vietnamese"
 }
-
-function GetLang(lang)
-	if Langs[lang] ~= nil then
-		return Langs[lang]
-	else
-		return 'Unknown'
-	end
-end
 
 function GetLangList()
 	local t = {}
