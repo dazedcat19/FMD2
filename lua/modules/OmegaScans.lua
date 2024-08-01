@@ -8,9 +8,11 @@ function Init()
 	m.Name                     = 'OmegaScans'
 	m.RootURL                  = 'https://omegascans.org'
 	m.Category                 = 'English-Scanlation'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.SortedList               = true
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -19,10 +21,18 @@ end
 
 local Template = require 'templates.HeanCms'
 API_URL = 'https://api.omegascans.org'
+CDN_URL = 'https://media.omegascans.org/file/zFSsXt'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
+
+-- Get the page count of the manga list of the current website.
+function GetDirectoryPageNumber()
+	Template.GetDirectoryPageNumber()
+
+	return no_error
+end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
