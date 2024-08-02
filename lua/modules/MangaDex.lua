@@ -50,7 +50,7 @@ function Init()
 	local items = 'All'
 	local t = GetLangList()
 	for k, v in ipairs(t) do items = items .. '\r\n' .. v; end
-	m.AddOptionComboBox('lualang', lang:get('lang'), items, 14)
+	m.AddOptionComboBox('lualang', lang:get('lang'), items, 11)
 end
 
 function GetNameAndLink()
@@ -405,10 +405,10 @@ local Langs = {
 	["zh"] = "Chinese (Simp)",
 	["zh-hk"] = "Chinese (Trad)",
 	["hr"] = "Croatian",
+	["en"] = "English",
 	["cs"] = "Czech",
 	["da"] = "Danish",
 	["nl"] = "Dutch",
-	["en"] = "English",
 	["eo"] = "Esperanto",
 	["et"] = "Estonian",
 	["tl"] = "Filipino",
