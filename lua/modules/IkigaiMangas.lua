@@ -3,20 +3,14 @@
 ----------------------------------------------------------------------------------------------------
 
 function Init()
-	function AddWebsiteModule(id, name, url)
-		local m = NewWebsiteModule()
-		m.ID                       = id
-		m.Name                     = name
-		m.RootURL                  = url
-		m.Category                 = 'Spanish'
-		m.OnGetNameAndLink         = 'GetNameAndLink'
-		m.OnGetInfo                = 'GetInfo'
-		m.OnGetPageNumber          = 'GetPageNumber'
-	end
-	AddWebsiteModule('ds42a85566244b7e836679491ce679e8', 'Nocbro', 'https://nocbro.xyz')
-	AddWebsiteModule('c67d163c51b24bct98ertb8hh0d8sdtt', 'Ikigaiweb', 'https://es.ikigaiweb.lat/')
-	AddWebsiteModule('c67d163c51b24bct98ertb8hh0d8sdt1', 'Visualikigai', 'https://visualikigai.com')
-	AddWebsiteModule('c67d163c51b24bct98ertb8hh0d8sdt2', 'Meope', 'https://ikigaimangas.meope.com')
+	local m = NewWebsiteModule()
+	m.ID                       = 'ds42a85566244b7e836679491ce679e8'
+	m.Name                     = 'IkigaiMangas'
+	m.RootURL                  = 'https://ikigaimangas.meope.com'
+	m.Category                 = 'Spanish'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
 end
 
 ----------------------------------------------------------------------------------------------------
