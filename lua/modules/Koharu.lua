@@ -95,7 +95,7 @@ function GetInfo()
 	MANGAINFO.Title     = x.XPathString('json(*).title')
 	MANGAINFO.CoverLink = x.XPathString('json(*).thumbnails.base') .. x.XPathString('json(*).thumbnails.main.path')
 	MANGAINFO.Artists   = x.XPathStringAll('json(*).tags()[namespace="1"].name')
-	MANGAINFO.Genres    = x.XPathStringAll('json(*).tags()[not(namespace="1") and not(namespace="4")].name')
+	MANGAINFO.Genres    = x.XPathStringAll('json(*).tags()[not(namespace="1") and not(namespace="4") and not(namespace="7")].name')
 	MANGAINFO.Summary   = x.XPathString('json(*).description')
 
 	imagesize = {'0', '780', '980', '1280', '1600'}
