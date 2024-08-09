@@ -84,7 +84,7 @@ end
 
 -- Get info and chapter list for current manga.
 function GetInfo()
-	local imagesize, link, sel_imagesize, x = nil
+	local imagesize, link, sel_imagesize, title, x = nil
 	local u = API_URL .. '/detail/' .. URL:match('g/(.-)$')
 	HTTP.Headers.Values['Origin'] = MODULE.RootURL
 	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
@@ -96,13 +96,19 @@ function GetInfo()
 	MANGAINFO.CoverLink = x.XPathString('json(*).thumbnails.base') .. x.XPathString('json(*).thumbnails.main.path')
 	MANGAINFO.Artists   = x.XPathStringAll('json(*).tags()[namespace="1"].name')
 	MANGAINFO.Genres    = x.XPathStringAll('json(*).tags()[not(namespace="1") and not(namespace="4")].name')
+	MANGAINFO.Summary   = x.XPathString('json(*).description')
 
 	imagesize = {'0', '780', '980', '1280', '1600'}
 	sel_imagesize = (MODULE.GetOption('imagesize') or 0) + 1
 	link = x.XPathString('json(*).id') .. '/' .. x.XPathString('json(*).public_key') .. '/' .. x.XPathString('json(*).data.' .. imagesize[sel_imagesize] .. '.id') .. '/' .. x.XPathString('json(*).data.' .. imagesize[sel_imagesize] .. '.public_key') .. '?v=' .. x.XPathString('json(*).updated_at') .. '&w=' .. imagesize[sel_imagesize]
+	if string.find(link, '//') then
+		title = 'No image(s) in this selected image size!'
+	else
+		title = MANGAINFO.Title
+	end
 
 	MANGAINFO.ChapterLinks.Add(link)
-	MANGAINFO.ChapterNames.Add(MANGAINFO.Title)
+	MANGAINFO.ChapterNames.Add(title)
 
 	return no_error
 end
