@@ -49,6 +49,7 @@ function GetInfo()
 	MANGAINFO.Title     = x.XPathString('//h1[@class="title"]/text()[not(span)]')
 	MANGAINFO.CoverLink = x.XPathString('//*[@class="thumbnail"]/a/img/@src')
 	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="tags"]/a')
+	MANGAINFO.Summary   = x.XPathString('//div[@class="pb-2"]/p[1]/text()')
 
 	x.XPathHREFAll('//span[@class="lchx"]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
@@ -60,12 +61,11 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
+	local q = 'id=' .. CreateTXQuery(HTTP.Document).XPathString('//*[@id="reader"]/@data-id')
 	HTTP.Reset()
 	HTTP.Headers.Values['Referer'] = MODULE.RootURL
 	HTTP.Headers.Values['X-Requested-With'] = 'XMLHttpRequest'
 	HTTP.MimeType = 'application/x-www-form-urlencoded'
-	id = CreateTXQuery(HTTP.Document).XPathString('//*[@id="reader"]/@data-id')
-	q = 'id=' .. id
 	if HTTP.POST(MODULE.RootURL .. '/themes/ajax/ch.php', q) then
 		CreateTXQuery(HTTP.Document).XPathStringAll('//img/@src', TASK.PageLinks)
 	end
