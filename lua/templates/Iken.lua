@@ -48,14 +48,16 @@ function _M.GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('seriesStatus', json))
 	MANGAINFO.Summary   = x.XPathString('postContent', json)
 
-	for v in x.XPath('json(*).post.chapters()').Get() do
-		title = v.GetProperty('title').ToString()
-		title = title ~= 'null' and title ~= '' and string.format(' - %s', title) or ''
+	if HTTP.GET(MODULE.RootURL .. '/api/chapters?postId=' .. x.XPathString('id', json) .. '&skip=0&take=1000&order=asc') then
+		x = CreateTXQuery(HTTP.Document)
+		for v in x.XPath('json(*).post.chapters()').Get() do
+			title = v.GetProperty('title').ToString()
+			title = title ~= 'null' and title ~= '' and string.format(' - %s', title) or ''
 
-		MANGAINFO.ChapterLinks.Add('series/' .. x.XPathString('slug', json) .. '/' .. v.GetProperty('slug').ToString())
-		MANGAINFO.ChapterNames.Add('Chapter ' .. v.GetProperty('number').ToString() .. title)
+			MANGAINFO.ChapterLinks.Add('series/' .. x.XPathString('slug', json) .. '/' .. v.GetProperty('slug').ToString())
+			MANGAINFO.ChapterNames.Add('Chapter ' .. v.GetProperty('number').ToString() .. title)
+		end
 	end
-	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
 end
