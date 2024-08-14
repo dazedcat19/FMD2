@@ -254,7 +254,6 @@ function Init()
 	AddWebsiteModule('9dd75e6aa4e944f7ba955af7057acd8d', 'TapTrans', 'https://taptaptaptaptap.net')
 	AddWebsiteModule('a309ceeaf25c4c5dbbfedb65678bf14c', 'TheCatScans', 'https://reader2.thecatscans.com')
 	AddWebsiteModule('6fbd8012ff3d4a97829dd91bfee95d3e', 'TwistedHelScans', 'http://www.twistedhelscans.com').OnGetInfo = 'getinfo_ths'
-	AddWebsiteModule('e1bb1dd018ff498382dba79d28c401d5', 'VortexScans', 'https://reader.vortex-scans.com')
 	AddWebsiteModule('b12d310a4bdc4f368a489b8187233f62', 'WorldThree', 'http://www.slide.world-three.org')
 	AddWebsiteModule('fb8447279932432fb68f5cad6a6a12b3', 'YaoiIsLife', 'http://yaoislife.shounen-ai.net')
 	AddWebsiteModule('fb47357ef4cc4c8992999841949ef7d1', 'Yuri-ism', 'https://www.yuri-ism.net')

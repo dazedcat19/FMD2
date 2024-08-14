@@ -4,7 +4,7 @@
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                       = '382a9f0793514f6387d2fe7af9bbe906'
+	m.ID                       = 'e1bb1dd018ff498382dba79d28c401d5'
 	m.Name                     = 'VortexScans'
 	m.RootURL                  = 'https://vortexscans.org'
 	m.Category                 = 'English-Scanlation'
