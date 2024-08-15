@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '5ad6ebfe79f04b3b954829180052cb9e'
 	m.Name                     = 'SamuraiScan'
-	m.RootURL                  = 'https://spanish.visorsmr.com'
+	m.RootURL                  = 'https://latan.visorsmr.com'
 	m.Category                 = 'Spanish-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
