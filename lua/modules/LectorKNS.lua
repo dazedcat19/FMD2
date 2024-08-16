@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'c12ecc189301414aa091640c6980b531'
 	m.Name                     = 'LectorKNS'
-	m.RootURL                  = 'https://kns.twobluescans.com'
+	m.RootURL                  = 'https://lectorkns.com'
 	m.Category                 = 'Spanish-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
