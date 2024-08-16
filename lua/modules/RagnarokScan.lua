@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '36b0f19e144a4642a2839ec9cb728c3a'
 	m.Name                     = 'RagnarokScan'
-	m.RootURL                  = 'https://ragnarokscanlation.net'
+	m.RootURL                  = 'https://ragnarokscanlation.nipase.com'
 	m.Category                 = 'Spanish-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
