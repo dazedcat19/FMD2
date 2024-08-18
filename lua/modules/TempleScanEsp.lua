@@ -3,31 +3,22 @@
 ----------------------------------------------------------------------------------------------------
 
 function Init()
-	local cat = 'Spanish-Scanlation'
-	function AddWebsiteModule(id, name, url)
-		local m = NewWebsiteModule()
-		m.ID                       = id
-		m.Name                     = name
-		m.RootURL                  = url
-		m.Category                 = cat
-		m.OnGetNameAndLink         = 'GetNameAndLink'
-		m.OnGetInfo                = 'GetInfo'
-		m.OnGetPageNumber          = 'GetPageNumber'
-	end
-	AddWebsiteModule('41294a121062494489sdqt601c542ef0', 'TempleScanEsp', 'https://templescanesp.net')
-
-	cat = 'Spanish'
-	AddWebsiteModule('41294a121062494489rwra601c542efg', 'ManwhasOnline', 'https://manwhasonline.com')
+local m = NewWebsiteModule()
+	m.ID                       = '41294a121062494489rwra601c542efg'
+	m.Name                     = 'ManwhasOnline'
+	m.RootURL                  = 'https://manwhasonline.com'
+	m.Category                 = 'H-Sites'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-DirectoryPagination = {
-	['41294a121062494489sdqt601c542ef0'] = '/comics', -- TempleScanEsp
-	['41294a121062494489rwra601c542efg'] = '/doujin' -- ManwhasOnline
-}
+local Template = require 'templates.MangaEsp'
+DirectoryPagination = '/doujin?page='
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -35,25 +26,19 @@ DirectoryPagination = {
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local x = nil
-	local next_url = ''
-	local u = MODULE.RootURL .. DirectoryPagination[MODULE.ID]
+	local v, x = nil
+	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1)
 
 	if not HTTP.GET(u) then return net_problem end
 
 	x = CreateTXQuery(HTTP.Document)
-	while true do
-		x.XPathHREFAll('//a[@class="rounded-md"]', LINKS, NAMES)
-		next_url = x.XPathString('//section[@class="flex flex-col gap-6"]/div[3]/a[.="Next"]/@href')
-		if HTTP.Terminated then break end
-		if next_url == '' then break end
-		UPDATELIST.UpdateStatusText('Loading page ' .. (next_url:match('page=(%d+)') or ''))
-		if HTTP.GET(next_url) then
-			x.ParseHTML(HTTP.Document)
-		else
-			break
-		end
+	if x.XPath('//figure[@class="relative overflow-hidden rounded-lg shadow-md"]/a').Count == 0 then return no_error end
+	for v in x.XPath('//figure[@class="relative overflow-hidden rounded-lg shadow-md"]/a').Get() do
+		LINKS.Add(v.GetAttribute('href'))
+		NAMES.Add(x.XPathString('../div/div/h3', v))
 	end
+	UPDATELIST.CurrentDirectoryPageNumber = UPDATELIST.CurrentDirectoryPageNumber + 1
+
 	return no_error
 end
 
@@ -67,22 +52,13 @@ function GetInfo()
 	x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Title     = x.XPathString('//h1')
 	MANGAINFO.CoverLink = x.XPathString('//div[contains(@class, "max-w-80 w-full")]/img/@src')
-	MANGAINFO.Authors   = x.XPathString('//div/div[contains(., "Autor")]/following-sibling::div/text()')
-	MANGAINFO.Genres    = x.XPathStringAll('//div/div[contains(., "Generos") or contains(., "Genders")]/following-sibling::div/a')
-	MANGAINFO.Summary   = x.XPathString('//section[@id="section-sinopsis"]/p')
+	MANGAINFO.Authors   = x.XPathString('//div[(./i[@class="i-heroicons-user-20-solid text-green-400"])]/div')
+	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="flex flex-wrap"]/a')
+	MANGAINFO.Summary   = x.XPathString('//p[@class="text-gray-300 leading-relaxed"]')
 
-	if MODULE.ID == '41294a121062494489rwra601c542efg' then -- ManwhasOnline
-		for v in x.XPath('//*[@id="section-list-cap"]//a[1]').Get() do
-			if x.XPathString('div[@id="name"]', v) ~= '' then
-				MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
-				MANGAINFO.ChapterNames.Add(x.XPathString('div[@id="name"]', v))
-			end
-		end
-	else
-		for v in x.XPath('//*[@id="section-list-cap"]//a[2]').Get() do
-			MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
-			MANGAINFO.ChapterNames.Add(x.XPathString('.//div[@id="name"]', v))
-		end
+	for v in x.XPath('//div[@class="w-full flex-between"]/a').Get() do
+		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
+		MANGAINFO.ChapterNames.Add(x.XPathString('div[1]', v))
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
@@ -91,15 +67,7 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	local u = MaybeFillHost(MODULE.RootURL, URL)
-
-	if not HTTP.GET(u) then return net_problem end
-
-	CreateTXQuery(HTTP.Document).XPathStringAll('//section//img/@src', TASK.PageLinks)
-	for i = 0, TASK.PageLinks.Count - 1 do 
-		TASK.PageLinks[i] = TASK.PageLinks[i]:gsub("cdn.statically.io/img/", "")
-		i = i + 1
-	end
+	Template.GetPageNumber()
 
 	return no_error
 end
