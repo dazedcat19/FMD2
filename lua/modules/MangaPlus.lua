@@ -1,99 +1,126 @@
 ----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = "f239e87c7a1248d29cdd2ea8a77df36c"
+	m.Name                     = "MangaPlus"
+	m.RootURL                  = "https://mangaplus.shueisha.co.jp"
+	m.Category                 = "English"
+	m.OnGetNameAndLink         = "GetNameAndLink"
+	m.OnGetInfo                = "GetInfo"
+	m.OnGetPageNumber          = "GetPageNumber"
+	m.OnDownloadImage          = "DownloadImage"
+
+	local fmd = require 'fmd.env'
+	local slang = fmd.SelectedLanguage
+	local lang = {
+		['en'] = {
+			['imageresolution'] = 'Page resolution:',
+			['resolution'] = 'Low\nMedium\nHigh'
+		},
+		['es'] = {
+			['imageresolution'] = 'Resolución de página:',
+			['resolution'] = 'Bajo\nMedio\nAlto'
+		},
+		['fr'] = {
+			['imageresolution'] = 'Résolution de la page:',
+			['resolution'] = 'Basse\nMoyenne\nHaute'
+		},
+		['id_ID'] = {
+			['imageresolution'] = 'Resolusi halaman:',
+			['resolution'] = 'Rendah\nSedang\nTinggi'
+		},
+		['pt_BR'] = {
+			['imageresolution'] = 'Resolução da Página:',
+			['resolution'] = 'Baixa\nMédia\nAlta'
+		},
+		['ru_RU'] = {
+			['imageresolution'] = 'Разрешение страницы:',
+			['resolution'] = 'Низкое\nСреднее\nВысокое'
+		},
+		get =
+			function(self, key)
+				local sel = self[slang]
+				if sel == nil then sel = self['en'] end
+				return sel[key]
+			end
+	}
+	m.AddOptionComboBox('imageresolution', lang:get('imageresolution'), lang:get('resolution'), 2)
+end
+
+----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
-local API_URL = "https://jumpg-webapi.tokyo-cdn.com"
-local protoc = require "utils.protoc"
-local pb = require "pb"
 
+local API_URL = "https://jumpg-webapi.tokyo-cdn.com/api"
 local separator = "↣" -- Save Encryption key in the URL and separate it using obscure char (U+21A3)
-local proto_file = "MangaPlus.proto"
 
 -- Local Functions
 local function splitString(s, delimiter)
-	local result = {};
-	for match in (s..delimiter):gmatch("(.-)"..delimiter) do
-		table.insert(result, match);
+	local result = {}
+	for match in (s .. delimiter):gmatch("(.-)" .. delimiter) do
+		table.insert(result, match)
 	end
-	return result;
+	return result
 end
 
 local function hexToStr(str)
-	return str:gsub("%x%x",function(c)return c.char(tonumber(c,16))end)
+	return str:gsub("%x%x", function(c)return c.char(tonumber(c, 16))end)
 end
-
-local function readFile(file)
-	local f = assert(io.open(file, "rb"))
-	local content = f:read("*all")
-	f:close()
-	return content
-end
-
--- Read File and load it to proto
-
-local curr_path = debug.getinfo(1,'S').source
-local curr_script = curr_path:match("[^\\/]*.lua$")
-local target_file = curr_path:gsub(curr_script, proto_file):gsub("@",'')
-
-protoc:load(readFile(target_file))
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
--- Get info and chapter list for current manga.
-function GetInfo()
-	local url = MaybeFillHost(API_URL, "/api/title_detailV3?title_id=" .. URL:gsub("[^%d]",""))
+-- Get links and names from the manga list of the current website.
+function GetNameAndLink()
+	local lang, v = nil
+	local u = API_URL .. '/title_list/allV2?format=json'
 
-	if not HTTP.GET(url) then return net_problem end
+	if not HTTP.GET(u) then return net_problem end
 
-	local data = pb.decode("Response", HTTP.Document.ToString())
-	if data["success"] == nil then return net_problem end
-
-	local lang = " [en]"
-	if data["success"]["titleDetailView"]["title"]["language"] ~= nil then lang = " [es]" end
-
-	MANGAINFO.Title     = data["success"]["titleDetailView"]["title"]["name"] .. lang
-	MANGAINFO.CoverLink = data["success"]["titleDetailView"]["titleImageUrl"]
-	MANGAINFO.Authors   = data["success"]["titleDetailView"]["title"]["author"]
-	MANGAINFO.Summary   = data["success"]["titleDetailView"]["overview"]
-
-	local function addChapter(table)
-	if table ~= nil then
-		for _,v in pairs(table) do
-			local chaptername = v["subTitle"]
-			if chaptername == "" then chaptername = v["name"] end
-			MANGAINFO.ChapterNames.Add(chaptername)
-			MANGAINFO.ChapterLinks.Add(v["chapterId"])
-		end
-	end
-	end
-
-	local list_groups = data["success"]["titleDetailView"]["chapterListGroup"]
-
-	if list_groups ~= nil then
-		for _,v in pairs(list_groups) do
-			local first_list = v["firstChapterList"]
-			if first_list ~= nil then addChapter(first_list) end
-			local last_list = v["lastChapterList"]
-			if last_list ~= nil then addChapter(last_list) end
-		end
+	for v in CreateTXQuery(HTTP.Document).XPath('json(*).success.allTitlesViewV2.AllTitlesGroup().titles()').Get() do
+		lang = GetLang(v.GetProperty('language').ToString())
+		if lang == '' then lang = ' [EN]' end
+		LINKS.Add('titles/' .. v.GetProperty('titleId').ToString())
+		NAMES.Add(v.GetProperty('name').ToString() .. lang)
 	end
 
 	return no_error
 end
 
--- Get LINKS and NAMES from the manga list of the current website.
-function GetNameAndLink()
-	if not HTTP.GET(MaybeFillHost(API_URL, "/api/title_list/all")) then return net_problem end
+-- Get info and chapter list for current manga.
+function GetInfo()
+	local name, json, lang, v, x = nil
+	local u = API_URL .. '/title_detailV3?title_id=' .. URL:match('(%d+)') .. '&format=json'
 
-	local data = pb.decode("Response", HTTP.Document.ToString())
-	if data["success"] == nil then return net_problem end
+	if not HTTP.GET(u) then return net_problem end
 
-	for _,v in pairs(data["success"]["allTitlesView"]["titles"]) do
-		local lang = " [en]"
-		if v["language"] ~= nil then lang = " [es]" end
-		LINKS.Add(MaybeFillHost(MODULE.RootURL,("titles/" .. v["titleId"])))
-		NAMES.Add(v["name"] .. lang)
+	x = CreateTXQuery(HTTP.Document)
+	json = x.XPath('json(*).success.titleDetailView')
+	lang = GetLang(x.XPathString('title/language', json))
+	if lang == '' then lang = ' [EN]' end
+	MANGAINFO.Title     = x.XPathString('title/name', json) .. lang
+	MANGAINFO.CoverLink = x.XPathString('titleImageUrl', json)
+	MANGAINFO.Authors   = x.XPathString('title/author', json)
+	MANGAINFO.Summary   = x.XPathString('overview', json)
+
+	local function addChapter(chapterlist)
+		if chapterlist ~= nil then
+			local name = chapterlist.GetProperty('subTitle').ToString()
+			if name == '' then name = chapterlist.GetProperty('name').ToString() end
+			MANGAINFO.ChapterNames.Add(name)
+			MANGAINFO.ChapterLinks.Add(chapterlist.GetProperty('chapterId').ToString())
+		end
+	end
+
+	for v in x.XPath('json(*).success.titleDetailView.chapterListGroup().firstChapterList()').Get() do
+		addChapter(v)
+	end
+	for v in x.XPath('json(*).success.titleDetailView.chapterListGroup().lastChapterList()').Get() do
+		addChapter(v)
 	end
 
 	return no_error
@@ -101,21 +128,20 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	local url = MaybeFillHost(API_URL, "/api/manga_viewer?chapter_id=" .. string.gsub(URL, "[^%d]", "") .. "&img_quality=super_high&split=yes")
+	local encryption_key, image_url, v, x = nil
+	local imageresolution = {'low', 'high', 'super_high'}
+	local sel_imageresolution = (MODULE.GetOption('imageresolution') or 2) + 1
+	local u = API_URL .. '/manga_viewer?chapter_id=' .. URL:match('(%d+)') .. '&img_quality=' .. imageresolution[sel_imageresolution] .. '&split=yes&format=json'
 
-	if not HTTP.GET(url) then return net_problem end
+	if not HTTP.GET(u) then return net_problem end
 
-	local data = pb.decode("Response", HTTP.Document.ToString())
-
-	if data["success"] == nil then return net_problem end
-
-	for _,v in pairs(data["success"]["mangaViewer"]["pages"]) do
-		if v["mangaPage"] ~= nil then
-			local image_url = v["mangaPage"]["imageUrl"]
-			local encryption_key = v["mangaPage"]["encryptionKey"]
-			TASK.PageLinks.Add(image_url .. separator .. encryption_key)
-		end
+	x = CreateTXQuery(HTTP.Document)
+	for v in x.XPath('json(*).success.mangaViewer.pages().mangaPage').Get() do
+		image_url = v.GetProperty('imageUrl').ToString()
+		encryption_key = v.GetProperty('encryptionKey').ToString()
+		TASK.PageLinks.Add(image_url .. separator .. encryption_key)
 	end
+
 	return no_error
 end
 
@@ -129,25 +155,27 @@ function DownloadImage()
 
 	local data = HTTP.Document.ToString()
 	local parsed = {}
-	for i=1,data:len() do
-		parsed[i] = string.char(string.byte(data, i) ~ string.byte(key, ((i-1)%string.len(key))+1))
+	for i = 1, data:len() do
+		parsed[i] = string.char(string.byte(data, i) ~ string.byte(key, ((i - 1)%string.len(key)) + 1))
 	end
 	HTTP.Document.WriteString(table.concat(parsed, ""))
 	return true
 end
 
-----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = "f239e87c7a1248d29cdd2ea8a77df36c"
-	m.Name                     = "MangaPlus"
-	m.RootURL                  = "https://mangaplus.shueisha.co.jp"
-	m.Category                 = "English"
-	m.OnGetInfo                = "GetInfo"
-	m.OnGetNameAndLink         = "GetNameAndLink"
-	m.OnGetPageNumber          = "GetPageNumber"
-	m.OnDownloadImage          = "DownloadImage"
+function GetLang(lang)
+	local langs = {
+		["SPANISH"] = " [ES]",
+		["FRENCH"] = " [FR]",
+		["GERMAN"] = " [DE]",
+		["INDONESIAN"] = " [ID]",
+		["PORTUGUESE_BR"] = " [PT-BR]",
+		["RUSSIAN"] = " [RU]",
+		["THAI"] = " [TH]",
+		["VIETNAMESE"] = " [VI]"
+	}
+	if langs[lang] ~= nil then
+		return langs[lang]
+	else
+		return lang
+	end
 end
