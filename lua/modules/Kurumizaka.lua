@@ -43,6 +43,7 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
+	TASK.FileNames.Clear()
 	local fileutil = require 'fmd.fileutil'
 	local v = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL) .. '/image.json'
