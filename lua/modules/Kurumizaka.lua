@@ -43,6 +43,7 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
+	local fileutil = require 'fmd.fileutil'
 	local v = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL) .. '/image.json'
 
@@ -50,6 +51,7 @@ function GetPageNumber()
 
 	for v in CreateTXQuery(HTTP.Document).XPath('json(*)/*').Get() do
 		TASK.PageLinks.Add(MaybeFillHost(MODULE.RootURL, v.GetProperty('path').ToString()))
+		TASK.FileNames.Add(fileutil.ExtractFileNameOnly(v.GetProperty('alt_name').ToString()))
 	end
 
 	return no_error
