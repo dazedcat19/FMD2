@@ -97,15 +97,23 @@ end
 
 -- Get the page count for the current chapter.
 function _M.GetPageNumber()
-	local image, v = nil
-	if not HTTP.GET(API_URL .. URL) then return net_problem end
+	local image, v, x = nil
+	local u = API_URL .. URL
 
-	for v in CreateTXQuery(HTTP.Document).XPath('json(*).chapter.chapter_data.images()').Get() do
+	if not HTTP.GET(u) then return net_problem end
+
+	x = CreateTXQuery(HTTP.Document)
+	for v in x.XPath('json(*).chapter.chapter_data.images()').Get() do
 		image = v.ToString()
 		if string.find(image, 'media', 1, true) == nil then
 			image = CDN_URL .. '/' .. image
 		end
 		TASK.PageLinks.Add(image)
+	end
+	if TASK.PageLinks.Count == 0 then
+		for v in x.XPath('json(*).chapter.chapter_data.files()').Get() do
+			TASK.PageLinks.Add(v.GetProperty('url').ToString())
+		end
 	end
 
 	return no_error
