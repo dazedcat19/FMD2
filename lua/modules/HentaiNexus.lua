@@ -19,6 +19,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
+Hostname = 'hentainexus.com'     -- Replace with actual hostname for retrieval
 DirectoryPagination = '/page/'
 
 ----------------------------------------------------------------------------------------------------
@@ -95,15 +96,54 @@ function GetPageNumber()
 	return no_error
 end
 
+-- Helper functions
+local function charCodeAt(str, index)
+	return string.byte(str, index)
+end
+
+local function fromCharCode(...)
+	return string.char(...)
+end
+
+-- Custom XOR function
+local function bxor(a, b)
+	local r = 0
+	for i = 0, 31 do
+		local x = a / 2 + b / 2
+		if x ~= math.floor(x) then
+			r = r + 2^i
+		end
+		a = math.floor(a / 2)
+		b = math.floor(b / 2)
+	end
+	return r
+end
+
+-- Unpack function that works across different Lua versions
+local unpack = table.unpack or unpack
+
+-- Decrypt text
 function DecryptMessage(str)
 	local crypto = require 'fmd.crypto'
 	message = crypto.DecodeBase64(str)
+	local decodedChars = {message:byte(1, #message)}
+	
+	local host = Hostname  
+	local hostnameChars = {host:byte(1, #host)}
+	local limit = math.min(#hostnameChars, 64)
+	
+	for i = 1, limit do
+		decodedChars[i] = charCodeAt(fromCharCode(bxor(decodedChars[i], hostnameChars[i])), 1)
+	end
+	
+	message = string.char(unpack(decodedChars))
+
 	prime_array = {2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53}
 	local prime_picker = 0
 	for i = 1, 64 do
 		prime_picker = prime_picker ~ string.byte(message, i)
 		for j = 1, 8 do
-            -- no need for zero shift bit correction since message byte will always be positive
+			-- no need for zero shift bit correction since message byte will always be positive
 			if(prime_picker & 1 == 1) then
 				prime_picker = prime_picker >> 1 ~ 12
 			else
