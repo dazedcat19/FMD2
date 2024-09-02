@@ -8,11 +8,11 @@ function Init()
 	m.Name                     = 'NetTruyen'
 	m.RootURL                  = 'https://nettruyenviet.com'
 	m.Category                 = 'Vietnamese'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
 	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
-	m.SortedList               = true
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -20,11 +20,18 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.WPComics'
--- DirectoryPagination = '/tim-truyen?status=&sort=15&page=%s'
+-- DirectoryPagination = '/tim-truyen?page=%s'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
+
+-- Get the page count of the manga list of the current website.
+function GetDirectoryPageNumber()
+	Template.GetDirectoryPageNumber()
+
+	return no_error
+end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()

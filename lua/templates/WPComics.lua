@@ -8,31 +8,30 @@ local _M = {}
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-DirectoryPagination = '/tim-truyen?status=&sort=15&page=%s'
+DirectoryPagination = '/tim-truyen?page=%s'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
--- Get links and names from the manga list of the current website.
-function _M.GetNameAndLink()
-	local next_url, x = nil
+-- Get the page count of the manga list of the current website.
+function _M.GetDirectoryPageNumber()
 	local u = MODULE.RootURL .. DirectoryPagination:format(1)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
-	while true do
-		x.XPathHREFAll('//div[@class="item"]//h3/a', LINKS, NAMES)
-		next_url = x.XPathString('//ul[@class="pagination"]/li[last()]/a/@href')
-		if next_url == '' then break end
-		UPDATELIST.UpdateStatusText('Loading page ' .. (next_url:match('page=(%d+)') or ''))
-		if HTTP.GET(next_url) then
-			x.ParseHTML(HTTP.Document)
-		else
-			break
-		end
-	end
+	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//ul[@class="pagination"]/li[last()-1]/a')) or 1
+
+	return no_error
+end
+
+-- Get links and names from the manga list of the current website.
+function _M.GetNameAndLink()
+	local u = MODULE.RootURL .. DirectoryPagination:format((URL + 1))
+
+	if not HTTP.GET(u) then return net_problem end
+
+	CreateTXQuery(HTTP.Document).XPathHREFAll('//div[@class="item"]//h3/a', LINKS, NAMES)
 
 	return no_error
 end
@@ -49,10 +48,10 @@ function _M.GetInfo()
 	MANGAINFO.CoverLink = x.XPathString('//div[contains(@class, "col-image")]/img/@src')
 	MANGAINFO.Authors   = x.XPathString('//li[contains(@class, "author")]/p[2]/normalize-space(.)')
 	MANGAINFO.Genres    = x.XPathStringAll('//li[contains(@class, "kind")]/p[2]/a')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//li[contains(@class, "status")]/p[2]'), 'Ongoing|Đang tiến hành', 'Completed|Hoàn thành')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//li[contains(@class, "status")]/p[2]'), 'Ongoing|Đang tiến hành|Đang cập nhật', 'Completed|Hoàn thành')
 	MANGAINFO.Summary   = x.XPathString('//div[@class="detail-content"]/*[not(@class="list-title")]')
 
-	x.XPathHREFAll('//div[@class="list-chapter"]//ul/li/div[contains(@class, "chapter")]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+	x.XPathHREFAll('//div[@class="list-chapter"]//li[not(@style)]//a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	HTTP.Reset()

@@ -8,7 +8,6 @@ function Init()
 	m.Name                     = 'XoxoComics'
 	m.RootURL                  = 'https://xoxocomic.com'
 	m.Category                 = 'English'
-	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
@@ -28,7 +27,23 @@ DirectoryPagination = '/new-comic?page=%s'
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	Template.GetNameAndLink()
+	local next_url, x = nil
+	local u = MODULE.RootURL .. DirectoryPagination:format(1)
+
+	if not HTTP.GET(u) then return net_problem end
+
+	x = CreateTXQuery(HTTP.Document)
+	while true do
+		x.XPathHREFAll('//div[@class="item"]//h3/a', LINKS, NAMES)
+		next_url = x.XPathString('//ul[@class="pagination"]/li[last()]/a/@href')
+		if next_url == '' then break end
+		UPDATELIST.UpdateStatusText('Loading page ' .. (next_url:match('page=(%d+)') or ''))
+		if HTTP.GET(next_url) then
+			x.ParseHTML(HTTP.Document)
+		else
+			break
+		end
+	end
 
 	return no_error
 end
