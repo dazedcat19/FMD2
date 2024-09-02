@@ -14,7 +14,6 @@ function Init()
 		m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	end
 	AddWebsiteModule('ef7f922bd45f4f9d9c559a55f987004d', 'TruyenChon', 'http://truyenchon.com')
-	AddWebsiteModule('567780dbaa3149e7ad698f11ce68ea9b', 'NetTruyen', 'https://nettruyenviet.com')
 	AddWebsiteModule('d25308907620480496bd73f50451d67f', 'NhatTruyen', 'http://nhattruyentranh.com')
 
 	cat = 'English'
@@ -23,7 +22,6 @@ end
 
 local dirurl = {
 	['ef7f922bd45f4f9d9c559a55f987004d'] = '/the-loai?status=-1&sort=15&page=%s', -- truyenchon
-	['567780dbaa3149e7ad698f11ce68ea9b'] = '/tim-truyen?status=-1&sort=15&page=%s', -- nettruyen
 	['d2f24dec90e841b1aab4bea145ffb638'] = '/genres?status=-1&sort=15&page=%s', -- mangatoro
 	['d25308907620480496bd73f50451d67f'] = '/the-loai?status=-1&sort=15&page=%s' -- nhattruyen
 }
