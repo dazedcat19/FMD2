@@ -52,6 +52,12 @@ end
 function GetInfo()
 	Template.GetInfo()
 
+	local u = MaybeFillHost(MODULE.RootURL, URL)
+
+	if not HTTP.GET(u) then return net_problem end
+
+	MANGAINFO.Title = CreateTXQuery(HTTP.Document).XPathString('//h1[@class="title-detail"]'):gsub('Comic$','')
+
 	return no_error
 end
 
