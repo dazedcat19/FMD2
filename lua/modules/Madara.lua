@@ -408,7 +408,7 @@ function Init()
 	cat = 'Webcomics'
 	AddWebsiteModule('d903d55663f0423ca4dd928c8203f7ce', 'PocketAngelScan', 'https://pocketangelscans.com')
 	AddWebsiteModule('4f0a570000854509b71350983fa55eec', 'ManhuaBox', 'https://manhuabox.net')
-	AddWebsiteModule('6e4b199622604f6fb77c95457dd1145e', 'TopManhua', 'https://topmanhua.com')
+	AddWebsiteModule('6e4b199622604f6fb77c95457dd1145e', 'TopManhua', 'https://manhuatop.org')
 	AddWebsiteModule('00f2827e03654ad5bcde3b7ae536b416', 'Manga3S', 'https://manga3s.com')
 	AddWebsiteModule('8a230d1a3f5c416fa71d07127e8dfab5', 'GetManhwa', 'https://getmanhwa.co')
 	AddWebsiteModule('35da2f2d501c4035b03c7a66c449cb90', 'Manhuas', 'https://manhuas.net')
