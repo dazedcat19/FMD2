@@ -40,7 +40,7 @@ function GetDirectoryPageNumber()
 	if not HTTP.GET(u) then return net_problem end
 
 	x = CreateTXQuery(HTTP.Document)
-	PAGENUMBER = tonumber(math.floor(x.XPathString('json(*).pageNavParams.count') / x.XPathString('json(*).pageNavParams.limit') + 0.5)) or 1
+	PAGENUMBER = tonumber(math.ceil(x.XPathString('json(*).pageNavParams.count') / x.XPathString('json(*).pageNavParams.limit'))) or 1
 
 	return no_error
 end
