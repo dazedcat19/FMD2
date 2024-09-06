@@ -1,19 +1,43 @@
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                         = '053da85062184626a0a1ff6d57c3c955'
-	m.Name                       = 'Hentai2Read'
-	m.RootURL                    = 'https://hentai2read.com'
-	m.Category                   = 'H-Sites'
-	m.OnGetDirectoryPageNumber   = 'GetDirectoryPageNumber'
-	m.OnGetNameAndLink           = 'GetNameAndLink'
-	m.OnGetInfo                  = 'GetInfo'
-	m.OnGetPageNumber            = 'GetPageNumber'
-	m.OnGetImageURL              = 'GetImageURL'
-	m.SortedList                 = true
+	m.ID                       = '053da85062184626a0a1ff6d57c3c955'
+	m.Name                     = 'Hentai2Read'
+	m.RootURL                  = 'https://hentai2read.com'
+	m.Category                 = 'H-Sites'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnGetImageURL            = 'GetImageURL'
+	m.OnLogin                  = 'Login'
+	m.AccountSupport           = true
+	m.SortedList               = true
 end
 
 local dirurl = '/hentai-list/all/any/all/last-added';
 local cdnurl = 'http://static.hentaicdn.com/hentai';
+
+function Login()
+	local login_url = MODULE.RootURL .. '/login'
+	if MODULE.Account.Enabled == false then return false end
+	local crypto = require 'fmd.crypto'
+	local s = 'log=' .. crypto.EncodeURLElement(MODULE.Account.Username) ..
+			'&pwd=' .. crypto.EncodeURLElement(MODULE.Account.Password) ..
+			'&submit=&redirect_to=https%3A%2F%2Fhentai2read.com%2Fwp-admin%2F&testcookie=1'
+	MODULE.Account.Status = asChecking
+	if HTTP.POST(login_url, s) then
+		if (HTTP.ResultCode == 200) and (CreateTXQuery(HTTP.Document).XPathString('//span[@class="font-w600 push-10-l"]') ~= '') then
+			MODULE.Account.Status = asValid
+			return true
+		else
+			MODULE.Account.Status = asInvalid
+			return false
+		end
+	else
+		MODULE.Account.Status = asUnknown
+		return false
+	end
+end
 
 function GetDirectoryPageNumber()
 	if HTTP.GET(MODULE.RootURL .. dirurl) then
