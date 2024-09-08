@@ -69,14 +69,7 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	local x = nil
-	local u = MaybeFillHost(MODULE.RootURL, URL)
-
-	if not HTTP.GET(u) then return net_problem end
-
-	x = CreateTXQuery(HTTP.Document)
-	x.ParseHTML('[' .. GetBetween('[', ']', x.XPathString('//script[@id="chapter_preloaded_images"]')) .. ']')
-	x.XPathStringAll('json(*)().src', TASK.PageLinks)
+	Template.GetPageNumber()
 
 	return no_error
 end

@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '273d639c63fa4cafb4f27a4b6e0679d9'
 	m.Name                     = 'PojokManga'
-	m.RootURL                  = 'https://pojokmanga.org'
+	m.RootURL                  = 'https://pojokmanga.info'
 	m.Category                 = 'Indonesian'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'

@@ -37,7 +37,7 @@ end
 
 -- Get info and chapter list for current manga.
 function _M.GetInfo()
-	local id, q, status, x = nil
+	local id, s, x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
@@ -48,10 +48,8 @@ function _M.GetInfo()
 	MANGAINFO.Authors   = x.XPathStringAll('//div[@class="author-content"]/a')
 	MANGAINFO.Artists   = x.XPathStringAll('//div[@class="artist-content"]/a')
 	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="genres-content"]/a')
-	status = x.XPathString('//div[@class="summary-heading" and contains(., "' .. XPathTokenStatus .. '")]/following-sibling::div')
-	status = status:gsub('Berjalan', 'Ongoing'):gsub('مستمرة', 'Ongoing'):gsub('Tamat', 'Completed'):gsub('مكتملة', 'Completed')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(status)
-	MANGAINFO.Summary   = x.XPathString('//div[@class="description-summary" or @class="manga-excerpt" or @class="manga-summary"]//p')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@class="summary-heading" and contains(., "' .. XPathTokenStatus .. '")]/following-sibling::div'), 'Berjalan|Ongoing|مستمرة', 'Tamat|Completed|مكتملة')
+	MANGAINFO.Summary   = x.XPathString('string-join(//div[contains(@class, "summary__content") or @class="manga-summary"]|//div[@class="manga-excerpt"]//span, "\r\n")')
 
 	if MANGAINFO.CoverLink == '' then MANGAINFO.CoverLink = x.XPathString('//div[@class="summary_image"]//img/@src') end
 	if MANGAINFO.Authors == '' then MANGAINFO.Authors = x.XPathString('//div[@class="summary-heading" and contains(., "' .. XPathTokenAuthors .. '")]/following-sibling::div') end
@@ -59,9 +57,9 @@ function _M.GetInfo()
 	if MANGAINFO.Genres == '' then MANGAINFO.Genres = x.XPathStringAll('//div[@class="summary-heading" and contains(., "' .. XPathTokenGenres .. '")]/following-sibling::div/a') end
 
 	id = x.XPathString('//div[contains(@id, "manga-chapters-holder")]/@data-id')
-	if x.XPathString('normalize-space(.)'):find('ajax_url') then
+	x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+	if MANGAINFO.ChapterLinks.Count == 0 then
 		HTTP.Reset()
-		HTTP.Headers.Values['Cache-Control'] = 'no-cache'
 		HTTP.Headers.Values['X-Requested-With'] = 'XMLHttpRequest'
 		if HTTP.POST(MANGAINFO.URL .. 'ajax/chapters') then
 			x = CreateTXQuery(HTTP.Document)
@@ -70,29 +68,20 @@ function _M.GetInfo()
 				x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 			end
 		end
-		if MANGAINFO.ChapterLinks.Count == 0 then
-			HTTP.Reset()
-			HTTP.Headers.Values['Cache-Control'] = 'no-cache'
-			HTTP.Headers.Values['X-Requested-With'] = 'XMLHttpRequest'
-			HTTP.MimeType = 'application/x-www-form-urlencoded'
-			q = ChapterParameters .. id
-			if HTTP.POST(MODULE.RootURL .. '/wp-admin/admin-ajax.php', q) then
-				CreateTXQuery(HTTP.Document).XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
-			end
-		end
-		if MANGAINFO.ChapterLinks.Count == 0 then
-			x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+	end
+	if MANGAINFO.ChapterLinks.Count == 0 then
+		HTTP.Reset()
+		HTTP.Headers.Values['Cache-Control'] = 'no-cache'
+		HTTP.Headers.Values['X-Requested-With'] = 'XMLHttpRequest'
+		HTTP.MimeType = 'application/x-www-form-urlencoded'
+		s = ChapterParameters .. id
+		if HTTP.POST(MODULE.RootURL .. '/wp-admin/admin-ajax.php', s) then
+			CreateTXQuery(HTTP.Document).XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 		end
 	end
-	ReverseLinksAndChapters()
-
-	return no_error
-end
-
-function ReverseLinksAndChapters()
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
-	return true
+	return no_error
 end
 
 -- Get the page count for the current chapter.
@@ -106,6 +95,10 @@ function _M.GetPageNumber()
 	x = CreateTXQuery(HTTP.Document)
 	x.XPathStringAll('//div[contains(@class, "page-break")]/img/@data-src', TASK.PageLinks)
 	if TASK.PageLinks.Count == 0 then x.XPathStringAll('//div[contains(@class, "page-break")]/img/@src', TASK.PageLinks) end
+	if TASK.PageLinks.Count == 0 then
+		x.ParseHTML('[' .. GetBetween('[', ']', x.XPathString('//script[@id="chapter_preloaded_images"]')) .. ']')
+		x.XPathStringAll('json(*)().src', TASK.PageLinks)
+	end
 	for i = 0, TASK.PageLinks.Count - 1 do
 		TASK.PageLinks[i] = TASK.PageLinks[i]:gsub("i%d.wp.com/", "")
 		i = i + 1

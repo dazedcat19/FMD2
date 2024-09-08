@@ -38,6 +38,7 @@ end
 function GetInfo()
 	Template.GetInfo()
 
+	local x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end

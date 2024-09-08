@@ -32,7 +32,7 @@ DirectoryPagination = '/mangax/page/'
 
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
-	if not HTTP.GET(MODULE.RootURL .. DirectoryPagination .. "1") then return net_problem end
+	if not HTTP.GET(MODULE.RootURL .. DirectoryPagination .. 1) then return net_problem end
 
 	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//div[@class="wp-pagenavi"]/a[last()]/@href'):match('/(%d+)/?')) or 1
 

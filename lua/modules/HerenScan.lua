@@ -38,12 +38,6 @@ end
 function GetInfo()
 	Template.GetInfo()
 
-	local u = MaybeFillHost(MODULE.RootURL, URL)
-
-	if not HTTP.GET(u) then return net_problem end
-
-	MANGAINFO.Summary = CreateTXQuery(HTTP.Document).XPathString('//div[@class="manga-excerpt"]//span')
-
 	return no_error
 end
 

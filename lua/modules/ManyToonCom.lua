@@ -22,6 +22,7 @@ local Template = require 'templates.Madara'
 -- XPathTokenArtists = 'Artist(s)'
 -- XPathTokenGenres  = 'Genre(s)'
 -- XPathTokenStatus  = 'Status'
+ChapterParameters = 'action=ajax_chap&post_id='
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -37,23 +38,6 @@ end
 -- Get info and chapter list for current manga.
 function GetInfo()
 	Template.GetInfo()
-
-	local id, q, x = nil
-	local u = MaybeFillHost(MODULE.RootURL, URL)
-
-	if not HTTP.GET(u) then return net_problem end
-
-	x = CreateTXQuery(HTTP.Document)
-	HTTP.Reset()
-	HTTP.Headers.Values['Cache-Control'] = 'no-cache'
-	HTTP.Headers.Values['X-Requested-With'] = 'XMLHttpRequest'
-	HTTP.MimeType = 'application/x-www-form-urlencoded'
-	id = x.XPathString('//div[contains(@id, "manga-chapters-holder")]/@data-id')
-	q = 'action=ajax_chap&post_id=' .. id
-	if HTTP.POST(MODULE.RootURL .. '/wp-admin/admin-ajax.php', q) then
-		CreateTXQuery(HTTP.Document).XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
-	end
-	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
 end
