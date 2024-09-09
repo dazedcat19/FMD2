@@ -49,7 +49,7 @@ function _M.GetInfo()
 	MANGAINFO.Artists   = x.XPathStringAll('//div[@class="artist-content"]/a')
 	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="genres-content"]/a')
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@class="summary-heading" and contains(., "' .. XPathTokenStatus .. '")]/following-sibling::div'), 'Berjalan|Ongoing|مستمرة', 'Tamat|Completed|مكتملة')
-	MANGAINFO.Summary   = x.XPathString('string-join(//div[contains(@class, "summary__content") or @class="manga-summary"]|//div[@class="manga-excerpt"]//span, "\r\n")')
+	MANGAINFO.Summary   = x.XPathString('string-join(//div[contains(@class, "summary__content") or @class="manga-summary"]|//div[@class="manga-excerpt"], "\r\n")')
 
 	if MANGAINFO.CoverLink == '' then MANGAINFO.CoverLink = x.XPathString('//div[@class="summary_image"]//img/@src') end
 	if MANGAINFO.Authors == '' then MANGAINFO.Authors = x.XPathString('//div[@class="summary-heading" and contains(., "' .. XPathTokenAuthors .. '")]/following-sibling::div') end
@@ -86,7 +86,7 @@ end
 
 -- Get the page count for the current chapter.
 function _M.GetPageNumber()
-	local x = nil
+	local i, x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 	if string.find(u, 'style=list', 1, true) == nil then u = string.gsub(u, '?style=paged', '') .. '?style=list' end
 
