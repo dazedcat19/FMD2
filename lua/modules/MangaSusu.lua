@@ -7,10 +7,11 @@ function Init()
 	m.ID                       = 'c69cbc947a6a42e194b2e097bba15047'
 	m.Name                     = 'MangaSusu'
 	m.RootURL                  = 'https://mangasusuku.xyz'
-	m.Category                 = 'Indonesian'
+	m.Category                 = 'H-Sites'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.TotalDirectory           = AlphaList:len()
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -18,7 +19,8 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.MangaThemesia'
--- DirectoryPagination = '/manga/list-mode/'
+AlphaList = '##ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+DirectoryPagination = '/az-list/page/'
 -- XPathTokenAuthors   = 'Author'
 -- XPathTokenArtists   = 'Artist'
 
@@ -28,15 +30,19 @@ local Template = require 'templates.MangaThemesia'
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	Template.GetNameAndLink()
-
+	local i, s, x = nil
 	if MODULE.CurrentDirectoryIndex == 0 then
+		s = '.'
+	elseif MODULE.CurrentDirectoryIndex == 1 then
 		s = '0-9'
 	else
 		i = MODULE.CurrentDirectoryIndex + 1
 		s = AlphaList:sub(i, i)
 	end
-	if not HTTP.GET(MODULE.RootURL .. DirectoryPagination .. (URL + 1) .. '/?show=' .. s) then return net_problem end
+	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1) .. '/?show=' .. s
+
+	if not HTTP.GET(u) then return net_problem end
+
 	x = CreateTXQuery(HTTP.Document)
 	x.XPathHREFTitleAll('//div[@class="bsx"]/a', LINKS, NAMES)
 	UPDATELIST.CurrentDirectoryPageNumber = tonumber(x.XPathString('//div[@class="pagination"]/a[last()-1]')) or 1

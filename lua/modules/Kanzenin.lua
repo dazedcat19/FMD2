@@ -7,7 +7,7 @@ function Init()
 	m.ID                       = 'edb6b5cdbd8e42eab1f0c6b2f4b28758'
 	m.Name                     = 'Kanzenin'
 	m.RootURL                  = 'https://kanzenin.info'
-	m.Category                 = 'Indonesian'
+	m.Category                 = 'H-Sites'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
@@ -19,7 +19,7 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.MangaThemesia'
-AlphaList = '#.ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+AlphaList = '##ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 DirectoryPagination = '/a-z-list/page/'
 -- XPathTokenAuthors   = 'Author'
 -- XPathTokenArtists   = 'Artist'
@@ -32,6 +32,8 @@ DirectoryPagination = '/a-z-list/page/'
 function GetNameAndLink()
 	local i, s, x = nil
 	if MODULE.CurrentDirectoryIndex == 0 then
+		s = '.'
+	elseif MODULE.CurrentDirectoryIndex == 1 then
 		s = '0-9'
 	else
 		i = MODULE.CurrentDirectoryIndex + 1

@@ -11,6 +11,7 @@ local _M = {}
 DirectoryPagination = '/manga/list-mode/'
 XPathTokenAuthors   = 'Author'
 XPathTokenArtists   = 'Artist'
+XPathTokenStatus    = 'Status'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -40,7 +41,7 @@ function _M.GetInfo()
 	MANGAINFO.Authors   = GetAuthors(x)
 	MANGAINFO.Artists   = GetArtists(x)
 	MANGAINFO.Genres    = GetGenres(x)
-	MANGAINFO.Status    = MangaInfoStatusIfPos(GetStatus(x))
+	MANGAINFO.Status    = MangaInfoStatusIfPos(GetStatus(x), 'Berjalan|Ongoing|Publishing', 'Tamat|Completed|Finished')
 	MANGAINFO.Summary   = x.XPathString('//div[@itemprop="description"]/*[not(script)]')
 
 	for v in x.XPath('//div[@id="chapterlist"]//div[@class="eph-num"]/a').Get() do
@@ -86,14 +87,13 @@ end
 
 function GetStatus(x)
 	local status = x.XPathString('//td[contains(., "Status")]/following-sibling::td')
-	if status == '' then status = x.XPathString('//div[@class="imptdt" and contains(., "Status")]/i') end
-	status = status:gsub('Berjalan', 'Ongoing'):gsub('Tamat', 'Completed'):gsub('Publishing', 'Ongoing'):gsub('Finished', 'Completed')
+	if status == '' then status = x.XPathString('//div[@class="imptdt" and contains(., "' .. XPathTokenStatus .. '")]/i') end
 	return status
 end
 
 -- Get the page count for the current chapter.
 function _M.GetPageNumber()
-	local i, v, x = nil
+	local i, x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
