@@ -17,11 +17,11 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.Madara'
--- XPathTokenAuthors = 'Author(s)'
--- XPathTokenArtists = 'Artist(s)'
--- XPathTokenGenres  = 'Genre(s)'
--- XPathTokenStatus  = 'Status'
+local Template = require 'templates.MangaThemesia'
+DirectoryPagination = '/mangas/'
+-- XPathTokenAuthors   = 'Author'
+-- XPathTokenArtists   = 'Artist'
+XPathTokenStatus    = 'Estado'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -29,7 +29,23 @@ local Template = require 'templates.Madara'
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	Template.GetNameAndLink()
+	local next_url, x = nil
+	local u = MODULE.RootURL .. DirectoryPagination
+
+	if not HTTP.GET(u) then return net_problem end
+
+	x = CreateTXQuery(HTTP.Document)
+	while true do
+		x.XPathHREFTitleAll('//div[@class="bsx"]/a', LINKS, NAMES)
+		next_url = x.XPathString('//div[@class="pagination"]/a[contains(@class, "next")]/@href')
+		if next_url == '' then break end
+		UPDATELIST.UpdateStatusText('Loading page ' .. (next_url:match('(%d+)') or ''))
+		if HTTP.GET(next_url) then
+			x.ParseHTML(HTTP.Document)
+		else
+			break
+		end
+	end
 
 	return no_error
 end
