@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'edf6b037808442508a3aaeb1413699bf'
 	m.Name                     = 'KomikIndo'
-	m.RootURL                  = 'https://komikindo.tv'
+	m.RootURL                  = 'https://komikindo.ws'
 	m.Category                 = 'Indonesian'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -18,7 +18,7 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.MangaThemesia'
-DirectoryPagination = '/daftar-komik/?list'
+DirectoryPagination = '/daftar-manga/?list'
 -- XPathTokenAuthors   = 'Author'
 -- XPathTokenArtists   = 'Artist'
 
