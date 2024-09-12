@@ -40,9 +40,9 @@ function GetInfo()
 	Template.GetInfo()
 
 	x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Authors   = x.XPathStringAll('//span[contains(b, "Pengarang")]/a')
-	MANGAINFO.Artists   = x.XPathStringAll('//span[contains(b, "Ilustrator")]/a')
-	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="genre-info"]/a')
+	MANGAINFO.Authors   = x.XPathStringAll('//span[contains(b, "Pengarang")]/text()')
+	MANGAINFO.Artists   = x.XPathStringAll('//span[contains(b, "Ilustrator")]/text()')
+	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="genre-info"]/a|//span[contains(b, "Tema")]/a|//span[contains(b, "Grafis")]/a|//span[contains(b, "Jenis Komik")]/a')
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//span[contains(b, "Status")]'), 'Berjalan', 'Tamat')
 	MANGAINFO.Summary   = x.XPathString('//div[@itemprop="description"]/normalize-space(.)')
 
