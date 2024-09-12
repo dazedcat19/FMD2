@@ -28,7 +28,7 @@ function _M.Login()
 	MODULE.Account.Status = asChecking
 	HTTP.Reset()
 	if HTTP.POST(login_url, s) then
-		if (HTTP.ResultCode == 200) and (CreateTXQuery(HTTP.Document).XPathString('//li[@id="wp-admin-bar-logout"]') ~= '') then
+		if (HTTP.ResultCode == 200) and (CreateTXQuery(HTTP.Document).XPathString('//div[@id="dropdown-user"]//li/a[contains(@href, "logout")]') ~= '') then
 			MODULE.Account.Status = asValid
 			return true
 		else
