@@ -35,6 +35,19 @@ function Init()
 	m.AddOptionCheckBox('showscangroup', lang:get('showscangroup'), false)
 end
 
+function parse_iso8601(date_str)
+    local pattern = "(%d+)%-(%d+)%-(%d+)T(%d+):(%d+):(%d+)"
+    local year, month, day, hour, min, sec = date_str:match(pattern)
+    return os.time({
+        year = year,
+        month = month,
+        day = day,
+        hour = hour,
+        min = min,
+        sec = sec
+    })
+end
+
 function GetNameAndLink()
 	if HTTP.GET(API_URL .. '/v1.0/search?limit=300&page=' .. (URL + 1) .. '&sort=uploaded') then
 		local x = CreateTXQuery(HTTP.Document)
@@ -65,7 +78,6 @@ function GetInfo()
 		local demographic    = x.XPathString('json(*).demographic')
 		if demographic == 'null' then demographic = '' end
 		if demographic ~= '' then MANGAINFO.Genres = MANGAINFO.Genres .. ', ' .. demographic end
-		
 
 		local mangaId   = x.XPathString('json(*).comic.hid')
 		local optgroup  = MODULE.GetOption('showscangroup')
@@ -84,7 +96,17 @@ function GetInfo()
 				for ic = 1, chapters.Count do
 					local ignore = false
 
-					local groupids = x.XPath('json(*).chapters()[' .. ic .. '].group_name()')
+					-- Ignore chapter if it has delayed time
+					local pa = x.XPathString('json(*).chapters()[' .. ic .. '].publish_at')
+					if pa ~= 'null' then
+						ts = parse_iso8601(pa)
+					end
+					if ts >= os.time(os.date('!*t')) then
+						ignore = true
+					end
+					
+					local groupids = x.XPath('json(*).chapters()[' .. ic .. '].md_chapters_groups().md_groups.title')
+					if groupids.Count == 0 then groupids = x.XPath('json(*).chapters()[' .. ic .. '].group_name()') end
 					local groups = {}
 					for gid = 1, groupids.Count do
 						groups[gid] = groupids.Get(gid).ToString()
