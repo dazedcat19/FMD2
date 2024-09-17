@@ -51,19 +51,11 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	local v, x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
 	
-	x = CreateTXQuery(HTTP.Document)
-	x.ParseHTML(GetBetween('run(', ');', x.XPathString('//script[contains(., "ts_reader")]')))
-	for v in x.XPath('json(*).sources()[1].images()').Get() do
-		if string.find(v.ToString(), 'radio', 1, true) == nil and
-		string.find(v.ToString(), 'credit', 1, true) == nil then
-			TASK.PageLinks.Add(v.ToString())
-		end
-	end
+	CreateTXQuery(HTTP.Document).XPathStringAll('//div[@id="readerarea"]/p/img/@src', TASK.PageLinks)
 
 	return no_error
 end
