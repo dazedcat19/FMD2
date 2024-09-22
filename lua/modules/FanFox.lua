@@ -21,10 +21,12 @@ function Init()
 	local slang = fmd.SelectedLanguage
 	local lang = {
 		['en'] = {
+			['timeout'] = 'Timeout in (s)',
 			['removewatermark'] = 'Remove watermark',
 			['saveaspng'] = 'Save as PNG'
 		},
 		['id_ID'] = {
+			['timeout'] = 'Batas waktu dalam (detik)',
 			['removewatermark'] = 'Hapus watermark',
 			['saveaspng'] = 'Simpan sebagai PNG'
 		},
@@ -36,6 +38,7 @@ function Init()
 			end
 	}
 	m.OnAfterImageSaved = 'AfterImageSaved'
+	m.AddOptionSpinEdit('mf_timeout', lang:get('timeout'), 60)
 	m.AddOptionCheckBox('mf_removewatermark', lang:get('removewatermark'), true)
 	m.AddOptionCheckBox('mf_saveaspng', lang:get('saveaspng'), false)
 	require('fmd.mangafoxwatermark').LoadTemplate(fmd.LuaDirectory .. 'extras\\mangafoxtemplate')
@@ -111,7 +114,10 @@ function GetPageNumber()
 			TASK.PageNumber = tonumber(s:match('imagecount%s*=%s*(%d-)%s*;') or '0')
 			if TASK.PageNumber == nil then TASK.PageNumber = 1 end
 			local p = 1
+			local ts = os.time()
+			local timeout = tonumber(MODULE.GetOption('mf_timeout'))
 			while p <= TASK.PageNumber do
+				if os.time() >= ts + timeout then print(string.format("%s second timeout.", timeout)) break end
 				HTTP.Reset()
 				HTTP.Headers.Values['Pragma'] = 'no-cache'
 				HTTP.Headers.Values['Cache-Control'] = 'no-cache'
