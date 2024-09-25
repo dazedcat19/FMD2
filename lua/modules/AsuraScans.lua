@@ -73,7 +73,7 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('//div/img[@alt="chapter page"]/@src', TASK.PageLinks)
+	CreateTXQuery(HTTP.Document).XPathStringAll('//div/img[contains(@alt, "chapter page")]/@src', TASK.PageLinks)
 
 	return no_error
 end
