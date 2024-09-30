@@ -5,7 +5,7 @@ unit VirtualPropertyGridEditLink;
 interface
 
 uses
-  Classes, Windows, SysUtils, Messages, typinfo, VirtualPropertyGrid, Laz.VirtualTrees,
+  Classes, Windows, SysUtils, Messages, typinfo, VirtualPropertyGrid, VirtualTrees,
   Controls, StdCtrls, LMessages, LCLType, Spin, EditBtn, Forms, StringsPropEditDlg;
 
 type

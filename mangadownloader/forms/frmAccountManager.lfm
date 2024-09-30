@@ -121,7 +121,7 @@ object AccountManagerForm: TAccountManagerForm
       TabOrder = 1
     end
   end
-  object vtAccountList: TLazVirtualStringTree
+  object vtAccountList: TVirtualStringTree
     Left = 0
     Height = 316
     Top = 0

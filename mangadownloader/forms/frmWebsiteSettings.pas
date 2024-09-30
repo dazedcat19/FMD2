@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, WebsiteModules, VirtualPropertyGrid, frmCustomColor, Forms,
-  Controls, PairSplitter, EditBtn, Laz.VirtualTrees, uBaseUnit, Graphics;
+  Controls, PairSplitter, EditBtn, VirtualTrees, uBaseUnit, Graphics;
 
 type
 
@@ -18,7 +18,7 @@ type
     spMain: TPairSplitter;
     spList: TPairSplitterSide;
     spProps: TPairSplitterSide;
-    vtWebsite: TLazVirtualStringTree;
+    vtWebsite: TVirtualStringTree;
     procedure edSearchButtonClick(Sender: TObject);
     procedure edSearchChange(Sender: TObject);
     procedure edSearchPropertyButtonClick(Sender: TObject);

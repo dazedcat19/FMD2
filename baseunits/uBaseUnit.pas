@@ -23,7 +23,7 @@ uses
   fgl, RegExpr, synautil, httpsend,
   synacode, MultiLog, FPimage, GZIPUtils, uMisc, httpsendthread, FMDOptions,
   ImgInfos, NaturalSortUnit,
-  MemBitmap, FPWritePNG, zstream, FPReadPNG, Laz.VirtualTrees;
+  MemBitmap, FPWritePNG, zstream, FPReadPNG, VirtualTrees;
 
 const
   LineEnding2 = LineEnding + LineEnding;

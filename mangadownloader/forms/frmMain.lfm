@@ -13,7 +13,7 @@ object MainForm: TMainForm
   OnDestroy = FormDestroy
   OnWindowStateChange = FormWindowStateChange
   ShowHint = True
-  LCLVersion = '2.1.0.0'
+  LCLVersion = '3.4.0.0'
   object pcMain: TPageControl
     Left = 2
     Height = 610
@@ -450,7 +450,7 @@ object MainForm: TMainForm
                 OnClick = tbmiDownloadMoveBottomClick
               end
             end
-            object vtDownload: TLazVirtualStringTree
+            object vtDownload: TVirtualStringTree
               Left = 29
               Height = 548
               Top = 0
@@ -560,7 +560,7 @@ object MainForm: TMainForm
           ChildSizing.VerticalSpacing = 4
           ClientWidth = 200
           ClientHeight = 574
-          object vtMangaList: TLazVirtualStringTree
+          object vtMangaList: TVirtualStringTree
             AnchorSideTop.Control = lbMode
             AnchorSideTop.Side = asrBottom
             Left = 0
@@ -1010,7 +1010,7 @@ object MainForm: TMainForm
                   ClientHeight = 277
                   ClientWidth = 632
                   TabOrder = 2
-                  object clbChapterList: TLazVirtualStringTree
+                  object clbChapterList: TVirtualStringTree
                     AnchorSideLeft.Control = edFilterMangaInfoChapters
                     AnchorSideTop.Control = edFilterMangaInfoChapters
                     AnchorSideRight.Control = btChecks
@@ -2439,7 +2439,7 @@ object MainForm: TMainForm
       ChildSizing.TopBottomSpacing = 4
       ClientHeight = 582
       ClientWidth = 845
-      object vtFavorites: TLazVirtualStringTree
+      object vtFavorites: TVirtualStringTree
         AnchorSideTop.Control = edFavoritesSearch
         AnchorSideTop.Side = asrBottom
         Left = 0
@@ -4555,7 +4555,7 @@ object MainForm: TMainForm
               Caption = 'Websites'
               ClientHeight = 428
               ClientWidth = 821
-              object vtOptionMangaSiteSelection: TLazVirtualStringTree
+              object vtOptionMangaSiteSelection: TVirtualStringTree
                 Left = 0
                 Height = 393
                 Top = 35

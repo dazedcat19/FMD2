@@ -13,7 +13,7 @@ interface
 uses
   Classes, SysUtils, fgl, Dialogs, ExtCtrls,
   LazFileUtils, uBaseUnit, uData, uDownloadsManager, WebsiteModules, FMDOptions,
-  httpsendthread, FavoritesDB, BaseThread, SQLiteData, MultiLog, SimpleException, Laz.VirtualTrees;
+  httpsendthread, FavoritesDB, BaseThread, SQLiteData, MultiLog, SimpleException, VirtualTrees;
 
 type
   TFavoriteManager = class;

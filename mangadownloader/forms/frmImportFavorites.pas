@@ -12,7 +12,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Dialogs, StdCtrls, Buttons, EditBtn,
-  lazutf8classes, LazFileUtils, uBaseUnit, WebsiteModules, FMDOptions, RegExpr,
+  LazFileUtils, uBaseUnit, WebsiteModules, FMDOptions, RegExpr,
   frmNewChapter;
 
 type
@@ -53,7 +53,7 @@ uses
 
 procedure TImportFavorites.DMDHandle;
 var
-  fstream  : TFileStreamUTF8;
+  fstream  : TFileStream;
   unimportedMangas,
   list,
   urlList,
@@ -71,7 +71,7 @@ begin
   urlList:= TStringList.Create;
   mangaList:= TStringList.Create;
   unimportedMangas:= TStringList.Create;
-  fstream:= TFileStreamUTF8.Create(CleanAndExpandDirectory(edPath.Text) + 'Config/Bookmarks', fmOpenRead);
+  fstream:= TFileStream.Create(CleanAndExpandDirectory(edPath.Text) + 'Config/Bookmarks', fmOpenRead);
 
   list.LoadFromStream(fstream);
   if list.Count > 0 then

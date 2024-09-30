@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  Buttons, Menus, ExtCtrls, Laz.VirtualTrees, synautil, httpsendthread, BaseThread,
+  Buttons, Menus, ExtCtrls, VirtualTrees, synautil, httpsendthread, BaseThread,
   XQueryEngineHTML, GitHubRepoV3, MultiLog, fpjson, jsonparser, jsonscanner, dateutils;
 
 type
@@ -65,7 +65,7 @@ type
     imStates: TImageList;
     btCheckUpdateTerminate: TSpeedButton;
     tmRepaintList: TTimer;
-    vtLuaModulesRepos: TLazVirtualStringTree;
+    vtLuaModulesRepos: TVirtualStringTree;
     procedure btCheckUpdateClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);

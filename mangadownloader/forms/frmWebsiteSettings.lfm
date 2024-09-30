@@ -25,7 +25,7 @@ object WebsiteSettingsForm: TWebsiteSettingsForm
       ChildSizing.VerticalSpacing = 6
       ClientWidth = 150
       ClientHeight = 461
-      object vtWebsite: TLazVirtualStringTree
+      object vtWebsite: TVirtualStringTree
         Left = 0
         Height = 432
         Top = 29

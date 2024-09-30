@@ -42,7 +42,7 @@ object TransferFavoritesForm: TTransferFavoritesForm
     Caption = 'Transfer to'
     ParentColor = False
   end
-  object vtFavs: TLazVirtualStringTree
+  object vtFavs: TVirtualStringTree
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = rbAll
     AnchorSideTop.Side = asrBottom

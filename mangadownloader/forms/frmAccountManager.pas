@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, Buttons,
-  ExtCtrls, Laz.VirtualTrees, WebsiteModules,
+  ExtCtrls, VirtualTrees, WebsiteModules,
   HTTPSendThread, BaseThread, frmAccountSet, SimpleException;
 
 type
@@ -17,7 +17,7 @@ type
     btRefresh: TBitBtn;
     btEdit: TBitBtn;
     pnBtContainer: TPanel;
-    vtAccountList: TLazVirtualStringTree;
+    vtAccountList: TVirtualStringTree;
     procedure btEditClick(Sender: TObject);
     procedure btRefreshClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);

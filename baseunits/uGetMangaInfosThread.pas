@@ -17,7 +17,7 @@ interface
 
 uses
   SysUtils, Graphics, Dialogs, uBaseUnit, uData, FMDOptions, BaseThread,
-  ImgInfos, webp, MultiLog, MemBitmap, Laz.VirtualTrees;
+  ImgInfos, webp, MultiLog, MemBitmap, VirtualTrees;
 
 type
 
