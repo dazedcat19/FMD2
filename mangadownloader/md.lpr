@@ -164,7 +164,7 @@ begin
 
   Application.Title:='Free Manga Downloader';
   RequireDerivedFormResource:=True;
-  Logger.ThreadSafe:=True;
+  //Logger.ThreadSafe:=True;  --Automatically uses safe thread code
   Logger.Enabled:=EnableLogging;
   InitSimpleExceptionHandler(LogFileName);
   if EnableLogging then
