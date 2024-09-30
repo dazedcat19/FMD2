@@ -613,32 +613,20 @@ end;
 
 procedure TFavoriteManager.DBUpdateOrder;
 var
-  i: Integer;   
-  SQLList: TStringList;
+  i: Integer;
 begin
   if FUpdateOrderCount=0 then Exit;
-
-  SQLList := TStringList.Create;
-  try
-    for i := 0 to Items.Count-1 do
-    with Items[i] do
+  for i := 0 to Items.Count-1 do
+  with Items[i] do begin
+    if i<>FOrder then
     begin
-      if i<>FOrder then
-      begin
-        FOrder:=i;
-        //FFavoritesDB.tempSQL+='UPDATE "favorites" SET "order"='+PrepSQLValue(FOrder)+' WHERE "id"='+PrepSQLValue(Fid)+';';
-        SQLList.Add('UPDATE "favorites" SET "order"=' + PrepSQLValue(FOrder) +
-                      ' WHERE "id"=' + PrepSQLValue(Fid) + ';');
-        Inc(FFavoritesDB.tempSQLcount);
-        if FFavoritesDB.tempSQLcount>=MAX_BIG_SQL_FLUSH_QUEUE then
-          FFavoritesDB.FlushSQL(False);
-      end;
+      FOrder:=i;
+      FFavoritesDB.tempSQL+='UPDATE "favorites" SET "order"='+PrepSQLValue(FOrder)+' WHERE "id"='+PrepSQLValue(Fid)+';';
+      Inc(FFavoritesDB.tempSQLcount);
+      if FFavoritesDB.tempSQLcount>=MAX_BIG_SQL_FLUSH_QUEUE then
+        FFavoritesDB.FlushSQL(False);
     end;
-    FFavoritesDB.tempSQL += SQLList.Text;
-  finally
-    SQLList.Free;
   end;
-
   FUpdateOrderCount:=0;
 end;
 
