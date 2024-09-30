@@ -398,7 +398,7 @@ begin
   DrawSelectionMode := smBlendedRectangle;
   FCheckBoxUncheckedDetails := ThemeServices.GetElementDetails(tbCheckBoxUncheckedNormal);
   FCheckBoxCheckedDetails := ThemeServices.GetElementDetails(tbCheckBoxCheckedNormal);
-  FCheckBoxSize := ThemeServices.GetDetailSize(FCheckBoxUncheckedDetails);
+  FCheckBoxSize := ThemeServices.GetDetailSizeForPPI(FCheckBoxUncheckedDetails, Font.PixelsPerInch);
   with TreeOptions do
   begin
     PaintOptions := PaintOptions - [toShowTreeLines] + [toHideFocusRect, toPopupMode];

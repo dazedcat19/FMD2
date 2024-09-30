@@ -259,21 +259,21 @@ begin
       if isCSS then
         Result := FEngine.evaluateCSS3(Expression, ContextItem)
       else
-        Result := FEngine.evaluateXPath3(Expression, ContextItem);
+        Result := FEngine.evaluateXPath(Expression, ContextItem);
     end
     else if Assigned(Tree) then
     begin
       if isCSS then
         Result := FEngine.evaluateCSS3(Expression, Tree)
       else
-        Result := FEngine.evaluateXPath3(Expression, Tree);
+        Result := FEngine.evaluateXPath(Expression, Tree);
     end
     else
     begin
       if isCSS then
         Result := FEngine.evaluateCSS3(Expression, FTreeParser.getLastTree)
       else
-        Result := FEngine.evaluateXPath3(Expression, FTreeParser.getLastTree);
+        Result := FEngine.evaluateXPath(Expression, FTreeParser.getLastTree);
     end;
   except
   end;
