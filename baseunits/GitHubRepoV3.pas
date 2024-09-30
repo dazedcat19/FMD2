@@ -44,6 +44,7 @@ type
     constructor Create(const AConfigFile, AWorkFile: String; const AThread: TBaseThread = nil);
     destructor Destroy; override;
     function GetLastCommit: String;
+    function GetLastCommitMessage(const FRepoPath: String): String;
     function GetTree: Boolean;
     function GetUpdate: Boolean;
     function GetDownloadURL(const AName: String): String;
@@ -163,6 +164,39 @@ begin
     end;
   end;
   Result:=last_commit_sha;
+end;
+
+function TGitHubRepo.GetLastCommitMessage(const FRepoPath: String): String;
+var
+  s, message: String;
+  d: TJSONData;
+begin
+  Result:='';
+  message:='';
+  HTTP.ResetBasic;
+  // use conditional etag, ignore if return 304 not modified
+  // https://developer.github.com/v3/#conditional-requests
+  if last_commit_etag<>'' then HTTP.Headers.Values['If-None-Match']:=' '+last_commit_etag;
+  s:=AppendURLDelim(api_url)+'repos/'+owner+'/'+name+'/commits?sha='+last_commit_sha+'&per_page=1';
+  if path<>'' then s+='&path='+path+'/'+FRepoPath;
+  if HTTP.GET(s) then
+  begin
+    s:=Trim(HTTP.Headers.Values['ETag']);
+    if s<>'' then last_commit_etag := s;
+    d:=GetJSON(HTTP.Document);
+    if Assigned(d) then
+    begin
+      try
+        if d.JSONType=jtArray then
+        begin
+          message:=TJSONObject(TJSONArray(d).Items[0]).FindPath('commit.message').AsString;
+        end;
+      except
+      end;
+      d.Free;
+    end;
+  end;
+  Result:=message;
 end;
 
 function TGitHubRepo.GetTree: Boolean;

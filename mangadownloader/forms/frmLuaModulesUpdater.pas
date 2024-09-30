@@ -710,7 +710,9 @@ begin
         fDelete: FStatusList.Add(Format(RS_StatusDelete, [m.name]));
         fFailedDownload: FStatusList.Add(Format(RS_StatusFailed, [m.name]));
         else;
-      end;
+      end; 
+      if m.flag in [fNew, fUpdate, fFailedDownload] then
+         m.last_message := FGitHubRepo.GetLastCommitMessage(m.name);
     end;
 
     // get properties
