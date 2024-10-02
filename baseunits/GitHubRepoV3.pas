@@ -174,15 +174,10 @@ begin
   Result:='';
   message:='';
   HTTP.ResetBasic;
-  // use conditional etag, ignore if return 304 not modified
-  // https://developer.github.com/v3/#conditional-requests
-  if last_commit_etag<>'' then HTTP.Headers.Values['If-None-Match']:=' '+last_commit_etag;
-  s:=AppendURLDelim(api_url)+'repos/'+owner+'/'+name+'/commits?sha='+last_commit_sha+'&per_page=1';
+  s:=AppendURLDelim(api_url)+'repos/'+owner+'/'+name+'/commits?per_page=1';
   if path<>'' then s+='&path='+path+'/'+FRepoPath;
   if HTTP.GET(s) then
   begin
-    s:=Trim(HTTP.Headers.Values['ETag']);
-    if s<>'' then last_commit_etag := s;
     d:=GetJSON(HTTP.Document);
     if Assigned(d) then
     begin

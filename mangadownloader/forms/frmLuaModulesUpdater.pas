@@ -608,7 +608,7 @@ procedure TCheckUpdateThread.Download;
 var
   i, imax: Integer;
   m: TLuaModuleRepo;
-  f: String;
+  f, message: String;
 begin
   Synchronize(@SyncStartDownload);
 
@@ -643,6 +643,9 @@ begin
       if Terminated then
         Break;
       TDownloadThread.Create(Self, FRepos[i]);
+      message := FGitHubRepo.GetLastCommitMessage(m.name);
+      if message <> '' then
+         m.last_message := message;
       Inc(i);
     end;
   end;
@@ -710,9 +713,7 @@ begin
         fDelete: FStatusList.Add(Format(RS_StatusDelete, [m.name]));
         fFailedDownload: FStatusList.Add(Format(RS_StatusFailed, [m.name]));
         else;
-      end; 
-      if m.flag in [fNew, fUpdate, fFailedDownload] then
-         m.last_message := FGitHubRepo.GetLastCommitMessage(m.name);
+      end;
     end;
 
     // get properties
