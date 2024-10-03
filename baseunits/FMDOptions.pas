@@ -193,6 +193,9 @@ var
   //chapterlist color
   CL_CHDownloaded: TColor = $B8FFB8;
 
+  //modulelist color
+  CL_MDNewUpdate: TColor = $FDC594;
+
 // set base directory
 procedure SetFMDdirectory(const ADir: String);
 procedure SetAppDataDirectory(const ADir: String);

@@ -52,6 +52,7 @@ object LuaModulesUpdaterForm: TLuaModulesUpdaterForm
     TabOrder = 3
     TreeOptions.PaintOptions = [toHideFocusRect, toShowButtons, toShowDropmark, toShowVertGridLines, toThemeAware, toUseBlendedImages, toFullVertGridLines]
     TreeOptions.SelectionOptions = [toFullRowSelect, toMultiSelect]
+    OnBeforeCellPaint = vtLuaModulesReposBeforeCellPaint
     OnCompareNodes = vtLuaModulesReposCompareNodes
     OnGetText = vtLuaModulesReposGetText
     OnGetImageIndex = vtLuaModulesReposGetImageIndex

@@ -71,6 +71,9 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure btCheckUpdateTerminateClick(Sender: TObject);
     procedure tmRepaintListTimer(Sender: TObject);
+    procedure vtLuaModulesReposBeforeCellPaint(Sender: TBaseVirtualTree;
+      TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
+      CellPaintMode: TVTCellPaintMode; CellRect: TRect; var ContentRect: TRect);
     procedure vtLuaModulesReposCompareNodes(Sender: TBaseVirtualTree;
       Node1, Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
     procedure vtLuaModulesReposGetHint(Sender: TBaseVirtualTree;
@@ -858,6 +861,20 @@ begin
       FListDirty := False;
     finally
       LeaveCriticalsection(FListCS);
+    end;
+  end;
+end;
+
+procedure TLuaModulesUpdaterForm.vtLuaModulesReposBeforeCellPaint(Sender: TBaseVirtualTree;
+  TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
+  CellPaintMode: TVTCellPaintMode; CellRect: TRect; var ContentRect: TRect);
+begin
+  with PLuaModuleRepo(Sender.GetNodeData(Node))^ do
+  begin
+    if last_modified > IncDay(Now, -7) then
+    begin
+      TargetCanvas.Brush.Color := CL_MDNewUpdate;
+      TargetCanvas.FillRect(CellRect);
     end;
   end;
 end;

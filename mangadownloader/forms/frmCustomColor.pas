@@ -49,11 +49,13 @@ type
     btColors: TColorButton;
     pcCustomColorList: TPageControl;
     tsChapterList: TTabSheet;
+    tsModuleList: TTabSheet;
     tsMangaList: TTabSheet;
     tsFavoriteList: TTabSheet;
     tsBasicList: TTabSheet;
     VTBasicList: TVirtualStringTree;
     VTChapterList: TVirtualStringTree;
+    VTModuleList: TVirtualStringTree;
     VTMangaList: TVirtualStringTree;
     VTFavoriteList: TVirtualStringTree;
     procedure btColorsColorChanged(Sender: TObject);
@@ -145,7 +147,8 @@ var
   BasicListColors,
   MangaListColors,
   FavoriteListColors,
-  ChapterListColor: TColorItems;
+  ChapterListColor,
+  ModuleListColor: TColorItems;
 
   // current selected color list
   SelectedColorList: TVirtualStringTree;
@@ -206,6 +209,12 @@ begin
     Add('DownloadedColor', CL_CHDownloaded);
   end;
 
+  ModuleListColor := TColorItems.Create;
+  with ModuleListColor do
+  begin
+    Add('NewUpdateColor', CL_MDNewUpdate);
+  end;
+
   SelectedColorList := nil;
   VTApplyList := TVTApplyList.Create;
 end;
@@ -216,6 +225,7 @@ begin
   MangaListColors.Free;
   FavoriteListColors.Free;
   ChapterListColor.Free;
+  ModuleListColor.Free;
   VTApplyList.Free;
 end;
 
@@ -277,6 +287,9 @@ begin
 
   //chapterlist
   CL_CHDownloaded := ChapterListColor[0];
+
+  //modulelist
+  CL_MDNewUpdate := ModuleListColor[0];
 end;
 
 procedure Apply;
@@ -315,6 +328,11 @@ begin
       ChapterListColor[i] := StringToColor(ReadString('ChapterListColor', ChapterListColor.N[i],
         ColorToString(ChapterListColor[i])));
 
+    //modulelist
+    for i := 0 to ModuleListColor.Count - 1 do
+      ModuleListColor[i] := StringToColor(ReadString('ModuleListColor', ModuleListColor.N[i],
+        ColorToString(ModuleListColor[i])));
+
     ApplyToFMDOptions;
   end;
 end;
@@ -339,7 +357,11 @@ begin
 
     //chapterlist
     for i := 0 to ChapterListColor.Count - 1 do
-      WriteString('ChapterListColor', ChapterListColor.N[i], ColorToString(ChapterListColor[i]));
+      WriteString('ChapterListColor', ChapterListColor.N[i], ColorToString(ChapterListColor[i])); 
+
+    //modulelist
+    for i := 0 to ModuleListColor.Count - 1 do
+      WriteString('ModuleListColor', ModuleListColor.N[i], ColorToString(ModuleListColor[i]));
   end;
 end;
 
@@ -686,10 +708,12 @@ begin
   AddVT(VTMangaList);
   AddVT(VTFavoriteList);
   AddVT(VTChapterList);
+  AddVT(VTModuleList);
   VTBasicList.CI := BasicListColors;
   VTMangaList.CI := MangaListColors;
   VTFavoriteList.CI := FavoriteListColors;
   VTChapterList.CI := ChapterListColor;
+  VTModuleList.CI := ModuleListColor;
 end;
 
 procedure TCustomColorForm.VTBasicListBeforeCellPaint(Sender: TBaseVirtualTree;
@@ -802,6 +826,7 @@ begin
     ApplyBasicColorToVT(VTMangaList);
     ApplyBasicColorToVT(VTFavoriteList);
     ApplyBasicColorToVT(VTChapterList);
+    ApplyBasicColorToVT(VTModuleList);
   end
   else
     SelectedColorList.Repaint;

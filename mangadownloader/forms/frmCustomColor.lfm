@@ -181,5 +181,38 @@ object CustomColorForm: TCustomColorForm
         OnPaintText = VTBasicListPaintText
       end
     end
+    object tsModuleList: TTabSheet
+      Caption = 'Module list'
+      ClientHeight = 324
+      ClientWidth = 351
+      object VTModuleList: TVirtualStringTree
+        Left = 0
+        Height = 324
+        Top = 0
+        Width = 351
+        Align = alClient
+        Color = clWindow
+        Colors.DropTargetBorderColor = clHotLight
+        Colors.FocusedSelectionBorderColor = clHotLight
+        Colors.SelectionRectangleBorderColor = clHotLight
+        Colors.UnfocusedSelectionBorderColor = clBtnShadow
+        DefaultText = 'Node'
+        Header.AutoSizeIndex = 0
+        Header.Columns = <>
+        Header.DefaultHeight = 17
+        Header.Height = 17
+        Header.MainColumn = -1
+        TabOrder = 0
+        TextMargin = 0
+        TreeOptions.MiscOptions = [toAcceptOLEDrop, toFullRepaintOnResize, toGridExtensions, toInitOnSave, toToggleOnDblClick, toWheelPanning, toEditOnClick]
+        TreeOptions.PaintOptions = [toHideFocusRect, toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages]
+        TreeOptions.SelectionOptions = [toFullRowSelect]
+        OnBeforeCellPaint = VTBasicListBeforeCellPaint
+        OnDrawText = VTBasicListDrawText
+        OnFocusChanged = VTBasicListFocusChanged
+        OnGetText = VTBasicListGetText
+        OnPaintText = VTBasicListPaintText
+      end
+    end
   end
 end
