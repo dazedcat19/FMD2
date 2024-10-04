@@ -254,7 +254,11 @@ function TXQueryEngineHTML.Eval(const Expression: String; const isCSS: Boolean;
 begin
   Result := xqvalue();
   try
-    if Pointer(ContextItem) <> nil then //Assigned(ContextItem)
+    {$IFDEF CPU64} // For 64-bit mode, use Pointer to compare
+    if  Pointer(ContextItem) <> nil then
+    {$ELSE} // For 32-bit mode, use a workaround or custom check
+    if ContextItem.toBoolean then
+    {$ENDIF} //Assigned(ContextItem)
     begin
       if isCSS then
         Result := FEngine.evaluateCSS3(Expression, ContextItem)
