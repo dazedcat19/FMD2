@@ -53,6 +53,7 @@ object CustomColorForm: TCustomColorForm
       Caption = 'Basic list'
       ClientHeight = 324
       ClientWidth = 351
+      OnShow = tsBasicListShow
       object VTBasicList: TVirtualStringTree
         Left = 0
         Height = 324
@@ -86,6 +87,7 @@ object CustomColorForm: TCustomColorForm
       Caption = 'Manga list'
       ClientHeight = 324
       ClientWidth = 351
+      OnShow = tsMangaListShow
       object VTMangaList: TVirtualStringTree
         Left = 0
         Height = 324
@@ -119,6 +121,7 @@ object CustomColorForm: TCustomColorForm
       Caption = 'Favorite list'
       ClientHeight = 324
       ClientWidth = 351
+      OnShow = tsFavoriteListShow
       object VTFavoriteList: TVirtualStringTree
         Left = 0
         Height = 324
@@ -152,6 +155,7 @@ object CustomColorForm: TCustomColorForm
       Caption = 'Chapter list'
       ClientHeight = 324
       ClientWidth = 351
+      OnShow = tsChapterListShow
       object VTChapterList: TVirtualStringTree
         Left = 0
         Height = 324
@@ -185,6 +189,7 @@ object CustomColorForm: TCustomColorForm
       Caption = 'Module list'
       ClientHeight = 324
       ClientWidth = 351
+      OnShow = tsModuleListShow
       object VTModuleList: TVirtualStringTree
         Left = 0
         Height = 324

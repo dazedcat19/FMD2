@@ -61,6 +61,11 @@ type
     procedure btColorsColorChanged(Sender: TObject);
     procedure CBColorsChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure tsBasicListShow(Sender: TObject);
+    procedure tsMangaListShow(Sender: TObject);
+    procedure tsFavoriteListShow(Sender: TObject);
+    procedure tsChapterListShow(Sender: TObject);
+    procedure tsModuleListShow(Sender: TObject);
     procedure VTBasicListBeforeCellPaint(Sender: TBaseVirtualTree; TargetCanvas: TCanvas;
       Node: PVirtualNode; Column: TColumnIndex; CellPaintMode: TVTCellPaintMode;
       CellRect: TRect; var ContentRect: TRect);
@@ -740,6 +745,86 @@ procedure TCustomColorForm.btColorsColorChanged(Sender: TObject);
 begin
   CBColors.Selected := btColors.ButtonColor;
   SetSelectedColor(btColors.ButtonColor);
+end;
+
+procedure TCustomColorForm.tsBasicListShow(Sender: TObject);
+begin
+  if SelectedColorList <> VTBasicList then
+    SelectedColorList := VTBasicList;
+  if VTBasicList.FocusedNode = nil then
+  begin
+    CBColors.Selected := BasicListColors[0];
+    btColors.ButtonColor := CBColors.Selected;
+  end
+  else
+  begin
+    CBColors.Selected := VTBasicList.CI[VTBasicList.FocusedNode^.Index];
+    btColors.ButtonColor := CBColors.Selected;
+  end;
+end;
+
+procedure TCustomColorForm.tsMangaListShow(Sender: TObject);
+begin
+  if SelectedColorList <> VTMangaList then
+    SelectedColorList := VTMangaList;
+  if VTMangaList.FocusedNode = nil then
+  begin
+    CBColors.Selected := MangaListColors[0];
+    btColors.ButtonColor := CBColors.Selected;
+  end
+  else
+  begin
+    CBColors.Selected := VTMangaList.CI[VTMangaList.FocusedNode^.Index];
+    btColors.ButtonColor := CBColors.Selected;
+  end;
+end;
+
+procedure TCustomColorForm.tsFavoriteListShow(Sender: TObject);
+begin
+  if SelectedColorList <> VTFavoriteList then
+    SelectedColorList := VTFavoriteList;
+  if VTFavoriteList.FocusedNode = nil then
+  begin
+    CBColors.Selected := FavoriteListColors[0];
+    btColors.ButtonColor := CBColors.Selected;
+  end
+  else
+  begin
+    CBColors.Selected := VTFavoriteList.CI[VTFavoriteList.FocusedNode^.Index];
+    btColors.ButtonColor := CBColors.Selected;
+  end;
+end;
+
+procedure TCustomColorForm.tsChapterListShow(Sender: TObject);
+begin
+  if SelectedColorList <> VTChapterList then
+    SelectedColorList := VTChapterList;
+  if VTChapterList.FocusedNode = nil then
+  begin
+    CBColors.Selected := ChapterListColor[0];
+    btColors.ButtonColor := CBColors.Selected;
+  end
+  else
+  begin
+    CBColors.Selected := VTChapterList.CI[VTChapterList.FocusedNode^.Index];
+    btColors.ButtonColor := CBColors.Selected;
+  end;
+end;
+
+procedure TCustomColorForm.tsModuleListShow(Sender: TObject);
+begin
+  if SelectedColorList <> VTModuleList then
+    SelectedColorList := VTModuleList;
+  if VTModuleList.FocusedNode = nil then
+  begin
+    CBColors.Selected := ModuleListColor[0];
+    btColors.ButtonColor := CBColors.Selected;
+  end
+  else
+  begin
+    CBColors.Selected := VTModuleList.CI[VTModuleList.FocusedNode^.Index];
+    btColors.ButtonColor := CBColors.Selected;
+  end;
 end;
 
 procedure TCustomColorForm.VTBasicListDrawText(Sender: TBaseVirtualTree; TargetCanvas: TCanvas;
