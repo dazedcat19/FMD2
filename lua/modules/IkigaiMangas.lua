@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'ds42a85566244b7e836679491ce679e8'
 	m.Name                     = 'IkigaiMangas'
-	m.RootURL                  = 'https://lectorikigai.erigu.com'
+	m.RootURL                  = 'https://lectorikigai.acamu.net'
 	m.Category                 = 'Spanish'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
