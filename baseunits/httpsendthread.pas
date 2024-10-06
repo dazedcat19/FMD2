@@ -157,7 +157,7 @@ function FormatByteSize(const ABytes: Integer; AShowPerSecond: Boolean = False):
 const
   UserAgentSynapse   = 'Mozilla/4.0 (compatible; Synapse)';
   UserAgentCURL      = 'curl/7.70.0';
-  UserAgentDefault   = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:131.0) Gecko/20100101 Firefox/131.0';
+  UserAgentDefault   = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36'; //Chrome default at 07/10/2024
   HeartBeatRate      = 1000;
 
 var

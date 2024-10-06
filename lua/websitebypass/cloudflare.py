@@ -1,65 +1,56 @@
 import sys
-import json
-from time import sleep
-from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-from selenium.common.exceptions import TimeoutException
+import rookiepy
+import time
+
+def formatCookies(cooks):
+    result = []
+
+    for cookie in cooks:
+        if cookie["value"] == "":
+            continue
+
+        if cookie["expires"]:
+            if cookie["expires"] < round(time.time()):
+                continue
+        
+        result.append({cookie["name"]: cookie["value"]})
+    
+    return result
+
+def tryBrowsers(url):
+    cookies = []
+    user_agent = [{"user_agent": ""}]
+    url = f'{url.replace("https://", "")}'
+    errors = "Error: No browser cookies/working cookies found."
+    browsers = ["chrome", "edge", "firefox", "opera", "opera_gx"] #Re-arrange according to your browser prefrence
+    rookiepyFuncs = {"chrome": rookiepy.chrome,
+        "edge": rookiepy.edge,
+        "firefox": rookiepy.firefox,
+        "opera": rookiepy.opera,
+        "opera_gx": rookiepy.opera_gx
+        }
+    defaultUA = {"chrome": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+        "edge": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36 Edg/129.0.0.0",
+        "firefox": "Mozilla/5.0 (Windows NT 10.0; Win64; x64rv:131.0) Gecko/20100101 Firefox/131.0",
+        "opera": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36 OPR/113.0.0.0",
+        "opera_gx": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36 OPR/113.0.0.0"
+        }
+
+    for browser in browsers:
+        try:
+            if not cookies:
+                cookies = rookiepyFuncs[browser]([url])
+                cookies = formatCookies(cookies)
+                user_agent[0]["user_agent"] = defaultUA[browser]
+        except:
+            continue
+
+    if not cookies:
+        return errors
+    
+    cookies.extend(user_agent)
+    return cookies
 
 url = sys.argv[1]
-ua = sys.argv[2]
 
-# options = webdriver.ChromeOptions()
-# options.add_argument("--headless")
-# options.add_argument('ignore-certificate-errors')
-# options.add_argument("user-agent="+ua)
-# browser = webdriver.Chrome(options=options, executable_path="chromedriver.exe")
-
-options = webdriver.FirefoxOptions()
-# options.add_argument("--headless")
-profile = webdriver.FirefoxProfile()
-profile.accept_untrusted_certs = True
-profile.set_preference('general.useragent.override', ua)
-profile.set_preference('dom.webdriver.enabled', False)
-profile.set_preference('useAutomationExtension', False)
-profile.set_preference('dom.webdriver.enabled', False)
-profile.set_preference('useAutomationExtension', False)
-profile.set_preference('app.normandy.enabled', False)
-profile.set_preference('app.normandy.optoutstudies.enabled', False)
-profile.set_preference('browser.newtabpage.activity-stream.feeds.asrouterfeed', False)
-profile.set_preference('browser.safebrowsing.downloads.remote.enabled', False)
-profile.set_preference('browser.safebrowsing.downloads.remote.enabled', False)
-profile.set_preference('dom.push.connection.enabled', False)
-profile.set_preference('dom.push.enabled', False)
-profile.set_preference('dom.push.serverURL', '')
-profile.set_preference('extensions.blocklist.enabled', False)
-profile.set_preference('extensions.getAddons.cache.enabled', False)
-profile.set_preference('extensions.pocket.enabled', False)
-profile.set_preference('geo.enabled', False)
-profile.set_preference('geo.provider.ms-windows-location', False)
-profile.set_preference('geo.provider.network.url', '')
-profile.set_preference('messaging-system.rsexperimentloader.enabled', False)
-profile.set_preference('network.captive-portal-service.enabled', False)
-profile.set_preference('network.dns.disablePrefetch', True)
-profile.set_preference('network.http.speculative-parallel-limit', 0)
-profile.set_preference('network.prefetch-next', False)
-profile.set_preference('security.OCSP.enabled', 0)
-profile.update_preferences()
-browser = webdriver.Firefox(firefox_profile=profile,options=options,executable_path='geckodriver.exe')
-
-browser.get(url)
-try:
-    timeout = 60
-    # WebDriverWait(browser, timeout).until(EC.url_contains('/?__cf_chl_jschl_tk__='))
-    tcount = 0
-    while tcount < timeout:
-        if browser.get_cookie('cf_clearance'):
-            break
-        tcount += 1
-        sleep(1)
-except:
-    pass
-finally:
-    print(json.dumps(browser.get_cookies(), separators=(',', ':')))
-    browser.quit()
+print(tryBrowsers(url))

@@ -13,7 +13,7 @@ object MainForm: TMainForm
   OnDestroy = FormDestroy
   OnWindowStateChange = FormWindowStateChange
   ShowHint = True
-  LCLVersion = '3.4.0.0'
+  LCLVersion = '3.6.0.0'
   object pcMain: TPageControl
     Left = 2
     Height = 610
