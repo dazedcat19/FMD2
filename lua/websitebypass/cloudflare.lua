@@ -54,9 +54,9 @@ String.prototype.sup = function () { return "<sup>" + this + "</sup>"; };
 
 	local answer, timeout = duktape.ExecJS(challenge)
 	if (answer == nil) or (answer == 'NaN') or (answer == '') then
-		-- LOGGER.SendError('WebsitBypass[cloudflare]: IUAM challenge detected but failed to solve the javascript challenge\r\n' .. url .. '\r\n' .. body)
-		-- LOGGER.SendError('WebsitBypass[cloudflare]: IUAM challenge detected but failed to solve the javascript challenge\r\n' .. url .. '\r\n' .. challenge)
-		LOGGER.SendError('WebsitBypass[cloudflare]: IUAM challenge detected but failed to solve the javascript challenge\r\n' .. url)
+		-- LOGGER.SendError('WebsiteBypass[cloudflare]: IUAM challenge detected but failed to solve the javascript challenge\r\n' .. url .. '\r\n' .. body)
+		-- LOGGER.SendError('WebsiteBypass[cloudflare]: IUAM challenge detected but failed to solve the javascript challenge\r\n' .. url .. '\r\n' .. challenge)
+		LOGGER.SendError('WebsiteBypass[cloudflare]: IUAM challenge detected but failed to solve the javascript challenge\r\n' .. url)
 	else
 		answer = answer:match('"jschl%-answer":.-"value":"(.-)"')
 		timeout = tonumber(answer:match('"timeout":(%d+)')) or 4000
@@ -82,7 +82,7 @@ function _m.solveIUAMChallenge(self, body, url)
 
 	local form, challengeUUID = body:match('<form (.-="challenge%-form" action="(.-__cf_chl_jschl_tk__=%S+)"(.-)</form>)')
 	if (form == nil) or (challengeUUID == nil) then
-		LOGGER.SendError('WebsitBypass[cloudflare]: IUAM challenge detected but failed to parse the form\r\n' .. url)
+		LOGGER.SendError('WebsiteBypass[cloudflare]: IUAM challenge detected but failed to parse the form\r\n' .. url)
 		return 0
 	end
 	challengeUUID = challengeUUID:gsub('&amp;', '&')
@@ -100,7 +100,7 @@ function _m.solveIUAMChallenge(self, body, url)
 
 	local i = 0; for _ in pairs(payload) do i = i + 1 end
 	if i == 0 then
-		LOGGER.SendError('WebsitBypass[cloudflare]: IUAM challenge detected but failed to parse the form payload\r\n' .. url)
+		LOGGER.SendError('WebsiteBypass[cloudflare]: IUAM challenge detected but failed to parse the form payload\r\n' .. url)
 		return 0
 	end
 	payload['jschl_answer'] = answer
@@ -126,7 +126,7 @@ function _m.solveIUAMChallenge(self, body, url)
 	local rbody = HTTP.Document.ToString()
 	if rbody:find('^Access denied%. Your IP') then
 		HTTP.ClearCookiesStorage()
-		LOGGER.SendError('WebsitBypass[cloudflare]: the server has BANNED your IP!\r\n' .. url .. '\r\n' .. rbody)
+		LOGGER.SendError('WebsiteBypass[cloudflare]: the server has BANNED your IP!\r\n' .. url .. '\r\n' .. rbody)
 		return 0
 	end
 	if HTTP.Cookies.Values["cf_clearance"] ~= "" then
@@ -140,11 +140,11 @@ function _m.solveWithWebDriver(self, url)
 	local rooturl = url:match('(https?://[^/]+)') or url
 
 	local result = nil
-	print(string.format('WebsitBypass[cloudflare]: using webdriver "%s" "%s" "%s" ',webdriver_exe, webdriver_script, rooturl))
+	print(string.format('WebsiteBypass[cloudflare]: using webdriver "%s" "%s" "%s" ',webdriver_exe, webdriver_script, rooturl))
 	_status, result, _errors = require("fmd.subprocess").RunCommandHide(webdriver_exe, webdriver_script, rooturl)
 
 	if not _status then
-		LOGGER.SendError("WebsitBypass[cloudflare]: Please make sure rookiepy is installed. {use: pip install rookiepy}")
+		LOGGER.SendError("WebsiteBypass[cloudflare]: Please make sure rookiepy is installed. {use: pip install rookiepy}")
 		return -1
 	end
 	
@@ -167,7 +167,7 @@ function _m.solveWithWebDriver(self, url)
 	end
 	
 	if not parsed_result then
-		LOGGER.SendError("WebsitBypass[cloudflare]: webdriver failed to parse response\r\n" .. url)
+		LOGGER.SendError("WebsiteBypass[cloudflare]: webdriver failed to parse response\r\n" .. url)
 		return -1
 	end
 	
@@ -179,11 +179,11 @@ function _m.solveWithWebDriver2(self, url, headless)
 	local rooturl = url:match('(https?://[^/]+)') or url
 
 	local result = nil
-	print(string.format('WebsitBypass[cloudflare]: using webdriver "%s" "%s" "%s"', customwebdriver_exe, py_customcloudflare, rooturl))
+	print(string.format('WebsiteBypass[cloudflare]: using webdriver "%s" "%s" "%s"', customwebdriver_exe, py_customcloudflare, rooturl))
 	_status, result, _errors = require("fmd.subprocess").RunCommandHide(customwebdriver_exe, py_customcloudflare, rooturl)
 	
 	if not _status then
-		LOGGER.SendError("WebsitBypass[cloudflare]: Please make sure FlareSolverr is running.")
+		LOGGER.SendError("WebsiteBypass[cloudflare]: Please make sure FlareSolverr is running.")
 		return -1
 	end
 	
@@ -206,7 +206,7 @@ function _m.solveWithWebDriver2(self, url, headless)
 	end
 	
 	if not parsed_result then
-		LOGGER.SendError("WebsitBypass[cloudflare]: webdriver2 failed to parse response\r\n" .. url)
+		LOGGER.SendError("WebsiteBypass[cloudflare]: webdriver2 failed to parse response\r\n" .. url)
 		return -1
 	end
 	
@@ -237,7 +237,7 @@ function _m.solveChallenge(self, url)
 	end
 
 	if (result <= 0) then
-		LOGGER.SendWarning('WebsitBypass[cloudflare]: no Cloudflare solution found!\r\n' .. url)
+		LOGGER.SendWarning('WebsiteBypass[cloudflare]: no Cloudflare solution found!\r\n' .. url)
 	end
 	return result
 end
