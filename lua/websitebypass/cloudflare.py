@@ -23,7 +23,7 @@ def tryBrowsers(url):
     user_agent = [{"user_agent": ""}]
     error = "Error: No working cookies found. Try visiting " + url + " in your browser first."
     browserError = ""
-    browsers = ["chrome", "edge", "firefox", "opera", "opera_gx"] #Re-arrange according to your browser prefrence
+    browsers = ["chrome", "edge", "firefox", "opera", "opera_gx"] #Re-arrange according to your browser preference
     rookiepyFuncs = {"chrome": rookiepy.chrome,
         "edge": rookiepy.edge,
         "firefox": rookiepy.firefox,
@@ -44,7 +44,7 @@ def tryBrowsers(url):
                 cookies = formatCookies(cookies)
                 user_agent[0]["user_agent"] = defaultUA[browser]
         except RuntimeError:
-            browserError = " Or try installing any of the following [Chrome, Edge, Firefox, Opera, Oopera GX] browsers."
+            browserError = " Or try installing any of the following [Chrome, Edge, Firefox, Opera, Opera GX] browsers."
 
     if not cookies:
         return error + browserError
