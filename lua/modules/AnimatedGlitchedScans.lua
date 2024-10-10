@@ -4,7 +4,7 @@
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                       = -- TODO --
+	m.ID                       = '50868d7d8eaf4b8d948efa7333ed2989'
 	m.Name                     = 'AnimatedGlitchedScans'
 	m.RootURL                  = 'https://agscomics.com'
 	m.Category                 = 'English-Scanlation'
