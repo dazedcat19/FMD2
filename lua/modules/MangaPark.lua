@@ -1,73 +1,113 @@
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
 function Init()
 	function AddWebsiteModule(id, name, url)
 		local m = NewWebsiteModule()
-		m.ID                        = id
-		m.Name                      = name
-		m.RootURL                   = url
-		m.Category                  = 'English'
-		m.OnGetDirectoryPageNumber  = 'GetDirectoryPageNumber'
-		m.OnGetNameAndLink          = 'GetNameAndLink'
-		m.OnGetInfo                 = 'GetInfo'
-		m.OnGetPageNumber           = 'GetPageNumber'
-		m.SortedList                = true
+		m.ID                       = id
+		m.Name                     = name
+		m.RootURL                  = url
+		m.Category                 = 'English'
+		m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+		m.OnGetNameAndLink         = 'GetNameAndLink'
+		m.OnGetInfo                = 'GetInfo'
+		m.OnGetPageNumber          = 'GetPageNumber'
+		m.SortedList               = true
 	end
-	AddWebsiteModule('09d49c7760904bc2817dbc80757de44a', 'MangaPark', 'https://mangapark.net')
 	AddWebsiteModule('32b25f04931b414a803286a6f8cabd8d', 'MangaParkNet', 'https://mangapark.net')
+	AddWebsiteModule('09d49c7760904bc2817dbc80757de44a', 'MangaParkMe', 'https://mangapark.me')
 	AddWebsiteModule('273268fd7b1a42b38e50c010a630bfad', 'MangaParkCom', 'https://mangapark.com')
+	AddWebsiteModule('2784b193e1794dcdac1f68eb59e9ad0c', 'MangaParkOrg', 'https://mangapark.org')
+	AddWebsiteModule('885424a90b764a0894dad0d0a1c4e545', 'MangaParkIo', 'https://mangapark.io')
+	AddWebsiteModule('b14a022f3c4e4a72b47cb89345adf9c4', 'MangaParkTo', 'https://mangapark.to')
 end
 
+----------------------------------------------------------------------------------------------------
+-- Local Constants
+----------------------------------------------------------------------------------------------------
+
+API_URL = '/apo/'
+DirectoryPagination = '/search?sortby=field_create&page='
+
+----------------------------------------------------------------------------------------------------
+-- Event Functions
+----------------------------------------------------------------------------------------------------
+
+-- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
-	if HTTP.GET(MODULE.RootURL .. '/search?orderby=create') then
-		PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('(//div[@id="paging-bar"])[2]/ul/li[last()-2]/a/substring-after(@href, "page=")')) or 1
-		return no_error
-	else
-		return net_problem
-	end
+	local u = MODULE.RootURL .. DirectoryPagination .. 1
+
+	if not HTTP.GET(u) then return net_problem end
+
+	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//div[contains(@class, "flex items-center flex-wrap")]/a[last()]')) or 1
+
+	return no_error
 end
 
+-- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	if HTTP.GET(MODULE.RootURL .. '/search?orderby=create&page=' .. (URL + 1)) then
-		CreateTXQuery(HTTP.Document).XPathHREFAll('//div[@class="manga-list"]//table//h2/a', LINKS, NAMES)
-		return no_error
-	else
-		return net_problem
+	local v, x = nil
+	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1)
+
+	if not HTTP.GET(u) then return net_problem end
+
+	x = CreateTXQuery(HTTP.Document)
+	for v in x.XPath('//h3[@class="font-bold space-x-1"]/a').Get() do
+		LINKS.Add(v.GetAttribute('href'))
+		NAMES.Add(x.XPathString('span', v))
 	end
+
+	return no_error
 end
 
+-- Get info and chapter list for the current manga.
 function GetInfo()
-	MANGAINFO.URL = MaybeFillHost(MODULE.RootURL, URL)
-	HTTP.Cookies.Values['set'] = 'h=1'
-	if HTTP.GET(MANGAINFO.URL) then
-		local x = CreateTXQuery(HTTP.Document)
-		MANGAINFO.Title     = x.XPathString('//h2'):gsub(' Manga$', '')
-		MANGAINFO.CoverLink = MaybeFillHost(MODULE.RootURL, x.XPathString('//div[contains(@class, "cover")]/img/@src'))
-		MANGAINFO.Authors   = x.XPathStringAll('//table[@class="attr"]//tr[contains(th,"Author")]/td/a')
-		MANGAINFO.Artists   = x.XPathStringAll('//table[@class="attr"]//tr[contains(th,"Artist")]/td/a')
-		MANGAINFO.Genres    = x.XPathStringAll('//table[@class="attr"]//tr[contains(th,"Genre")]/td/a')
-		MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//table[@class="attr"]//tr[contains(th,"Status")]/td'))
-		MANGAINFO.Summary   = x.XPathString('//p[@class="summary"]')
-		local v for v in x.XPath('//div[@id="list"]/div[contains(@class, "stream")]').Get() do
-			local stream = ' [' .. x.XPathString('div[@id]//a/span', v) .. ']'
-			local w for w in x.XPath('div/div/ul[@class="chapter"]/li', v).Get() do
-				local link = x.XPathString('div/a/@href', w)
-				local title = x.XPathString('div/a', w) .. x.XPathString('div[contains(@class, "txt")]', w)
-				MANGAINFO.ChapterLinks.Add(link:gsub('/%d+$', ''))
-				MANGAINFO.ChapterNames.Add(title .. stream)
-			end
+	local v, x = nil
+	local crypto = require 'fmd.crypto'
+	local u = MODULE.RootURL .. API_URL
+	local s = '{"query":"{ get_comicNode( id: ' .. URL:match('(%d+)') .. ' ) { data { id name artists authors genres originalStatus uploadStatus summary urlCoverOri } } }"}' 
+	HTTP.MimeType = 'application/json'
+
+	if not HTTP.POST(u, s) then return net_problem end
+
+	x = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString()))
+	MANGAINFO.Title     = x.XPathString('json(*).data.get_comicNode.data.name')
+	MANGAINFO.CoverLink = x.XPathString('json(*).data.get_comicNode.data.urlCoverOri')
+	MANGAINFO.Authors   = x.XPathStringAll('json(*).data.get_comicNode.data.authors()')
+	MANGAINFO.Artists   = x.XPathStringAll('json(*).data.get_comicNode.data.artists()')
+	MANGAINFO.Genres    = x.XPathStringAll('json(*).data.get_comicNode.data.genres()'):gsub("_", " ")
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('json(*).data.get_comicNode.data.originalStatus'), 'ongoing|hiatus|pending', 'completed|cancelled')
+	MANGAINFO.Summary   = x.XPathString('json(*).data.get_comicNode.data.summary')
+
+	HTTP.Reset()
+	s = '{"query":"{ get_comicChapterList( comicId: ' .. URL:match('(%d+)') .. ' ) { data { id dname title } } }"}'
+	HTTP.MimeType = 'application/json'
+	if HTTP.POST(u, s) then
+		x = CreateTXQuery(HTTP.Document)
+		for v in x.XPath('json(*).data.get_comicChapterList()').Get() do
+			chapter = x.XPathString('data/dname', v)
+			title = x.XPathString('data/title', v)
+
+			title = title ~= 'null' and title ~= '' and string.format(' - %s', title) or ''
+
+			MANGAINFO.ChapterLinks.Add(x.XPathString('data/id', v))
+			MANGAINFO.ChapterNames.Add(chapter .. title)
 		end
-		MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
-		return no_error
-	else
-		return net_problem
 	end
+
+	return no_error
 end
 
+-- Get the page count for the current chapter.
 function GetPageNumber()
-	TASK.PageLinks.Clear()
-	if HTTP.GET(MaybeFillHost(MODULE.RootURL, URL)) then
-		CreateTXQuery(HTTP.Document).XPathStringAll('json(//script[contains(.,"var _load_pages")]/substring-after(substring-before(.,";")," = "))()/u', TASK.PageLinks)
-	else
-		return false
-	end
-	return true
+	local u = MODULE.RootURL .. API_URL
+	local s = '{"query":"{ get_chapterNode( id: ' .. URL:match('(%d+)') .. ' ) { data { imageFile { urlList } } } }"}' 
+	HTTP.MimeType = 'application/json'
+
+	if not HTTP.POST(u, s) then return net_problem end
+
+	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).data.get_chapterNode.data.imageFile.urlList()', TASK.PageLinks)
+
+	return no_error
 end
