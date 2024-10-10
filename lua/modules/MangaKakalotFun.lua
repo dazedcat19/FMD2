@@ -4,9 +4,9 @@
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                       = 'a4f873c854b248769284896607dfb4dd'
-	m.Name                     = 'MangaHubIo'
-	m.RootURL                  = 'https://mangahub.io'
+	m.ID                       = '69bf594c54c54a938da633e26291cd3e'
+	m.Name                     = 'MangaKakalotFun'
+	m.RootURL                  = 'https://mangakakalot.fun'
 	m.Category                 = 'English'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
@@ -19,7 +19,7 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.MangaHub'
-Variables = 'm01'
+Variables = 'mn01'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
