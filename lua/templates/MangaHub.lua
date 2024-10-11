@@ -11,7 +11,7 @@ local _M = {}
 API_URL = 'https://api.mghcdn.com/graphql'
 CDN_URL = 'https://imgx.mghcdn.com/'
 json = require "utils.json"
-DirectoryPerPage = 30
+MangaPerPage = 30
 Variables = ''
 
 ----------------------------------------------------------------------------------------------------
@@ -32,7 +32,7 @@ function _M.GetDirectoryPageNumber()
 	HTTP.MimeType = 'application/json'
 	if HTTP.POST(API_URL, s) then
 		data = json.decode(HTTP.Document.ToString())
-		PAGENUMBER = math.ceil(data.data.search.count / DirectoryPerPage)
+		PAGENUMBER = math.ceil(data.data.search.count / MangaPerPage)
 	end
 
 	return no_error
@@ -41,7 +41,7 @@ end
 -- Get links and names from the manga list of the current website.
 function _M.GetNameAndLink()
 	local data, mhub_access, v = nil
-	local offset = DirectoryPerPage * tonumber(URL)
+	local offset = MangaPerPage * tonumber(URL)
 	local s = '{"query":"{search(x:' .. Variables .. ',q:\\"\\",genre:\\"all\\",mod:ALPHABET,count:true,offset:' .. tostring(offset) .. '){rows{id,rank,title,slug,status,author,genres,image,latestChapter,unauthFile,createdDate},count}}"}'
 
 	if not HTTP.GET(MODULE.RootURL) then return net_problem end
