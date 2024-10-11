@@ -94,11 +94,19 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
+	local data_cdn, data_length, x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('//section[contains(@x-data, "scroll")]/img/@src', TASK.PageLinks)
+	x = CreateTXQuery(HTTP.Document)
+	data_cdn = x.XPathString('//link[@rel="preload"]/@href')
+	data_length = tonumber(x.XPathString('(//button[@class="w-full btn"])[last()]'))
+	if data_cdn and data_length then
+		for i = 1, data_length do
+			TASK.PageLinks.Add(data_cdn:gsub('001', string.format("%03d", i)))
+		end
+	end
 
 	return no_error
 end
