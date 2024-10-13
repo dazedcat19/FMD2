@@ -45,10 +45,10 @@ function _M.GetInfo()
 	MANGAINFO.Authors   = x.XPathString('author', json)
 	MANGAINFO.Artists   = x.XPathString('artist', json)
 	MANGAINFO.Genres    = x.XPathStringAll('json(*).genres().name')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('seriesStatus', json))
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('seriesStatus', json), 'COMING_SOON|HIATUS|MASS_RELEASED|ONGOING', 'CANCELLED|COMPLETED|DROPPED')
 	MANGAINFO.Summary   = x.XPathString('postContent', json)
 
-	if HTTP.GET(MODULE.RootURL .. '/api/chapters?postId=' .. x.XPathString('id', json) .. '&skip=0&take=1000&order=asc') then
+	if HTTP.GET(MODULE.RootURL .. '/api/chapters?postId=' .. x.XPathString('id', json) .. '&skip=0&take=9999&order=asc') then
 		x = CreateTXQuery(HTTP.Document)
 		for v in x.XPath('json(*).post.chapters()').Get() do
 			title = v.GetProperty('title').ToString()
