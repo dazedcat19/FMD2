@@ -109,7 +109,7 @@ function GetPageNumber()
 	data_length = tonumber(x.XPathString('(//button[@class="w-full btn"])[last()]'))
 	if data_cdn and data_length then
 		for i = 1, data_length do
-			TASK.PageLinks.Add(data_cdn:gsub("001%.", string.format("%03d.", i)))
+			TASK.PageLinks.Add(data_cdn:gsub("%-001%.", string.format("-%03d.", i)))
 		end
 	end
 
