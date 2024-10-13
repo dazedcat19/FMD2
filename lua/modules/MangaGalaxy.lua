@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'ade29ea6ee774458be56373d41b85282'
 	m.Name                     = 'MangaGalaxy'
-	m.RootURL                  = 'https://mangagalaxy.org'
+	m.RootURL                  = 'https://mangagalaxy.net'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
