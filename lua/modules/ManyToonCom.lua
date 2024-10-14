@@ -5,8 +5,8 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'ac3452866dd843fda8b859afe8c8faab'
-	m.Name                     = 'ManyToonCom'
-	m.RootURL                  = 'https://manytoon.com'
+	m.Name                     = 'ManyToonOrg'
+	m.RootURL                  = 'https://manytoon.Org'
 	m.Category                 = 'Webcomics'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
