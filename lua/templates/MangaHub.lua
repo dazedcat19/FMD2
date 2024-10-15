@@ -80,7 +80,7 @@ function _M.GetInfo()
 	
 	for v in x.XPath('//li[contains(@class, "list-group-item")]//a[not(@rel)]').Get() do
 		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
-		MANGAINFO.ChapterNames.Add(x.XPathString('span/span[1]', v))
+		MANGAINFO.ChapterNames.Add(x.XPathString('span/span[1]', v) .. ' ' .. x.XPathString('span/span[2]', v))
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
