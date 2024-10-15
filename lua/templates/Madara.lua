@@ -23,6 +23,7 @@ function _M.GetNameAndLink()
 	local x = nil
 	local s = 'action=madara_load_more&template=madara-core/content/content-archive&page=' .. URL .. '&vars[paged]=0&vars[post_type]=wp-manga&vars[posts_per_page]=250'
 	local u = MODULE.RootURL .. '/wp-admin/admin-ajax.php'
+	HTTP.Headers.Values['Referer'] = u
 	HTTP.MimeType = 'application/x-www-form-urlencoded'
 
 	if not HTTP.POST(u, s) then return net_problem end
