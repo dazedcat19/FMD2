@@ -3095,7 +3095,7 @@ object MainForm: TMainForm
               Height = 19
               Top = 297
               Width = 156
-              Caption = 'Enables long names for directory paths and file names. (Will break most, if not all, interaction with windows and other apps on said files)'
+              Caption = 'Enable long name paths (Can break most/all interaction with the file in Windows and other apps)'
               TabOrder = 11
             end
           end
