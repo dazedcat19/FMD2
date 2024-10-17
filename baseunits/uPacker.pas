@@ -102,7 +102,7 @@ function TPacker.Do7Zip: Boolean;
 var
   p: TProcess;
   exit_status, i: Integer;
-  s, sout, serr: string;
+  s, sout, serr, tmpPath: string;
 begin
   Result := False;
   p := TProcess.Create(nil);
@@ -113,6 +113,15 @@ begin
         Logger.SendError(Self.ClassName+'.Do7Zip Error: failed to delete existing file '+FSavedFileName);
         Exit;
       end;
+    Randomize;
+    tmpPath := 'TMP' + IntToHex(Random(Int64($7fffff)), 6);
+    tmpPath := Path + tmpPath + '\';
+    CreateDir(tmpPath);
+    for i := 0 to FFileList.Count - 1 do
+    begin
+      s := StringReplace(FFileList[i], Path, tmpPath, [rfReplaceAll]);
+      RenameFile(FFileList[i], s);
+    end;
     p.Executable := CURRENT_ZIP_EXE;
     with p.Parameters do begin
       Add('a');
@@ -127,13 +136,15 @@ begin
       Add('-sse');
       Add('-sdel');
       Add(FSavedFileName);
-      AddStrings(FFileList);
+      Add(tmpPath + '.');
     end;
     sout:='';
     serr:='';
     p.ShowWindow:=swoHIDE;
     p.RunCommandLoop(sout,serr,exit_status);
     Result := exit_status = 0;
+    if IsDirectoryEmpty(tmpPath) then
+      RemoveDir(tmpPath);
     if not Result then
     begin
       serr:='';
