@@ -68,6 +68,7 @@ type
     cbOptionShowDownloadToolbarLeft: TCheckBox;
     cbOptionShowDownloadToolbarDeleteAll: TCheckBox;
     cbOptionVacuumDatabasesOnExit: TCheckBox;
+    cbOptionEnableLongNamePaths: TCheckBox;
     cbOptionUpdateListNoMangaInfo: TCheckBox;
     cbOptionDigitVolume: TCheckBox;
     cbOptionDigitChapter: TCheckBox;
@@ -5141,6 +5142,7 @@ begin
     miChapterListAscending.Checked := ReadBool('general', 'SortChapterListAscending', True);
     miChapterListDescending.Checked := not miChapterListAscending.Checked;
     cbOptionVacuumDatabasesOnExit.Checked := ReadBool('general', 'VacuumDatabasesOnExit', False);
+    cbOptionEnableLongNamePaths.Checked := ReadBool('general', 'EnableLongNamePaths', False);
 
     // view
     cbOptionShowDownloadToolbar.Checked := ReadBool('view', 'ShowDownloadsToolbar', True);
@@ -5297,6 +5299,7 @@ begin
       WriteBool('general', 'HighlightNewManga', miHighlightNewManga.Checked);
       WriteBool('general', 'HighlightDownloadedChapters', miChapterListHighlight.Checked);
       WriteBool('general', 'VacuumDatabasesOnExit', cbOptionVacuumDatabasesOnExit.Checked);
+      WriteBool('general', 'EnableLongNamePaths', cbOptionEnableLongNamePaths.Checked);
 
       // view
       WriteBool('view', 'ShowDownloadsToolbar', cbOptionShowDownloadToolbar.Checked);

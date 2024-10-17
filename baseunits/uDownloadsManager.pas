@@ -646,7 +646,10 @@ begin
   FCurrentWorkingDir := CorrectPathSys(AValue);
   {$IFDEF Windows}
   s := UTF8Decode(FCurrentWorkingDir);
-  FCurrentMaxFileNameLength := FMDMaxImageFilePath - Length(s);
+  if MainForm.cbOptionEnableLongNamePaths.Checked then
+    FCurrentMaxFileNameLength := FMDMaxImageFilePath + Length(s)
+  else
+    FCurrentMaxFileNameLength := FMDMaxImageFilePath - Length(s);
   {$ENDIF}
 end;
 

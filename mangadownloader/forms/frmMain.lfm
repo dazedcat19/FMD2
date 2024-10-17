@@ -2813,7 +2813,7 @@ object MainForm: TMainForm
             TabOrder = 0
             object gbOptionExternal: TGroupBox
               AnchorSideLeft.Control = sbGeneralSettings
-              AnchorSideTop.Control = cbOptionVacuumDatabasesOnExit
+              AnchorSideTop.Control = cbOptionEnableLongNamePaths
               AnchorSideTop.Side = asrBottom
               Left = 4
               Height = 118
@@ -3078,7 +3078,6 @@ object MainForm: TMainForm
               TabOrder = 9
             end
             object cbOptionVacuumDatabasesOnExit: TCheckBox
-              AnchorSideLeft.Control = sbGeneralSettings
               AnchorSideTop.Control = cbOptionSortDownloadsOnNewTasks
               AnchorSideTop.Side = asrBottom
               Left = 4
@@ -3087,6 +3086,17 @@ object MainForm: TMainForm
               Width = 158
               Caption = 'Vacuum databases on exit'
               TabOrder = 10
+            end
+            object cbOptionEnableLongNamePaths: TCheckBox
+              AnchorSideLeft.Control = sbGeneralSettings
+              AnchorSideTop.Control = cbOptionVacuumDatabasesOnExit
+              AnchorSideTop.Side = asrBottom
+              Left = 4
+              Height = 19
+              Top = 297
+              Width = 156
+              Caption = 'Enables long names for directory paths and file names. (Will break most, if not all, interaction with windows and other apps on said files)'
+              TabOrder = 11
             end
           end
         end

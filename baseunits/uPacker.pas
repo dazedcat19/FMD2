@@ -113,9 +113,9 @@ begin
         Logger.SendError(Self.ClassName+'.Do7Zip Error: failed to delete existing file '+FSavedFileName);
         Exit;
       end;
+    CreateDir('.\temp');
     Randomize;
-    tmpPath := 'TMP' + IntToHex(Random(Int64($7fffff)), 6);
-    tmpPath := Path + tmpPath + '\';
+    tmpPath := '.\temp\' + IntToHex(Random(Int64($7fffffffff)), 10) + '\';
     CreateDir(tmpPath);
     for i := 0 to FFileList.Count - 1 do
     begin
@@ -145,6 +145,8 @@ begin
     Result := exit_status = 0;
     if IsDirectoryEmpty(tmpPath) then
       RemoveDir(tmpPath);
+    if IsDirectoryEmpty('.\temp') then
+      RemoveDir('.\temp');
     if not Result then
     begin
       serr:='';

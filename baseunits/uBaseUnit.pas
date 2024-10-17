@@ -623,7 +623,7 @@ procedure SendLogException(const AText: String; AException: Exception); inline;
 implementation
 
 uses
-  WebsiteModules, webp, DCPrijndael, DCPsha512, FPWriteJPEG;
+  frmMain, WebsiteModules, webp, DCPrijndael, DCPsha512, FPWriteJPEG;
 
 {$IFDEF WINDOWS}
 // thanks Leledumbo for the code
@@ -1448,7 +1448,13 @@ begin
   s := UTF8Decode(Result);
   if Length(s) > MAX_PATHDIR then
   begin
-    SetLength(s, MAX_PATHDIR);
+    if MainForm.cbOptionEnableLongNamePaths.Checked then
+    begin
+      if Pos('\\?\', s) = 0 then
+        s := '\\?\' + s;
+    end
+    else
+      SetLength(s, MAX_PATHDIR);
     Result := UTF8Encode(s);
   end;
   {$ELSE}
