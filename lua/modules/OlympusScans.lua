@@ -5,8 +5,8 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '760d177b1f6d4763a08971c0c1b5572b'
-	m.Name                     = 'OlympusScanlation'
-	m.RootURL                  = 'https://leerolymp.com'
+	m.Name                     = 'Olympus Scanlation'
+	m.RootURL                  = 'https://zonaolympus.com'
 	m.Category                 = 'Spanish-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -17,7 +17,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-API_URL = 'https://dashboard.leerolymp.com/api'
+API_URL = 'https://dashboard.zonaolympus.com/api'
 DirectoryPagination = '/series?page='
 
 ----------------------------------------------------------------------------------------------------
