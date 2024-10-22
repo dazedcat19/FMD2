@@ -5885,9 +5885,17 @@ begin
       pcMain.PageIndex := ReadInteger('form', 'pcMainPageIndex', 0);
 
     Left := ReadInteger('form', 'MainFormLeft', Left);
+    if (Left < 0) or (Left > Screen.DesktopWidth) then
+      Left := 0;
     Top := ReadInteger('form', 'MainFormTop', Top);
+    if (Top < 0) or (Top > Screen.DesktopHeight) then
+      Top := 0;
     Width := ReadInteger('form', 'MainFormWidth', Width);
+    if Width > Screen.DesktopWidth then
+      Width := Screen.DesktopWidth;
     Height := ReadInteger('form', 'MainFormHeight', Height);
+    if Height > Screen.DesktopHeight then
+      Height := Screen.DesktopHeight;
     CurrentFormLeft := Left;
     CurrentFormTop := Top;
     CurrentFormWidth := Width;
