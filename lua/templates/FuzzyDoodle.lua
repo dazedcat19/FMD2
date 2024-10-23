@@ -80,19 +80,19 @@ function _M.GetInfo()
 	if not HTTP.GET(u) then return net_problem end
 
 	x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//div[contains(@class, "flex-col")]/h2/text()')
-	MANGAINFO.CoverLink = x.XPathString('//img[contains(@class, "rounded-lg object-cover")]/@src')
+	MANGAINFO.Title     = x.XPathString('//div[contains(@class, "flex-col")]/*[self::h2 or self::h1]/text()')
+	MANGAINFO.CoverLink = x.XPathString('//div[contains(@class, "relative")]/img[contains(@class, "object-cover")]/@src')
 	MANGAINFO.Authors   = x.XPathString('//p[contains(span, "' .. XPathTokenAuthors .. '")]/span[2]')
 	MANGAINFO.Artists   = x.XPathString('//p[contains(span, "' .. XPathTokenArtists .. '")]/span[2]')
 	MANGAINFO.Genres    = x.XPathStringAll('//div[contains(@class, "flex-wrap")]/a[contains(@href, "genre")]')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//p[contains(span, "' .. XPathTokenStatus .. '")]/a'), 'Hiatus|Ongoing|En cours', 'Cancelled|Completed|Dropped|Terminé')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//p[contains(span, "' .. XPathTokenStatus .. '")]/a'), 'Hiatus|Ongoing|En cours|مستمر', 'Cancelled|Completed|Dropped|Terminé|مكتمل|متوقف')
 	MANGAINFO.Summary   = x.XPathString('string-join(//p[@id="description"]/following-sibling::*[self::p or self::div], "\r\n")')
 
 	pages = tonumber(x.XPathString('//ul[contains(@class, "pagination")]/li[last()-1]/@onclick'):match('page=(%d+)')) or 1
 	while true do
 		for v in x.XPath('//div[@id="chapters-list"]/a').Get() do
 			MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
-			MANGAINFO.ChapterNames.Add(x.XPathString('div/div[1]/span', v))
+			MANGAINFO.ChapterNames.Add(x.XPathString('div/div[1]/span[1]', v))
 		end
 		p = p + 1
 		if p > pages then
