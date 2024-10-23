@@ -86,7 +86,7 @@ function _M.GetInfo()
 	MANGAINFO.Artists   = x.XPathString('//p[contains(span, "' .. XPathTokenArtists .. '")]/span[2]')
 	MANGAINFO.Genres    = x.XPathStringAll('//div[contains(@class, "flex-wrap")]/a[contains(@href, "genre")]')
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//p[contains(span, "' .. XPathTokenStatus .. '")]/a'), 'Hiatus|Ongoing|En cours', 'Cancelled|Completed|Dropped|Terminé')
-	MANGAINFO.Summary   = x.XPathString('//p[@id="description"]/following-sibling::*[self::p or self::div]')
+	MANGAINFO.Summary   = x.XPathString('string-join(//p[@id="description"]/following-sibling::*[self::p or self::div], "\r\n")')
 
 	pages = tonumber(x.XPathString('//ul[contains(@class, "pagination")]/li[last()-1]/@onclick'):match('page=(%d+)')) or 1
 	while true do
