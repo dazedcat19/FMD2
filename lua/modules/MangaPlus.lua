@@ -54,6 +54,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
+local crypto = require 'fmd.crypto'
 local API_URL = 'https://jumpg-webapi.tokyo-cdn.com/api'
 local separator = '↣' -- Save Encryption key in the URL and separate it using obscure char (U+21A3)
 
@@ -64,10 +65,6 @@ local function splitString(s, delimiter)
 		table.insert(result, match)
 	end
 	return result
-end
-
-local function hexToStr(str)
-	return str:gsub("%x%x", function(c) return c.char(tonumber(c, 16)) end)
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -106,12 +103,10 @@ function GetInfo()
 	MANGAINFO.Summary   = x.XPathString('overview', json)
 
 	local function addChapter(chapterlist)
-		if chapterlist ~= nil then
-			local name = chapterlist.GetProperty('subTitle').ToString()
-			if name == '' then name = chapterlist.GetProperty('name').ToString() end
-			MANGAINFO.ChapterNames.Add(name)
-			MANGAINFO.ChapterLinks.Add(chapterlist.GetProperty('chapterId').ToString())
-		end
+		name = chapterlist.GetProperty('subTitle').ToString()
+		if name == '' then name = chapterlist.GetProperty('name').ToString() end
+		MANGAINFO.ChapterNames.Add(name)
+		MANGAINFO.ChapterLinks.Add(chapterlist.GetProperty('chapterId').ToString())
 	end
 
 	for v in x.XPath('json(*).success.titleDetailView.chapterListGroup().firstChapterList()').Get() do
@@ -126,7 +121,6 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	local crypto = require 'fmd.crypto'
 	local encryption_key, image_url, v = nil
 	local imageresolution = {'low', 'high', 'super_high'}
 	local sel_imageresolution = (MODULE.GetOption('imageresolution') or 2) + 1
@@ -147,7 +141,7 @@ end
 function DownloadImage()
 	local t = splitString(URL, separator)
 	local url = t[1]
-	local key = hexToStr(t[2])
+	local key = crypto.HexToStr(t[2])
 
 	if not HTTP.GET(url) then return false end
 
