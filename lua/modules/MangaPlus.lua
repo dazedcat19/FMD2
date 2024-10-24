@@ -4,14 +4,14 @@
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                       = "f239e87c7a1248d29cdd2ea8a77df36c"
-	m.Name                     = "MangaPlus"
-	m.RootURL                  = "https://mangaplus.shueisha.co.jp"
-	m.Category                 = "English"
-	m.OnGetNameAndLink         = "GetNameAndLink"
-	m.OnGetInfo                = "GetInfo"
-	m.OnGetPageNumber          = "GetPageNumber"
-	m.OnDownloadImage          = "DownloadImage"
+	m.ID                       = 'f239e87c7a1248d29cdd2ea8a77df36c'
+	m.Name                     = 'MangaPlus'
+	m.RootURL                  = 'https://mangaplus.shueisha.co.jp'
+	m.Category                 = 'English'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnDownloadImage          = 'DownloadImage'
 
 	local fmd = require 'fmd.env'
 	local slang = fmd.SelectedLanguage
@@ -54,8 +54,8 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local API_URL = "https://jumpg-webapi.tokyo-cdn.com/api"
-local separator = "↣" -- Save Encryption key in the URL and separate it using obscure char (U+21A3)
+local API_URL = 'https://jumpg-webapi.tokyo-cdn.com/api'
+local separator = '↣' -- Save Encryption key in the URL and separate it using obscure char (U+21A3)
 
 -- Local Functions
 local function splitString(s, delimiter)
@@ -67,7 +67,7 @@ local function splitString(s, delimiter)
 end
 
 local function hexToStr(str)
-	return str:gsub("%x%x", function(c)return c.char(tonumber(c, 16))end)
+	return str:gsub("%x%x", function(c) return c.char(tonumber(c, 16)) end)
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -83,7 +83,6 @@ function GetNameAndLink()
 
 	for v in CreateTXQuery(HTTP.Document).XPath('json(*).success.allTitlesViewV2.AllTitlesGroup().titles()').Get() do
 		lang = GetLang(v.GetProperty('language').ToString())
-		if lang == '' then lang = ' [EN]' end
 		LINKS.Add('titles/' .. v.GetProperty('titleId').ToString())
 		NAMES.Add(v.GetProperty('name').ToString() .. lang)
 	end
@@ -101,7 +100,6 @@ function GetInfo()
 	x = CreateTXQuery(HTTP.Document)
 	json = x.XPath('json(*).success.titleDetailView')
 	lang = GetLang(x.XPathString('title/language', json))
-	if lang == '' then lang = ' [EN]' end
 	MANGAINFO.Title     = x.XPathString('title/name', json) .. lang
 	MANGAINFO.CoverLink = x.XPathString('titleImageUrl', json)
 	MANGAINFO.Authors   = x.XPathString('title/author', json)
@@ -128,15 +126,15 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	local encryption_key, image_url, v, x = nil
+	local crypto = require 'fmd.crypto'
+	local encryption_key, image_url, v = nil
 	local imageresolution = {'low', 'high', 'super_high'}
 	local sel_imageresolution = (MODULE.GetOption('imageresolution') or 2) + 1
 	local u = API_URL .. '/manga_viewer?chapter_id=' .. URL:match('(%d+)') .. '&img_quality=' .. imageresolution[sel_imageresolution] .. '&split=yes&format=json'
 
 	if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
-	for v in x.XPath('json(*).success.mangaViewer.pages().mangaPage').Get() do
+	for v in CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString())).XPath('json(*).success.mangaViewer.pages().mangaPage').Get() do
 		image_url = v.GetProperty('imageUrl').ToString()
 		encryption_key = v.GetProperty('encryptionKey').ToString()
 		TASK.PageLinks.Add(image_url .. separator .. encryption_key)
@@ -176,6 +174,6 @@ function GetLang(lang)
 	if langs[lang] ~= nil then
 		return langs[lang]
 	else
-		return lang
+		return " [EN]"
 	end
 end
