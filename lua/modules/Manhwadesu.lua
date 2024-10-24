@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'ee60f64cc450424bb906af3f699fd7e4'
 	m.Name                     = 'Manhwadesu'
-	m.RootURL                  = 'https://manhwadesu.cc'
+	m.RootURL                  = 'https://manhwadesu.my'
 	m.Category                 = 'H-Sites'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
