@@ -2,7 +2,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                         = '2889e1036e104c9081e0be59180b8354'
 	m.Name                       = 'TeamX'
-	m.RootURL                    = 'https://mnhaestate.com'
+	m.RootURL                    = 'https://olympustaff.com'
 	m.Category                   = 'Arabic-Scanlation'
 	m.OnGetDirectoryPageNumber   = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink           = 'GetNameAndLink'
