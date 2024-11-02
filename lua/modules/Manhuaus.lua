@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '283a39fb8ac44c41a3bd7080c5dd73cf'
 	m.Name                     = 'Manhuaus'
-	m.RootURL                  = 'https://manhuaus.org'
+	m.RootURL                  = 'https://manhuaus.com'
 	m.Category                 = 'English'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
