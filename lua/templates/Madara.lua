@@ -44,13 +44,13 @@ function _M.GetInfo()
 	if not HTTP.GET(u) then return net_problem end
 
 	x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//div[@class="post-title"]/*[self::h1 or self::h3]/text()')
+	MANGAINFO.Title     = x.XPathString('//div[@class="post-title" or @id="manga-title"]/*[self::h1 or self::h3]/text()')
 	MANGAINFO.CoverLink = x.XPathString('//div[@class="summary_image"]//img/@data-src')
 	MANGAINFO.Authors   = x.XPathStringAll('//div[@class="author-content"]/a')
 	MANGAINFO.Artists   = x.XPathStringAll('//div[@class="artist-content"]/a')
 	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="genres-content"]/a')
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@class="summary-heading" and contains(., "' .. XPathTokenStatus .. '")]/following-sibling::div'), 'Berjalan|Ongoing|مستمرة', 'Tamat|Completed|مكتملة')
-	MANGAINFO.Summary   = x.XPathString('string-join(//div[contains(@class, "summary__content") or @class="manga-summary"]|//div[@class="manga-excerpt"], "\r\n")')
+	MANGAINFO.Summary   = x.XPathString('string-join(//div[contains(@class, "summary__content") or @class="manga-summary"]|//div[@class="manga-excerpt"]|//div[@class="post-content_item" and contains(h5, "Summary") or contains(h5, "Sinopsis")]//p, "\r\n")')
 
 	if MANGAINFO.CoverLink == '' then MANGAINFO.CoverLink = x.XPathString('//div[@class="summary_image"]//img/@src') end
 	if MANGAINFO.Authors == '' then MANGAINFO.Authors = x.XPathString('//div[@class="summary-heading" and contains(., "' .. XPathTokenAuthors .. '")]/following-sibling::div') end
