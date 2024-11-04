@@ -44,6 +44,9 @@ type
 
 implementation
 
+uses
+  frmMain;
+
 procedure TPacker.FileFound(FileIterator: TFileIterator);
 begin
   FFileList.Add(FileIterator.Filename);
@@ -119,6 +122,11 @@ begin
     CreateDir(tmpPath);
     for i := 0 to FFileList.Count - 1 do
     begin
+      if MainForm.cbOptionEnableLongNamePaths.Checked then
+      begin
+        if Pos('\\?\', FFileList[i]) = 0 then
+          FFileList[i] := '\\?\' + FFileList[i];
+      end;
       s := StringReplace(FFileList[i], Path, tmpPath, [rfReplaceAll]);
       RenameFile(FFileList[i], s);
     end;
