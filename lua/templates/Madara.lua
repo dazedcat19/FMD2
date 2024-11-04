@@ -106,12 +106,10 @@ function _M.GetPageNumber()
 
 		if script == "" then
 			nodejs = require("utils.nodejs")
-			--nodejs.run_html_load(u)
 			result = nodejs.run_html_load(string.gsub(u, "?style=list", ""))
 
 			x.ParseHTML(result)
 			script = x.XPathString('//script[@id="chapter-protector-data"]')
-			print(script)
 		end
 
 		if script ~= "" then
@@ -124,7 +122,6 @@ function _M.GetPageNumber()
 			]]):gsub('\\/', '/'):gsub('%[', ''):gsub('%]', '')
 
 			for i in img:gmatch('"([^",]+)') do
-				print(i)
 				TASK.PageLinks.Add(i)
 			end
 		end
