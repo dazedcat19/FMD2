@@ -98,7 +98,16 @@ function _M.GetPageNumber()
 	if TASK.PageLinks.Count == 0 then x.XPathStringAll('//div[contains(@class, "page-break")]/img/@src', TASK.PageLinks) end
 	if TASK.PageLinks.Count == 0 then
 		script = x.XPathString('//script[@id="chapter-protector-data"]')
-		img = require("fmd.duktape").ExecJS(script .. [[
+
+		if script == "" then
+			nodejs = require("utils.nodejs")
+			result = nodejs.run_html_load(string.gsub(u, "?style=list", ""))
+
+			x.ParseHTML(result)  -- Assuming x is your TXQuery object.
+			script = x.XPathString('//script[@id="chapter-protector-data"]')
+		end
+
+		img = require "fmd.duktape".ExecJS(script .. [[
 
 		var CryptoJS = require("utils/crypto-js.min.js");
 		var CryptoJSAesJson = require("utils/cryptojs-aes-format.js");
