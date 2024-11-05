@@ -882,6 +882,11 @@ var
       begin
         for i := 0 to Container.PageLinks.Count - 1 do
         begin
+          if MainForm.cbOptionEnableLongNamePaths.Checked then
+          begin
+            if Pos('\\?\', CurrentWorkingDir) = 0 then
+              CurrentWorkingDir := '\\?\' + CurrentWorkingDir;
+          end;
           if ImageFileExists(CurrentWorkingDir + GetFileName(i)) then
           begin
             Container.PageLinks[i] := 'D';

@@ -2298,6 +2298,11 @@ begin
 
     if f = '' then Exit;
     f := p + FileName + '.' + f;
+    if MainForm.cbOptionEnableLongNamePaths.Checked then
+    begin
+      if Pos('\\?\', f) = 0 then
+        f := '\\?\' + f;
+    end;
     if FileExists(f) then DeleteFile(f);
     try
       fs := TFileStream.Create(f, fmCreate);

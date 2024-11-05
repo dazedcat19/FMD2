@@ -4,10 +4,10 @@
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                       = '0e9af4ffd93545989facf8d5090e5a8c'
-	m.Name                     = 'GManga'
-	m.RootURL                  = 'https://gmanga.site'
-	m.Category                 = 'Arabic-Scanlation'
+	m.ID                       = '598672e8158d4fd781bea8d426534695'
+	m.Name                     = 'Gourmet Scans'
+	m.RootURL                  = 'https://gourmetsupremacy.com'
+	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'

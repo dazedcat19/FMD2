@@ -38,15 +38,6 @@ end
 function GetInfo()
 	Template.GetInfo()
 
-	local x = nil
-	local u = MaybeFillHost(MODULE.RootURL, URL)
-
-	if not HTTP.GET(u) then return net_problem end
-
-	x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//div[@id="manga-title"]/h1/text()')
-	MANGAINFO.Summary   = x.XPathString('string-join(//div[@class="post-content_item" and contains(., "Summary")]/div/p/text(), "\r\n")')
-
 	return no_error
 end
 

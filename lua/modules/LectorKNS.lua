@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'c12ecc189301414aa091640c6980b531'
 	m.Name                     = 'LectorKNS'
-	m.RootURL                  = 'https://lectorkns.com'
+	m.RootURL                  = 'https://lectorkns.eyudud.net'
 	m.Category                 = 'Spanish-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -37,15 +37,6 @@ end
 -- Get info and chapter list for current manga.
 function GetInfo()
 	Template.GetInfo()
-
-	local x = nil
-	local u = MaybeFillHost(MODULE.RootURL, URL)
-
-	if not HTTP.GET(u) then return net_problem end
-
-	x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//div[@id="manga-title"]/h1/text()')
-	MANGAINFO.Summary   = x.XPathString('//div[@class="post-content_item" and contains(h5, "Sinopsis")]//span')
 
 	return no_error
 end
