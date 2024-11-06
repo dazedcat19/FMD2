@@ -16,7 +16,7 @@ function Init()
 	end
 	AddWebsiteModule('4c089029492f43c98d9f27a23403247b', 'HanaScan', 'https://hanascan.com')
 	AddWebsiteModule('010777f53bf2414fad039b9567c8a9ce', 'KLManga', 'https://klmanga.com')
-	AddWebsiteModule('794187d0e92e4933bf63812438d69017', 'Manhwa18', 'https://manhwa18.com')
+	AddWebsiteModule('794187d0e92e4933bf63812438d69017', 'Manhwa18', 'https://pornwa.club')
 	local m = AddWebsiteModule('9054606f128e4914ae646032215915e5', 'Ney5', 'https://ney5.xyz')
 	m.AccountSupport = true
 	m.OnLogin        = 'WeLoveMangaLogin'
