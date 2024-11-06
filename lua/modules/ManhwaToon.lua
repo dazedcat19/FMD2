@@ -5,13 +5,12 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '4bb36f93b168480a90fd12ea6844247d'
-	m.Name                     = 'ManhwaToon'
-	m.RootURL                  = 'https://www.manhwatoon.com'
+	m.Name                     = 'Manhwa18z'
+	m.RootURL                  = 'https://manhwa18z.com'
 	m.Category                 = 'English'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -35,7 +34,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
 
@@ -47,11 +46,4 @@ function GetPageNumber()
 	Template.GetPageNumber()
 
 	return no_error
-end
-
--- Prepare the URL, http header and/or http cookies before downloading an image.
-function BeforeDownloadImage()
-	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
-
-	return true
 end
