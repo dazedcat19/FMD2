@@ -104,7 +104,7 @@ function _M.GetPageNumber()
 		x = CreateTXQuery(HTTP.Document)
 		script = x.XPathString('//script[@id="chapter-protector-data"]')
 
-		if script == "" then
+		if script == "" and MODULE.Storage["fullpageload"] ~= "" then
 			nodejs = require("utils.nodejs")
 			result = nodejs.run_html_load(string.gsub(u, "?style=list", ""))
 
