@@ -91,7 +91,7 @@ function GetPageNumber()
 	HTTP.Reset()
 	HTTP.Headers.Values['Referer'] = MODULE.RootURL
 	if HTTP.GET(MODULE.RootURL .. '/app/manga/controllers/cont.imgsList.php?cid=' .. id) then
-		CreateTXQuery(HTTP.Document).XPathStringAll('//img/@data-srcset', TASK.PageLinks)
+		CreateTXQuery(HTTP.Document).XPathStringAll('//img/@data-src', TASK.PageLinks)
 	end
 
 	return no_error
