@@ -5,8 +5,8 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '7eafb0a70e59463fb4957950bd7831bd'
-	m.Name                     = 'Koharu'
-	m.RootURL                  = 'https://koharu.to'
+	m.Name                     = 'SchaleNetwork'
+	m.RootURL                  = 'https://schale.network'
 	m.Category                 = 'H-Sites'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
@@ -42,7 +42,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-API_URL = 'https://api.koharu.to/books'
+API_URL = 'https://api.schale.network/books'
 DirectoryPagination = '?page='
 
 ----------------------------------------------------------------------------------------------------
