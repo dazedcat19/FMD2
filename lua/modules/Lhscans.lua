@@ -16,7 +16,6 @@ function Init()
 	end
 	AddWebsiteModule('4c089029492f43c98d9f27a23403247b', 'HanaScan', 'https://hanascan.com')
 	AddWebsiteModule('010777f53bf2414fad039b9567c8a9ce', 'KLManga', 'https://klmanga.com')
-	AddWebsiteModule('794187d0e92e4933bf63812438d69017', 'Manhwa18', 'https://pornwa.club')
 	local m = AddWebsiteModule('9054606f128e4914ae646032215915e5', 'Ney5', 'https://ney5.xyz')
 	m.AccountSupport = true
 	m.OnLogin        = 'WeLoveMangaLogin'
@@ -34,7 +33,6 @@ function Init()
 	AddWebsiteModule('3b7ab0c7342f4783910f7842ea05630b', 'EcchiScan', 'https://ecchiscan.com')
 	AddWebsiteModule('f488bcb1911b4f21baa1ab65ef9ca61c', 'HeroScan', 'https://heroscan.com')
 	AddWebsiteModule('154d7bdcaa964bcda16ca4dbc683cdb8', 'ManhwaSmut', 'https://manhwasmut.com')
-	AddWebsiteModule('9b325c488f6f443281b39315d6fa72d0', 'Manhwa18Net', 'https://manhwa18.net')
 	
 	cat = 'English-Scanlation'
 	AddWebsiteModule('7fb5fbed6d3a44fe923ecc7bf929e6cb', 'LHTranslationArchive', 'https://archive.lhtranslation.net')
@@ -82,16 +80,9 @@ function WeLoveMangaLogin()
 end
 
 function GetDirectoryPageNumber()
-	if MODULE.ID == '9054606f128e4914ae646032215915e5' or MODULE.ID == '8313871a984b4b6c8de41860fc5ec96e' or MODULE.ID == '462c20a8842e44e4a6e1811fab1c78e2' or MODULE.ID == '9b325c488f6f443281b39315d6fa72d0' or MODULE.ID == '437660e89f824183901cf05c24e35eae' then -- Ney5, KSGroupScans, 5sLive, Manhwa18Net, WeLoveMangaOne
+	if MODULE.ID == '9054606f128e4914ae646032215915e5' or MODULE.ID == '8313871a984b4b6c8de41860fc5ec96e' or MODULE.ID == '462c20a8842e44e4a6e1811fab1c78e2' or MODULE.ID == '437660e89f824183901cf05c24e35eae' then -- Ney5, KSGroupScans, 5sLive, WeLoveMangaOne
 		if HTTP.GET(MODULE.RootURL .. '/manga-list.html?page=1&sort=name&sort_type=ASC') then
 			PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//ul[contains(@class, "pagination")]/li[last()-1]')) or 1
-			return no_error
-		else
-			return net_problem
-		end
-	elseif MODULE.ID == '794187d0e92e4933bf63812438d69017' then -- Manhwa18
-		if HTTP.GET(MODULE.RootURL .. '/manga-list?page=1') then
-			PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//div[@class="pagination_wrap"]/a[last()]/@href'):match('?page=(%d+)')) or 1
 			return no_error
 		else
 			return net_problem
@@ -100,20 +91,13 @@ function GetDirectoryPageNumber()
 end
 
 function GetNameAndLink()
-	if MODULE.ID == '9054606f128e4914ae646032215915e5' or MODULE.ID == '8313871a984b4b6c8de41860fc5ec96e' or MODULE.ID == '9b325c488f6f443281b39315d6fa72d0' then -- Ney5, KSGroupScans, Manhwa18Net
+	if MODULE.ID == '9054606f128e4914ae646032215915e5' or MODULE.ID == '8313871a984b4b6c8de41860fc5ec96e' then -- Ney5, KSGroupScans
 		if HTTP.GET(MODULE.RootURL .. '/manga-list.html?page=' .. (URL + 1) .. '&sort=name&sort_type=ASC') then
 			local x = CreateTXQuery(HTTP.Document)
 			local v for v in x.XPath('//div[contains(@class, "series-title")]/a').Get() do
 				NAMES.Add(Trim(SeparateLeft(v.ToString(), '- Raw')))
 				LINKS.Add(v.GetAttribute('href'))
 			end
-			return no_error
-		else
-			return net_problem
-		end
-	elseif MODULE.ID == '794187d0e92e4933bf63812438d69017' then -- Manhwa18
-		if HTTP.GET(MODULE.RootURL .. '/manga-list?page=' .. (URL + 1)) then
-			CreateTXQuery(HTTP.Document).XPathHREFTitleAll('//div[contains(@class, "series-title")]/a', LINKS, NAMES)
 			return no_error
 		else
 			return net_problem
@@ -161,19 +145,6 @@ function GetInfo()
 		MANGAINFO.Summary    = x.XPathString('string-join(//div[(./h3="Description") or (./h3="Summary")]//p, "\r\n")')
 		if MANGAINFO.Summary == '' then
 			MANGAINFO.Summary = x.XPathString('//div[@class="detail"]/div[@class="content"]')
-		end
-		if MODULE.ID == '794187d0e92e4933bf63812438d69017' then -- Manhwa18
-			MANGAINFO.Title     = x.XPathString('//span[@class="series-name"]/a')
-			MANGAINFO.CoverLink = x.XPathString('//div[@class="series-cover"]//@style'):match("background%-image: url%('(.-)'%)")
-			MANGAINFO.Authors   = x.XPathStringAll('//div[@class="series-information"]/div[./span="Author:"]/span/a')
-			MANGAINFO.Genres    = x.XPathStringAll('//div[@class="series-information"]/div[./span="Genre:"]/span/a')
-			MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@class="series-information"]/div[./span="Status:"]/span/a'), 'On going', 'Completed')
-		elseif MODULE.ID == '9b325c488f6f443281b39315d6fa72d0' then -- Manhwa18Net
-			MANGAINFO.Title     = x.XPathString('//ol[contains(@class, "breadcrumb")]/li[3]')
-			MANGAINFO.CoverLink = MaybeFillHost(MODULE.RootURL, x.XPathString('//div[@class="info-cover"]/img/@src'))
-			MANGAINFO.Authors   = x.XPathStringAll('//ul[contains(@class, "manga-info")]/li[./b="Author(s)"]/a')
-			MANGAINFO.Genres    = x.XPathStringAll('//ul[contains(@class, "manga-info")]/li[./b="Genre(s)"]/a')
-			MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//ul[contains(@class, "manga-info")]/li[./b="Status"]/a'), 'On going', 'Completed')
 		end
 		x.XPathHREFAll('//div[@id="tab-chapper"]//table/tbody/tr/td/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 		if MANGAINFO.ChapterLinks.Count == 0 then
@@ -223,8 +194,6 @@ function GetPageNumber()
 			end
 		elseif MODULE.ID == '9054606f128e4914ae646032215915e5' or MODULE.ID == '437660e89f824183901cf05c24e35eae' or MODULE.ID == '462c20a8842e44e4a6e1811fab1c78e2' then -- Ney5, WeLoveMangaOne, 5sLive
 			x.XPathStringAll('//img[contains(@class, "chapter-img")]/@*[contains(., "https")]', TASK.PageLinks)
-		elseif MODULE.ID == '794187d0e92e4933bf63812438d69017' then -- Manhwa18
-			x.XPathStringAll('//div[@id="chapter-content"]/img/@data-src', TASK.PageLinks)
 		elseif MODULE.ID == 'a42db88f4b564e12acbba33a944d180e' then -- Manga1000
 			x.XPathStringAll('//div[@class="chapter-content"]/img/@data-src', TASK.PageLinks)
 		else
