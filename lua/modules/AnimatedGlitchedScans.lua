@@ -5,23 +5,37 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '50868d7d8eaf4b8d948efa7333ed2989'
-	m.Name                     = 'AnimatedGlitchedScans'
-	m.RootURL                  = 'https://agscomics.com'
+	m.Name                     = 'AGR Comics'
+	m.RootURL                  = 'https://agrcomics.com'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
+
+	local fmd = require 'fmd.env'
+	local slang = fmd.SelectedLanguage
+	local lang = {
+		['en'] = {
+			['showpaidchapters'] = 'Show paid chapters'
+		},
+		['id_ID'] = {
+			['showpaidchapters'] = 'Tampilkan bab berbayar'
+		},
+		get =
+			function(self, key)
+				local sel = self[slang]
+				if sel == nil then sel = self['en'] end
+				return sel[key]
+			end
+	}
+	m.AddOptionCheckBox('showpaidchapters', lang:get('showpaidchapters'), false)
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.MangaThemesia'
-DirectoryPagination = '/all-series'
--- XPathTokenAuthors   = 'Author'
--- XPathTokenArtists   = 'Artist'
+local Template = require 'templates.KeyoApp'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -30,8 +44,6 @@ DirectoryPagination = '/all-series'
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
 	Template.GetNameAndLink()
-
-	CreateTXQuery(HTTP.Document).XPathHREFTitleAll('//div[@class="bsx"]/a', LINKS, NAMES)
 
 	return no_error
 end
@@ -47,14 +59,5 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('//div[@id="readerarea"]/img/@src', TASK.PageLinks)
-
 	return no_error
-end
-
--- Prepare the URL, http header and/or http cookies before downloading an image.
-function BeforeDownloadImage()
-	HTTP.Headers.Values['Referer'] = MODULE.RootURL
-
-	return true
 end
