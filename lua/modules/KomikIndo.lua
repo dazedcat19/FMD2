@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'edf6b037808442508a3aaeb1413699bf'
 	m.Name                     = 'KomikIndo'
-	m.RootURL                  = 'https://komikindo.lol'
+	m.RootURL                  = 'https://komikindo.app'
 	m.Category                 = 'Indonesian'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -17,10 +17,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.MangaThemesia'
 DirectoryPagination = '/daftar-manga/?list'
--- XPathTokenAuthors   = 'Author'
--- XPathTokenArtists   = 'Artist'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -28,7 +25,9 @@ DirectoryPagination = '/daftar-manga/?list'
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	Template.GetNameAndLink()
+	local u = MODULE.RootURL .. DirectoryPagination
+
+	if not HTTP.GET(u) then return net_problem end
 
 	CreateTXQuery(HTTP.Document).XPathHREFAll('//div[@class="jdlbar"]//a', LINKS, NAMES)
 
@@ -37,9 +36,14 @@ end
 
 -- Get info and chapter list for current manga.
 function GetInfo()
-	Template.GetInfo()
+	local x = nil
+	local u = MaybeFillHost(MODULE.RootURL, URL)
+
+	if not HTTP.GET(u) then return net_problem end
 
 	x = CreateTXQuery(HTTP.Document)
+	MANGAINFO.Title     = x.XPathString('//h1[@class="entry-title"]'):gsub('^Komik', '')
+	MANGAINFO.CoverLink = x.XPathString('//div[@itemprop="image"]//img/@src')
 	MANGAINFO.Authors   = x.XPathStringAll('//span[contains(b, "Pengarang")]/text()')
 	MANGAINFO.Artists   = x.XPathStringAll('//span[contains(b, "Ilustrator")]/text()')
 	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="genre-info"]/a|//span[contains(b, "Tema")]/a|//span[contains(b, "Grafis")]/a|//span[contains(b, "Jenis Komik")]/a')
@@ -54,7 +58,9 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	Template.GetPageNumber()
+	local u = MaybeFillHost(MODULE.RootURL, URL)
+
+	if not HTTP.GET(u) then return net_problem end
 
 	CreateTXQuery(HTTP.Document).XPathStringAll('//div[@id="chimg-auh"]//img/@src', TASK.PageLinks)
 
