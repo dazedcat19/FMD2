@@ -19,7 +19,6 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local utf8 = require("utf8")
 DirectoryPagination = '/?page='
 
 local ext = {
@@ -30,7 +29,7 @@ local ext = {
 }
 
 local function decode_unicode(str)
-	return str:gsub("\\u(%x%x%x%x)", function(hex) return utf8.char(tonumber(hex, 16)) end)
+	return str:gsub("\\u(%x%x%x%x)", function(hex) return require("utf8").char(tonumber(hex, 16)) end)
 end
 
 ----------------------------------------------------------------------------------------------------
