@@ -17,10 +17,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.MangaThemesia'
 DirectoryPagination = '/series?page='
--- XPathTokenAuthors   = 'Author'
--- XPathTokenArtists   = 'Artist'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -36,7 +33,7 @@ function GetNameAndLink()
 	x = CreateTXQuery(HTTP.Document)
 	if x.XPath('//div[contains(@class, "md:grid-cols-5")]/a').Count == 0 then return no_error end
 	for v in x.XPath('//div[contains(@class, "md:grid-cols-5")]/a').Get() do
-		LINKS.Add(v.GetAttribute('href'))
+		LINKS.Add(v.GetAttribute('href'):gsub('-(%w+)$', '-'))
 		NAMES.Add(x.XPathString('div/div/div[2]/span[1]', v))
 	end
 	UPDATELIST.CurrentDirectoryPageNumber = UPDATELIST.CurrentDirectoryPageNumber + 1
@@ -54,8 +51,8 @@ function GetInfo()
 	x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Title     = x.XPathString('//span[@class="text-xl font-bold"]')
 	MANGAINFO.CoverLink = x.XPathString('(//img[@alt="poster"])[1]/@src')
-	MANGAINFO.Authors   = x.XPathString('//h3[contains(., "' .. XPathTokenAuthors .. '")]/following-sibling::h3')
-	MANGAINFO.Artists   = x.XPathString('//h3[contains(., "' .. XPathTokenArtists .. '")]/following-sibling::h3')
+	MANGAINFO.Authors   = x.XPathString('//h3[contains(., "Author")]/following-sibling::h3')
+	MANGAINFO.Artists   = x.XPathString('//h3[contains(., "Artist")]/following-sibling::h3')
 	MANGAINFO.Genres    = x.XPathStringAll('//h3[contains(., "Genres")]/following-sibling::div/button')
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//h3[contains(., "Status")]/following-sibling::h3'))
 	MANGAINFO.Summary   = x.XPathString('//span[@class="font-medium text-sm text-[#A2A2A2]"]')
@@ -71,9 +68,17 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	Template.GetPageNumber()
+	local i, img, x = nil
+	local u = MaybeFillHost(MODULE.RootURL, URL)
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('//div/img[contains(@alt, "chapter page")]/@src', TASK.PageLinks)
+	if not HTTP.GET(u) then return net_problem end
+
+	x = CreateTXQuery(HTTP.Document)
+	HTTP.Document.SaveToFile("asura.html")
+	img = GetBetween("push(", "])", x.XPathString('//script[contains(., "published_at")]'):gsub('\\"', '"')) .. ']'
+	for i in img:gmatch('"url":"(.-)"') do
+		TASK.PageLinks.Add(i)
+	end
 
 	return no_error
 end
