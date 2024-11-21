@@ -186,7 +186,7 @@ begin
         end;
       end
       else
-        FFailedList.Add(Format(RS_FailedDownload, [FModule.Name, HTTP.ResultCode,
+        FFailedList.Add(Format(RS_FailedDownload, [FModule.Name + ' Manga List', HTTP.ResultCode,
           HTTP.ResultString]));
     except
       on E: Exception do

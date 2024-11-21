@@ -5582,7 +5582,7 @@ object MainForm: TMainForm
       OnClick = mnUpdateListClick
     end
     object mnUpdateDownFromServer: TMenuItem
-      Caption = 'Download manga list from server'
+      Caption = 'Download manga list from FMD server'
       OnClick = mnUpdateDownFromServerClick
     end
     object MenuItem5: TMenuItem
@@ -5593,7 +5593,7 @@ object MainForm: TMainForm
       OnClick = mnUpdate1ClickClick
     end
     object mnDownload1Click: TMenuItem
-      Caption = 'Download all lists from server at once'
+      Caption = 'Download all lists from FMD server at once'
       OnClick = mnDownload1ClickClick
     end
   end
