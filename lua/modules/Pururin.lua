@@ -12,6 +12,8 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnLogin                  = 'Login'
+	m.AccountSupport           = true
 	m.SortedList               = true
 end
 
@@ -24,6 +26,40 @@ DirectoryPagination = '/browse?page='
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
+
+-- Login account to the current website.
+function Login()
+	local s, x = nil
+	local login_url = MODULE.RootURL .. '/login'
+	if MODULE.Account.Enabled == false then return false end
+	local crypto = require 'fmd.crypto'
+	if HTTP.GET(login_url) then
+		x = CreateTXQuery(HTTP.Document)
+		s = 'login=' .. crypto.EncodeURLElement(MODULE.Account.Username) ..
+		'&password=' .. crypto.EncodeURLElement(MODULE.Account.Password) ..
+		'&' .. x.XPathString('//input[contains(@id, "my_name")]/@name') .. '=' ..
+		'&valid_from=' .. x.XPathString('//input[@name="valid_from"]/@value') ..
+		'&_token=' .. x.XPathString('//input[@name="_token"]/@value') ..
+		'&remember=on'
+	end
+	MODULE.Account.Status = asChecking
+	HTTP.Reset()
+	HTTP.Headers.Values['Origin'] = MODULE.RootURL
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/login'
+	HTTP.MimeType = 'application/x-www-form-urlencoded'
+	if HTTP.POST(login_url, s) then
+		if (HTTP.ResultCode == 200) and (CreateTXQuery(HTTP.Document).XPathString('//form[@id="logout-form"]/@action') ~= '') then
+			MODULE.Account.Status = asValid
+			return true
+		else
+			MODULE.Account.Status = asInvalid
+			return false
+		end
+	else
+		MODULE.Account.Status = asUnknown
+		return false
+	end
+end
 
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
@@ -47,7 +83,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	local pages, v, x = nil
 	local p = 1
