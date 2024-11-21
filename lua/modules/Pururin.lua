@@ -44,9 +44,6 @@ function Login()
 	end
 	MODULE.Account.Status = asChecking
 	HTTP.Reset()
-	HTTP.Headers.Values['Origin'] = MODULE.RootURL
-	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/login'
-	HTTP.MimeType = 'application/x-www-form-urlencoded'
 	if HTTP.POST(login_url, s) then
 		if (HTTP.ResultCode == 200) and (CreateTXQuery(HTTP.Document).XPathString('//form[@id="logout-form"]/@action') ~= '') then
 			MODULE.Account.Status = asValid
