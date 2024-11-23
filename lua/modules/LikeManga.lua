@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'c7aebe73845f43149bd5a8cbe84fd926'
 	m.Name                     = 'LikeManga'
-	m.RootURL                  = 'https://likemanga.io'
+	m.RootURL                  = 'https://likemanga.ink'
 	m.Category                 = 'English'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
