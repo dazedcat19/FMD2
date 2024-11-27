@@ -5,7 +5,7 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '7103ae6839ea46ec80cdfc2c4b37c803'
-	m.Name                     = 'AsuraScans'
+	m.Name                     = 'Asura Scans'
 	m.RootURL                  = 'https://asuracomic.net'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
@@ -59,7 +59,7 @@ function GetInfo()
 
 	for v in x.XPath('//h3[contains(@class, "text-sm text-white font-medium")]/a').Get() do
 		MANGAINFO.ChapterLinks.Add('series/' .. v.GetAttribute('href'):gsub('-(%w+)/chapter', '-/chapter'))
-		MANGAINFO.ChapterNames.Add(x.XPathString('text()', v))
+		MANGAINFO.ChapterNames.Add(x.XPathString('string-join(.//text(), " ")', v))
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
