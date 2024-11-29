@@ -40,7 +40,7 @@ end
 
 -- Get info and chapter list for current manga.
 function GetInfo()
-	local json, v, x = nil
+	local chapter, json, title, v, x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
@@ -56,8 +56,13 @@ function GetInfo()
 	MANGAINFO.Summary   = x.XPathString('description', json)
 
 	for v in x.XPath('json(//script[@id="__NEXT_DATA__"]).props.pageProps.chapters()').Get() do
+		chapter = v.GetProperty('chapter').ToString():gsub('%.0', '')
+		title   = v.GetProperty('title').ToString()
+
+		title = title ~= 'null' and title ~= '' and string.format(' - %s', title) or ''
+
 		MANGAINFO.ChapterLinks.Add('series/' .. v.GetProperty('series_id').ToString() .. '/' .. v.GetProperty('token').ToString())
-		MANGAINFO.ChapterNames.Add(v.GetProperty('chapter').ToString():gsub('%.0', ''))
+		MANGAINFO.ChapterNames.Add(chapter .. title)
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
