@@ -45,8 +45,8 @@ end
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'fe152f2481a84befbfa01d7f4312edb9'
-	m.Name                     = 'ReadMangaRU'
-	m.RootURL                  = 'https://readmanga.me'
+	m.Name                     = 'UsagiOne'
+	m.RootURL                  = 'https://web.usagi.one'
 	m.Category                 = 'Russian'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'

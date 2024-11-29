@@ -45,8 +45,8 @@ end
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'dfb4dff2709d49d6bd9cbb6e4515bd4a'
-	m.Name                     = 'MintMangaRU'
-	m.RootURL                  = 'https://mintmanga.live'
+	m.Name                     = 'SeiManga'
+	m.RootURL                  = 'https://1.seimanga.me'
 	m.Category                 = 'Russian'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
