@@ -73,7 +73,7 @@ function GetPageNumber()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	img = GetBetween("push(", "])", CreateTXQuery(HTTP.Document).XPathString('(//script[contains(., "published_at")])[2]'):gsub('\\"', '"')) .. ']'
+	img = GetBetween("push(", "])", CreateTXQuery(HTTP.Document).XPathString('(//script[contains(., "published_at")])[last()]'):gsub('\\"', '"')) .. ']'
 	for i in img:gmatch('"url":"(.-)"') do
 		TASK.PageLinks.Add(i)
 	end
