@@ -61,6 +61,7 @@ function _M.GetInfo()
 	x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 	if MANGAINFO.ChapterLinks.Count == 0 then
 		HTTP.Reset()
+		HTTP.Headers.Values['Content-Length'] = 0
 		HTTP.Headers.Values['X-Requested-With'] = 'XMLHttpRequest'
 		if HTTP.POST(MANGAINFO.URL .. 'ajax/chapters') then
 			x = CreateTXQuery(HTTP.Document)
