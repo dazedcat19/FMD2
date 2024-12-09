@@ -7,6 +7,7 @@ function Init()
 	m.ID                       = 'ac3452866dd843fda8b859afe8c8faab'
 	m.Name                     = 'ManyToonCom'
 	m.RootURL                  = 'https://manytoon.com'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.Category                 = 'H-Sites'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -18,15 +19,27 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.Madara'
+DirectoryPagination = '/home/page/'
 ChapterParameters = 'action=ajax_chap&post_id='
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
+-- Get the page count of the manga list of the current website.
+function GetDirectoryPageNumber()
+	if not HTTP.GET(MODULE.RootURL .. DirectoryPagination .. 1) then return net_problem end
+
+	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//div[@class="wp-pagenavi"]/a[last()-1]/@href'):match('/(%d+)/')) or 1
+
+	return no_error
+end
+
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	Template.GetNameAndLink()
+	if not HTTP.GET(MODULE.RootURL .. DirectoryPagination .. (URL + 1)) then return net_problem end
+
+	CreateTXQuery(HTTP.Document).XPathHREFAll('//div[contains(@class, "post-title")]//a', LINKS, NAMES)
 
 	return no_error
 end
