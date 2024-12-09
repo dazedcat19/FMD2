@@ -5,9 +5,9 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'ac3452866dd843fda8b859afe8c8faab'
-	m.Name                     = 'ManyToonOrg'
-	m.RootURL                  = 'https://manytoon.Org'
-	m.Category                 = 'Webcomics'
+	m.Name                     = 'ManyToonCom'
+	m.RootURL                  = 'https://manytoon.com'
+	m.Category                 = 'H-Sites'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
@@ -18,10 +18,6 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.Madara'
--- XPathTokenAuthors = 'Author(s)'
--- XPathTokenArtists = 'Artist(s)'
--- XPathTokenGenres  = 'Genre(s)'
--- XPathTokenStatus  = 'Status'
 ChapterParameters = 'action=ajax_chap&post_id='
 
 ----------------------------------------------------------------------------------------------------
@@ -35,7 +31,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
 
