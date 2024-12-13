@@ -5,8 +5,8 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '2b5f00cfbb124546b6c11a7e5ec9c403'
-	m.Name                     = 'Hipertoon'
-	m.RootURL                  = 'https://hipertoon.com'
+	m.Name                     = 'HiperDEX'
+	m.RootURL                  = 'https://hiperdex.com'
 	m.Category                 = 'H-Sites'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -18,10 +18,6 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.Madara'
--- XPathTokenAuthors = 'Author(s)'
--- XPathTokenArtists = 'Artist(s)'
--- XPathTokenGenres  = 'Genre(s)'
--- XPathTokenStatus  = 'Status'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -34,7 +30,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
 

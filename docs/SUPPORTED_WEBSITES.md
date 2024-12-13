@@ -149,7 +149,7 @@
 | HerenScan | [![https://herenscan.com](https://img.shields.io/website?url=https://herenscan.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://herenscan.com)](https://herenscan.com) | - | - | - |
 | HeroManhua | [![https://heromanhua.com](https://img.shields.io/website?url=https://heromanhua.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://heromanhua.com)](https://heromanhua.com) | - | - | - |
 | HeroScan | [![https://heroscan.com](https://img.shields.io/website?url=https://heroscan.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://heroscan.com)](https://heroscan.com) | - | - | - |
-| Hipertoon | [![https://hipertoon.com](https://img.shields.io/website?url=https://hipertoon.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://hipertoon.com)](https://hipertoon.com) | - | - | - |
+| HiperDEX | [![https://hiperdex.com](https://img.shields.io/website?url=https://hiperdex.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://hiperdex.com)](https://hiperdex.com) | OK | 13.12.2024 | Sometimes cloudflare workaround is required |
 | HitomiLa | [![https://hitomi.la](https://img.shields.io/website?url=https://hitomi.la%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://hitomi.la)](https://hitomi.la) | Broken | 12.12.2024 | - |
 | HManhwa | [![https://hmanhwa.com](https://img.shields.io/website?url=https://hmanhwa.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://hmanhwa.com)](https://hmanhwa.com) | - | - | - |
 | HolyManga | [![https://www.holymanga.net](https://img.shields.io/website?url=https://www.holymanga.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.holymanga.net)](https://www.holymanga.net) | - | - | - |
