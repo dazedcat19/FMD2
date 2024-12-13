@@ -567,6 +567,7 @@
 | Riceballicious | [![http://riceballicious.info](https://img.shields.io/website?url=http://riceballicious.info%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://riceballicious.info)](http://riceballicious.info) | - | - | - |
 | RizzFables | [![https://rizzfables.com](https://img.shields.io/website?url=https://rizzfables.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://rizzfables.com)](https://rizzfables.com) | - | - | - |
 | Rocaca | [![http://www.rocaca.com](https://img.shields.io/website?url=http://www.rocaca.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.rocaca.com)](http://www.rocaca.com) | - | - | - |
+| RoliaScan | [![https://roliascan.com](https://img.shields.io/website?url=https://roliascan.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://roliascan.com)](https://roliascan.com) | OK | 13.12.2024 | - |
 | RoseliaScanlations | [![http://reader.roseliascans.com](https://img.shields.io/website?url=http://reader.roseliascans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://reader.roseliascans.com)](http://reader.roseliascans.com) | - | - | - |
 | S2Manga | [![https://s2manga.com](https://img.shields.io/website?url=https://s2manga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://s2manga.com)](https://s2manga.com) | - | - | - |
 | S2Scans | [![https://reader.s2smanga.com](https://img.shields.io/website?url=https://reader.s2smanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://reader.s2smanga.com)](https://reader.s2smanga.com) | - | - | - |
