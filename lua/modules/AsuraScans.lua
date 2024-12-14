@@ -58,8 +58,18 @@ function GetInfo()
 	MANGAINFO.Summary   = x.XPathString('//span[@class="font-medium text-sm text-[#A2A2A2]"]')
 
 	for v in x.XPath('//div[contains(@class, "group")]/a').Get() do
-		MANGAINFO.ChapterLinks.Add('series/' .. v.GetAttribute('href'):gsub('-(%w+)/chapter', '-/chapter'))
-		MANGAINFO.ChapterNames.Add(x.XPathString('string(.//h3[contains(@class, "text-sm text-white font-medium")])', v))
+		-- Check if the chapter has a circle icon (an <svg> element inside a <span> within the <h3>)
+		local hasCircleIcon = x.XPath(string.format(
+			'//a[@href="%s"]//h3[contains(@class, "text-sm text-white font-medium")]/span/svg',
+			v.GetAttribute('href')
+		)).Count > 0
+		-- Only add chapters without a circle icon
+		if not hasCircleIcon then
+			-- Add the chapter link to MANGAINFO.ChapterLinks
+			MANGAINFO.ChapterLinks.Add('series/' .. v.GetAttribute('href'):gsub('-(%w+)/chapter', '-/chapter'))
+			-- Extract and add the chapter name to MANGAINFO.ChapterNames
+			MANGAINFO.ChapterNames.Add(x.XPathString('string(.//h3[contains(@class, "text-sm text-white font-medium")])', v))
+		end
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
