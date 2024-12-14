@@ -57,9 +57,9 @@ function GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//h3[contains(., "Status")]/following-sibling::h3'))
 	MANGAINFO.Summary   = x.XPathString('//span[@class="font-medium text-sm text-[#A2A2A2]"]')
 
-	for v in x.XPath('//h3[contains(@class, "text-sm text-white font-medium")]/a').Get() do
+	for v in x.XPath('//div[contains(@class, "group")]/a').Get() do
 		MANGAINFO.ChapterLinks.Add('series/' .. v.GetAttribute('href'):gsub('-(%w+)/chapter', '-/chapter'))
-		MANGAINFO.ChapterNames.Add(x.XPathString('string-join(.//text(), " ")', v))
+		MANGAINFO.ChapterNames.Add(x.XPathString('string(.//h3[contains(@class, "text-sm text-white font-medium")])', v))
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
