@@ -68,7 +68,7 @@ function GetInfo()
 			-- Add the chapter link to MANGAINFO.ChapterLinks
 			MANGAINFO.ChapterLinks.Add('series/' .. v.GetAttribute('href'):gsub('-(%w+)/chapter', '-/chapter'))
 			-- Extract and add the chapter name to MANGAINFO.ChapterNames
-			MANGAINFO.ChapterNames.Add(x.XPathString('string(.//h3[contains(@class, "text-sm text-white font-medium")])', v))
+			MANGAINFO.ChapterNames.Add(x.XPathString('string-join(h3[contains(@class, "text-sm text-white font-medium")]//text(), " ")', v))
 		end
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
