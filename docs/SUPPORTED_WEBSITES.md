@@ -35,7 +35,7 @@
 | AsmHentai | [![https://asmhentai.com](https://img.shields.io/website?url=https://asmhentai.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://asmhentai.com)](https://asmhentai.com) | - | - | - |
 | AstralLibrary | [![https://astrallibrary.net](https://img.shields.io/website?url=https://astrallibrary.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://astrallibrary.net)](https://astrallibrary.net) | - | - | - |
 | AstraScans | [![https://astrascans.com](https://img.shields.io/website?url=https://astrascans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://astrascans.com)](https://astrascans.com) | - | - | - |
-| Asura Scans | [![https://asuracomic.net](https://img.shields.io/website?url=https://asuracomic.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://asuracomic.net)](https://asuracomic.net) | OK | 14.12.2024 | - |
+| Asura Scans | [![https://asuracomic.net](https://img.shields.io/website?url=https://asuracomic.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://asuracomic.net)](https://asuracomic.net) | OK | 14.12.2024 | Chapters behind website paywall are omited |
 | ATMSubs | [![https://atm-subs.fr](https://img.shields.io/website?url=https://atm-subs.fr%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://atm-subs.fr)](https://atm-subs.fr) | - | - | - |
 | AzComix | [![https://azcomix.me](https://img.shields.io/website?url=https://azcomix.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://azcomix.me)](https://azcomix.me) | - | - | - |
 | Azora Manga | [![https://azoramoon.com](https://img.shields.io/website?url=https://azoramoon.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://azoramoon.com)](https://azoramoon.com) | - | - | - |
