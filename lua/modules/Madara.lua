@@ -371,7 +371,6 @@ function Init()
 
 	cat = 'H-Sites'
 	AddWebsiteModule('c0214763110b4d14b6e359ecef6df2e4', 'DoujinYosh', 'https://doujinyosh.fun')
-	AddWebsiteModule('d8e44dca037b4e159d320466adc06ca3', 'ManhwaHentai', 'https://manhwahentai.me')
 	AddWebsiteModule('dfdec22299bc4fc6adbad401eeca2211', 'HentaiRead', 'http://hentairead.com')
 	AddWebsiteModule('349e30b0c30643f4a8d0aaece2a2c41e', 'ManhwaClub', 'https://manhwa.club')
 	AddWebsiteModule('c87aeae76e884adc9de8bc6b9d56f2c6', 'ShosetsuManga', 'https://www.shosetsu-manga.org')

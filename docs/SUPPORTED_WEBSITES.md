@@ -424,7 +424,7 @@
 | ManhwaClub | [![https://manhwa.club](https://img.shields.io/website?url=https://manhwa.club%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwa.club)](https://manhwa.club) | - | - | - |
 | Manhwadesu | [![https://manhwadesu.asia](https://img.shields.io/website?url=https://manhwadesu.asia%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwadesu.asia)](https://manhwadesu.asia) | - | - | - |
 | ManhwaFreak | [![https://freakcomic.com](https://img.shields.io/website?url=https://freakcomic.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://freakcomic.com)](https://freakcomic.com) | - | - | - |
-| ManhwaHentai | [![https://manhwahentai.me](https://img.shields.io/website?url=https://manhwahentai.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwahentai.me)](https://manhwahentai.me) | - | - | - |
+| ManhwaHentai | [![https://manhwahentai.me](https://img.shields.io/website?url=https://manhwahentai.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwahentai.me)](https://manhwahentai.me) | OK | 15.12.2024 | - |
 | ManhwaHentaiIo | [![https://manhwahentai.io](https://img.shields.io/website?url=https://manhwahentai.io%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwahentai.io)](https://manhwahentai.io) | - | - | - |
 | ManhwaHentaiTo | [![https://manhwahentai.to](https://img.shields.io/website?url=https://manhwahentai.to%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwahentai.to)](https://manhwahentai.to) | - | - | - |
 | Manhwaid | [![https://manhwaid.club](https://img.shields.io/website?url=https://manhwaid.club%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwaid.club)](https://manhwaid.club) | - | - | - |
