@@ -291,7 +291,6 @@
 | MangaFoxFun | [![https://mangafox.fun](https://img.shields.io/website?url=https://mangafox.fun%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangafox.fun)](https://mangafox.fun) | - | - | - |
 | MangaFreak | [![https://w11.mangafreak.net](https://img.shields.io/website?url=https://w11.mangafreak.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://w11.mangafreak.net)](https://w11.mangafreak.net) | - | - | - |
 | MangaFull | [![https://mangafull.org](https://img.shields.io/website?url=https://mangafull.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangafull.org)](https://mangafull.org) | - | - | - |
-| MangaGalaxy | [![https://mangagalaxy.net](https://img.shields.io/website?url=https://mangagalaxy.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangagalaxy.net)](https://mangagalaxy.net) | - | - | - |
 | MangaGeko | [![https://www.mgeko.cc](https://img.shields.io/website?url=https://www.mgeko.cc%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mgeko.cc)](https://www.mgeko.cc) | - | - | - |
 | MangaGo | [![http://www.mangago.me](https://img.shields.io/website?url=http://www.mangago.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.mangago.me)](http://www.mangago.me) | - | - | - |
 | MangaGreat | [![https://mangagreat.com](https://img.shields.io/website?url=https://mangagreat.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangagreat.com)](https://mangagreat.com) | - | - | - |
@@ -708,3 +707,4 @@
 | ZeroScans | [![https://zscans.com](https://img.shields.io/website?url=https://zscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://zscans.com)](https://zscans.com) | - | - | - |
 | ZinManga | [![https://zinmanga.net](https://img.shields.io/website?url=https://zinmanga.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://zinmanga.net)](https://zinmanga.net) | - | - | - |
 | ZManga | [![https://zmanga.org](https://img.shields.io/website?url=https://zmanga.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://zmanga.org)](https://zmanga.org) | - | - | - |
+| ~MangaGalaxy~ | ~https://mangagalaxy.net~ | Removed | 15.12.2024 | Merged to Vortex Scans |
