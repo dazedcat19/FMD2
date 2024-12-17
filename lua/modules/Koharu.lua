@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '7eafb0a70e59463fb4957950bd7831bd'
 	m.Name                     = 'SchaleNetwork'
-	m.RootURL                  = 'https://schale.network'
+	m.RootURL                  = 'https://niyaniya.moe'
 	m.Category                 = 'H-Sites'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
@@ -42,7 +42,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-API_URL = 'https://api.schale.network/books'
+API_URL = 'https://api.niyaniya.moe/books'
 DirectoryPagination = '?page='
 
 ----------------------------------------------------------------------------------------------------
@@ -81,7 +81,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	local imagesize, link, sel_imagesize, title, x = nil
 	local u = API_URL .. '/detail/' .. URL:match('g/(.-)$')
@@ -114,7 +114,7 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	local base, v, x = nil
+	local base, dimensions, entries, i, j, x = nil
 	local u = API_URL .. '/data' .. URL
 	HTTP.Headers.Values['Origin'] = MODULE.RootURL
 	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
@@ -123,8 +123,12 @@ function GetPageNumber()
 
 	x = CreateTXQuery(HTTP.Document)
 	base = x.XPathString('json(*).base')
-	for v in x.XPath('json(*).entries().path').Get() do
-		TASK.PageLinks.Add(base .. v.ToString())
+	entries = x.XPath('json(*).entries()')
+	for i = 1, entries.Count do
+		dimensions = x.XPath('json(*).entries()[' .. i .. '].dimensions()')
+		for j = 1, dimensions.Count, 2 do
+			TASK.PageLinks.Add(base .. entries.Get(i).GetProperty('path').ToString() .. '?w=' .. dimensions.Get(j).ToString())
+		end
 	end
 
 	return no_error
