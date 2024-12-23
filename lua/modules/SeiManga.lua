@@ -31,7 +31,7 @@ function GetDirectoryPageNumber()
 	return no_error
 end
 
--- Get LINKS and NAMES from the manga list of the current website.
+-- Get links and names from the manga list of the current website.
 function GetNameAndLink()
 	Template.GetNameAndLink()
 
