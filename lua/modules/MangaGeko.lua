@@ -48,7 +48,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	local v, x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
@@ -63,13 +63,14 @@ function GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//span[contains(., "Status")]/parent::*'))
 	MANGAINFO.Summary   = x.XPathString('//p[@class="description"]')
 
-	if HTTP.GET(u .. 'all-chapters/') then
-		x = CreateTXQuery(HTTP.Document)
-		for v in x.XPath('//ul[@class="chapter-list"]//a').Get() do
-			MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
-			MANGAINFO.ChapterNames.Add('Chapter ' .. x.XPathString('strong/replace(., "-eng-li", "")', v))
-		end
+	if not HTTP.GET(MANGAINFO.URL .. 'all-chapters/') then return net_problem end
+
+	x = CreateTXQuery(HTTP.Document)
+	for v in x.XPath('//ul[@class="chapter-list"]//a').Get() do
+		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
+		MANGAINFO.ChapterNames.Add('Chapter ' .. x.XPathString('strong/replace(., "-eng-li", "")', v))
 	end
+
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
