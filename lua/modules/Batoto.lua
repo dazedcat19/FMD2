@@ -14,7 +14,7 @@ function Init()
 		m.OnGetNameAndLink         = 'GetNameAndLink'
 		m.OnGetPageNumber          = 'GetPageNumber'
 	end
-	AddWebsiteModule('5257a0c426b94accb6dcee3101308314', 'Batoto', 'https://bato.to')
+	AddWebsiteModule('5257a0c426b94accb6dcee3101308314', 'Batoto', 'https://readtoto.org')
 	AddWebsiteModule('41e43d6fa1434937afad3bc04a1e8603', 'Batotoo', 'https://batotoo.com')
 	AddWebsiteModule('53347251db9d4d5eb92ef8bc6101e5f7', 'Battwo', 'https://battwo.com')
 	AddWebsiteModule('cf8702f7f5d24bd2a1b9b9904beb246b', 'Mangatoto', 'https://mangatoto.com')
@@ -33,7 +33,7 @@ DirectoryPagination = '/browse?sort=title.az&page='
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	if not HTTP.GET(MaybeFillHost(MODULE.RootURL, URL)) then return net_problem end
 
@@ -81,10 +81,10 @@ function GetPageNumber()
 	local script = x.XPathString('//script[contains(.,"const batoPass")]')
 	local ext = require("fmd.duktape").ExecJS(script .. [[
 
-var CryptoJS = require("utils/crypto-js.min.js");
-JSON.parse(CryptoJS.AES.decrypt(batoWord, batoPass).toString(CryptoJS.enc.Utf8));
+	var CryptoJS = require("utils/crypto-js.min.js");
+	JSON.parse(CryptoJS.AES.decrypt(batoWord, batoPass).toString(CryptoJS.enc.Utf8));
 
-]])
+	]])
 	local delimiter = ','
 	ext = ext .. delimiter
 	local images = script:match('const imgHttps = %[([^%]]+)')
