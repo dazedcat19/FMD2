@@ -12,13 +12,14 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.SortedList               = true
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.ReadMangaRU'
+local Template = require 'templates.GroupLe'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions

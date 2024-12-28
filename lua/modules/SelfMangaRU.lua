@@ -19,9 +19,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.ReadMangaRU'
--- DirectoryPagination = '/'            --> Override template variable by uncommenting this line.
--- DirectoryOffset     = 0              --> Override template variable by uncommenting this line.
+local Template = require 'templates.GroupLe'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -41,7 +39,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
 

@@ -40,7 +40,7 @@ function _M.GetNameAndLink()
   return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function _M.GetInfo()
 	local x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
@@ -72,7 +72,7 @@ function _M.GetPageNumber()
 	if not HTTP.GET(u) then return net_problem end
 
 	x = CreateTXQuery(HTTP.Document)
-	json = GetBetween('[[', ', 0, ', Trim(GetBetween('rm_h.readerDoInit(', 'false);', x.XPathString('//script[@type="text/javascript" and contains(., "rm_h.readerDoInit")]'))))
+	json = GetBetween('[[', ', 0, ', Trim(GetBetween('rm_h.readerInit(', 'false);', x.XPathString('//script[@type="text/javascript" and contains(., "rm_h.readerInit")]'))))
 	json = json:gsub('%],%[', ';'):gsub('\'', ''):gsub('"', ''):gsub(']]', ';')
 	for i in json:gmatch('(.-);') do
 		i1, i2 = i:match('(.-),.-,(.-),.-,.-')
