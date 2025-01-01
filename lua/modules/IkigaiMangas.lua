@@ -61,7 +61,7 @@ function GetInfo()
 	
 	if not HTTP.GET(u) then return net_problem end
 	
-	x = CreateTXQuery(HTTP.Document)
+	x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
 	MANGAINFO.Title     = x.XPathString('json(*).series.name')
 	MANGAINFO.CoverLink = x.XPathString('json(*).series.cover')
 	MANGAINFO.Genres    = x.XPathStringAll('json(*).series.genres().name')
