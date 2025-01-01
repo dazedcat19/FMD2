@@ -33,7 +33,7 @@ function GetDirectoryPageNumber()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	PAGENUMBER = 1
+	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('json(*).last_page')) or 1
 
 	return no_error
 end
