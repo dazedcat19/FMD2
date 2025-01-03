@@ -1,0 +1,2686 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: \n"
+"Content-Transfer-Encoding: \n"
+"Language: zh\n"
+"X-Generator: \n"
+
+#: checkupdate.rs_btncheckupdates
+msgctxt "checkupdate.rs_btncheckupdates"
+msgid "Check for latest version"
+msgstr "检查最新版本"
+
+#: checkupdate.rs_currentversion
+msgid "Installed Version"
+msgstr "安装版本"
+
+#: checkupdate.rs_latestversion
+msgid "Latest Version   "
+msgstr "最新版本"
+
+#: checkupdate.rs_newversionfound
+msgid "New Version found!"
+msgstr "找到新版本！"
+
+#: dbupdater.rs_buttoncancel
+msgctxt "dbupdater.rs_buttoncancel"
+msgid "Abort"
+msgstr "中止"
+
+#: dbupdater.rs_downloading
+#, object-pascal-format
+msgid "Downloading %s"
+msgstr "正在下载 %s"
+
+#: dbupdater.rs_extracting
+#, object-pascal-format
+msgid "Extracting %s"
+msgstr "正在解压 %s"
+
+#: dbupdater.rs_faileddownload
+#, object-pascal-format
+msgid "%s: %d %s"
+msgstr "%s: %d %s"
+
+#: dbupdater.rs_failedextract
+#, object-pascal-format
+msgid "%s: failed to extract, exitstatus = %d"
+msgstr "%s: 解压失败，退出状态 = %d"
+
+#: dbupdater.rs_faileditems
+#, object-pascal-format
+msgid ""
+"Failed to finish:\n"
+"\n"
+"%s"
+msgstr ""
+"未完成:\n"
+"\n"
+"%s"
+
+#: dbupdater.rs_faileditemstitle
+msgctxt "dbupdater.rs_faileditemstitle"
+msgid "Failed"
+msgstr "失败"
+
+#: dbupdater.rs_failedtosave
+#, object-pascal-format
+msgid "%s: failed to save"
+msgstr "%s: 保存失败"
+
+#: dbupdater.rs_missingzipexe
+#, object-pascal-format
+msgid "%s: Missing %s"
+msgstr "%s: 缺少 %s"
+
+#: frmaccountmanager.rs_accountdeleteconfirmation
+msgid "Are you sure you want to delete this account?"
+msgstr "你确定要删除此账号吗？"
+
+#: frmaccountmanager.rs_checking
+msgid "Checking"
+msgstr "检查中"
+
+#: frmaccountmanager.rs_invalid
+msgctxt "frmaccountmanager.rs_invalid"
+msgid "Invalid"
+msgstr "无效"
+
+#: frmaccountmanager.rs_unknown
+msgid "Unknown"
+msgstr "未知"
+
+#: frmaccountmanager.rs_valid
+msgctxt "frmaccountmanager.rs_valid"
+msgid "OK"
+msgstr "确定"
+
+#: frmaccountset.rs_cantbeempty
+msgid "Username or password can't be empty!"
+msgstr "用户名或密码不能为空！"
+
+#: frmimportfavorites.rs_importcompleted
+msgid "Import completed."
+msgstr "导入完成。"
+
+#: frmimportfavorites.rs_listunimportedcaption
+msgid "List of unimported manga"
+msgstr "未导入漫画列表"
+
+#: frmluamodulesupdater.rs_checking
+msgctxt "frmluamodulesupdater.rs_checking"
+msgid "Checking..."
+msgstr "正在检查..."
+
+#: frmluamodulesupdater.rs_checkupdate
+msgctxt "frmluamodulesupdater.rs_checkupdate"
+msgid "Check update"
+msgstr "检查更新"
+
+#: frmluamodulesupdater.rs_finishchecking
+msgid "Finish checking"
+msgstr "检查完成"
+
+#: frmluamodulesupdater.rs_finishdownload
+msgid "Finish download"
+msgstr "下载完成"
+
+#: frmluamodulesupdater.rs_modulesupdatedrestart
+msgid "Modules updated, restart now?"
+msgstr "模块更新，是否立即重启？"
+
+#: frmluamodulesupdater.rs_modulesupdatedtitle
+msgid "Modules updated!"
+msgstr "模块已更新！"
+
+#: frmluamodulesupdater.rs_newupdatefoundlostchanges
+msgid "Modules update found, any local changes will be lost, procced?"
+msgstr "发现模块更新，任何本地更改都会丢失，是否处理？"
+
+#: frmluamodulesupdater.rs_newupdatefoundtitle
+msgid "Modules update found!"
+msgstr "发现模块更新！"
+
+#: frmluamodulesupdater.rs_startdownloading
+msgid "Downloading..."
+msgstr "正在下载..."
+
+#: frmluamodulesupdater.rs_statusdelete
+#, object-pascal-format
+msgctxt "frmluamodulesupdater.rs_statusdelete"
+msgid "%s DELETE*"
+msgstr "%s 删除*"
+
+#: frmluamodulesupdater.rs_statusfailed
+#, object-pascal-format
+msgctxt "frmluamodulesupdater.rs_statusfailed"
+msgid "%s FAILED*"
+msgstr "%s 失败*"
+
+#: frmluamodulesupdater.rs_statusnew
+#, object-pascal-format
+msgctxt "frmluamodulesupdater.rs_statusnew"
+msgid "%s NEW*"
+msgstr "%s 新*"
+
+#: frmluamodulesupdater.rs_statusredownloaded
+#, object-pascal-format
+msgctxt "frmluamodulesupdater.rs_statusredownloaded"
+msgid "%s REDOWNLOAD*"
+msgstr "%s 重新下载*"
+
+#: frmluamodulesupdater.rs_statusupdate
+#, object-pascal-format
+msgctxt "frmluamodulesupdater.rs_statusupdate"
+msgid "%s UPDATE*"
+msgstr "%s 更新*"
+
+#: frmmain.rs_alldownloads
+msgid "All downloads"
+msgstr "所有下载"
+
+#: frmmain.rs_btnok
+msgctxt "frmmain.rs_btnok"
+msgid "&OK"
+msgstr "&确定"
+
+#: frmmain.rs_cancel
+msgctxt "frmmain.rs_cancel"
+msgid "Cancel"
+msgstr "取消"
+
+#: frmmain.rs_checking
+msgctxt "frmmain.rs_checking"
+msgid "Checking..."
+msgstr "正在检查..."
+
+#: frmmain.rs_custom
+msgid "Custom"
+msgstr "自定义"
+
+#: frmmain.rs_dlgcannotconnecttoserver
+msgid "Cannot connect to the server."
+msgstr "无法连接到服务器。"
+
+#: frmmain.rs_dlgcannotgetmangainfo
+msgid "Cannot get manga info. Please check your internet connection and try it again."
+msgstr "无法获取漫画信息。请检查您的网络连接并再次尝试。"
+
+#: frmmain.rs_dlgdownloadcount
+msgid "Download count:"
+msgstr "下载计数："
+
+#: frmmain.rs_dlgquit
+msgid "Are you sure you want to exit?"
+msgstr "确定要退出吗？"
+
+#: frmmain.rs_dlgremovefavorite
+msgid "Are you sure you want to delete the favorite(s)?"
+msgstr "您确定要删除收藏夹吗(s)?"
+
+#: frmmain.rs_dlgremovefinishtasks
+msgid "Are you sure you want to delete all finished tasks?"
+msgstr "您确定要删除所有已完成任务吗？"
+
+#: frmmain.rs_dlgremoveitem
+msgid "Are you sure you want to delete this item(s)?"
+msgstr "您确定要删除此项目吗(s)?"
+
+#: frmmain.rs_dlgremovetask
+msgid "Are you sure you want to delete the task(s)?"
+msgstr "您确定要删除任务吗(s)?"
+
+#: frmmain.rs_dlgsplitdownload
+msgctxt "frmmain.rs_dlgsplitdownload"
+msgid "Split download"
+msgstr "拆分下载"
+
+#: frmmain.rs_dlgtitleexistindllist
+msgid ""
+"This title are already in download list.\n"
+"Do you want to download it anyway?"
+msgstr ""
+"此标题已在下载列表中。\n"
+"你想继续下载吗？"
+
+#: frmmain.rs_dlgtypeinnewchapter
+msgid "Type in new chapter:"
+msgstr "输入新章节："
+
+#: frmmain.rs_dlgtypeinnewsavepath
+msgid "Type in new save path:"
+msgstr "输入新保存路径："
+
+#: frmmain.rs_dlgupdaterisrunning
+msgid "Updater is running!"
+msgstr "更新程序正在运行！"
+
+#: frmmain.rs_dlgupdaterwanttoupdatedb
+msgid "Do you want to download manga list from FMD server?"
+msgstr "您想从 FMD 服务器下载漫画列表吗？"
+
+#: frmmain.rs_dlgurlnotsupport
+msgid "URL not supported!"
+msgstr "不支持此 URL！"
+
+#: frmmain.rs_droptargetmodeitems
+msgid ""
+"Download all\n"
+"Add to favorites"
+msgstr ""
+"全部下载\n"
+"添加到收藏夹"
+
+#: frmmain.rs_favoritesshowall
+msgctxt "frmmain.rs_favoritesshowall"
+msgid "All"
+msgstr "所有"
+
+#: frmmain.rs_favoritesshowdisabled
+msgctxt "frmmain.rs_favoritesshowdisabled"
+msgid "Disabled"
+msgstr "禁用"
+
+#: frmmain.rs_favoritesshowenabled
+msgctxt "frmmain.rs_favoritesshowenabled"
+msgid "Enabled"
+msgstr "启用"
+
+#: frmmain.rs_filterstatusitems
+msgid ""
+"Completed\n"
+"Ongoing\n"
+"<none>"
+msgstr ""
+"已完成\n"
+"进行中\n"
+"<无>"
+
+#: frmmain.rs_fmdalreadyrunning
+msgid "Free Manga Downloader already running!"
+msgstr "免费漫画下载器已在运行！"
+
+#: frmmain.rs_hintfavoriteproblem
+msgid ""
+"There is a problem with this data!\n"
+"Removing and re-adding this data may fix the problem."
+msgstr ""
+"此数据有问题！\n"
+"删除并重新添加此数据可能会解决问题。"
+
+#: frmmain.rs_history
+msgid "History"
+msgstr "历史记录"
+
+#: frmmain.rs_import
+msgid "Import"
+msgstr "导入"
+
+#: frmmain.rs_infoartists
+msgid "Artist(s):"
+msgstr "画师(s):"
+
+#: frmmain.rs_infoauthors
+msgid "Author(s):"
+msgstr "作者(s):"
+
+#: frmmain.rs_infogenres
+msgid "Genre(s):"
+msgstr "题材(s):"
+
+#: frmmain.rs_infostatus
+msgid "Status:"
+msgstr "状态："
+
+#: frmmain.rs_infosummary
+msgid "Summary:"
+msgstr "简介："
+
+#: frmmain.rs_infotitle
+msgid "Title:"
+msgstr "标题："
+
+#: frmmain.rs_infowebsite
+msgctxt "frmmain.rs_infowebsite"
+msgid "Website:"
+msgstr "网站："
+
+#: frmmain.rs_inprogress
+msgid "In progress"
+msgstr "进行中"
+
+#: frmmain.rs_last6months
+msgid "Last 6 months"
+msgstr "最近6个月"
+
+#: frmmain.rs_last7days
+msgid "Last 7 days"
+msgstr "最近7天"
+
+#: frmmain.rs_lblautochecknewchapterminute
+#, object-pascal-format
+msgctxt "frmmain.rs_lblautochecknewchapterminute"
+msgid "Auto check for new chapter every %d minutes"
+msgstr "每 %d 分钟自动检查新章节"
+
+#: frmmain.rs_lbloptionexternalparamshint
+#, object-pascal-format
+msgid ""
+"%s : Path to the manga\n"
+"%s : Chapter filename\n"
+"\n"
+"Example : \"%s%s\""
+msgstr ""
+"%s : 漫画路径\n"
+"%s : 章节文件名\n"
+"\n"
+"示例 : \"%s%s\""
+
+#: frmmain.rs_loading
+msgid "Loading ..."
+msgstr "加载中 ..."
+
+#: frmmain.rs_modeall
+#, object-pascal-format
+msgid "Mode: Show all (%d)"
+msgstr "模式：全部显示 (%d)"
+
+#: frmmain.rs_modefiltered
+#, object-pascal-format
+msgid "Mode: Filtered (%d)"
+msgstr "模式：已过滤 (%d)"
+
+#: frmmain.rs_modesearching
+msgctxt "frmmain.rs_modesearching"
+msgid "Mode: Searching..."
+msgstr "模式：搜索中..."
+
+#: frmmain.rs_olderthan6months
+msgid "Older than 6 months"
+msgstr "Older than 6 months"
+
+#: frmmain.rs_optioncompress
+msgid ""
+"None\n"
+"ZIP\n"
+"CBZ\n"
+"PDF\n"
+"EPUB"
+msgstr ""
+"无\n"
+"ZIP\n"
+"CBZ\n"
+"PDF\n"
+"EPUB"
+
+#: frmmain.rs_optionfmddoitems
+msgid ""
+"Nothing\n"
+"Exit\n"
+"Shutdown\n"
+"Hibernate"
+msgstr ""
+"无操作\n"
+"退出\n"
+"关机\n"
+"休眠"
+
+#: frmmain.rs_revision
+msgid "Revision"
+msgstr "Revision"
+
+#: frmmain.rs_selected
+#, object-pascal-format
+msgid "Selected: %d"
+msgstr "已选：%d"
+
+#: frmmain.rs_software
+msgid "Software"
+msgstr "软件"
+
+#: frmmain.rs_softwarepath
+msgctxt "frmmain.rs_softwarepath"
+msgid "Path to the software (e.g. C:\\MangaDownloader)"
+msgstr "软件路径（例如 C:\\漫画下载器）"
+
+#: frmmain.rs_thismonth
+msgid "This month"
+msgstr "本月"
+
+#: frmmain.rs_today
+msgid "Today"
+msgstr "今天"
+
+#: frmmain.rs_version
+msgid "Version"
+msgstr "版本"
+
+#: frmmain.rs_webpconvertto
+msgid ""
+"WebP\n"
+"PNG\n"
+"JPEG"
+msgstr ""
+"WebP\n"
+"PNG\n"
+"JPEG"
+
+#: frmmain.rs_webppnglevel
+msgid ""
+"None\n"
+"Fastest\n"
+"Default\n"
+"Maximum"
+msgstr ""
+"无\n"
+"最快\n"
+"默认\n"
+"最大"
+
+#: frmmain.rs_wronginput
+msgid "Invalid input!"
+msgstr "无效输入！"
+
+#: frmmain.rs_yesterday
+msgid "Yesterday"
+msgstr "昨天"
+
+#: frmshutdowncounter.rs_lblmessageexit
+#, object-pascal-format
+msgid "FMD will exit in %d second."
+msgstr "免费漫画下载器将在 %d 秒后退出。"
+
+#: frmshutdowncounter.rs_lblmessagehibernate
+#, object-pascal-format
+msgid "System will hibernate in %d second."
+msgstr "系统将在 %d 秒后休眠。"
+
+#: frmshutdowncounter.rs_lblmessageshutdown
+#, object-pascal-format
+msgid "System will shutdown in %d second."
+msgstr "系统将在 %d 秒后关机。"
+
+#: frmtransferfavorites.rs_all
+msgctxt "frmtransferfavorites.rs_all"
+msgid "All"
+msgstr "全部"
+
+#: frmtransferfavorites.rs_invalid
+msgctxt "frmtransferfavorites.rs_invalid"
+msgid "Invalid"
+msgstr "无效"
+
+#: frmtransferfavorites.rs_valid
+msgctxt "frmtransferfavorites.rs_valid"
+msgid "Valid"
+msgstr "有效"
+
+#: selfupdater.rs_buttoncancel
+msgctxt "selfupdater.rs_buttoncancel"
+msgid "Abort"
+msgstr "中止"
+
+#: selfupdater.rs_downloading
+#, object-pascal-format
+msgid "Downloading new version %s"
+msgstr "正在下载新版本 %s"
+
+#: selfupdater.rs_faileddownload
+#, object-pascal-format
+msgid ""
+"Failed to download new version %s\n"
+"\n"
+"%d %s"
+msgstr ""
+"下载新版本失败 %s\n"
+"\n"
+"%d %s"
+
+#: selfupdater.rs_failedextract
+#, object-pascal-format
+msgid "Failed to extract %s, exitstatus = %d"
+msgstr "提取失败 %s, 退出状态 = %d"
+
+#: selfupdater.rs_failedtitle
+msgctxt "selfupdater.rs_failedtitle"
+msgid "Failed"
+msgstr "失败"
+
+#: selfupdater.rs_failedtosave
+#, object-pascal-format
+msgid "Failed to save %s"
+msgstr "保存失败 %s"
+
+#: selfupdater.rs_finishrestart
+msgid "Download update package finished, restart to proceed?"
+msgstr "下载更新包已完成，是否重启以继续进行？"
+
+#: selfupdater.rs_finishrestarttitle
+msgid "Download finished"
+msgstr "下载完成"
+
+#: selfupdater.rs_missingfile
+#, object-pascal-format
+msgctxt "selfupdater.rs_missingfile"
+msgid "Missing %s"
+msgstr "缺少 %s"
+
+#: simpleexception.sbuttoncontinue
+msgid "&Continue"
+msgstr "&继续"
+
+#: simpleexception.sbuttondetails
+msgid "&Show Details"
+msgstr "&显示详情"
+
+#: simpleexception.sbuttonterminate
+msgid "&Terminate"
+msgstr "&终止"
+
+#: simpleexception.scanthandleexception
+msgid "Can't handle exception"
+msgstr "无法处理异常"
+
+#: simpleexception.scheckboxignoreexception
+msgid "Ignore this exception for next time"
+msgstr "下次忽略此异常"
+
+#: simpleexception.sexceptioncaption
+msgid "An error occured during program execution:"
+msgstr "程序执行过程中发生错误："
+
+#: simpleexception.sexceptiondialogtitle
+msgid "Exception Info"
+msgstr "异常信息"
+
+#: taccountmanagerform.btedit.caption
+msgctxt "taccountmanagerform.btedit.caption"
+msgid "Edit"
+msgstr "编辑"
+
+#: taccountmanagerform.btrefresh.caption
+msgid "Refresh"
+msgstr "刷新"
+
+#: taccountmanagerform.caption
+msgid "AccountManagerForm"
+msgstr "账户管理表单"
+
+#: taccountmanagerform.vtaccountlist.header.columns[1].text
+msgctxt "TACCOUNTMANAGERFORM.VTACCOUNTLIST.HEADER.COLUMNS[1].TEXT"
+msgid "Website"
+msgstr "网站"
+
+#: taccountmanagerform.vtaccountlist.header.columns[2].text
+msgctxt "TACCOUNTMANAGERFORM.VTACCOUNTLIST.HEADER.COLUMNS[2].TEXT"
+msgid "Username"
+msgstr "用户名"
+
+#: taccountmanagerform.vtaccountlist.header.columns[3].text
+msgctxt "TACCOUNTMANAGERFORM.VTACCOUNTLIST.HEADER.COLUMNS[3].TEXT"
+msgid "Status"
+msgstr "状态"
+
+#: taccountsetform.btcancel.caption
+msgctxt "TACCOUNTSETFORM.BTCANCEL.CAPTION"
+msgid "Cancel"
+msgstr "取消"
+
+#: taccountsetform.btok.caption
+msgid "Ok"
+msgstr "确定"
+
+#: taccountsetform.caption
+msgid "Account"
+msgstr "账户"
+
+#: taccountsetform.ckshowpassword.caption
+msgid "Show password"
+msgstr "显示密码"
+
+#: taccountsetform.edpassword.texthint
+msgctxt "TACCOUNTSETFORM.EDPASSWORD.TEXTHINT"
+msgid "Password"
+msgstr "密码"
+
+#: taccountsetform.edusername.texthint
+msgctxt "TACCOUNTSETFORM.EDUSERNAME.TEXTHINT"
+msgid "Username"
+msgstr "用户名"
+
+#: taccountsetform.label2.caption
+msgctxt "TACCOUNTSETFORM.LABEL2.CAPTION"
+msgid "Username"
+msgstr "用户名"
+
+#: taccountsetform.label3.caption
+msgctxt "TACCOUNTSETFORM.LABEL3.CAPTION"
+msgid "Password"
+msgstr "密码"
+
+#: tcustomcolorform.caption
+msgid "CustomColorForm"
+msgstr "自定义颜色表单"
+
+#: tcustomcolorform.tsbasiclist.caption
+msgid "Basic list"
+msgstr "基础列表"
+
+#: tcustomcolorform.tschapterlist.caption
+msgid "Chapter list"
+msgstr "章节列表"
+
+#: tcustomcolorform.tsfavoritelist.caption
+msgid "Favorite list"
+msgstr "收藏列表"
+
+#: tcustomcolorform.tsmangalist.caption
+msgid "Manga list"
+msgstr "漫画列表"
+
+#: tformdroptarget.miaddtofavorites.caption
+msgctxt "TFORMDROPTARGET.MIADDTOFAVORITES.CAPTION"
+msgid "Add to favorites"
+msgstr "添加到收藏夹"
+
+#: tformdroptarget.miclose.caption
+msgid "&Close"
+msgstr "&关闭"
+
+#: tformdroptarget.midownloadall.caption
+msgctxt "TFORMDROPTARGET.MIDOWNLOADALL.CAPTION"
+msgid "Download all"
+msgstr "全部下载"
+
+#: tformlogger.btnclearlog.caption
+msgid "Clear"
+msgstr "清除"
+
+#: tformlogger.ckstayontop.caption
+msgid "Stay on top"
+msgstr "保持置顶"
+
+#: tformlogger.lbloglimit.caption
+msgid "Log limit"
+msgstr "日志限制"
+
+#: tformlogger.micopy.caption
+msgctxt "tformlogger.micopy.caption"
+msgid "Copy"
+msgstr "复制"
+
+#: tfrmdialogyn.btno.caption
+msgid "&No"
+msgstr "&否"
+
+#: tfrmdialogyn.btyes.caption
+msgid "&Yes"
+msgstr "&是"
+
+#: tfrmdialogyn.caption
+msgid "Dialog"
+msgstr "提示窗"
+
+#: tfrmdialogyn.lbmessage.caption
+msgid "lbMessage"
+msgstr "lbMessage"
+
+#: timportfavorites.btcancel.caption
+msgctxt "TIMPORTFAVORITES.BTCANCEL.CAPTION"
+msgid "Cancel"
+msgstr "取消"
+
+#: timportfavorites.btimport.caption
+msgctxt "timportfavorites.btimport.caption"
+msgid "&OK"
+msgstr "&确定"
+
+#: timportfavorites.caption
+msgid "Import list..."
+msgstr "导入列表..."
+
+#: timportfavorites.cbsoftware.text
+msgid "Domdomsoft Manga Downloader"
+msgstr "多多漫画下载器"
+
+#: timportfavorites.edpath.texthint
+msgctxt "TIMPORTFAVORITES.EDPATH.TEXTHINT"
+msgid "Path to the software (e.g. C:\MangaDownloader)"
+msgstr "软件路径（例如 C:\ 漫画下载器）"
+
+#: timportfavorites.lbselectsoftware.caption
+msgid "Software:"
+msgstr "软件："
+
+#: tluamodulesupdaterform.btcheckupdate.caption
+msgctxt "tluamodulesupdaterform.btcheckupdate.caption"
+msgid "Check update"
+msgstr "检查更新"
+
+#: tluamodulesupdaterform.ckautorestart.caption
+msgid "Auto restart"
+msgstr "自动重启"
+
+#: tluamodulesupdaterform.ckshowupdatewarning.caption
+msgid "Show update warning"
+msgstr "显示更新警告"
+
+#: tluamodulesupdaterform.vtluamodulesrepos.header.columns[0].text
+msgid "Filename"
+msgstr "文件名"
+
+#: tluamodulesupdaterform.vtluamodulesrepos.header.columns[1].text
+msgid "Last modified"
+msgstr "最后修改时间"
+
+#: tluamodulesupdaterform.vtluamodulesrepos.header.columns[2].text
+msgid "Last message"
+msgstr "最后消息"
+
+#: tmainform.btaddtofavorites.caption
+msgctxt "tmainform.btaddtofavorites.caption"
+msgid "Add to favorites"
+msgstr "添加到收藏夹"
+
+#: tmainform.btchecklatestversion.caption
+msgctxt "TMAINFORM.BTCHECKLATESTVERSION.CAPTION"
+msgid "Check for latest version"
+msgstr "检查最新版本"
+
+#: tmainform.btclearlogfile.caption
+msgid "Clear log file"
+msgstr "清除日志文件"
+
+#: tmainform.btdownload.caption
+msgctxt "tmainform.btdownload.caption"
+msgid "Download"
+msgstr "下载"
+
+#: tmainform.btdownloadsplit.hint
+msgctxt "tmainform.btdownloadsplit.hint"
+msgid "Split download"
+msgstr "拆分下载"
+
+#: tmainform.btfavoriteschecknewchapter.caption
+msgctxt "tmainform.btfavoriteschecknewchapter.caption"
+msgid "Check for new chapter"
+msgstr "检查新章节"
+
+#: tmainform.btfavoritesimport.caption
+msgid "Import list"
+msgstr "导入列表"
+
+#: tmainform.btfilter.caption
+msgctxt "TMAINFORM.BTFILTER.CAPTION"
+msgid "Filter"
+msgstr "筛选"
+
+#: tmainform.btfilterreset.caption
+msgid "Reset value"
+msgstr "重置"
+
+#: tmainform.btndownloadfiltercustomdateapply.caption
+msgctxt "tmainform.btndownloadfiltercustomdateapply.caption"
+msgid "Apply"
+msgstr "应用"
+
+#: tmainform.btopenlog.caption
+msgid "Open log"
+msgstr "打开日志"
+
+#: tmainform.btoptionapply.caption
+msgctxt "tmainform.btoptionapply.caption"
+msgid "Apply"
+msgstr "应用"
+
+#: tmainform.btreadonline.caption
+msgid "Read online"
+msgstr "在线阅读"
+
+#: tmainform.btremovefilterlarge.caption
+msgctxt "TMAINFORM.BTREMOVEFILTERLARGE.CAPTION"
+msgid "Remove filter"
+msgstr "移除筛选器"
+
+#: tmainform.btremovefilterlarge.hint
+msgctxt "tmainform.btremovefilterlarge.hint"
+msgid "Remove filter"
+msgstr "移除筛选器"
+
+#: tmainform.btupdatelist.hint
+msgctxt "tmainform.btupdatelist.hint"
+msgid "Update manga list"
+msgstr "更新漫画列表"
+
+#: tmainform.btvisitmyblog.caption
+msgid "Visit my blog"
+msgstr "访问我的博客"
+
+#: tmainform.caption
+msgctxt "tmainform.caption"
+msgid "Free Manga Downloader"
+msgstr "免费漫画下载器"
+
+#: tmainform.cbaddasstopped.caption
+msgid "Add to download list as stopped task"
+msgstr "作为已停止任务添加到下载列表"
+
+#: tmainform.cbfilterstatus.text
+msgid "<none>"
+msgstr "<无>"
+
+#: tmainform.cbonlynew.caption
+msgid "Search only new manga"
+msgstr "仅搜索新漫画"
+
+#: tmainform.cboptionautocheckfavdownload.caption
+msgctxt "TMAINFORM.CBOPTIONAUTOCHECKFAVDOWNLOAD.CAPTION"
+msgid "Automatic download after finish checking"
+msgstr "检查完成后自动下载"
+
+#: tmainform.cboptionautocheckfavinterval.caption
+msgid "Auto check for new chapter in an interval"
+msgstr "定时自动检查新章节"
+
+#: tmainform.cboptionautocheckfavremovecompletedmanga.caption
+msgctxt "TMAINFORM.CBOPTIONAUTOCHECKFAVREMOVECOMPLETEDMANGA.CAPTION"
+msgid "Automatic remove completed manga from Favorites"
+msgstr "自动从收藏夹中移除已完结漫画"
+
+#: tmainform.cboptionautocheckfavstartup.caption
+msgid "Auto check for new chapter at startup"
+msgstr "启动时自动检查新章节"
+
+#: tmainform.cboptionautochecklatestversion.caption
+msgctxt "TMAINFORM.CBOPTIONAUTOCHECKLATESTVERSION.CAPTION"
+msgid "Auto check for latest version"
+msgstr "自动检查最新版本"
+
+#: tmainform.cboptionautoopenfavstartup.caption
+msgid "Open Favorites at startup"
+msgstr "启动时打开收藏夹"
+
+#: tmainform.cboptionchangeunicodecharacter.caption
+msgctxt "TMAINFORM.CBOPTIONCHANGEUNICODECHARACTER.CAPTION"
+msgid "Replace all unicode character with"
+msgstr "将所有 Unicode 字符替换为"
+
+#: tmainform.cboptionchangeunicodecharacter.hint
+msgid "Enable this if you have problem with unicode character in path."
+msgstr "如果路径中存在 Unicode 字符问题，请启用此项。"
+
+#: tmainform.cboptiondeletecompletedtasksonclose.caption
+msgid "Delete completed tasks on close"
+msgstr "关闭时删除已完成任务"
+
+#: tmainform.cboptiondigitchapter.caption
+msgid "Chapter"
+msgstr "章节"
+
+#: tmainform.cboptiondigitvolume.caption
+msgid "Volume"
+msgstr "卷"
+
+#: tmainform.cboptionenableloadcover.caption
+msgid "Enable load manga cover"
+msgstr "启用漫画封面加载"
+
+#: tmainform.cboptionenablelongnamepaths.caption
+msgid "Enable long name paths (Can break most/all interaction with the file in Windows and other apps)"
+msgstr "启用长名称路径（可以中断与 Windows 和其他应用程序中文件的大部分 / 所有交互）"
+
+#: tmainform.cboptiongeneratechapterfolder.caption
+msgid "Auto generate chapter folder"
+msgstr "自动生成章节文件夹"
+
+#: tmainform.cboptiongeneratemangafolder.caption
+msgctxt "TMAINFORM.CBOPTIONGENERATEMANGAFOLDER.CAPTION"
+msgid "Auto generate folder based on manga's name"
+msgstr "根据漫画名称自动生成文件夹"
+
+#: tmainform.cboptionlivesearch.caption
+msgid "Enable live search (slow on long list)"
+msgstr "启用实时搜索（长列表时速度较慢）"
+
+#: tmainform.cboptionminimizeonstart.caption
+msgid "Minimize on start"
+msgstr "启动时最小化"
+
+#: tmainform.cboptionminimizetotray.caption
+msgid "Minimize to tray"
+msgstr "最小化到托盘"
+
+#: tmainform.cboptiononeinstanceonly.caption
+msgid "Permit only one FMD running"
+msgstr "只允许运行一个免费漫画下载器（FMD）"
+
+#: tmainform.cboptionproxytype.text
+msgid "HTTP"
+msgstr "HTTP"
+
+#: tmainform.cboptionremovemanganamefromchapter.caption
+msgid "Remove manga name from chapter"
+msgstr "从章节中移除漫画名称"
+
+#: tmainform.cboptionshowballoonhint.caption
+msgid "Show balloon hint"
+msgstr "显示气泡提示"
+
+#: tmainform.cboptionshowdeletetaskdialog.caption
+msgid "Delete task/favorite"
+msgstr "删除任务 / 收藏"
+
+#: tmainform.cboptionshowdownloadmangalistdialog.caption
+msgid "Download manga list if empty"
+msgstr "下载漫画列表（为空时）"
+
+#: tmainform.cboptionshowdownloadstabonnewtasks.caption
+msgid "Show Downloads tab when adding new tasks"
+msgstr "添加新任务时显示下载选项卡"
+
+#: tmainform.cboptionshowdownloadtoolbar.caption
+msgid "Show downloads toolbar"
+msgstr "显示下载工具栏"
+
+#: tmainform.cboptionshowdownloadtoolbardeleteall.caption
+msgid "Show \"Delete all completed tasks\" in downloads toolbar"
+msgstr "在下载工具栏中显示 "删除所有已完成的任务""
+
+#: tmainform.cboptionshowdownloadtoolbarleft.caption
+msgid "Show left downloads toolbar"
+msgstr "显示左侧下载工具栏"
+
+#: tmainform.cboptionshowfavoritestabonnewmanga.caption
+msgctxt "tmainform.cboptionshowfavoritestabonnewmanga.caption"
+msgid "Show Favorites tab when adding new manga"
+msgstr "添加新漫画时显示收藏夹选项卡"
+
+#: tmainform.cboptionshowquitdialog.caption
+msgid "Exit FMD"
+msgstr "退出免费漫画下载器（FMD）"
+
+#: tmainform.cboptionsortdownloadsonnewtasks.caption
+msgctxt "tmainform.cboptionsortdownloadsonnewtasks.caption"
+msgid "Sort Downloads when adding new download tasks"
+msgstr "添加新下载任务时对下载进行排序"
+
+#: tmainform.cboptionupdatelistnomangainfo.caption
+msgid "Don't load manga information when updating list (filter will be not work!)"
+msgstr "更新列表时不要加载漫画信息（筛选将会失效！）"
+
+#: tmainform.cboptionupdatelistremoveduplicatelocaldata.caption
+msgid "Remove duplicate local data when updating manga list"
+msgstr "更新漫画列表时删除重复的本地数据"
+
+#: tmainform.cboptionuseproxy.caption
+msgid "Use proxy"
+msgstr "使用代理"
+
+#: tmainform.cboptionvacuumdatabasesonexit.caption
+msgid "Vacuum databases on exit"
+msgstr "退出时清理数据库"
+
+#: tmainform.cbpngcompressionlevel.text
+msgctxt "tmainform.cbpngcompressionlevel.text"
+msgid "Fastest"
+msgstr "最快"
+
+#: tmainform.cbsearchfromallsites.caption
+msgid "Search in all manga sites"
+msgstr "在所有漫画网站中搜索"
+
+#: tmainform.cbselectmanga.hint
+msgid "For more manga sites, please go to Options->Manga sites"
+msgstr "如需更多漫画网站，请前往选项 -> 漫画网站"
+
+#: tmainform.cbuseregexpr.caption
+msgid "Regular Expression"
+msgstr "正则表达式"
+
+#: tmainform.cbwebpsaveas.text
+msgctxt "tmainform.cbwebpsaveas.text"
+msgid "PNG"
+msgstr "PNG"
+
+#: tmainform.ckdroptarget.caption
+msgctxt "tmainform.ckdroptarget.caption"
+msgid "Show Drop Box"
+msgstr "显示下拉框"
+
+#: tmainform.ckenablelogging.caption
+msgid "Enable logging"
+msgstr "启用日志记录"
+
+#: tmainform.ckfilteraction.caption
+msgid "Action"
+msgstr "动作"
+
+#: tmainform.ckfilteraction.hint
+msgid "A work typically depicting fighting, violence, chaos, and fast paced motion."
+msgstr "一种通常描绘战斗、暴力、混乱以及快节奏动作的作品。"
+
+#: tmainform.ckfilteradult.caption
+msgid "Adult"
+msgstr "成人"
+
+#: tmainform.ckfilteradult.hint
+msgid "Contains content that is suitable only for adults. Titles in this category may include prolonged scenes of intense violence and/or graphic sexual content and nudity."
+msgstr "包含仅适合成人观看的内容。此类标题可能包含长时间的激烈暴力场景和 / 或露骨的性内容以及裸体画面。"
+
+#: tmainform.ckfilteradventure.caption
+msgid "Adventure"
+msgstr "冒险"
+
+#: tmainform.ckfilteradventure.hint
+msgid "If a character in the story goes on a trip or along that line, your best bet is that it is an adventure manga. Otherwise, it's up to your personal prejudice on this case."
+msgstr "如果故事中的角色去旅行或类似的情节，那么它很可能就是冒险类漫画。否则，这就取决于你个人对此情况的判断了。"
+
+#: tmainform.ckfiltercomedy.caption
+msgid "Comedy"
+msgstr "喜剧"
+
+#: tmainform.ckfiltercomedy.hint
+msgid "A dramatic work that is light and often humorous or satirical in tone and that usually contains a happy resolution of the thematic conflict."
+msgstr "一种风格轻松，通常幽默或带有讽刺意味，且通常包含主题冲突愉快解决情节的戏剧作品。"
+
+#: tmainform.ckfilterdoujinshi.caption
+msgid "Doujinshi"
+msgstr "同人志"
+
+#: tmainform.ckfilterdoujinshi.hint
+msgid "Fan based work inpspired by official manga/anime."
+msgstr "受官方漫画 / 动漫启发的粉丝创作作品。"
+
+#: tmainform.ckfilterdrama.caption
+msgid "Drama"
+msgstr "剧情"
+
+#: tmainform.ckfilterdrama.hint
+msgid "A work meant to bring on an emotional response, such as instilling sadness or tension."
+msgstr "一种旨在引发情感反应的作品，比如唤起悲伤或紧张情绪。"
+
+#: tmainform.ckfilterechi.caption
+msgid "Ecchi"
+msgstr "擦边"
+
+#: tmainform.ckfilterechi.hint
+msgid "Possibly the line between hentai and non-hentai, ecchi usually refers to fanservice put in to attract a certain group of fans."
+msgstr "可能介于成人向和非成人向之间，‘擦边’通常指为吸引特定粉丝群体而添加的福利内容。"
+
+#: tmainform.ckfilterfantasy.caption
+msgid "Fantasy"
+msgstr "奇幻"
+
+#: tmainform.ckfilterfantasy.hint
+msgid "Anything that involves, but not limited to, magic, dream world, and fairy tales."
+msgstr "涉及（但不限于）魔法、梦幻世界和童话故事等的任何内容。"
+
+#: tmainform.ckfiltergenderbender.caption
+msgid "Gender Bender"
+msgstr "性转"
+
+#: tmainform.ckfiltergenderbender.hint
+msgid ""
+"Girls dressing up as guys, guys dressing up as girls.\n"
+"Guys turning into girls, girls turning into guys."
+msgstr ""
+"女孩扮男孩，男孩扮女孩。\n"
+"男孩变女孩，女孩变男孩。"
+
+#: tmainform.ckfilterharem.caption
+msgid "Harem"
+msgstr "后宫"
+
+#: tmainform.ckfilterharem.hint
+msgid "A series involving one male character and many female characters (usually attracted to the male character). A Reverse Harem is when the genders are reversed."
+msgstr "一部涉及一名男性角色和许多女性角色（通常被该男性角色所吸引）的系列作品。逆后宫则是性别颠倒的情况。"
+
+#: tmainform.ckfilterhentai.caption
+msgctxt "tmainform.ckfilterhentai.caption"
+msgid "Hentai"
+msgstr "Hentai"
+
+#: tmainform.ckfilterhentai.hint
+msgctxt "TMAINFORM.CKFILTERHENTAI.HINT"
+msgid "Hentai"
+msgstr "变态"
+
+#: tmainform.ckfilterhistorical.caption
+msgid "Historical"
+msgstr "历史"
+
+#: tmainform.ckfilterhistorical.hint
+msgid "Having to do with old or ancient times."
+msgstr "与古代或古老时期有关的。"
+
+#: tmainform.ckfilterhorror.caption
+msgid "Horror"
+msgstr "恐怖"
+
+#: tmainform.ckfilterhorror.hint
+msgid "A painful emotion of fear, dread, and abhorrence; a shuddering with terror and detestation; the feeling inspired by something frightful and shocking."
+msgstr "一种包含恐惧、惧怕和憎恶的痛苦情绪；因恐怖和厌恶而颤抖；由可怕且令人震惊的事物所引发的感受。"
+
+#: tmainform.ckfilterjosei.caption
+msgid "Josei"
+msgstr "女性"
+
+#: tmainform.ckfilterjosei.hint
+msgid "Literally"Woman". Targets women 18-30. Female equivalent to seinen. Unlike shoujo the romance is more realistic and less idealized. The storytelling is more explicit and mature."
+msgstr "字面意思为 “女性”。面向 18 至 30 岁的女性，相当于男性向（seinen）的女性对应版。与少女漫画（shoujo）不同，其爱情故事更写实、理想化程度更低，叙事也更直白、成熟。"
+
+#: tmainform.ckfilterlolicon.caption
+msgid "Lolicon"
+msgstr "萝莉"
+
+#: tmainform.ckfilterlolicon.hint
+msgid "Representing a sexual attraction to young or under-age girls."
+msgstr "代表对年幼或未成年女孩的性吸引力。"
+
+#: tmainform.ckfiltermartialarts.caption
+msgid "Martial Arts"
+msgstr "格斗"
+
+#: tmainform.ckfiltermartialarts.hint
+msgid "As the name suggests, anything martial arts related. Any of several arts of combat or self-defense, such as aikido, karate, judo, or taekwondo, kendo, fencing, and so on and so forth."
+msgstr "顾名思义，与武术相关的任何内容。比如合气道、空手道、柔道、跆拳道、剑道、击剑等等各类格斗或自卫术。"
+
+#: tmainform.ckfiltermature.caption
+msgid "Mature"
+msgstr "成熟"
+
+#: tmainform.ckfiltermature.hint
+msgid "Contains subject matter which may be too extreme for people under the age of 17. Titles in this category may contain intense violence, blood and gore, sexual content and/or strong language."
+msgstr "包含对 17 岁以下人群来说可能过于极端的主题内容。此类标题可能包含激烈暴力、血腥、性内容和 / 或粗俗语言。"
+
+#: tmainform.ckfiltermecha.caption
+msgid "Mecha"
+msgstr "机甲"
+
+#: tmainform.ckfiltermecha.hint
+msgid "A work involving and usually concentrating on all types of large robotic machines."
+msgstr "一部涉及且通常着重于各类大型机器人机器的作品。"
+
+#: tmainform.ckfiltermusical.caption
+msgctxt "tmainform.ckfiltermusical.caption"
+msgid "Musical"
+msgstr "音乐"
+
+#: tmainform.ckfiltermusical.hint
+msgctxt "tmainform.ckfiltermusical.hint"
+msgid "Musical"
+msgstr "音乐（题材）"
+
+#: tmainform.ckfiltermystery.caption
+msgid "Mystery"
+msgstr "悬疑"
+
+#: tmainform.ckfiltermystery.hint
+msgid "Usually an unexplained event occurs, and the main protagonist attempts to find out what caused it."
+msgstr "通常会出现一个未解释的事件，而主角会试图找出其原因。"
+
+#: tmainform.ckfilterpsychological.caption
+msgid "Psychological"
+msgstr "心理"
+
+#: tmainform.ckfilterpsychological.hint
+msgid "Usually deals with the philosophy of a state of mind, in most cases detailing abnormal psychology."
+msgstr "通常涉及心态哲学，多数情况下会详述异常心理学内容。"
+
+#: tmainform.ckfilterromance.caption
+msgid "Romance"
+msgstr "浪漫"
+
+#: tmainform.ckfilterromance.hint
+msgid "Any love related story. We will define love as between man and woman in this case. Other than that, it is up to your own imagination of what love is."
+msgstr "任何与爱情相关的故事。在此我们将爱情定义为男女之间的感情。除此之外，爱情是什么就取决于你自己的想象了。"
+
+#: tmainform.ckfilterschoollife.caption
+msgid "School Life"
+msgstr "校园"
+
+#: tmainform.ckfilterschoollife.hint
+msgid "Having a major setting of the story deal with some type of school."
+msgstr "故事的主要背景设定与某种学校相关。"
+
+#: tmainform.ckfilterscifi.caption
+msgid "Sci-Fi"
+msgstr "科幻"
+
+#: tmainform.ckfilterscifi.hint
+msgid "Short for science fiction, these works involve twists on technology and other science related phenomena which are contrary or stretches of the modern day scientific world."
+msgstr "是 “science fiction（科幻小说）” 的缩写，这类作品涉及对科技及其他科学相关现象的奇特构想，这些构想与当今科学世界相悖或有所延伸。"
+
+#: tmainform.ckfilterseinen.caption
+msgid "Seinen"
+msgstr "青年"
+
+#: tmainform.ckfilterseinen.hint
+msgid "From Google: Seinen means 'young Man'. Manga and anime that specifically targets young adult males around the ages of 18 to 25 are seinen titles. The stories in seinen works appeal to university students and those in the working world. Typically the story lines deal with the issues of adulthood."
+msgstr "来自谷歌的解释：Seinen 意为‘青年男子’。专门面向 18 至 25 岁左右年轻成年男性的漫画和动漫属于青年向作品。青年向作品中的故事对大学生和职场人士有吸引力。通常其故事情节涉及成年阶段的各类问题。"
+
+#: tmainform.ckfiltershotacon.caption
+msgid "Shotacon"
+msgstr "正太"
+
+#: tmainform.ckfiltershotacon.hint
+msgid "Representing a sexual attraction to young or under-age boys."
+msgstr "代表对年幼或未成年男孩的性吸引力。"
+
+#: tmainform.ckfiltershoujo.caption
+msgid "Shoujo"
+msgstr "少女"
+
+#: tmainform.ckfiltershoujo.hint
+msgid "A work intended and primarily written for females. Usually involves a lot of romance and strong character development."
+msgstr "一部旨在且主要面向女性创作的作品。通常包含大量爱情元素以及较强的角色塑造。"
+
+#: tmainform.ckfiltershoujoai.caption
+msgid "Shoujo Ai"
+msgstr "百合"
+
+#: tmainform.ckfiltershoujoai.hint
+msgctxt "TMAINFORM.CKFILTERSHOUJOAI.HINT"
+msgid "Often synonymous with yuri, this can be thought of as somewhat less extreme. \"Girl''s Love\", so to speak."
+msgstr "这通常是尤里的同义词，可以认为不那么极端。可以这么说， \"女孩的爱\"。"
+
+#: tmainform.ckfiltershounen.caption
+msgid "Shounen"
+msgstr "少年"
+
+#: tmainform.ckfiltershounen.hint
+msgctxt "tmainform.ckfiltershounen.hint"
+msgid "A work intended and primarily written for males. These works usually involve fighting and/or violence."
+msgstr "主要为男性写的作品。这些作品通常涉及战斗或暴力。"
+
+#: tmainform.ckfiltershounenai.caption
+msgid "Shounen Ai"
+msgstr "耽美"
+
+#: tmainform.ckfiltershounenai.hint
+msgid "Often synonymous with yaoi, this can be thought of as somewhat less extreme. \"Boy''s Love\", so to speak"
+msgstr "这通常是耽美的同义词，可以认为不那么极端。也可以说成\"男孩的爱\", "
+
+#: tmainform.ckfiltersliceoflife.caption
+msgid "Slice of Life"
+msgstr "日常"
+
+#: tmainform.ckfiltersliceoflife.hint
+msgid "As the name suggests, this genre represents day-to-day tribulations of one/many character(s). These challenges/events could technically happen in real life and are often -if not all the time- set in the present timeline in a world that mirrors our own."
+msgstr "顾名思义, 这种类型代表了一个或多个角色的日常经历与挑战 。事件可能发生在现实生活中，并且通常被设置在一个反映我们自己的世界的当前时间线上。"
+
+#: tmainform.ckfiltersmut.caption
+msgid "Smut"
+msgstr "低俗"
+
+#: tmainform.ckfiltersmut.hint
+msgid "Deals with series that are considered profane or offensive, particularly with regards to sexual content."
+msgstr "涉及被认为低俗或冒犯性的系列内容，特别是在性内容方面。"
+
+#: tmainform.ckfiltersports.caption
+msgid "Sports"
+msgstr "体育"
+
+#: tmainform.ckfiltersports.hint
+msgid "As the name suggests, anything sports related. Baseball, basketball, hockey, soccer, golf, and racing just to name a few."
+msgstr "顾名思义，与体育相关的任何内容。比如棒球、篮球、曲棍球、足球、高尔夫球以及赛车等等。"
+
+#: tmainform.ckfiltersupernatural.caption
+msgid "Supernatural"
+msgstr "超自然"
+
+#: tmainform.ckfiltersupernatural.hint
+msgid "Usually entails amazing and unexplained powers or events which defy the laws of physics."
+msgstr "通常包含令人惊叹且无法解释的、违背物理定律的力量或事件。"
+
+#: tmainform.ckfiltertragedy.caption
+msgid "Tragedy"
+msgstr "悲剧"
+
+#: tmainform.ckfiltertragedy.hint
+msgid "Contains events resulting in great loss and misfortune."
+msgstr "包含导致重大损失和不幸的事件。"
+
+#: tmainform.ckfilterweebtons.caption
+msgctxt "tmainform.ckfilterweebtons.caption"
+msgid "Webtoons"
+msgstr "网络漫画"
+
+#: tmainform.ckfilterweebtons.hint
+msgctxt "tmainform.ckfilterweebtons.hint"
+msgid "Webtoons"
+msgstr "网络漫画"
+
+#: tmainform.ckfilteryaoi.caption
+msgid "Yaoi"
+msgstr "耽美"
+
+#: tmainform.ckfilteryaoi.hint
+msgid "This work usually involves intimate relationships between men."
+msgstr "这种作品通常涉及男性之间的亲密关系。"
+
+#: tmainform.ckfilteryuri.caption
+msgid "Yuri"
+msgstr "百合"
+
+#: tmainform.ckfilteryuri.hint
+msgid "This work usually involves intimate relationships between women."
+msgstr "这种作品通常涉及女性之间的亲密关系。"
+
+#: tmainform.ckoptionsalwaysstarttaskfromfailedchapters.caption
+msgctxt "tmainform.ckoptionsalwaysstarttaskfromfailedchapters.caption"
+msgid "Always start task from failed chapters"
+msgstr "总是从失败的章节开始任务"
+
+#: tmainform.ckpngsaveasjpeg.caption
+msgid "Save PNG as JPEG"
+msgstr "将 PNG 格式保存为 JPEG 格式"
+
+#: tmainform.edcustomgenres.texthint
+msgid "Input custom genres, separated by comma"
+msgstr "输入自定义标签，以逗号分隔"
+
+#: tmainform.eddownloadssearch.texthint
+msgctxt "tmainform.eddownloadssearch.texthint"
+msgid "Search downloads..."
+msgstr "搜索下载内容..."
+
+#: tmainform.edfavoritessearch.texthint
+msgctxt "tmainform.edfavoritessearch.texthint"
+msgid "Search favorites..."
+msgstr "搜索收藏内容..."
+
+#: tmainform.edfilterartists.texthint
+msgctxt "tmainform.edfilterartists.texthint"
+msgid "Artist"
+msgstr "画师"
+
+#: tmainform.edfilterauthors.texthint
+msgctxt "tmainform.edfilterauthors.texthint"
+msgid "Author"
+msgstr "作者"
+
+#: tmainform.edfiltermangainfochapters.texthint
+msgctxt "TMAINFORM.EDFILTERMANGAINFOCHAPTERS.TEXTHINT"
+msgid "Filter"
+msgstr "筛选"
+
+#: tmainform.edfiltersummary.texthint
+msgid "Part of summary"
+msgstr "摘要"
+
+#: tmainform.edfiltertitle.texthint
+msgctxt "TMAINFORM.EDFILTERTITLE.TEXTHINT"
+msgid "Title"
+msgstr "标题"
+
+#: tmainform.edmangalistsearch.texthint
+msgctxt "tmainform.edmangalistsearch.texthint"
+msgid "Search title..."
+msgstr "搜索标题..."
+
+#: tmainform.edoptionchaptercustomrename.texthint
+msgctxt "TMAINFORM.EDOPTIONCHAPTERCUSTOMRENAME.TEXTHINT"
+msgid "Custom rename"
+msgstr "自定义重命名"
+
+#: tmainform.edoptiondefaultpath.texthint
+msgid "Default download path"
+msgstr "默认下载路径"
+
+#: tmainform.edoptionexternalparams.texthint
+msgctxt "TMAINFORM.EDOPTIONEXTERNALPARAMS.TEXTHINT"
+msgid "External program parameters"
+msgstr "外部程序参数"
+
+#: tmainform.edoptionexternalpath.texthint
+msgctxt "TMAINFORM.EDOPTIONEXTERNALPATH.TEXTHINT"
+msgid "External program path"
+msgstr "外部程序路径"
+
+#: tmainform.edoptionfilenamecustomrename.texthint
+msgctxt "TMAINFORM.EDOPTIONFILENAMECUSTOMRENAME.TEXTHINT"
+msgid "Custom rename"
+msgstr "自定义重命名"
+
+#: tmainform.edoptionhost.texthint
+msgid "Proxy host/IP"
+msgstr "代理主机 / IP 地址"
+
+#: tmainform.edoptionmangacustomrename.texthint
+msgctxt "TMAINFORM.EDOPTIONMANGACUSTOMRENAME.TEXTHINT"
+msgid "Custom rename"
+msgstr "自定义重命名"
+
+#: tmainform.edoptionpass.texthint
+msgid "Proxy password"
+msgstr "代理密码"
+
+#: tmainform.edoptionuser.texthint
+msgid "Proxy username"
+msgstr "代理用户名"
+
+#: tmainform.edsaveto.texthint
+msgctxt "TMAINFORM.EDSAVETO.TEXTHINT"
+msgid "Save to"
+msgstr "保存位置"
+
+#: tmainform.edurl.texthint
+msgid "Input URL here"
+msgstr "在此输入网址"
+
+#: tmainform.edwebsitessearch.texthint
+msgctxt "TMAINFORM.EDWEBSITESSEARCH.TEXTHINT"
+msgid "Search website..."
+msgstr "搜索网站..."
+
+#: tmainform.gbdialogs.caption
+msgid "Show dialog confirmation for"
+msgstr "显示提示窗"
+
+#: tmainform.gbdroptarget.caption
+msgid "Drop Box"
+msgstr "拖放框"
+
+#: tmainform.gbimageconversion.caption
+msgid "Image Conversion"
+msgstr "图像转换"
+
+#: tmainform.gboptionexternal.caption
+msgid "External program"
+msgstr "外部程序"
+
+#: tmainform.gboptionfavorites.caption
+msgctxt "TMAINFORM.GBOPTIONFAVORITES.CAPTION"
+msgid "Favorites"
+msgstr "收藏夹"
+
+#: tmainform.gboptionproxy.caption
+msgid "Proxy config"
+msgstr "代理配置"
+
+#: tmainform.gboptionrenaming.caption
+msgid "Renaming"
+msgstr "重命名"
+
+#: tmainform.gboptionsconnectionsdownloads.caption
+msgctxt "tmainform.gboptionsconnectionsdownloads.caption"
+msgid "Downloads"
+msgstr "下载"
+
+#: tmainform.gboptionsconnectionsgeneral.caption
+msgctxt "tmainform.gboptionsconnectionsgeneral.caption"
+msgid "General"
+msgstr "常规"
+
+#: tmainform.gboptionsconnectiosmiscellaneous.caption
+msgid "Miscellaneous"
+msgstr "杂项"
+
+#: tmainform.lbdefaultdownloadpath.caption
+msgid "Choose the default download path:"
+msgstr "选择默认下载路径："
+
+#: tmainform.lbdownloadfiltercustomdatefrom.caption
+msgid "From:"
+msgstr "起始路径:"
+
+#: tmainform.lbdownloadfiltercustomdateto.caption
+msgid "To:"
+msgstr "目标路径:"
+
+#: tmainform.lbdroptargetopacity.caption
+msgid "Opacity"
+msgstr "不透明度"
+
+#: tmainform.lbfilterartists.caption
+msgctxt "tmainform.lbfilterartists.caption"
+msgid "Artist"
+msgstr "画师；艺术家"
+
+#: tmainform.lbfilterauthors.caption
+msgctxt "tmainform.lbfilterauthors.caption"
+msgid "Author"
+msgstr "作者"
+
+#: tmainform.lbfiltercustomgenres.caption
+msgid "Custom Genres"
+msgstr "自定义流派"
+
+#: tmainform.lbfilterhint.caption
+msgctxt "tmainform.lbfilterhint.caption"
+msgid "[?]"
+msgstr "[?]"
+
+#: tmainform.lbfilterhint.hint
+msgid ""
+"Genres:\n"
+"- Checked: Include this genre.\n"
+"- Unchecked: Exclude this genre.\n"
+"- Grayed: Doesn't matter.\n"
+"\n"
+"Custom Genres:\n"
+"- Separate multiple genres with ','.\n"
+"- Exclude a genre by placing '!' or '-' at the beginning of a genre.\n"
+"- Example: Adventure,!Ecchi,Comedy."
+msgstr ""
+"标签:\n"
+"- 勾选：包含此标签。\n"
+"- 未勾选：排除此标签。\n"
+"- 灰色（不可选）\n"
+"\n"
+"自定义标签:\n"
+"- 用逗号“,”分隔多个标签。\n"
+"- 通过在标签开头添加‘!’或‘-’来排除某个标签。\n"
+"- 例如：冒险，！擦边，喜剧。"
+
+#: tmainform.lbfilterstatus.caption
+msgctxt "TMAINFORM.LBFILTERSTATUS.CAPTION"
+msgid "Status"
+msgstr "状态"
+
+#: tmainform.lbfiltersummary.caption
+msgid "Summary"
+msgstr "摘要"
+
+#: tmainform.lbfiltertitle.caption
+msgctxt "tmainform.lbfiltertitle.caption"
+msgid "Title"
+msgstr "标题"
+
+#: tmainform.lbjpegquality.caption
+msgid "JPEG quality"
+msgstr "JPEG 图像质量"
+
+#: tmainform.lblogfilename.caption
+msgid "Log file:"
+msgstr "日志文件："
+
+#: tmainform.lbmode.caption
+msgid "Mode: Show all (0)"
+msgstr "模式：全部显示（0）"
+
+#: tmainform.lboptionautocheckfavintervalminutes.caption
+#, object-pascal-format
+msgctxt "TMAINFORM.LBOPTIONAUTOCHECKFAVINTERVALMINUTES.CAPTION"
+msgid "Auto check for new chapter every %d minutes"
+msgstr "每隔 % d 分钟自动检查新章节"
+
+#: tmainform.lboptionchaptercustomrename.caption
+msgctxt "TMAINFORM.LBOPTIONCHAPTERCUSTOMRENAME.CAPTION"
+msgid "Chapter name:"
+msgstr "章节名称："
+
+#: tmainform.lboptionchaptercustomrenamehint.caption
+msgctxt "TMAINFORM.LBOPTIONCHAPTERCUSTOMRENAMEHINT.CAPTION"
+msgid "[?]"
+msgstr "[?]"
+
+#: tmainform.lboptionchaptercustomrenamehint.hint
+msgctxt "TMAINFORM.LBOPTIONCHAPTERCUSTOMRENAMEHINT.HINT"
+msgid ""
+"%WEBSITE% : Website name\n"
+"%MANGA% : Manga title\n"
+"%CHAPTER% : Chapter title\n"
+"%AUTHOR% : Author\n"
+"%ARTIST% : Artist\n"
+"%NUMBERING% : Numbering\n"
+"\n"
+"Note:\n"
+"Chapter folder name must have at least %CHAPTER% or %NUMBERING%."
+msgstr ""
+"%WEBSITE% : 网站名称\n"
+"%MANGA% : 漫画标题\n"
+"%CHAPTER% : 章节标题\n"
+"%AUTHOR% : 作者\n"
+"%ARTIST% : 画师\n"
+"%NUMBERING% : 编号\n"
+"\n"
+"注：\n"
+"章节文件夹名称必须至少包含 % CHAPTER% 或 % NUMBERING%。\n"
+
+#: tmainform.lboptionconnectiontimeout.caption
+msgid "Connection timeout (seconds)"
+msgstr "连接超时（秒）"
+
+#: tmainform.lboptiondefaultuseragent.caption
+msgid "Default user-agent"
+msgstr "默认用户代理"
+
+#: tmainform.lboptionexternal.caption
+msgid "Open manga by using external program:"
+msgstr "使用外部程序打开漫画："
+
+#: tmainform.lboptionexternalparams.caption
+msgid "Parameters:"
+msgstr "参数："
+
+#: tmainform.lboptionexternalparamshint.caption
+msgctxt "TMAINFORM.LBOPTIONEXTERNALPARAMSHINT.CAPTION"
+msgid "[?]"
+msgstr "[?]"
+
+#: tmainform.lboptionfilenamecustomrename.caption
+msgid "Filename:"
+msgstr "文件名："
+
+#: tmainform.lboptionfilenamecustomrenamehint.caption
+msgctxt "TMAINFORM.LBOPTIONFILENAMECUSTOMRENAMEHINT.CAPTION"
+msgid "[?]"
+msgstr "[?]"
+
+#: tmainform.lboptionfilenamecustomrenamehint.hint
+msgid ""
+"%WEBSITE% : Website name\n"
+"%MANGA% : Manga title\n"
+"%CHAPTER% : Chapter title\n"
+"%FILENAME% : Filename\n"
+"\n"
+"Note:\n"
+"Filename must have at least %FILENAME%"
+msgstr ""
+"%WEBSITE% : 网站名称\n"
+"%MANGA% : 漫画标题\n"
+"%CHAPTER% : 章节标题\n"
+"%FILENAME% : 文件名\n"
+"\n"
+"注:\n"
+"文件名必须至少有 %FILENAME%"
+
+#: tmainform.lboptionhost.caption
+msgid "Host"
+msgstr "主机"
+
+#: tmainform.lboptionlanguage.caption
+msgid "Language:"
+msgstr "语言："
+
+#: tmainform.lboptionletfmddo.caption
+msgid "After download finish:"
+msgstr "下载完成后："
+
+#: tmainform.lboptionmangacustomrename.caption
+msgctxt "TMAINFORM.LBOPTIONMANGACUSTOMRENAME.CAPTION"
+msgid "Manga folder name:"
+msgstr "漫画文件夹名称："
+
+#: tmainform.lboptionmangacustomrenamehint.caption
+msgctxt "TMAINFORM.LBOPTIONMANGACUSTOMRENAMEHINT.CAPTION"
+msgid "[?]"
+msgstr "[?]"
+
+#: tmainform.lboptionmangacustomrenamehint.hint
+msgid ""
+"%WEBSITE% : Website name\n"
+"%MANGA% : Manga title\n"
+"%AUTHOR% : Author\n"
+"%ARTIST% : Artist\n"
+"\n"
+"Note:\n"
+"Manga folder name must have at least %MANGA%."
+msgstr ""
+"%WEBSITE% : 网站名称\n"
+"%MANGA% : 漫画标题\n"
+"%AUTHOR% : 作者\n"
+"%ARTIST% : 画师\n"
+"\n"
+"注:\n"
+"漫画文件夹名称必须至少有 %MANGA%."
+
+#: tmainform.lboptionmaxbackgroundloudthreads.caption
+msgid "Max number of background load threads"
+msgstr "最大后台加载线程数"
+
+#: tmainform.lboptionmaxfavoritethreads.caption
+msgid "Max number of favorite check at the same time"
+msgstr "同时刷新收藏的最大数量"
+
+#: tmainform.lboptionmaxparallel.caption
+msgid "Number of downloaded tasks at the same time"
+msgstr "同时下载的任务数"
+
+#: tmainform.lboptionmaxretry.caption
+msgid "Max number of retry on connection failure (-1 = always retry)"
+msgstr "连接失败时的最大重试次数 (-1 = 总是重试)"
+
+#: tmainform.lboptionmaxthread.caption
+msgid "Number of downloaded files per task at the same time"
+msgstr "每个任务同时下载的文件数量"
+
+#: tmainform.lboptionmaxupdatelistthreads.caption
+msgid "Max number of update list threads"
+msgstr "更新列表最大线程数"
+
+#: tmainform.lboptionnewmangatime.caption
+msgid "New manga based on  it's update time (days)"
+msgstr "按更新天数查看新漫画"
+
+#: tmainform.lboptionpass.caption
+msgctxt "tmainform.lboptionpass.caption"
+msgid "Password"
+msgstr "密码"
+
+#: tmainform.lboptionpdfquality.caption
+msgid "PDF Quality Level"
+msgstr "PDF 质量"
+
+#: tmainform.lboptionpdfquality.hint
+msgctxt "TMAINFORM.LBOPTIONPDFQUALITY.HINT"
+msgid "100 = FlateEncode (lossless), lower = DCTEncode (lossy)"
+msgstr "100 = 无损压缩, lower = 有损压缩"
+
+#: tmainform.lboptionpdfqualityhint.caption
+msgctxt "TMAINFORM.LBOPTIONPDFQUALITYHINT.CAPTION"
+msgid "[?]"
+msgstr "[?]"
+
+#: tmainform.lboptionport.caption
+msgid "Port"
+msgstr "端口"
+
+#: tmainform.lboptionproxytype.caption
+msgid "Type"
+msgstr "类型"
+
+#: tmainform.lboptionrenamedigits.caption
+msgid "Rename  digits"
+msgstr "重命名数字"
+
+#: tmainform.lboptionretryfailedtask.caption
+msgid "Number of retry times if task failed"
+msgstr "任务失败时的重试次数"
+
+#: tmainform.lboptionuser.caption
+msgctxt "tmainform.lboptionuser.caption"
+msgid "Username"
+msgstr "用户名"
+
+#: tmainform.lbpngcompressionlevel.caption
+msgctxt "tmainform.lbpngcompressionlevel.caption"
+msgid "PNG Compression level"
+msgstr "PNG 压缩等级"
+
+#: tmainform.lbsaveto.caption
+msgid "Save to:"
+msgstr "保存位置："
+
+#: tmainform.lbwebpsaveas.caption
+msgid "Save WebP as"
+msgstr "将 WebP 格式保存为"
+
+#: tmainform.medturldelete.caption
+msgctxt "TMAINFORM.MEDTURLDELETE.CAPTION"
+msgid "Delete"
+msgstr "删除"
+
+#: tmainform.medurlcopy.caption
+msgctxt "tmainform.medurlcopy.caption"
+msgid "Copy"
+msgstr "复制"
+
+#: tmainform.medurlcut.caption
+msgid "Cut"
+msgstr "剪切"
+
+#: tmainform.medurlpaste.caption
+msgid "Paste"
+msgstr "粘贴"
+
+#: tmainform.medurlpasteandgo.caption
+msgid "Paste and go"
+msgstr "粘贴并前往"
+
+#: tmainform.medurlselectall.caption
+msgid "Select all"
+msgstr "全选"
+
+#: tmainform.medurlundo.caption
+msgid "Undo"
+msgstr "撤销"
+
+#: tmainform.miabortsilentthread.caption
+msgctxt "tmainform.miabortsilentthread.caption"
+msgid "Abort"
+msgstr "中止"
+
+#: tmainform.michapterlistascending.caption
+msgid "Ascending"
+msgstr "升序"
+
+#: tmainform.michapterlistcheckall.caption
+msgctxt "tmainform.michapterlistcheckall.caption"
+msgid "Check all"
+msgstr "全选"
+
+#: tmainform.michapterlistcheckselected.caption
+msgid "Check selected"
+msgstr "检查选中的项目"
+
+#: tmainform.michapterlistdescending.caption
+msgid "Descending"
+msgstr "降序"
+
+#: tmainform.michapterlistfilter.caption
+msgctxt "TMAINFORM.MICHAPTERLISTFILTER.CAPTION"
+msgid "Filter"
+msgstr "筛选"
+
+#: tmainform.michapterlisthidedownloaded.caption
+msgid "Hide downloaded chapters"
+msgstr "隐藏已下载章节"
+
+#: tmainform.michapterlisthighlight.caption
+msgid "Highlight downloaded chapters"
+msgstr "突出显示已下载章节"
+
+#: tmainform.michapterlistuncheckall.caption
+msgctxt "tmainform.michapterlistuncheckall.caption"
+msgid "Uncheck all"
+msgstr "全部取消勾选"
+
+#: tmainform.michapterlistuncheckselected.caption
+msgid "Uncheck selected"
+msgstr "取消勾选所选项目"
+
+#: tmainform.midownloaddelete.caption
+msgctxt "tmainform.midownloaddelete.caption"
+msgid "Delete"
+msgstr "删除"
+
+#: tmainform.midownloaddeletecompleted.caption
+msgctxt "TMAINFORM.MIDOWNLOADDELETECOMPLETED.CAPTION"
+msgid "Delete all completed tasks"
+msgstr "删除所有已完成任务"
+
+#: tmainform.midownloaddeletetask.caption
+msgid "Task only"
+msgstr "仅任务"
+
+#: tmainform.midownloaddeletetaskdata.caption
+msgid "Task + Data"
+msgstr "任务 + 数据"
+
+#: tmainform.midownloaddeletetaskdatafavorite.caption
+msgid "Task + Data + Favorite"
+msgstr "任务 + 数据 + 收藏"
+
+#: tmainform.midownloaddisable.caption
+msgctxt "tmainform.midownloaddisable.caption"
+msgid "Disable"
+msgstr "禁用"
+
+#: tmainform.midownloadenable.caption
+msgctxt "tmainform.midownloadenable.caption"
+msgid "Enable"
+msgstr "启用"
+
+#: tmainform.midownloadmergecompleted.caption
+msgid "Merge completed tasks"
+msgstr "合并已完成任务"
+
+#: tmainform.midownloadopenfolder.caption
+msgctxt "tmainform.midownloadopenfolder.caption"
+msgid "Open Folder"
+msgstr "打开文件夹"
+
+#: tmainform.midownloadopenwith.caption
+msgctxt "tmainform.midownloadopenwith.caption"
+msgid "Open ..."
+msgstr "打开 ..."
+
+#: tmainform.midownloadredownload.caption
+msgid "Redownload"
+msgstr "重新下载"
+
+#: tmainform.midownloadresume.caption
+msgid "Resume"
+msgstr "恢复"
+
+#: tmainform.midownloadstop.caption
+msgid "Stop"
+msgstr "停止"
+
+#: tmainform.midownloadviewmangainfo.caption
+msgctxt "tmainform.midownloadviewmangainfo.caption"
+msgid "View manga info"
+msgstr "查看漫画信息"
+
+#: tmainform.mifavoriteschangesaveto.caption
+msgid "Change \"Save to\""
+msgstr "更改 \"保存路径\""
+
+#: tmainform.mifavoriteschecknewchapter.caption
+msgctxt "TMAINFORM.MIFAVORITESCHECKNEWCHAPTER.CAPTION"
+msgid "Check for new chapter"
+msgstr "检查新章节"
+
+#: tmainform.mifavoritesdefaultaction.caption
+msgctxt "tmainform.mifavoritesdefaultaction.caption"
+msgid "Default Action"
+msgstr "默认操作"
+
+#: tmainform.mifavoritesdefaultactionchecknewchapters.caption
+msgctxt "tmainform.mifavoritesdefaultactionchecknewchapters.caption"
+msgid "Check for new Chapters"
+msgstr "检查是否有新章节"
+
+#: tmainform.mifavoritesdefaultactionopenfolder.caption
+msgctxt "tmainform.mifavoritesdefaultactionopenfolder.caption"
+msgid "Open Folder"
+msgstr "打开文件夹"
+
+#: tmainform.mifavoritesdefaultactionrename.caption
+msgctxt "tmainform.mifavoritesdefaultactionrename.caption"
+msgid "Rename"
+msgstr "重命名"
+
+#: tmainform.mifavoritesdefaultactionshowinfo.caption
+msgctxt "tmainform.mifavoritesdefaultactionshowinfo.caption"
+msgid "View Manga Info"
+msgstr "查看漫画信息"
+
+#: tmainform.mifavoritesdelete.caption
+msgctxt "TMAINFORM.MIFAVORITESDELETE.CAPTION"
+msgid "Delete"
+msgstr "删除"
+
+#: tmainform.mifavoritesdisable.caption
+msgctxt "tmainform.mifavoritesdisable.caption"
+msgid "Disable"
+msgstr "禁用"
+
+#: tmainform.mifavoritesdownloadall.caption
+msgctxt "tmainform.mifavoritesdownloadall.caption"
+msgid "Download all"
+msgstr "全部下载"
+
+#: tmainform.mifavoritesenable.caption
+msgctxt "tmainform.mifavoritesenable.caption"
+msgid "Enable"
+msgstr "启用"
+
+#: tmainform.mifavoritesopenfolder.caption
+msgctxt "TMAINFORM.MIFAVORITESOPENFOLDER.CAPTION"
+msgid "Open Folder"
+msgstr "打开文件夹"
+
+#: tmainform.mifavoritesopenwith.caption
+msgctxt "TMAINFORM.MIFAVORITESOPENWITH.CAPTION"
+msgid "Open ..."
+msgstr "打开 ..."
+
+#: tmainform.mifavoritesrename.caption
+msgctxt "tmainform.mifavoritesrename.caption"
+msgid "Rename"
+msgstr "重命名"
+
+#: tmainform.mifavoritesstopchecknewchapter.caption
+msgid "Stop check for new chapter"
+msgstr "停止检查新章节"
+
+#: tmainform.mifavoritestransferwebsite.caption
+msgctxt "tmainform.mifavoritestransferwebsite.caption"
+msgid "Transfer website"
+msgstr "转移网站"
+
+#: tmainform.mifavoritesviewinfos.caption
+msgctxt "TMAINFORM.MIFAVORITESVIEWINFOS.CAPTION"
+msgid "View manga info"
+msgstr "查看漫画信息"
+
+#: tmainform.mihighlightnewmanga.caption
+msgid "Highlight new manga"
+msgstr "突出显示新漫画"
+
+#: tmainform.mimangalistaddtofavorites.caption
+msgid "Add to Favorites"
+msgstr "添加到收藏夹"
+
+#: tmainform.mimangalistdelete.caption
+msgctxt "tmainform.mimangalistdelete.caption"
+msgid "Delete"
+msgstr "删除"
+
+#: tmainform.mimangalistdownloadall.caption
+msgctxt "TMAINFORM.MIMANGALISTDOWNLOADALL.CAPTION"
+msgid "Download all"
+msgstr "全部下载"
+
+#: tmainform.mimangalistviewinfos.caption
+msgid "View manga infos"
+msgstr "查看漫画信息"
+
+#: tmainform.mitrayafterdownloadfinish.caption
+msgid "After download finish"
+msgstr "下载完成后"
+
+#: tmainform.mitrayexit.caption
+msgctxt "TMAINFORM.MITRAYEXIT.CAPTION"
+msgid "Exit"
+msgstr "退出"
+
+#: tmainform.mitrayfinishexit.caption
+msgctxt "tmainform.mitrayfinishexit.caption"
+msgid "Exit"
+msgstr "退出"
+
+#: tmainform.mitrayfinishhibernate.caption
+msgid "Hibernate"
+msgstr "休眠"
+
+#: tmainform.mitrayfinishnothing.caption
+msgid "Nothing"
+msgstr "无操作"
+
+#: tmainform.mitrayfinishshutdown.caption
+msgid "Shutdown"
+msgstr "关机"
+
+#: tmainform.mitrayrestore.caption
+msgid "Restore"
+msgstr "恢复"
+
+#: tmainform.mitrayresumeall.caption
+msgid "Resume all"
+msgstr "全部恢复"
+
+#: tmainform.mitrayshowdropbox.caption
+msgctxt "TMAINFORM.MITRAYSHOWDROPBOX.CAPTION"
+msgid "Show Drop Box"
+msgstr "显示下拉框"
+
+#: tmainform.mitraystopall.caption
+msgid "Stop all"
+msgstr "全部停止"
+
+#: tmainform.mndownload1click.caption
+msgid "Download all lists from FMD server at once"
+msgstr "从 FMD 服务器下载所有列表"
+
+#: tmainform.mnfiltergenreallcheck.caption
+msgctxt "TMAINFORM.MNFILTERGENREALLCHECK.CAPTION"
+msgid "Check all"
+msgstr "全选"
+
+#: tmainform.mnfiltergenreallindeterminate.caption
+msgid "Indeterminate all"
+msgstr "全部默认"
+
+#: tmainform.mnfiltergenrealluncheck.caption
+msgctxt "TMAINFORM.MNFILTERGENREALLUNCHECK.CAPTION"
+msgid "Uncheck all"
+msgstr "全部不选"
+
+#: tmainform.mnupdate1click.caption
+msgid "Update all lists at once"
+msgstr "一次性更新所有列表"
+
+#: tmainform.mnupdatedownfromserver.caption
+msgid "Download manga list from FMD server"
+msgstr "从FMD服务器下载漫画列表"
+
+#: tmainform.mnupdatelist.caption
+msgctxt "TMAINFORM.MNUPDATELIST.CAPTION"
+msgid "Update manga list"
+msgstr "更新漫画列表"
+
+#: tmainform.rball.caption
+msgid "Have all genre checked"
+msgstr "全选所有类型"
+
+#: tmainform.rbfavoritesshowall.caption
+msgctxt "tmainform.rbfavoritesshowall.caption"
+msgid "All"
+msgstr "所有"
+
+#: tmainform.rbfavoritesshowdisabled.caption
+msgctxt "tmainform.rbfavoritesshowdisabled.caption"
+msgid "Disabled"
+msgstr "禁用"
+
+#: tmainform.rbfavoritesshowenabled.caption
+msgctxt "tmainform.rbfavoritesshowenabled.caption"
+msgid "Enabled"
+msgstr "启用"
+
+#: tmainform.rbone.caption
+msgid "Have one of genres checked"
+msgstr "选择一个类型"
+
+#: tmainform.rgdroptargetmode.caption
+msgid "Mode"
+msgstr "模式"
+
+#: tmainform.rgoptioncompress.caption
+msgid "Save downloaded chapters as"
+msgstr "将下载的章节保存为"
+
+#: tmainform.seoptionpdfquality.hint
+msgctxt "tmainform.seoptionpdfquality.hint"
+msgid "100 = FlateEncode (lossless), lower = DCTEncode (lossy)"
+msgstr "100 = 无损压缩, lower = 有损压缩"
+
+#: tmainform.tbdownloaddeletecompleted.caption
+msgctxt "tmainform.tbdownloaddeletecompleted.caption"
+msgid "Delete all completed tasks"
+msgstr "删除所有已完成任务"
+
+#: tmainform.tbdownloadresumeall.caption
+msgid "Resume All"
+msgstr "全部恢复"
+
+#: tmainform.tbdownloadstopall.caption
+msgid "Stop All"
+msgstr "全部停止"
+
+#: tmainform.tbmidownloadmovebottom.hint
+msgid "Move selected item(s) to bottom"
+msgstr "将所选项目移至底部"
+
+#: tmainform.tbmidownloadmovedown.hint
+msgid "Move selected item(s) down"
+msgstr "将所选项目向下移动"
+
+#: tmainform.tbmidownloadmovetop.hint
+msgid "Move selected item(s) to top"
+msgstr "将所选项目移至顶部"
+
+#: tmainform.tbmidownloadmoveup.hint
+msgid "Move selected item(s) up"
+msgstr "将所选项目向上移动"
+
+#: tmainform.tbwebsitescollapseall.caption
+msgid "Collapse All"
+msgstr "全部折叠"
+
+#: tmainform.tbwebsitesexpandall.caption
+msgid "Expand All"
+msgstr "全部展开"
+
+#: tmainform.tbwebsitesselectall.caption
+msgid "Select All"
+msgstr "全选"
+
+#: tmainform.tbwebsitesunselectall.caption
+msgid "Unselect All"
+msgstr "全部取消选择"
+
+#: tmainform.tsabout.caption
+msgid "About"
+msgstr "关于"
+
+#: tmainform.tsabouttext.caption
+msgid "About FMD"
+msgstr "关于免费漫画下载器（FMD）"
+
+#: tmainform.tsaccounts.caption
+msgid "Accounts"
+msgstr "账户"
+
+#: tmainform.tschangelogtext.caption
+msgid "Changelog"
+msgstr "更新日志"
+
+#: tmainform.tsconnections.caption
+msgid "Connections"
+msgstr "连接"
+
+#: tmainform.tscustomcolor.caption
+msgid "Custom color"
+msgstr "自定义颜色"
+
+#: tmainform.tsdialogs.caption
+msgid "Dialogs"
+msgstr "对话框"
+
+#: tmainform.tsdownload.caption
+msgctxt "tmainform.tsdownload.caption"
+msgid "Downloads"
+msgstr "下载"
+
+#: tmainform.tsfavorites.caption
+msgctxt "tmainform.tsfavorites.caption"
+msgid "Favorites"
+msgstr "收藏夹"
+
+#: tmainform.tsgeneral.caption
+msgctxt "tmainform.tsgeneral.caption"
+msgid "General"
+msgstr "常规"
+
+#: tmainform.tsinfofilteradv.caption
+msgctxt "tmainform.tsinfofilteradv.caption"
+msgid "Filter"
+msgstr "筛选"
+
+#: tmainform.tsinfomanga.caption
+msgid "Info"
+msgstr "信息"
+
+#: tmainform.tsinformation.caption
+msgid "Manga Info"
+msgstr "漫画信息"
+
+#: tmainform.tslog.caption
+msgid "Log"
+msgstr "日志"
+
+#: tmainform.tsmisc.caption
+msgid "Misc"
+msgstr "杂项"
+
+#: tmainform.tsoption.caption
+msgctxt "tmainform.tsoption.caption"
+msgid "Options"
+msgstr "选项"
+
+#: tmainform.tssaveto.caption
+msgctxt "TMAINFORM.TSSAVETO.CAPTION"
+msgid "Save to"
+msgstr "保存位置"
+
+#: tmainform.tsupdate.caption
+msgid "Updates"
+msgstr "更新"
+
+#: tmainform.tsview.caption
+msgid "View"
+msgstr "视图"
+
+#: tmainform.tswebsiteadvanced.caption
+msgid "Advanced"
+msgstr "高级"
+
+#: tmainform.tswebsitemodules.caption
+msgid "Modules"
+msgstr "模块"
+
+#: tmainform.tswebsiteoptions.caption
+msgctxt "TMAINFORM.TSWEBSITEOPTIONS.CAPTION"
+msgid "Options"
+msgstr "选项"
+
+#: tmainform.tswebsites.caption
+msgctxt "tmainform.tswebsites.caption"
+msgid "Websites"
+msgstr "网站"
+
+#: tmainform.tswebsiteselection.caption
+msgctxt "TMAINFORM.TSWEBSITESELECTION.CAPTION"
+msgid "Websites"
+msgstr "网站"
+
+#: tmainform.vtdownload.header.columns[0].text
+msgid "Manga"
+msgstr "漫画"
+
+#: tmainform.vtdownload.header.columns[1].text
+msgctxt "tmainform.vtdownload.header.columns[1].text"
+msgid "Status"
+msgstr "状态"
+
+#: tmainform.vtdownload.header.columns[2].text
+msgid "Progress"
+msgstr "进度"
+
+#: tmainform.vtdownload.header.columns[3].text
+msgctxt "tmainform.vtdownload.header.columns[3].text"
+msgid "Transfer rate"
+msgstr "传输速率"
+
+#: tmainform.vtdownload.header.columns[4].text
+msgctxt "tmainform.vtdownload.header.columns[4].text"
+msgid "Website"
+msgstr "网站"
+
+#: tmainform.vtdownload.header.columns[5].text
+msgctxt "tmainform.vtdownload.header.columns[5].text"
+msgid "Save to"
+msgstr "保存位置"
+
+#: tmainform.vtdownload.header.columns[6].text
+msgctxt "TMAINFORM.VTDOWNLOAD.HEADER.COLUMNS[6].TEXT"
+msgid "Date added"
+msgstr "添加日期"
+
+#: tmainform.vtdownload.header.columns[7].text
+msgid "Last downloaded date"
+msgstr "上次下载日期"
+
+#: tmainform.vtfavorites.header.columns[0].text
+msgid "#"
+msgstr "#"
+
+#: tmainform.vtfavorites.header.columns[1].text
+msgctxt "TMAINFORM.VTFAVORITES.HEADER.COLUMNS[1].TEXT"
+msgid "Title"
+msgstr "标题"
+
+#: tmainform.vtfavorites.header.columns[2].text
+msgid "Current chapter"
+msgstr "当前章节"
+
+#: tmainform.vtfavorites.header.columns[3].text
+msgctxt "TMAINFORM.VTFAVORITES.HEADER.COLUMNS[3].TEXT"
+msgid "Website"
+msgstr "网址"
+
+#: tmainform.vtfavorites.header.columns[4].text
+msgctxt "TMAINFORM.VTFAVORITES.HEADER.COLUMNS[4].TEXT"
+msgid "Save to"
+msgstr "保存位置"
+
+#: tmainform.vtfavorites.header.columns[5].text
+msgctxt "tmainform.vtfavorites.header.columns[5].text"
+msgid "Date added"
+msgstr "添加日期"
+
+#: tmainform.vtfavorites.header.columns[6].text
+msgid "Last checked date"
+msgstr "上次检查日期"
+
+#: tmainform.vtfavorites.header.columns[7].text
+msgid "Last updated date"
+msgstr "最后更新日期"
+
+#: tnewchapter.btcancel.caption
+msgctxt "TNEWCHAPTER.BTCANCEL.CAPTION"
+msgid "&Cancel"
+msgstr "&取消"
+
+#: tnewchapter.btdownload.caption
+msgctxt "TNEWCHAPTER.BTDOWNLOAD.CAPTION"
+msgid "&Download"
+msgstr "&下载"
+
+#: tnewchapter.btqueue.caption
+msgctxt "TNEWCHAPTER.BTQUEUE.CAPTION"
+msgid "&Add to queue"
+msgstr "&添加到队列"
+
+#: tnewchapter.caption
+msgid "New Chapter Notification"
+msgstr "新章节通知"
+
+#: tselectdirectoryform.btok.caption
+msgctxt "tselectdirectoryform.btok.caption"
+msgid "OK"
+msgstr "确定"
+
+#: tselectdirectoryform.caption
+msgid "Select directory"
+msgstr "选择目录"
+
+#: tselectdirectoryform.lbdescription.caption
+msgid ""
+"If you change multiple entries at once, the new paths will be constructed like this:\n"
+"\"{New_Path}\\{Manga_Title}\"\n"
+"\n"
+"Old folder structures will be ignored. However, if the only part you change is the drive letter (e.g. 'D:'), only the letter will be replaced. This only works for absolute paths, relative paths will be ignored."
+msgstr ""
+"如果您一次更改多个条目，新路径将如下构造：\n"
+"\"{新路径}\\{漫画标题}\"\n"
+"\n"
+"旧的文件夹结构将被忽略。但是，如果您更改的唯一部分是驱动器号（例如 'D：'），则只会替换该字母。这仅适用于绝对路径，相对路径将被忽略。"
+
+#: tshutdowncounterform.btabort.caption
+msgid "&Abort"
+msgstr "中止"
+
+#: tshutdowncounterform.btnow.caption
+msgid "&Now"
+msgstr "&立即"
+
+#: ttransferfavoritesform.btcancel.caption
+msgctxt "ttransferfavoritesform.btcancel.caption"
+msgid "Cancel"
+msgstr "取消"
+
+#: ttransferfavoritesform.btok.caption
+msgctxt "ttransferfavoritesform.btok.caption"
+msgid "OK"
+msgstr "确定"
+
+#: ttransferfavoritesform.caption
+msgid "Transfer Favorites"
+msgstr "转移收藏夹"
+
+#: ttransferfavoritesform.ckcleardownloadedchapters.caption
+msgid "Clear downloaded chapter list and reload from server"
+msgstr "清除已下载章节列表并从服务器重新加载"
+
+#: ttransferfavoritesform.lbtransferto.caption
+msgctxt "ttransferfavoritesform.lbtransferto.caption"
+msgid "Transfer to"
+msgstr "转移至"
+
+#: ttransferfavoritesform.rball.caption
+msgctxt "ttransferfavoritesform.rball.caption"
+msgid "All"
+msgstr "全部"
+
+#: ttransferfavoritesform.rbinvalid.caption
+msgctxt "ttransferfavoritesform.rbinvalid.caption"
+msgid "Invalid"
+msgstr "无效"
+
+#: ttransferfavoritesform.rbvalid.caption
+msgctxt "ttransferfavoritesform.rbvalid.caption"
+msgid "Valid"
+msgstr "有效"
+
+#: ttransferfavoritesform.vtfavs.header.columns[1].text
+msgctxt "ttransferfavoritesform.vtfavs.header.columns[1].text"
+msgid "Title"
+msgstr "标题"
+
+#: ttransferfavoritesform.vtfavs.header.columns[2].text
+msgctxt "ttransferfavoritesform.vtfavs.header.columns[2].text"
+msgid "Website"
+msgstr "网站"
+
+#: tupdatedialogform.btnlater.caption
+msgid "&Later"
+msgstr "&稍后"
+
+#: tupdatedialogform.btnupdate.caption
+msgid "&Update"
+msgstr "&更新"
+
+#: tupdatedialogform.caption
+msgid "New Version Found"
+msgstr "找到新版本"
+
+#: tupdatedialogform.lbmessage.caption
+msgid ""
+"New version found! Do you want to update now?\n"
+"FMD will be closed to finish the update."
+msgstr ""
+"发现新版本！您现在想要更新吗？\n"
+"将关闭免费漫画下载器（FMD）以完成更新。"
+
+#: twebsiteselectionform.caption
+msgid "Select a website"
+msgstr "选择一个网站"
+
+#: twebsitesettingsform.caption
+msgid "WebsiteSettingsForm"
+msgstr "网站设置表单"
+
+#: twebsitesettingsform.edsearch.texthint
+msgid "Website name"
+msgstr "网站名称"
+
+#: twebsitesettingsform.edsearchproperty.texthint
+msgid "Setting name"
+msgstr "设置名称"
+
+#: udownloadsmanager.rs_compressing
+msgid "Compressing..."
+msgstr "正在压缩..."
+
+#: udownloadsmanager.rs_disabled
+msgctxt "udownloadsmanager.rs_disabled"
+msgid "Disabled"
+msgstr "禁用"
+
+#: udownloadsmanager.rs_downloading
+msgid "Downloading"
+msgstr "正在下载"
+
+#: udownloadsmanager.rs_failed
+msgctxt "udownloadsmanager.rs_failed"
+msgid "Failed"
+msgstr "失败"
+
+#: udownloadsmanager.rs_failedtocreatedir
+msgid "Failed to create directory!"
+msgstr "创建目录失败！"
+
+#: udownloadsmanager.rs_failedtryresumetask
+msgid "Failed, try resuming this task!"
+msgstr "失败，尝试恢复此任务！"
+
+#: udownloadsmanager.rs_finish
+msgid "Completed"
+msgstr "已完成"
+
+#: udownloadsmanager.rs_preparing
+msgctxt "udownloadsmanager.rs_preparing"
+msgid "Preparing"
+msgstr "正在准备"
+
+#: udownloadsmanager.rs_stopped
+msgid "Stopped"
+msgstr "已停止"
+
+#: udownloadsmanager.rs_waiting
+msgid "Waiting..."
+msgstr "正在等待..."
+
+#: ufavoritesmanager.rs_btnaddtoqueue
+msgctxt "ufavoritesmanager.rs_btnaddtoqueue"
+msgid "&Add to queue"
+msgstr "添加到队列"
+
+#: ufavoritesmanager.rs_btncancel
+msgctxt "ufavoritesmanager.rs_btncancel"
+msgid "&Cancel"
+msgstr "&取消"
+
+#: ufavoritesmanager.rs_btncheckfavorites
+msgctxt "ufavoritesmanager.rs_btncheckfavorites"
+msgid "Check for new chapter"
+msgstr "检查新章节"
+
+#: ufavoritesmanager.rs_btndownload
+msgctxt "ufavoritesmanager.rs_btndownload"
+msgid "&Download"
+msgstr "&下载"
+
+#: ufavoritesmanager.rs_btnremove
+msgid "&Remove"
+msgstr "&移除"
+
+#: ufavoritesmanager.rs_dlgcompletedmangacaption
+msgid "Found completed manga(s)"
+msgstr "发现已完成漫画(s)"
+
+#: ufavoritesmanager.rs_dlgfavoritescheckisrunning
+msgid "Favorites check is running!"
+msgstr "正在运行收藏夹检查！"
+
+#: ufavoritesmanager.rs_dlgnewchaptercaption
+msgctxt "ufavoritesmanager.rs_dlgnewchaptercaption"
+msgid "Found new chapter(s)"
+msgstr "发现新章节(s)"
+
+#: ufavoritesmanager.rs_favoritehasnewchapter
+#, object-pascal-format
+msgid "%s <%s> has %d new chapter(s)."
+msgstr "%s <%s> 有 %d 新章节(s)."
+
+#: ufavoritesmanager.rs_lblmangawillberemoved
+#, object-pascal-format
+msgid "%d completed manga(s) will be removed:"
+msgstr "%d 已完成漫画(s) 将被删除:"
+
+#: ufavoritesmanager.rs_lblnewchapterfound
+#, object-pascal-format
+msgid "Found %d new chapter from %d manga(s):"
+msgstr "发现 %d 新章节来自 %d 漫画(s):"
+
+#: usilentthread.rs_silentthreadloadstatus
+#, object-pascal-format
+msgid "Loading: %d/%d"
+msgstr "加载: %d/%d"
+
+#: uupdatethread.rs_dlghasnewmanga
+#, object-pascal-format
+msgid "%s has %d new manga(s)"
+msgstr "%s 有 %d 新漫画(s)"
+
+#: uupdatethread.rs_gettingdirectory
+msgid "Getting directory"
+msgstr "获取目录"
+
+#: uupdatethread.rs_gettinginfo
+msgid "Getting info"
+msgstr "获取信息"
+
+#: uupdatethread.rs_gettinglistfor
+msgid "Getting list for"
+msgstr "获取列表"
+
+#: uupdatethread.rs_indexingnewtitle
+msgid "Indexing new title(s)"
+msgstr "为新标题编制索引(s)"
+
+#: uupdatethread.rs_lookingfornewtitle
+msgid "Looking for new title(s)"
+msgstr "加载新标题(s)"
+
+#: uupdatethread.rs_lookingfornewtitlefromanotherdirectory
+msgid "Looking for new title(s) from another directory"
+msgstr "从目录加载新标题(s) "
+
+#: uupdatethread.rs_preparing
+msgctxt "uupdatethread.rs_preparing"
+msgid "Preparing"
+msgstr "正在准备"
+
+#: uupdatethread.rs_removingduplicatefromcurrentdata
+msgid "Removing duplicate from current data"
+msgstr "从当前数据中移除重复项"
+
+#: uupdatethread.rs_removingduplicatefromlocaldata
+msgid "Removing duplicate from local data"
+msgstr "从本地数据中移除重复项"
+
+#: uupdatethread.rs_removingduplicatefromnewtitle
+msgid "Removing duplicate from new title(s)"
+msgstr "从新标题中删除重复项(s)"
+
+#: uupdatethread.rs_savingdata
+msgid "Saving data"
+msgstr "保存数据"
+
+#: uupdatethread.rs_synchronizingdata
+msgid "Synchronizing data"
+msgstr "同步数据"
+
+#: uupdatethread.rs_updatinglist
+msgid "Updating list"
+msgstr "更新列表"
+
+#: webp.serrloadfailed
+#, object-pascal-format
+msgid "Can not load WebP codec library \"%s\". Check your installation."
+msgstr "无法加载 WebP 编解码器库 \"%s\". 请检查是否正常安装"
+

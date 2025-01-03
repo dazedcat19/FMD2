@@ -1,0 +1,110 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh\n"
+"X-Generator: Poedit 1.8.8\n"
+
+#: tfrmmain.caption
+msgid "Free Manga Downloader - Updater"
+msgstr "免费漫画下载器 - 更新器"
+
+#: tfrmmain.lbfilesize.caption
+msgid "File size"
+msgstr "文件大小"
+
+#: tfrmmain.lbstatus.caption
+msgid "Waiting..."
+msgstr "等待中..."
+
+#: tfrmmain.lbtransferrate.caption
+msgid "Transfer rate"
+msgstr "传输速率"
+
+#: tfrmmessage.caption
+msgid "Help"
+msgstr "帮助"
+
+#: umain.rs_7znotfound
+msgid "Can't extract file because 7za.exe not found!"
+msgstr "因找不到 7za.exe 文件，无法解压文件！"
+
+#: umain.rs_anerroroccured
+msgid "An error occured when trying to download file."
+msgstr "在尝试下载文件时出现了错误。"
+
+#: umain.rs_downloading
+msgid "Downloading[% s]..."
+msgstr "正在下载[% s]..."
+
+#: umain.rs_errorcheckantivirus
+msgid "Error saving file, check your AntiVirus!"
+msgstr "保存文件出错，请检查你的杀毒软件！"
+
+#: umain.rs_faileddownloadpage
+msgid "Failed downloading file!"
+msgstr "文件下载失败！"
+
+#: umain.rs_failedloadpage
+msgid "Failed loading page!"
+msgstr "页面加载失败！"
+
+#: umain.rs_filenotfound
+msgid "File not found!"
+msgstr "未找到文件！"
+
+#: umain.rs_finished
+msgid "Finished."
+msgstr "已完成。"
+
+#: umain.rs_invalidurl
+msgid "Invalid URL!"
+msgstr "无效网址！"
+
+#: umain.rs_loadingpage
+msgid "Loading page..."
+msgstr "正在加载页面..."
+
+#: umain.rs_redirected
+msgid "Redirected..."
+msgstr "已重定向..."
+
+#: umain.rs_response
+msgid "Response"
+msgstr "响应；回复"
+
+#: umain.rs_retrydownloading
+msgid "Retry downloading[% d][% s]..."
+msgstr "重试下载[% d][% s]..."
+
+#: umain.rs_retryloadpage
+msgid "Retry loading page[% d]..."
+msgstr "重试加载页面[% d]..."
+
+#: umain.rs_savefile
+msgid "Saving file..."
+msgstr "正在保存文件..."
+
+#: umain.rs_servererror
+msgid "Server response error!"
+msgstr "服务器响应错误！"
+
+#: umain.rs_unknown
+msgid "(unknown)"
+msgstr "(未知)"
+
+#: umain.rs_unpackfile
+msgid "Unpacking file[% s]..."
+msgstr "正在解压文件[% s]..."
+
+#: umain.rs_waitmainapp
+msgid "Waiting main app to close..."
+msgstr "等待主应用程序关闭..."
+
+
