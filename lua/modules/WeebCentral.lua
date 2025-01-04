@@ -50,8 +50,7 @@ end
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
 	local v, x = nil
-	local u = MODULE.RootURL
-	if URL ~= '0' then u = u .. DirectoryPagination .. (DirectoryPageLimit * tonumber(URL)) end
+	local u = MODULE.RootURL .. DirectoryPagination .. (DirectoryPageLimit * tonumber(URL))
 
 	if not HTTP.GET(u) then return net_problem end
 
