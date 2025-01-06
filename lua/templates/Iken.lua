@@ -52,7 +52,7 @@ function _M.GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function _M.GetInfo()
 	local json, title, v, x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
@@ -92,13 +92,23 @@ end
 
 -- Get the page count for the current chapter.
 function _M.GetPageNumber()
+	local x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('//section[contains(@class, "w-full flex")]//img/@src', TASK.PageLinks)
+	x = CreateTXQuery(HTTP.Document)
+	x.ParseHTML(GetBetween('"images":', '],', x.XPathString('//script[contains(., "chapterId")]'):gsub('\\"', '\"')) .. ']')
+	x.XPathStringAll('json(*)().url', TASK.PageLinks)
 
 	return no_error
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function _M.BeforeDownloadImage()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+
+	return true
 end
 
 ----------------------------------------------------------------------------------------------------

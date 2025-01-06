@@ -11,6 +11,7 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 	m.OnLogin                  = 'Login'
 	m.AccountSupport           = true
 
@@ -57,7 +58,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
 
@@ -69,4 +70,11 @@ function GetPageNumber()
 	Template.GetPageNumber()
 
 	return no_error
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	Template.BeforeDownloadImage()
+
+	return true
 end
