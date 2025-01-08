@@ -244,6 +244,7 @@
 | Magus Manga | [![https://magustoon.com](https://img.shields.io/website?url=https://magustoon.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://magustoon.com)](https://magustoon.com) | - | - | - |
 | MaidMangaID | [![https://www.maid.my.id](https://img.shields.io/website?url=https://www.maid.my.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.maid.my.id)](https://www.maid.my.id) | - | - | - |
 | Manamoa | [![https://manamoa.net](https://img.shields.io/website?url=https://manamoa.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manamoa.net)](https://manamoa.net) | - | - | - |
+| Manga Pro | [![https://promanga.pro](https://img.shields.io/website?url=https://promanga.pro%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://promanga.pro)](https://promanga.pro) | OK | 08.01.2025 | - |
 | Manga-1001 | [![https://doki1001.com](https://img.shields.io/website?url=https://doki1001.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://doki1001.com)](https://doki1001.com) | - | - | - |
 | Manga-Tr | [![https://manga-tr.com](https://img.shields.io/website?url=https://manga-tr.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga-tr.com)](https://manga-tr.com) | - | - | - |
 | Manga1000 | [![https://manga1000.top](https://img.shields.io/website?url=https://manga1000.top%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga1000.top)](https://manga1000.top) | - | - | - |

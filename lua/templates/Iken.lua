@@ -8,6 +8,7 @@ local _M = {}
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
+ChapterName = 'Chapter '
 DirectoryPagination = '/api/query?perPage=9999'
 
 ----------------------------------------------------------------------------------------------------
@@ -66,7 +67,7 @@ function _M.GetInfo()
 	MANGAINFO.CoverLink = x.XPathString('featuredImage', json)
 	MANGAINFO.Authors   = x.XPathString('author', json)
 	MANGAINFO.Artists   = x.XPathString('artist', json)
-	MANGAINFO.Genres    = x.XPathStringAll('json(*).genres().name')
+	MANGAINFO.Genres    = x.XPathStringAll('json(*).post.genres().name')
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('seriesStatus', json), 'COMING_SOON|HIATUS|MASS_RELEASED|ONGOING', 'CANCELLED|COMPLETED|DROPPED')
 	MANGAINFO.Summary   = x.XPathString('postContent', json)
 
@@ -80,9 +81,9 @@ function _M.GetInfo()
 			MANGAINFO.ChapterLinks.Add('series/' .. x.XPathString('slug', json) .. '/' .. v.GetProperty('slug').ToString())
 			MANGAINFO.ChapterNames.Add('Chapter ' .. v.GetProperty('number').ToString() .. title)
 		else
-			if v.GetProperty('isLocked').ToString() ~= 'true' then
+			if v.GetProperty('isAccessible').ToString() ~= 'false' then
 				MANGAINFO.ChapterLinks.Add('series/' .. x.XPathString('slug', json) .. '/' .. v.GetProperty('slug').ToString())
-				MANGAINFO.ChapterNames.Add('Chapter ' .. v.GetProperty('number').ToString() .. title)
+				MANGAINFO.ChapterNames.Add(ChapterName .. v.GetProperty('number').ToString() .. title)
 			end
 		end
 	end
