@@ -5,8 +5,8 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'ds42a85566244b7e836679491ce679e8'
-	m.Name                     = 'IkigaiMangas'
-	m.RootURL                  = 'https://lectorikigai.bakeni.net'
+	m.Name                     = 'Ikigai Mangas'
+	m.RootURL                  = 'https://visorikigai.tvsin.com'
 	m.Category                 = 'Spanish'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
@@ -20,8 +20,7 @@ end
 ----------------------------------------------------------------------------------------------------
 
 API_URL = 'https://panel.ikigaimangas.com/api/swf'
-DirectoryPagination = '/series?page='
-DirectoryParameters = '&type=comic&nsfw=true&direction=desc&column=created_at'
+DirectoryPagination = '/series?type=comic&nsfw=true&direction=desc&column=created_at&page='
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -29,7 +28,7 @@ DirectoryParameters = '&type=comic&nsfw=true&direction=desc&column=created_at'
 
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
-	local u = API_URL .. DirectoryPagination .. 1 .. DirectoryParameters
+	local u = API_URL .. DirectoryPagination .. 1
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -41,7 +40,7 @@ end
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
 	local v = nil
-	local u = API_URL .. DirectoryPagination .. (URL + 1) .. DirectoryParameters
+	local u = API_URL .. DirectoryPagination .. (URL + 1)
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -66,12 +65,12 @@ function GetInfo()
 	MANGAINFO.CoverLink = x.XPathString('json(*).series.cover')
 	MANGAINFO.Genres    = x.XPathStringAll('json(*).series.genres().name')
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('json(*).series.status.name'), 'En Curso|Hiatus', 'Abandonada|Cancelada|Completa')
-	MANGAINFO.Summary   = x.XPathString('json(*).series.summary')
+	summary = x.XPathString('json(*).series.summary')
+	if summary ~= 'null' then MANGAINFO.Summary = summary end
 
 	while true do
 		if not HTTP.GET(u .. 'chapters?page=' .. tostring(page)) then return net_problem end
 		x = CreateTXQuery(HTTP.Document)
-		pages = tonumber(x.XPathString('json(*).meta.last_page')) or 1
 		for v in x.XPath('json(*).data()').Get() do
 			chapter = x.XPathString('name', v)
 			title = x.XPathString('title', v)
@@ -80,8 +79,9 @@ function GetInfo()
 
 			MANGAINFO.ChapterLinks.Add(x.XPathString('id', v))
 			MANGAINFO.ChapterNames.Add('Capítulo ' .. chapter .. title)
-		end  
+		end
 		page = page + 1
+		pages = tonumber(x.XPathString('json(*).meta.last_page')) or 1
 		if page > pages then
 			break
 		end
