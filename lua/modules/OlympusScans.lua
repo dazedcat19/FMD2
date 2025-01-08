@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '760d177b1f6d4763a08971c0c1b5572b'
 	m.Name                     = 'Olympus Scanlation'
-	m.RootURL                  = 'https://olympuscomic.com'
+	m.RootURL                  = 'https://olympuslectura.com'
 	m.Category                 = 'Spanish-Scanlation'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
@@ -18,7 +18,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-API_URL = 'https://dashboard.olympuscomic.com/api'
+API_URL = 'https://dashboard.olympuslectura.com/api'
 DirectoryPagination = '/series?type=comic&direction=desc&page='
 
 ----------------------------------------------------------------------------------------------------
