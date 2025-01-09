@@ -234,7 +234,7 @@
 | LilyManga | [![https://lilymanga.com](https://img.shields.io/website?url=https://lilymanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lilymanga.com)](https://lilymanga.com) | - | - | - |
 | LoliVault | [![https://lolivault.net](https://img.shields.io/website?url=https://lolivault.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lolivault.net)](https://lolivault.net) | - | - | - |
 | LSComic | [![https://lscomic.com](https://img.shields.io/website?url=https://lscomic.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lscomic.com)](https://lscomic.com) | - | - | - |
-| Lua Scans | [![https://luacomic.net](https://img.shields.io/website?url=https://luacomic.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://luacomic.net)](https://luacomic.net) | - | - | - |
+| Lua Comic | [![https://luacomic.org](https://img.shields.io/website?url=https://luacomic.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://luacomic.org)](https://luacomic.org) | OK | 09.01.2025 | - |
 | LuminousScans | [![https://luminousscans.net](https://img.shields.io/website?url=https://luminousscans.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://luminousscans.net)](https://luminousscans.net) | - | - | - |
 | LunarScans | [![https://lunarscan.org](https://img.shields.io/website?url=https://lunarscan.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lunarscan.org)](https://lunarscan.org) | - | - | - |
 | Luscious | [![https://www.luscious.net](https://img.shields.io/website?url=https://www.luscious.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.luscious.net)](https://www.luscious.net) | - | - | - |
