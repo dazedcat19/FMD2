@@ -19,7 +19,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-DirectoryPagination = '/search/data?limit=32&sort=Recently+Added&order=Descending&official=Any&display_mode=Full+Display&offset='
+DirectoryPagination = '/search/data?limit=32&sort=Recently+Added&order=Descending&official=Any&display_mode=Minimal+Display&offset='
 DirectoryPageLimit = 32
 
 ----------------------------------------------------------------------------------------------------
@@ -30,7 +30,7 @@ DirectoryPageLimit = 32
 function GetDirectoryPageNumber()
 	local s, x = nil
 	local u = MODULE.RootURL .. DirectoryPagination .. 0
-	PAGENUMBER = 8500
+	PAGENUMBER = 8600
 
 	if not HTTP.GET(u .. PAGENUMBER) then return net_problem end
 
@@ -50,14 +50,14 @@ end
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
 	local v, x = nil
-	local u = MODULE.RootURL .. DirectoryPagination .. (DirectoryPageLimit * tonumber(URL))
+	local u = MODULE.RootURL .. DirectoryPagination .. (DirectoryPageLimit * URL)
 
 	if not HTTP.GET(u) then return net_problem end
 
 	x = CreateTXQuery(HTTP.Document)
-	for v in x.XPath('//article/section/a').Get() do
+	for v in x.XPath('//article/a').Get() do
 		LINKS.Add(v.GetAttribute('href'))
-		NAMES.Add(x.XPathString('article[2]/div[2]/div[2]/div', v))
+		NAMES.Add(x.XPathString('h2', v))
 	end
 
 	return no_error
