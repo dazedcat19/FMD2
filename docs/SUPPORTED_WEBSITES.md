@@ -326,8 +326,7 @@
 | MangaKu | [![http://mangaku.in](https://img.shields.io/website?url=http://mangaku.in%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://mangaku.in)](http://mangaku.in) | - | - | - |
 | Mangakyo | [![https://mangakyo.vip](https://img.shields.io/website?url=https://mangakyo.vip%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangakyo.vip)](https://mangakyo.vip) | - | - | - |
 | Mangalek | [![https://lekmanga.org](https://img.shields.io/website?url=https://lekmanga.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lekmanga.org)](https://lekmanga.org) | - | - | - |
-| MangaLib | [![https://mangalib.me](https://img.shields.io/website?url=https://mangalib.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangalib.me)](https://mangalib.me) | - | - | - |
-| MangaLibOrg | [![https://mangalib.org](https://img.shields.io/website?url=https://mangalib.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangalib.org)](https://mangalib.org) | - | - | - |
+| MangaLib | [![https://mangalib.me](https://img.shields.io/website?url=https://mangalib.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangalib.me)](https://mangalib.me) | OK | 14.01.2025 | - |
 | MangaLife | [![https://manga4life.com](https://img.shields.io/website?url=https://manga4life.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga4life.com)](https://manga4life.com) | OK | 12.12.2024 | - |
 | MangaLord | [![https://www.mangalord.com](https://img.shields.io/website?url=https://www.mangalord.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangalord.com)](https://www.mangalord.com) | - | - | - |
 | MangaMonarca | [![https://mangamonarca.xyz](https://img.shields.io/website?url=https://mangamonarca.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangamonarca.xyz)](https://mangamonarca.xyz) | - | - | - |
