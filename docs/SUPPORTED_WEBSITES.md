@@ -192,7 +192,7 @@
 | KKJ | [![https://kkjscans.co](https://img.shields.io/website?url=https://kkjscans.co%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kkjscans.co)](https://kkjscans.co) | - | - | - |
 | KlanKomik | [![https://klankomik.com](https://img.shields.io/website?url=https://klankomik.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://klankomik.com)](https://klankomik.com) | - | - | - |
 | KlikManga | [![https://klikmanga.id](https://img.shields.io/website?url=https://klikmanga.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://klikmanga.id)](https://klikmanga.id) | - | - | - |
-| KLManga | [![https://klmanga.com](https://img.shields.io/website?url=https://klmanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://klmanga.com)](https://klmanga.com) | - | - | - |
+| KLManga | [![https://klz9.com](https://img.shields.io/website?url=https://klz9.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://klz9.com)](https://klz9.com) | OK | 16.01.2025 | - |
 | KoMBatch | [![https://kombatch.com](https://img.shields.io/website?url=https://kombatch.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kombatch.com)](https://kombatch.com) | - | - | - |
 | KomikAV | [![https://komikav.com](https://img.shields.io/website?url=https://komikav.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikav.com)](https://komikav.com) | - | - | - |
 | KomikCast | [![https://komikcast.bz](https://img.shields.io/website?url=https://komikcast.bz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikcast.bz)](https://komikcast.bz) | - | - | - |
