@@ -10,7 +10,7 @@ local _M = {}
 
 API_URL = 'https://api.imglib.info/api'
 DirectoryPagination = '/manga?site_id[]=%s&sort_by=created_at&page='
-SITE_ID = '1'
+SITE_ID = ''
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
