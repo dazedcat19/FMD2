@@ -7,7 +7,6 @@
 | 365Manga | [![https://365manga.com](https://img.shields.io/website?url=https://365manga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://365manga.com)](https://365manga.com) | - | - | - |
 | 3asq | [![https://3asq.org](https://img.shields.io/website?url=https://3asq.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://3asq.org)](https://3asq.org) | - | - | - |
 | 4U Scans | [![https://4uscans.com](https://img.shields.io/website?url=https://4uscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://4uscans.com)](https://4uscans.com) | OK | 09.01.2025 | Sometimes cloudflare workaround is required and paid chapters are hidden by default |
-| 5sLive | [![https://5slive.net](https://img.shields.io/website?url=https://5slive.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://5slive.net)](https://5slive.net) | - | - | - |
 | 8Muses | [![https://comics.8muses.com](https://img.shields.io/website?url=https://comics.8muses.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comics.8muses.com)](https://comics.8muses.com) | - | - | - |
 | 9ekor | [![https://9ekor.com](https://img.shields.io/website?url=https://9ekor.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://9ekor.com)](https://9ekor.com) | - | - | - |
 | 9hentai | [![https://9hentai.ru](https://img.shields.io/website?url=https://9hentai.ru%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://9hentai.ru)](https://9hentai.ru) | - | - | - |
@@ -192,7 +191,7 @@
 | KKJ | [![https://kkjscans.co](https://img.shields.io/website?url=https://kkjscans.co%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kkjscans.co)](https://kkjscans.co) | - | - | - |
 | KlanKomik | [![https://klankomik.com](https://img.shields.io/website?url=https://klankomik.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://klankomik.com)](https://klankomik.com) | - | - | - |
 | KlikManga | [![https://klikmanga.id](https://img.shields.io/website?url=https://klikmanga.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://klikmanga.id)](https://klikmanga.id) | - | - | - |
-| KLManga | [![https://klz9.com](https://img.shields.io/website?url=https://klz9.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://klz9.com)](https://klz9.com) | OK | 16.01.2025 | - |
+| KLManga | [![https://klz9.com](https://img.shields.io/website?url=https://klz9.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://klz9.com)](https://klz9.com) | OK | 18.01.2025 | - |
 | KoMBatch | [![https://kombatch.com](https://img.shields.io/website?url=https://kombatch.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kombatch.com)](https://kombatch.com) | - | - | - |
 | KomikAV | [![https://komikav.com](https://img.shields.io/website?url=https://komikav.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikav.com)](https://komikav.com) | - | - | - |
 | KomikCast | [![https://komikcast.bz](https://img.shields.io/website?url=https://komikcast.bz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikcast.bz)](https://komikcast.bz) | - | - | - |
@@ -488,7 +487,7 @@
 | NiAddFR | [![https://fr.niadd.com](https://img.shields.io/website?url=https://fr.niadd.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://fr.niadd.com)](https://fr.niadd.com) | - | - | - |
 | NiAddIT | [![https://it.niadd.com](https://img.shields.io/website?url=https://it.niadd.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://it.niadd.com)](https://it.niadd.com) | - | - | - |
 | NiAddRU | [![https://ru.niadd.com](https://img.shields.io/website?url=https://ru.niadd.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://ru.niadd.com)](https://ru.niadd.com) | - | - | - |
-| NicoManga | [![https://nicomanga.com](https://img.shields.io/website?url=https://nicomanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://nicomanga.com)](https://nicomanga.com) | - | - | - |
+| NicoManga | [![https://nicomanga.com](https://img.shields.io/website?url=https://nicomanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://nicomanga.com)](https://nicomanga.com) | OK | 18.01.2025 | - |
 | NightComic | [![https://nightcomic.com](https://img.shields.io/website?url=https://nightcomic.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://nightcomic.com)](https://nightcomic.com) | - | - | - |
 | Nightow | [![http://nightow.net](https://img.shields.io/website?url=http://nightow.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://nightow.net)](http://nightow.net) | - | - | - |
 | NightScans | [![https://nightscans.net](https://img.shields.io/website?url=https://nightscans.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://nightscans.net)](https://nightscans.net) | - | - | - |
@@ -687,7 +686,8 @@
 | WebtoonXYZ | [![https://www.webtoon.xyz](https://img.shields.io/website?url=https://www.webtoon.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.webtoon.xyz)](https://www.webtoon.xyz) | - | - | - |
 | WeebCentral | [![https://weebcentral.com](https://img.shields.io/website?url=https://weebcentral.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://weebcentral.com)](https://weebcentral.com) | OK | 12.12.2024 | - |
 | WeiboManhua | [![http://manhua.weibo.com](https://img.shields.io/website?url=http://manhua.weibo.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://manhua.weibo.com)](http://manhua.weibo.com) | - | - | - |
-| WeLoveMangaOne | [![https://welovemanga.one](https://img.shields.io/website?url=https://welovemanga.one%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://welovemanga.one)](https://welovemanga.one) | - | - | - |
+| WeLoMa | [![https://weloma.art](https://img.shields.io/website?url=https://weloma.art%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://weloma.art)](https://weloma.art) | OK | 18.01.2025 | - |
+| WeloveManga | [![https://welovemanga.one](https://img.shields.io/website?url=https://welovemanga.one%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://welovemanga.one)](https://welovemanga.one) | OK | 18.01.2025 | - |
 | WestManga | [![https://westmanga.fun](https://img.shields.io/website?url=https://westmanga.fun%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://westmanga.fun)](https://westmanga.fun) | - | - | - |
 | WhimSubs | [![https://whimsubs.xyz](https://img.shields.io/website?url=https://whimsubs.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://whimsubs.xyz)](https://whimsubs.xyz) | - | - | - |
 | WhiteCloudPavilion | [![https://www.whitecloudpavilion.com](https://img.shields.io/website?url=https://www.whitecloudpavilion.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.whitecloudpavilion.com)](https://www.whitecloudpavilion.com) | - | - | - |

@@ -12,13 +12,13 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
+local Template = require 'templates.FMReader'
 DirectoryPagination = '/manga-list.html?s=name&st=ASC&p='
 
 ----------------------------------------------------------------------------------------------------
@@ -27,9 +27,7 @@ DirectoryPagination = '/manga-list.html?s=name&st=ASC&p='
 
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
-	if not HTTP.GET(MODULE.RootURL .. DirectoryPagination .. 1) then return net_problem end
-
-	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//ul[contains(@class, "pagination")]/li[last()-1]/a')) or 1
+	Template.GetDirectoryPageNumber()
 
 	return no_error
 end
@@ -51,32 +49,24 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
-	local slug, v, x = nil
-	local u = MaybeFillHost(MODULE.RootURL, URL)
+	Template.GetInfo()
+
+	local v, x = nil
+
+	local u = MODULE.RootURL .. '/app/manga/controllers/cont.Listchapterapi.php?slug=' .. URL:match('-(.-).html')
+	HTTP.Reset()
+	HTTP.Headers.Values['Referer'] = MANGAINFO.URL
 
 	if not HTTP.GET(u) then return net_problem end
 
 	x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//ul/h3')
-	MANGAINFO.CoverLink = x.XPathString('//img[@class="thumbnail img-fluid"]/@src')
-	MANGAINFO.Authors   = x.XPathStringAll('//b[contains(., "Author")]/following-sibling::a')
-	MANGAINFO.Genres    = x.XPathStringAll('//b[contains(., "Genre")]/following-sibling::a')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//b[contains(., "Status")]/following-sibling::a'), 'On going', 'Completed')
-	MANGAINFO.Summary   = x.XPathString('//div[@class="summary-content"]')
-
-	slug = x.XPathString('//div/@slug')
-	x.ParseHTML(x.XPathString('//script[contains(., "var chapters")]/substring-before(substring-after(., "chapters = "), "];")') .. ']')
-	for v in x.XPath('json(*)()').Get() do
-		MANGAINFO.ChapterLinks.Add('read-' .. slug .. '-chapter-' .. v.GetProperty('chapter').ToString())
-		MANGAINFO.ChapterNames.Add(v.GetProperty('name').ToString())
+	for v in x.XPath('//a').Get() do
+		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'):gsub('.html', ''))
+		MANGAINFO.ChapterNames.Add(x.XPathString('li/div[1]/span[1]', v))
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
-
-	HTTP.Reset()
-	HTTP.Headers.Values['Referer'] = MANGAINFO.URL
-
 	return no_error
 end
 
@@ -87,19 +77,15 @@ function GetPageNumber()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	id = CreateTXQuery(HTTP.Document).XPathString('//*[@id="chapter"]/@value')
+	id = CreateTXQuery(HTTP.Document).XPathString('(//input[@id="chapter"])[1]/@value')
+
 	HTTP.Reset()
 	HTTP.Headers.Values['Referer'] = MODULE.RootURL
-	if HTTP.GET(MODULE.RootURL .. '/app/manga/controllers/cont.imgsList.php?cid=' .. id) then
-		CreateTXQuery(HTTP.Document).XPathStringAll('//img/@data-src', TASK.PageLinks)
-	end
+	u = MODULE.RootURL .. '/app/manga/controllers/cont.imgsList.php?cid=' .. id
+
+	if not HTTP.GET(u) then return net_problem end
+
+	CreateTXQuery(HTTP.Document).XPathStringAll('//img/@data-src', TASK.PageLinks)
 
 	return no_error
-end
-
--- Prepare the URL, http header and/or http cookies before downloading an image.
-function BeforeDownloadImage()
-	HTTP.Headers.Values['Referer'] = MODULE.RootURL
-
-	return true
 end

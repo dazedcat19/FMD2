@@ -8,7 +8,7 @@ local _M = {}
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-DirectoryPagination = '/manga-list.html?sort=name&sort_type=ASC&page='
+DirectoryPagination = '/manga-list.html?page='
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -44,15 +44,17 @@ function _M.GetInfo()
 	if not HTTP.GET(u) then return net_problem end
 
 	x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//ul[@class="manga-info"]/h1')
-	MANGAINFO.CoverLink = x.XPathString('//img[@itemprop="image"]/@src')
-	MANGAINFO.Authors   = x.XPathStringAll('//span[@itemprop="author"]/a')
-	MANGAINFO.Genres    = x.XPathStringAll('//span[@itemprop="genre"]/a')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//ul[@class="manga-info"]/li[contains(., "Status")]//a'), 'On going')
-	MANGAINFO.Summary   = x.XPathString('string-join(//div[@class="summary-content"]/p/text(), "\r\n")')
+	MANGAINFO.Title     = x.XPathString('(//span[@itemprop="name"])[3]')
+	if MANGAINFO.Title == '' then
+		MANGAINFO.Title = x.XPathString('//nav[@aria-label="breadcrumb"]//li[3]')
+	end
+	MANGAINFO.CoverLink = x.XPathString('//img[contains(@class, "thumbnail")]/@src')
+	MANGAINFO.Authors   = x.XPathStringAll('//ul[contains(@class, "manga-info")]/li[contains(., "Author")]//a|//span[@itemprop="author"]/a')
+	MANGAINFO.Genres    = x.XPathStringAll('//ul[contains(@class, "manga-info")]/li[contains(., "Genre")]//a|//span[@itemprop="genre"]/a')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//ul[contains(@class, "manga-info")]/li[contains(., "Status")]//a'), 'Incomplete|On going')
+	MANGAINFO.Summary   = x.XPathString('string-join(//div[./h3="Description"]/p/text()|//div[@class="summary-content"]/p/text(), "\r\n")')
 
 	x.XPathHREFTitleAll('//ul[contains(@class, "list-chapters")]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
-
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
@@ -60,12 +62,16 @@ end
 
 -- Get the page count for the current chapter.
 function _M.GetPageNumber()
+	local x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('//div[@class="chapter-content"]/img/@src', TASK.PageLinks)
-
+	x = CreateTXQuery(HTTP.Document)
+	x.XPathStringAll('//div[@class="chapter-content"]/img/@data-src', TASK.PageLinks)
+	if TASK.PageLinks.Count == 0 then
+		x.XPathStringAll('//div[@class="chapter-content"]/img/@src', TASK.PageLinks)
+	end
 	return no_error
 end
 

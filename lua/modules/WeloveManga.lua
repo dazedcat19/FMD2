@@ -4,15 +4,14 @@
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                       = '010777f53bf2414fad039b9567c8a9ce'
-	m.Name                     = 'KLManga'
-	m.RootURL                  = 'https://klz9.com'
+	m.ID                       = '437660e89f824183901cf05c24e35eae'
+	m.Name                     = 'WeloveManga'
+	m.RootURL                  = 'https://welovemanga.one'
 	m.Category                 = 'Raw'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -20,20 +19,6 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.FMReader'
-
-----------------------------------------------------------------------------------------------------
--- Auxiliary Functions
-----------------------------------------------------------------------------------------------------
-
-function RandomString(length)
-	local charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-	local result = ''
-	for i = 1, length do
-		local rand = math.random(1, #charset)
-		result = result .. charset:sub(rand, rand)
-	end
-	return result
-end
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -48,16 +33,7 @@ end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local v, x = nil
-	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1)
-
-	if not HTTP.GET(u) then return net_problem end
-
-	x = CreateTXQuery(HTTP.Document)
-	for v in x.XPath('//div[contains(@class, "series-title")]/a').Get() do
-		LINKS.Add(v.GetAttribute('href'))
-		NAMES.Add(x.XPathString('h3', v))
-	end
+	Template.GetNameAndLink()
 
 	return no_error
 end
@@ -66,16 +42,19 @@ end
 function GetInfo()
 	Template.GetInfo()
 
-	local v = nil
-	local u = MODULE.RootURL .. '/' .. RandomString(25) .. '.lstc?slug=' .. URL:match('-(.-).html')
+	local v, x = nil
+
+	local mid = HTTP.Document.ToString():match('var mIds = "(.-)";')
+	local u = MODULE.RootURL .. '/app/manga/controllers/cont.Listchapter.php?mid=' .. mid
 	HTTP.Reset()
-	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+	HTTP.Headers.Values['Referer'] = MANGAINFO.URL
 
 	if not HTTP.GET(u) then return net_problem end
 
-	for v in CreateTXQuery(HTTP.Document).XPath('//a').Get() do
+	x = CreateTXQuery(HTTP.Document)
+	for v in x.XPath('//a').Get() do
 		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'):gsub('.html', ''))
-		MANGAINFO.ChapterNames.Add(v.ToString())
+		MANGAINFO.ChapterNames.Add(x.XPathString('li/div[1]', v))
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
@@ -93,18 +72,11 @@ function GetPageNumber()
 
 	HTTP.Reset()
 	HTTP.Headers.Values['Referer'] = MODULE.RootURL
-	u = MODULE.RootURL .. '/' .. RandomString(30) .. '.iog?cid=' .. id
+	u = MODULE.RootURL .. '/app/manga/controllers/cont.listImg.php?cid=' .. id
 
 	if not HTTP.GET(u) then return net_problem end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('//img/@src', TASK.PageLinks)
+	CreateTXQuery(HTTP.Document).XPathStringAll('//img/@data-srcset', TASK.PageLinks)
 
 	return no_error
-end
-
--- Prepare the URL, http header and/or http cookies before downloading an image.
-function BeforeDownloadImage()
-	HTTP.Headers.Values['Referer'] = MODULE.RootURL
-
-	return true
 end
