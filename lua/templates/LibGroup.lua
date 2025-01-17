@@ -40,13 +40,13 @@ end
 -- Get info and chapter list for the current manga.
 function _M.GetInfo()
 	local bid, branches, bteam, chapter, chapters, j, name, optgroup, scanlators, tags, team, teams, v, volume, w, x = nil
-	local s = '?fields[]=summary&fields[]=tags&fields[]=authors&fields[]=artists&fields[]=genres&fields[]=status_id'
+	local s = '?fields[]=tags&fields[]=authors&fields[]=artists&fields[]=genres&fields[]=status_id&fields[]=summary'
 	local slug = '/' .. URL:match('/manga/(.-)$'):gsub('(.*)?.*', '%1')
 	local u = API_URL .. '/manga' .. slug
 
 	if not HTTP.GET(u .. s) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
+	x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
 	MANGAINFO.Title     = x.XPathString('json(*).data.rus_name')
 	if MANGAINFO.Title == '' then MANGAINFO.Title = x.XPathString('json(*).data.name') end
 	MANGAINFO.CoverLink = x.XPathString('json(*).data.cover.thumbnail')
