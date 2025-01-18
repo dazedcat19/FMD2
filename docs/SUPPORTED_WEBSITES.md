@@ -653,7 +653,7 @@
 | ToonGod | [![https://www.toongod.org](https://img.shields.io/website?url=https://www.toongod.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.toongod.org)](https://www.toongod.org) | - | - | - |
 | Toonily | [![https://toonily.com](https://img.shields.io/website?url=https://toonily.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://toonily.com)](https://toonily.com) | - | - | - |
 | ToonilyNet | [![https://toonily.net](https://img.shields.io/website?url=https://toonily.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://toonily.net)](https://toonily.net) | - | - | - |
-| Toonkor | [![https://tkor.watch](https://img.shields.io/website?url=https://tkor.watch%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://tkor.watch)](https://tkor.watch) | - | - | - |
+| Toonkor | [![https://toonkor473.com](https://img.shields.io/website?url=https://toonkor473.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://toonkor473.com)](https://toonkor473.com) | OK | 18.01.2025 | - |
 | TopComicPorno | [![https://topcomicporno.com](https://img.shields.io/website?url=https://topcomicporno.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://topcomicporno.com)](https://topcomicporno.com) | - | - | - |
 | TopManhua | [![https://manhuatop.org](https://img.shields.io/website?url=https://manhuatop.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuatop.org)](https://manhuatop.org) | - | - | - |
 | TopTruyen | [![https://www.toptruyenqq.pro](https://img.shields.io/website?url=https://www.toptruyenqq.pro%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.toptruyenqq.pro)](https://www.toptruyenqq.pro) | - | - | - |
