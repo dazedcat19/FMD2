@@ -5,8 +5,8 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '007f0f56c95b487781e747898c316a4c'
-	m.Name                     = 'InariPikav'
-	m.RootURL                  = 'https://inaripikav.org'
+	m.Name                     = 'Inari Manga'
+	m.RootURL                  = 'https://inarimanga.visahelper.online'
 	m.Category                 = 'Spanish-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -33,7 +33,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
 
