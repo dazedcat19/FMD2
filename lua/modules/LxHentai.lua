@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'a25c1b1030ee41e49018e1811bdf7085'
 	m.Name                     = 'LxHentai'
-	m.RootURL                  = 'https://lxmanga.life'
+	m.RootURL                  = 'https://lxmanga.info'
 	m.Category                 = 'H-Sites'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
@@ -20,7 +20,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-DirectoryPagination = '/danh-sach?sort=-created_at&filter%5Bstatus%5D=2,1&page='
+DirectoryPagination = '/danh-sach?sort=-created_at&filter%5Bstatus%5D=2%2C1&page='
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -48,7 +48,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	local x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
@@ -57,17 +57,20 @@ function GetInfo()
 
 	x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Title     = x.XPathString('(//span[contains(@class, "text-lg ml-1")])[1]')
-	MANGAINFO.CoverLink = x.XPathString('//div[@class="rounded-lg cover"]/@style'):match("background%-image:%surl%('(.-)'%)")
-	MANGAINFO.Authors   = x.XPathStringAll('//div[@class="grow"]/div[contains(., "Tác giả")]//a')
-	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="grow"]/div[contains(., "Thể loại")]//a')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@class="grow"]/div[contains(., "Tình trạng")]//a'), 'Đang tiến hành', 'Đã hoàn thành')
-	MANGAINFO.Summary   = x.XPathString('//div[contains(., "Tóm tắt")]/p[3]')
+	MANGAINFO.CoverLink = x.XPathString('//div[@class="cover-frame"]/div/@style'):match("background%-image:%surl%('(.-)'%)")
+	MANGAINFO.Authors   = x.XPathStringAll('(//div[@class="grow"])[1]/div[contains(., "Tác giả")]//a')
+	MANGAINFO.Genres    = x.XPathStringAll('(//div[@class="grow"])[1]/div[contains(., "Thể loại")]//a')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('(//div[@class="grow"])[1]/div[contains(., "Tình trạng")]//a'), 'Đang tiến hành', 'Đã hoàn thành')
+	MANGAINFO.Summary   = x.XPathString('string-join(//div[contains(., "Tóm tắt")]/p[position()>1], "\r\n")')
 
 	for v in x.XPath('//ul[@class="overflow-y-auto overflow-x-hidden"]/a').Get() do
 		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
 		MANGAINFO.ChapterNames.Add(x.XPathString('li/div[1]/span', v))
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
+
+	HTTP.Reset()
+	HTTP.Headers.Values['Referer'] = MANGAINFO.URL
 
 	return no_error
 end
@@ -78,7 +81,7 @@ function GetPageNumber()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('//img[@class="lazy max-w-full my-0 mx-auto"]/@src', TASK.PageLinks)
+	CreateTXQuery(HTTP.Document).XPathStringAll('//div[@id="image-container"]/@data-src', TASK.PageLinks)
 
 	return no_error
 end
