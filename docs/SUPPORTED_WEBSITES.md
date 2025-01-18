@@ -239,7 +239,7 @@
 | LuminousScans | [![https://luminousscans.net](https://img.shields.io/website?url=https://luminousscans.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://luminousscans.net)](https://luminousscans.net) | - | - | - |
 | LunarScans | [![https://lunarscan.org](https://img.shields.io/website?url=https://lunarscan.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lunarscan.org)](https://lunarscan.org) | - | - | - |
 | Luscious | [![https://www.luscious.net](https://img.shields.io/website?url=https://www.luscious.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.luscious.net)](https://www.luscious.net) | - | - | - |
-| LxHentai | [![https://lxmanga.life](https://img.shields.io/website?url=https://lxmanga.life%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lxmanga.life)](https://lxmanga.life) | - | - | - |
+| LxHentai | [![https://lxmanga.info](https://img.shields.io/website?url=https://lxmanga.info%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lxmanga.info)](https://lxmanga.info) | OK | 18.01.2025 | - |
 | LynxScans | [![https://lynxscans.com](https://img.shields.io/website?url=https://lynxscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lynxscans.com)](https://lynxscans.com) | - | - | - |
 | MadaraDex | [![https://madaradex.org](https://img.shields.io/website?url=https://madaradex.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://madaradex.org)](https://madaradex.org) | - | - | - |
 | Madokami | [![https://manga.madokami.al](https://img.shields.io/website?url=https://manga.madokami.al%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga.madokami.al)](https://manga.madokami.al) | - | - | - |
