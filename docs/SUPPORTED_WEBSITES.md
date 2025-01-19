@@ -552,6 +552,7 @@
 | RavensScans | [![http://ravens-scans.com](https://img.shields.io/website?url=http://ravens-scans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://ravens-scans.com)](http://ravens-scans.com) | - | - | - |
 | RawDevart | [![https://rawdevart.com](https://img.shields.io/website?url=https://rawdevart.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://rawdevart.com)](https://rawdevart.com) | - | - | - |
 | RawDex | [![https://rawdex.net](https://img.shields.io/website?url=https://rawdex.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://rawdex.net)](https://rawdex.net) | - | - | - |
+| RawINU | [![https://rawinu.com](https://img.shields.io/website?url=https://rawinu.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://rawinu.com)](https://rawinu.com) | OK | 19.01.2025 | - |
 | Rawkuma | [![https://rawkuma.com](https://img.shields.io/website?url=https://rawkuma.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://rawkuma.com)](https://rawkuma.com) | - | - | - |
 | RawMangaUpdate | [![https://www.rawmangaupdate.com](https://img.shields.io/website?url=https://www.rawmangaupdate.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.rawmangaupdate.com)](https://www.rawmangaupdate.com) | - | - | - |
 | ReadComicBooksOnline | [![https://readcomicbooksonline.org](https://img.shields.io/website?url=https://readcomicbooksonline.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://readcomicbooksonline.org)](https://readcomicbooksonline.org) | - | - | - |
