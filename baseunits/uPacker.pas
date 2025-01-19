@@ -105,7 +105,8 @@ function TPacker.Do7Zip: Boolean;
 var
   p: TProcess;
   exit_status, i: Integer;
-  s, sout, serr, tmpPath: string;
+  s, sout, serr, fFileName: string;
+  f: TextFile;
 begin
   Result := False;
   p := TProcess.Create(nil);
@@ -113,23 +114,27 @@ begin
     if FileExists(FSavedFileName) then
       if not DeleteFile(FSavedFileName) then
       begin
-        Logger.SendError(Self.ClassName+'.Do7Zip Error: failed to delete existing file '+FSavedFileName);
+        Logger.SendError(Self.ClassName + '.Do7Zip Error: failed to delete existing file '+FSavedFileName);
         Exit;
       end;
-    CreateDir('.\temp');
-    Randomize;
-    tmpPath := '.\temp\' + IntToHex(Random(Int64($7fffffffff)), 10) + '\';
-    CreateDir(tmpPath);
-    for i := 0 to FFileList.Count - 1 do
-    begin
-      if MainForm.cbOptionEnableLongNamePaths.Checked then
+
+    fFileName := 'FQDNlist.txt';
+    with TStringList.Create do
+    try
+      for i := 0 to FFileList.Count - 1 do
       begin
-        if Pos('\\?\', FFileList[i]) = 0 then
-          FFileList[i] := '\\?\' + FFileList[i];
+        if MainForm.cbOptionEnableLongNamePaths.Checked then
+        begin
+          if Pos('\\?\', FFileList[i]) = 0 then
+            FFileList[i] := '\\?\' + FFileList[i];
+        end;
+        Add(FFileList[i]);
       end;
-      s := StringReplace(FFileList[i], Path, tmpPath, [rfReplaceAll]);
-      RenameFile(FFileList[i], s);
+      SaveToFile(fFileName);
+    finally
+      Free;
     end;
+
     p.Executable := CURRENT_ZIP_EXE;
     with p.Parameters do begin
       Add('a');
@@ -144,17 +149,14 @@ begin
       Add('-sse');
       Add('-sdel');
       Add(FSavedFileName);
-      Add(tmpPath + '.');
+      Add('@' + fFileName);
     end;
     sout:='';
     serr:='';
     p.ShowWindow:=swoHIDE;
     p.RunCommandLoop(sout,serr,exit_status);
     Result := exit_status = 0;
-    if IsDirectoryEmpty(tmpPath) then
-      RemoveDir(tmpPath);
-    if IsDirectoryEmpty('.\temp') then
-      RemoveDir('.\temp');
+    DeleteFile(fFileName);
     if not Result then
     begin
       serr:='';
