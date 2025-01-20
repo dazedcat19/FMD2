@@ -8,6 +8,7 @@ function Init()
 	m.Name                     = 'ToonGod'
 	m.RootURL                  = 'https://www.toongod.org'
 	m.Category                 = 'Webcomics'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
@@ -19,23 +20,35 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.Madara'
--- XPathTokenAuthors = 'Author(s)'
--- XPathTokenArtists = 'Artist(s)'
--- XPathTokenGenres  = 'Genre(s)'
--- XPathTokenStatus  = 'Status'
+DirectoryPagination = '/webtoons/page/'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
--- Get links and names from the manga list of the current website.
-function GetNameAndLink()
-	Template.GetNameAndLink()
+-- Get the page count of the manga list of the current website.
+function GetDirectoryPageNumber()
+	local u = MODULE.RootURL .. DirectoryPagination .. 1
+
+	if not HTTP.GET(u) then return net_problem end
+
+	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//div[@class="wp-pagenavi"]/a[last()]/@href'):match('/(%d+)/$')) or 1
 
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get links and names from the manga list of the current website.
+function GetNameAndLink()
+	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1)
+
+	if not HTTP.GET(u) then return net_problem end
+
+	CreateTXQuery(HTTP.Document).XPathHREFAll('//div[contains(@class, "post-title")]//a', LINKS, NAMES)
+
+	return no_error
+end
+
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
 

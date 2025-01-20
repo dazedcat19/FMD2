@@ -652,7 +652,7 @@
 | TimelessLeaf | [![https://timelessleaf.com](https://img.shields.io/website?url=https://timelessleaf.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://timelessleaf.com)](https://timelessleaf.com) | - | - | - |
 | TMOHentai | [![https://tmohentai.com](https://img.shields.io/website?url=https://tmohentai.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://tmohentai.com)](https://tmohentai.com) | - | - | - |
 | TonarinoYoungJump | [![https://tonarinoyj.jp](https://img.shields.io/website?url=https://tonarinoyj.jp%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://tonarinoyj.jp)](https://tonarinoyj.jp) | - | - | - |
-| ToonGod | [![https://www.toongod.org](https://img.shields.io/website?url=https://www.toongod.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.toongod.org)](https://www.toongod.org) | - | - | - |
+| ToonGod | [![https://www.toongod.org](https://img.shields.io/website?url=https://www.toongod.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.toongod.org)](https://www.toongod.org) | OK | 20.01.2025 | Sometimes cloudflare workaround is required |
 | Toonily | [![https://toonily.com](https://img.shields.io/website?url=https://toonily.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://toonily.com)](https://toonily.com) | - | - | - |
 | ToonilyNet | [![https://toonily.net](https://img.shields.io/website?url=https://toonily.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://toonily.net)](https://toonily.net) | - | - | - |
 | Toonkor | [![https://toonkor473.com](https://img.shields.io/website?url=https://toonkor473.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://toonkor473.com)](https://toonkor473.com) | OK | 18.01.2025 | - |
