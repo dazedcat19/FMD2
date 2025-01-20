@@ -17,7 +17,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.Madara'
+local Template = require 'templates.MangaThemesia'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -30,7 +30,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
 
@@ -40,6 +40,8 @@ end
 -- Get the page count for the current chapter.
 function GetPageNumber()
 	Template.GetPageNumber()
+
+	CreateTXQuery(HTTP.Document).XPathStringAll('//div[@id="readerarea"]//img/@src', TASK.PageLinks)
 
 	return no_error
 end
