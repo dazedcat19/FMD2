@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'ds42a85566244b7e836679491ce679e8'
 	m.Name                     = 'Ikigai Mangas'
-	m.RootURL                  = 'https://visorikigai.tvsin.com'
+	m.RootURL                  = 'https://visorikigai.ajaco.net'
 	m.Category                 = 'Spanish'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
