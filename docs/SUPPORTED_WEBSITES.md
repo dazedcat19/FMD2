@@ -249,7 +249,7 @@
 | Manga Pro | [![https://promanga.pro](https://img.shields.io/website?url=https://promanga.pro%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://promanga.pro)](https://promanga.pro) | OK | 08.01.2025 | - |
 | Manga-1001 | [![https://doki1001.com](https://img.shields.io/website?url=https://doki1001.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://doki1001.com)](https://doki1001.com) | - | - | - |
 | Manga-Tr | [![https://manga-tr.com](https://img.shields.io/website?url=https://manga-tr.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga-tr.com)](https://manga-tr.com) | - | - | - |
-| Manga1000 | [![https://manga1000.top](https://img.shields.io/website?url=https://manga1000.top%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga1000.top)](https://manga1000.top) | - | - | - |
+| Manga1000 | [![https://manga1000.top](https://img.shields.io/website?url=https://manga1000.top%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga1000.top)](https://manga1000.top) | OK | 20.01.2025 | - |
 | Manga1001 | [![https://manga1001.in](https://img.shields.io/website?url=https://manga1001.in%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga1001.in)](https://manga1001.in) | - | - | - |
 | Manga18Club | [![https://manga18.club](https://img.shields.io/website?url=https://manga18.club%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga18.club)](https://manga18.club) | - | - | - |
 | Manga18FX | [![https://manga18fx.com](https://img.shields.io/website?url=https://manga18fx.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga18fx.com)](https://manga18fx.com) | - | - | - |

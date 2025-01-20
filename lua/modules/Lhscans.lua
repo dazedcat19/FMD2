@@ -18,7 +18,6 @@ function Init()
 	local m = AddWebsiteModule('9054606f128e4914ae646032215915e5', 'Ney5', 'https://ney5.xyz')
 	m.AccountSupport = true
 	m.OnLogin        = 'WeLoveMangaLogin'
-	AddWebsiteModule('a42db88f4b564e12acbba33a944d180e', 'Manga1000', 'https://manga1000.top')
 
 	cat = 'English'
 	AddWebsiteModule('80427d9a7b354f04a8f432b345f0f640', 'MangaWeek', 'https://mangaweek.com')
