@@ -212,7 +212,7 @@
 | Komiku | [![https://komiku.id](https://img.shields.io/website?url=https://komiku.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komiku.id)](https://komiku.id) | - | - | - |
 | KooManga | [![https://ww7.koomanga.com](https://img.shields.io/website?url=https://ww7.koomanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://ww7.koomanga.com)](https://ww7.koomanga.com) | - | - | - |
 | Kraw | [![https://kraw.org](https://img.shields.io/website?url=https://kraw.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kraw.org)](https://kraw.org) | - | - | - |
-| KSGroupScans | [![https://ksgroupscans.com](https://img.shields.io/website?url=https://ksgroupscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://ksgroupscans.com)](https://ksgroupscans.com) | - | - | - |
+| KS Scans | [![https://ksgroupscans.com](https://img.shields.io/website?url=https://ksgroupscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://ksgroupscans.com)](https://ksgroupscans.com) | OK | 20.01.2025 | - |
 | KuManga | [![https://www.kumanga.com](https://img.shields.io/website?url=https://www.kumanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.kumanga.com)](https://www.kumanga.com) | - | - | - |
 | KumaScans | [![https://kumascans.com](https://img.shields.io/website?url=https://kumascans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kumascans.com)](https://kumascans.com) | - | - | - |
 | Kurumizaka | [![https://kurumizaka.online](https://img.shields.io/website?url=https://kurumizaka.online%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kurumizaka.online)](https://kurumizaka.online) | - | - | - |
