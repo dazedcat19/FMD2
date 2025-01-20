@@ -46,7 +46,7 @@ function _M.GetInfo()
 	x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Title     = x.XPathString('//h1')
 	MANGAINFO.CoverLink = MaybeFillHost(MODULE.RootURL, x.XPathString('//img[@class="full r2 md-w120"]/@src'))
-	MANGAINFO.Authors   = x.XPathStringAll('//div[@class="y6x11p" and ./i[@class="fas fa-user"]]/span')
+	MANGAINFO.Authors   = x.XPathStringAll('//div[@class="y6x11p" and ./i[@class="fas fa-user"]]/span/a')
 	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="mt-15"]/a')
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@class="y6x11p" and ./i[@class="fas fa-rss"]]/span'),
 		'OnGoing|On-Hold|進行中|保留|Đang tiến hành|Tạm ngưng', 'Canceled|Completed|完了|キャンセル|Hoàn thành|Đã hủy')
@@ -74,6 +74,10 @@ function _M.GetPageNumber()
 	x.ParseHTML(require 'utils.json'.decode(HTTP.Document.ToString()).html)
 	for i = 0, x.XPathCount('//a/@href') do
 		TASK.PageLinks.Add(x.XPathString('//div[@data-index="' .. i .. '"]/a/@href'))
+	end
+	TASK.PageLinks.Clear()
+	if TASK.PageLinks.Count == 0 then
+		x.XPathStringAll('//a/@href', TASK.PageLinks)
 	end
 
 	return no_error
