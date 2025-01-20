@@ -28,7 +28,7 @@ function _M.GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function _M.GetInfo()
 	local v, x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
@@ -61,6 +61,7 @@ end
 
 function GetCoverLink(x)
 	local img = x.XPathString('//div[@itemprop="image"]//img/@data-lazy-src')
+	if img == '' then img = x.XPathString('//div[@itemprop="image"]//img/@data-src') end
 	if img == '' then img = x.XPathString('//div[@itemprop="image"]//img/@src') end
 	return img
 end
