@@ -72,11 +72,11 @@ function _M.GetPageNumber()
 	if not HTTP.GET(u) then return net_problem end
 
 	x.ParseHTML(require 'utils.json'.decode(HTTP.Document.ToString()).html)
-	for i = 0, x.XPathCount('//a/@href') do
-		TASK.PageLinks.Add(x.XPathString('//div[@data-index="' .. i .. '"]/a/@href'))
-	end
-	TASK.PageLinks.Clear()
-	if TASK.PageLinks.Count == 0 then
+	if x.XPathString('//div[@data-index]/a/@href') ~= '' then
+		for i = 0, x.XPathCount('//a/@href') do
+			TASK.PageLinks.Add(x.XPathString('//div[@data-index="' .. i .. '"]/a/@href'))
+		end
+	else
 		x.XPathStringAll('//a/@href', TASK.PageLinks)
 	end
 
