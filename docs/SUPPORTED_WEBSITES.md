@@ -180,6 +180,7 @@
 | JapitComics | [![https://j-comics.ru](https://img.shields.io/website?url=https://j-comics.ru%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://j-comics.ru)](https://j-comics.ru) | - | - | - |
 | Japscan | [![http://www.japscan.co](https://img.shields.io/website?url=http://www.japscan.co%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.japscan.co)](http://www.japscan.co) | - | - | - |
 | JiroComics | [![https://jirocomics.com](https://img.shields.io/website?url=https://jirocomics.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://jirocomics.com)](https://jirocomics.com) | - | - | - |
+| JManga | [![https://jmanga.mx](https://img.shields.io/website?url=https://jmanga.mx%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://jmanga.mx)](https://jmanga.mx) | OK | 21.01.2025 | - |
 | Kanzenin | [![https://kanzenin.info](https://img.shields.io/website?url=https://kanzenin.info%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kanzenin.info)](https://kanzenin.info) | - | - | - |
 | KappaBeast | [![https://kappabeast.com](https://img.shields.io/website?url=https://kappabeast.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kappabeast.com)](https://kappabeast.com) | - | - | - |
 | KDT Scans | [![https://kdtscans.com](https://img.shields.io/website?url=https://kdtscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kdtscans.com)](https://kdtscans.com) | - | - | - |
