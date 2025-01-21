@@ -48,10 +48,10 @@ function _M.GetInfo()
 	if MANGAINFO.Title == '' then
 		MANGAINFO.Title = x.XPathString('//nav[@aria-label="breadcrumb"]//li[3]')
 	end
-	MANGAINFO.CoverLink = x.XPathString('//img[contains(@class, "thumbnail")]/@src')
-	MANGAINFO.Authors   = x.XPathStringAll('//ul[contains(@class, "manga-info")]/li[contains(., "Author")]//a|//span[@itemprop="author"]/a')
-	MANGAINFO.Genres    = x.XPathStringAll('//ul[contains(@class, "manga-info")]/li[contains(., "Genre")]//a|//span[@itemprop="genre"]/a')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//ul[contains(@class, "manga-info")]/li[contains(., "Status")]//a'), 'Incomplete|On going')
+	MANGAINFO.CoverLink = MaybeFillHost(MODULE.RootURL, x.XPathString('//img[contains(@class, "thumbnail")]/@src'))
+	MANGAINFO.Authors   = x.XPathStringAll('//ul[contains(@class, "manga-info")]/li[contains(., "Author") or contains(., "Autor")]//a|//span[@itemprop="author"]/a')
+	MANGAINFO.Genres    = x.XPathStringAll('//ul[contains(@class, "manga-info")]/li[contains(., "Genre") or contains(., "Género")]//a|//span[@itemprop="genre"]/a')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//ul[contains(@class, "manga-info")]/li[contains(., "Status") or contains(., "Estado")]//a'), 'En curso|Incomplete|On going', 'Complet')
 	MANGAINFO.Summary   = x.XPathString('string-join(//div[./h3="Description"]/p/text()|//div[@class="summary-content"]/p/text(), "\r\n")')
 
 	x.XPathHREFTitleAll('//ul[contains(@class, "list-chapters")]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
@@ -72,6 +72,7 @@ function _M.GetPageNumber()
 	if TASK.PageLinks.Count == 0 then
 		x.XPathStringAll('//div[@class="chapter-content"]/img/@src', TASK.PageLinks)
 	end
+
 	return no_error
 end
 
