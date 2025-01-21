@@ -411,6 +411,7 @@
 | ManhuaBox | [![https://manhuabox.net](https://img.shields.io/website?url=https://manhuabox.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuabox.net)](https://manhuabox.net) | - | - | - |
 | Manhuafast | [![https://manhuafast.com](https://img.shields.io/website?url=https://manhuafast.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuafast.com)](https://manhuafast.com) | - | - | - |
 | Manhuaga | [![https://manhuaga.com](https://img.shields.io/website?url=https://manhuaga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuaga.com)](https://manhuaga.com) | - | - | - |
+| Manhuagold | [![https://manhuagold.top](https://img.shields.io/website?url=https://manhuagold.top%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuagold.top)](https://manhuagold.top) | OK | 21.01.2025 | - |
 | ManHuaGui | [![https://www.manhuagui.com](https://img.shields.io/website?url=https://www.manhuagui.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.manhuagui.com)](https://www.manhuagui.com) | - | - | - |
 | ManhuaID | [![https://manhuaid.com](https://img.shields.io/website?url=https://manhuaid.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuaid.com)](https://manhuaid.com) | - | - | - |
 | ManhuaManhwa | [![https://manhuamanhwa.com](https://img.shields.io/website?url=https://manhuamanhwa.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuamanhwa.com)](https://manhuamanhwa.com) | - | - | - |
