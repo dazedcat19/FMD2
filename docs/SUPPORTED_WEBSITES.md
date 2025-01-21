@@ -418,6 +418,7 @@
 | ManhuaPlanet | [![https://manhuaplanet.com](https://img.shields.io/website?url=https://manhuaplanet.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuaplanet.com)](https://manhuaplanet.com) | - | - | - |
 | ManhuaPlus | [![https://manhuaplus.com](https://img.shields.io/website?url=https://manhuaplus.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuaplus.com)](https://manhuaplus.com) | - | - | - |
 | ManhuaPlusOnline | [![https://manhuaplus.online](https://img.shields.io/website?url=https://manhuaplus.online%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuaplus.online)](https://manhuaplus.online) | - | - | - |
+| ManhuaPlusOrg | [![https://manhuaplus.org](https://img.shields.io/website?url=https://manhuaplus.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuaplus.org)](https://manhuaplus.org) | OK | 21.01.2025 | - |
 | Manhuas | [![https://manhuas.net](https://img.shields.io/website?url=https://manhuas.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuas.net)](https://manhuas.net) | - | - | - |
 | ManhuaScan | [![https://manhuascan.com](https://img.shields.io/website?url=https://manhuascan.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuascan.com)](https://manhuascan.com) | - | - | - |
 | ManhuasWorld | [![https://manhuasworld.com](https://img.shields.io/website?url=https://manhuasworld.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuasworld.com)](https://manhuasworld.com) | - | - | - |
