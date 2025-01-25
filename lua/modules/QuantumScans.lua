@@ -35,7 +35,9 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.KeyoApp'
+local Template = require 'templates.HeanCms'
+API_URL = 'https://api.quantumscans.org'
+CDN_URL = 'https://media.quantumscans.org/file/13VSBnk1m'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
