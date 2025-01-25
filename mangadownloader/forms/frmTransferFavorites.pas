@@ -142,7 +142,9 @@ begin
         begin
           try
             db.Table.SQL.Text := 'SELECT link FROM ' + AnsiQuotedStr(db.TableName, '"') +
-              ' WHERE title LIKE '+AnsiQuotedStr(data^.Fav.FavoriteInfo.Title, '"') + ' COLLATE NOCASE;';
+              ' WHERE (title LIKE ' + AnsiQuotedStr(data^.Fav.FavoriteInfo.Title, '"') +
+              ' OR LOWER(alttitles) REGEXP LOWER(' + AnsiQuotedStr('(^|,)[ \t\r\n]*' + data^.Fav.FavoriteInfo.Title + '[ \t\r\n]*(,|$)', '"') + ')' +
+              ') COLLATE NOCASE;';
             db.Table.Open;
             if db.Table.RecNo > 0 then
             begin
