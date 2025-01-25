@@ -8,9 +8,11 @@ function Init()
 	m.Name                     = 'Quantum Scans'
 	m.RootURL                  = 'https://quantumscans.org'
 	m.Category                 = 'English-Scanlation'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.SortedList               = true
 
 	local fmd = require 'fmd.env'
 	local slang = fmd.SelectedLanguage
@@ -42,6 +44,13 @@ CDN_URL = 'https://media.quantumscans.org/file/13VSBnk1m'
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
+
+-- Get the page count of the manga list of the current website.
+function GetDirectoryPageNumber()
+	Template.GetDirectoryPageNumber()
+
+	return no_error
+end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
