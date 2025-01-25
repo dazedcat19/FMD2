@@ -111,6 +111,7 @@ begin
     // cleanup info
     CoverLink := CleanURL(CoverLink);
     Title := Trim(FixWhiteSpace(RemoveStringBreaks(CommonStringFilter(Title))));
+    AltTitles := Trim(FixWhiteSpace(RemoveStringBreaks(CommonStringFilter(AltTitles))));
     Authors := Trim(FixWhiteSpace(RemoveStringBreaks(Trim(Authors))));
     Artists := Trim(FixWhiteSpace(RemoveStringBreaks(Trim(Artists))));
     Genres := Trim(FixWhiteSpace(RemoveStringBreaks(Trim(Genres))));
@@ -130,6 +131,8 @@ begin
       Summary := '';
     if Title = '' then
       Title := 'N/A';
+    if AltTitles = '' then
+      AltTitles := 'N/A';
     FillBaseMangaInfo(MangaInfo, bmangaInfo);
 
     // cleanup chapters
@@ -203,7 +206,7 @@ procedure TMangaInformation.SyncInfoToData(const ADataProcess: TDBDataProcess);
 begin
   if Assigned(ADataProcess) then
     with MangaInfo do
-      ADataProcess.UpdateData(Title, Link, Authors, Artists, Genres, Status, Summary,
+      ADataProcess.UpdateData(Title, AltTitles, Link, Authors, Artists, Genres, Status, Summary,
         NumChapter, ModuleID);
 end;
 
@@ -214,7 +217,7 @@ begin
     if (MangaInfo.Title = '') and (ATitle <> '') then MangaInfo.Title := ATitle;
     if (MangaInfo.Link = '') and (ALink <> '') then MangaInfo.Link := ALink;
     with MangaInfo do
-      ADataProcess.AddData(Title, Link, Authors, Artists, Genres, Status,
+      ADataProcess.AddData(Title, AltTitles, Link, Authors, Artists, Genres, Status,
         StringBreaks(Summary), NumChapter, Now);
   end;
 end;

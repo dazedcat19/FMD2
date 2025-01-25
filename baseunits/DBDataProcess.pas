@@ -42,6 +42,9 @@ type
     procedure ResetRecNo(Dataset: TDataSet);
   protected
     procedure CreateTable;
+    procedure CreateField(const FieldName: String);
+    procedure CheckFieldsExist(const ATableName: String);
+    procedure ConvertNewTable(const TableParams: String);
     procedure VacuumTable;
     procedure GetRecordCount;
     procedure AddSQLCond(const sqltext: String; useOR: Boolean = False);
@@ -89,11 +92,11 @@ type
     procedure Save;
     procedure Backup(const AWebsite: String);
     procedure Refresh(RecheckDataCount: Boolean = False);
-    function AddData(Const Title, Link, Authors, Artists, Genres, Status, Summary: String;
+    function AddData(Const Title, AltTitles, Link, Authors, Artists, Genres, Status, Summary: String;
       NumChapter, JDN: Integer): Boolean; overload;
-    function AddData(Const Title, Link, Authors, Artists, Genres, Status, Summary: String;
+    function AddData(Const Title, AltTitles, Link, Authors, Artists, Genres, Status, Summary: String;
       NumChapter: Integer; JDN: TDateTime): Boolean; overload; inline;
-    function UpdateData(Const Title, Link, Authors, Artists, Genres, Status, Summary: String;
+    function UpdateData(Const Title, AltTitles, Link, Authors, Artists, Genres, Status, Summary: String;
       NumChapter: Integer; AWebsite: String = ''): Boolean;
     function DeleteData(const RecIndex: Integer): Boolean;
     procedure Commit;
@@ -122,14 +125,15 @@ type
   end;
 
 const
-  DBDataProcessParam = '"link","title","authors","artists","genres","status","summary","numchapter","jdn"';
-  DBDataProcessParams: array [0..8] of ShortString =
-    ('link', 'title', 'authors', 'artists', 'genres', 'status',
+  DBDataProcessParam = '"link","title","alttitles","authors","artists","genres","status","summary","numchapter","jdn"';
+  DBDataProcessParams: array [0..9] of ShortString =
+    ('link', 'title', 'alttitles', 'authors', 'artists', 'genres', 'status',
     'summary', 'numchapter', 'jdn');
   DBTempFieldWebsiteIndex = Length(DBDataProcessParams);
   DBDataProccesCreateParam =
     '"link" TEXT NOT NULL PRIMARY KEY,' +
     '"title" TEXT,' +
+    '"alttitles" TEXT,' +
     '"authors" TEXT,' +
     '"artists" TEXT,' +
     '"genres" TEXT,' +
@@ -288,6 +292,44 @@ begin
     FConn.ExecuteDirect('CREATE TABLE "' + FTableName + '" (' +
       DBDataProccesCreateParam + ');');
     FTrans.CommitRetaining;
+  end;
+end;
+
+procedure TDBDataProcess.CreateField(const FieldName: String);
+begin
+  if FConn.Connected then
+  begin
+    FConn.ExecuteDirect('ALTER TABLE "' + FTableName + '" ADD COLUMN "' + FieldName + '" TEXT;');
+    FTrans.CommitRetaining;
+  end;
+end;
+
+procedure TDBDataProcess.ConvertNewTable(const TableParams: String);
+var
+  qactive: Boolean;
+begin
+  if not FConn.Connected then Exit;
+  try
+    qactive := FQuery.Active;
+    if FQuery.Active then FQuery.Close;
+    with FConn do
+    begin
+      try
+        ExecuteDirect('ALTER TABLE "' + FTableName + '" RENAME TO "' + FTableName + '_old"');
+        ExecuteDirect('CREATE TABLE "' + FTableName + '" (' + DBDataProccesCreateParam + ');');
+        ExecuteDirect('INSERT INTO "' + FTableName + '" (' + TableParams + ') SELECT ' + TableParams + ' FROM "' + FTableName + '_old"');
+        ExecuteDirect('DROP TABLE "' + FTableName + '_old"');
+        VacuumTable;
+      except
+        on E: Exception do
+          SendLogException(Self.ClassName+'['+Website+'].Convert.Error!', E);
+      end;
+    end;
+    FTrans.Commit;
+    if qactive <> FQuery.Active then
+      FQuery.Active := qactive;
+  except
+    FTrans.Rollback;
   end;
 end;
 
@@ -614,6 +656,7 @@ begin
       if not TableExist(FTableName) then
         CreateTable;
       OpenTable(FTableName, True);
+      CheckFieldsExist(FTableName);
       Result := FQuery.Active;
     except
       on E: Exception do
@@ -665,6 +708,46 @@ begin
       FConn.GetTableNames(ts);
       ts.Sorted := True;
       Result := ts.Find(ATableName, i);
+    finally
+      ts.Free;
+    end;
+  end;
+end;
+
+procedure TDBDataProcess.CheckFieldsExist(const ATableName: String);
+var
+  ts: TStringList;
+  i, j: Integer;
+  FieldName, TableParams: String;
+  FoundMissing: Boolean;
+begin
+  FoundMissing := False;
+  TableParams := '';
+  if FConn.Connected then
+  begin
+    ts := TStringList.Create;
+    try
+      FConn.GetFieldNames(ATableName, ts);
+      ts.Sorted := True;
+      for j := Low(DBDataProcessParams) to High(DBDataProcessParams) do
+      begin
+        FieldName := DBDataProcessParams[j];
+        if ts.Find(FieldName, i) then
+        begin
+          if j > 0 then
+            TableParams := TableParams + ',';
+          TableParams := TableParams + '"' + FieldName + '"';
+        end
+        else
+        begin
+          FoundMissing := True;
+        end;
+      end;
+
+      if FoundMissing then
+      begin
+        ConvertNewTable(TableParams);
+      end;
     finally
       ts.Free;
     end;
@@ -735,7 +818,7 @@ begin
   end;
 end;
 
-function TDBDataProcess.AddData(const Title, Link, Authors, Artists, Genres,
+function TDBDataProcess.AddData(const Title, AltTitles, Link, Authors, Artists, Genres,
   Status, Summary: String; NumChapter, JDN: Integer): Boolean;
 begin
   Result:=False;
@@ -746,6 +829,7 @@ begin
       'INSERT INTO "'+FTableName+'" ('+DBDataProcessParam+') VALUES ('+
       QuotedStr(Link)+', '+
       QuotedStr(Title)+', '+
+      QuotedStr(AltTitles)+', '+
       QuotedStr(Authors)+', '+
       QuotedStr(Artists)+', '+
       QuotedStr(Genres)+', '+
@@ -758,14 +842,14 @@ begin
   end;
 end;
 
-function TDBDataProcess.AddData(const Title, Link, Authors, Artists, Genres,
+function TDBDataProcess.AddData(const Title, AltTitles, Link, Authors, Artists, Genres,
   Status, Summary: String; NumChapter: Integer; JDN: TDateTime): Boolean;
 begin
-  Result := AddData(Title, Link, Authors, Artists, Genres, Status, Summary,
+  Result := AddData(Title, AltTitles, Link, Authors, Artists, Genres, Status, Summary,
     NumChapter, DateToJDN(JDN));
 end;
 
-function TDBDataProcess.UpdateData(const Title, Link, Authors, Artists, Genres,
+function TDBDataProcess.UpdateData(const Title, AltTitles, Link, Authors, Artists, Genres,
   Status, Summary: String; NumChapter: Integer; AWebsite: String): Boolean;
 var
   sql: String;
@@ -780,6 +864,7 @@ begin
     else
       sql+='"'+FTableName+'"';
     sql+=' SET "title"='+QuotedStr(Title)+
+         ', "alttitles"='+QuotedStr(AltTitles)+
          ', "authors"='+QuotedStr(Authors)+
          ', "artists"='+QuotedStr(Artists)+
          ', "genres"='+QuotedStr(Genres)+

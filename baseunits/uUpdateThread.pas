@@ -245,8 +245,8 @@ begin
             begin
               for i:=0 to links.Count-1 do
               begin
-                if FOwner.mainDataProcess.AddData(names[i],links[i],'','','','','',0,0) then
-                  FOwner.tempDataProcess.AddData(names[i],links[i],'','','','','',0,0)
+                if FOwner.mainDataProcess.AddData(names[i],'',links[i],'','','','','',0,0) then
+                  FOwner.tempDataProcess.AddData(names[i],'',links[i],'','','','','',0,0)
                 else if (FOwner.isFinishSearchingForNewManga=False) and FOwner.module.SortedList and (not FOwner.InvertedList) then
                   FOwner.isFinishSearchingForNewManga:=True;
               end;
@@ -255,7 +255,7 @@ begin
             else
             begin
               for i:=0 to links.Count-1 do
-                FOwner.tempDataProcess.AddData(names[i],links[i],'','','','','',0,0);
+                FOwner.tempDataProcess.AddData(names[i],'',links[i],'','','','','',0,0);
             end;
             FOwner.tempDataProcess.Commit;
           finally
@@ -725,6 +725,7 @@ begin
               begin
                 mainDataProcess.AddData(
                   tempDataProcess.Value[k,DATA_PARAM_TITLE],
+                  '',
                   tempDataProcess.Value[k,DATA_PARAM_LINK],
                   '',
                   '',

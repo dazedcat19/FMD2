@@ -75,6 +75,7 @@ var
       begin
         if FInfo.MangaInfo.Title = '' then
           FInfo.MangaInfo.Title := data^.Title;
+        FInfo.MangaInfo.AltTitles := data^.AltTitles;
         FInfo.MangaInfo.Link := data^.Link;
         FInfo.MangaInfo.Authors := data^.Authors;
         FInfo.MangaInfo.Artists := data^.Artists;
@@ -103,6 +104,8 @@ var
         begin
           if not(m.InformationAvailable) then
           begin
+            if FInfo.MangaInfo.AltTitles = '' then
+              FInfo.MangaInfo.AltTitles := data^.AltTitles;
             if FInfo.MangaInfo.Authors = '' then
               FInfo.MangaInfo.Authors := data^.Authors;
             if FInfo.MangaInfo.Artists = '' then

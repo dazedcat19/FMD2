@@ -866,6 +866,7 @@ type
     Module: Pointer;
     Link,
     Title,
+    AltTitles,
     TitleFormat,
     Authors,
     Artists,
@@ -6260,6 +6261,7 @@ begin
   begin
     Link := dataProcess.Value[Node^.Index, DATA_PARAM_LINK];
     Title := dataProcess.Value[Node^.Index, DATA_PARAM_TITLE];
+    AltTitles := dataProcess.Value[Node^.Index, DATA_PARAM_ALTTITLES];
     Authors := dataProcess.Value[Node^.Index, DATA_PARAM_AUTHORS];
     Artists := dataProcess.Value[Node^.Index, DATA_PARAM_ARTISTS];
     Genres := dataProcess.Value[Node^.Index, DATA_PARAM_GENRES];

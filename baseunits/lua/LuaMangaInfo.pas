@@ -22,6 +22,7 @@ begin
   begin
     luaClassAddStringProperty(L, MetaTable, 'URL', @URL);
     luaClassAddStringProperty(L, MetaTable, 'Title', @Title);
+    luaClassAddStringProperty(L, MetaTable, 'AltTitles', @AltTitles);
     luaClassAddStringProperty(L, MetaTable, 'Link', @Link);
     luaClassAddStringProperty(L, MetaTable, 'CoverLink', @CoverLink);
     luaClassAddStringProperty(L, MetaTable, 'Authors', @Authors);
