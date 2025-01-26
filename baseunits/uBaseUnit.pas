@@ -229,6 +229,8 @@ const
 
   MangaInfo_StatusCompleted = '0';
   MangaInfo_StatusOngoing = '1';
+  MangaInfo_StatusHiatus = '2';
+  MangaInfo_StatusCancelled = '3';
 
   FMDSupportedPackedOutputExt: array[0..3] of ShortString = ('.zip', '.cbz', '.pdf', '.epub');
   {$ifdef windows}
@@ -591,7 +593,8 @@ function JDNToDate(const JDN: Integer): TDate;
 function  ConvertStrToInt32(const aStr  : String): Cardinal;}
 procedure TransferMangaInfo(var dest: TMangaInfo; const Source: TMangaInfo);
 function MangaInfoStatusIfPos(const SearchStr: String; const OngoingStr: String = 'ongoing';
-    const CompletedStr: String = 'complete'): String;
+    const CompletedStr: String = 'complete'; const HiatusStr: String = 'hiatus';
+    const CancelledStr: String = 'cancelled'): String;
 
 procedure GetBaseMangaInfo(const M: TMangaInfo; var B: TBaseMangaInfo);
 // fill empty manga info
@@ -2628,20 +2631,31 @@ begin
 end;
 
 function MangaInfoStatusIfPos(const SearchStr: String; const OngoingStr: String;
-  const CompletedStr: String): String;
+  const CompletedStr: String; const HiatusStr: String; const CancelledStr: String): String;
 var
-  s, o, c: String;
+  s, o, c, h, ca: String;
   function searchMany(const t: String): Boolean;
   var
     i: String;
   begin
+    if t = '' then
+    begin
+      Exit(False);
+    end;
+
     if Pos('|', t) = 0 then
-       Result := Pos(t, s) <> 0
+    begin
+       Result := Pos(t, s) <> 0;
+    end
     else
     begin
       for i in t.Split(['|']) do
+      begin
         if Pos(i, s) <> 0 then
+        begin
           Exit(True);
+        end;
+      end;
       Result := False
     end;
   end;
@@ -2651,21 +2665,28 @@ begin
   s := LowerCase(SearchStr);
   o := LowerCase(OngoingStr);
   c := LowerCase(CompletedStr);
-  if o <> '' then
+  h := LowerCase(HiatusStr);
+  ca := LowerCase(CancelledStr);
+
+  if searchMany(o) then
   begin
-    if searchMany(o) then
-      Result := MangaInfo_StatusOngoing
-    else if c = '' then
-      Result := MangaInfo_StatusCompleted
-    else if searchMany(c) then
-      Result := MangaInfo_StatusCompleted
+    Result := MangaInfo_StatusOngoing
   end
-  else if c <> '' then
+  else if searchMany(c) then
   begin
-    if searchMany(c) then
-      Result := MangaInfo_StatusCompleted
-    else if searchMany(o) then
-      Result := MangaInfo_StatusOngoing;
+    Result := MangaInfo_StatusCompleted
+  end
+  else if searchMany(h) then
+  begin
+    Result := MangaInfo_StatusHiatus
+  end
+  else if searchMany(ca) then
+  begin
+    Result := MangaInfo_StatusCancelled
+  end
+  else
+  begin
+    Result := MangaInfo_StatusCompleted
   end;
 end;
 

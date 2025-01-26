@@ -297,9 +297,16 @@ msgid "Enabled"
 msgstr "Aktif"
 
 #: frmmain.rs_filterstatusitems
+#, fuzzy
+#| msgid ""
+#| "Completed\n"
+#| "Ongoing\n"
+#| "<none>"
 msgid ""
 "Completed\n"
 "Ongoing\n"
+"Hiatus\n"
+"Cancelled\n"
 "<none>"
 msgstr ""
 "Tamat\n"

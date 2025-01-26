@@ -32,6 +32,11 @@ end;
 function lua_mangainfostatusifpos(L: Plua_State): Integer; cdecl;
 begin
   case lua_gettop(L) of
+    5: lua_pushstring(L, MangaInfoStatusIfPos(luaToString(L, 1),
+        luaToString(L, 2), luaToString(L, 3), luaToString(L, 4),
+        luaToString(L, 5)));
+    4: lua_pushstring(L, MangaInfoStatusIfPos(luaToString(L, 1),
+        luaToString(L, 2), luaToString(L, 3), luaToString(L, 4)));
     3: lua_pushstring(L, MangaInfoStatusIfPos(luaToString(L, 1),
         luaToString(L, 2), luaToString(L, 3)));
     2: lua_pushstring(L, MangaInfoStatusIfPos(luaToString(L, 1), luaToString(L, 2)));

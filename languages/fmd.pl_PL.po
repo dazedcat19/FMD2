@@ -291,9 +291,16 @@ msgid "Enabled"
 msgstr ""
 
 #: frmmain.rs_filterstatusitems
+#, fuzzy
+#| msgid ""
+#| "Completed\n"
+#| "Ongoing\n"
+#| "<none>"
 msgid ""
 "Completed\n"
 "Ongoing\n"
+"Hiatus\n"
+"Cancelled\n"
 "<none>"
 msgstr ""
 "Zakończone\n"
@@ -855,9 +862,10 @@ msgid "Visit my blog"
 msgstr "Odwiedź mój blog"
 
 #: tmainform.caption
+#, fuzzy
 msgctxt "tmainform.caption"
 msgid "Free Manga Downloader"
-msgstr ""
+msgstr "Free Manga Downloader"
 
 #: tmainform.cbaddasstopped.caption
 msgid "Add to download list as stopped task"

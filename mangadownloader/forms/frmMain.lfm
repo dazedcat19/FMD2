@@ -1629,10 +1629,12 @@ object MainForm: TMainForm
                       Top = 81
                       Width = 185
                       ItemHeight = 15
-                      ItemIndex = 2
+                      ItemIndex = 4
                       Items.Strings = (
                         'Completed'
                         'Ongoing'
+                        'Hiatus'
+                        'Cancelled'
                         '<none>'
                       )
                       Style = csDropDownList

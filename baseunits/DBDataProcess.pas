@@ -995,7 +995,7 @@ begin
     (stAuthors = '') and
     (stArtists = '') and
     (stSummary = '') and
-    (stStatus = '2') and
+    (stStatus = '4') and
     (checkedGenres.Count = 0) and
     (uncheckedGenres.Count = 0)) and
     (not searchNewManga) and
@@ -1035,7 +1035,7 @@ var
     AddSQLSimpleFilter('summary', stSummary, False, False, useRegExpr);
 
     // filter status
-    if stStatus <> '2' then
+    if stStatus <> '4' then
       AddSQLCond('"status"="' + stStatus + '"');
 
     //filter checked genres

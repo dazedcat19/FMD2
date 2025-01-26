@@ -915,7 +915,7 @@ const
   CL_BlueLight          = $f8f8f3;
 
 resourcestring
-  RS_FilterStatusItems = 'Completed'#13#10'Ongoing'#13#10'<none>';
+  RS_FilterStatusItems = 'Completed'#13#10'Ongoing'#13#10'Hiatus'#13#10'Cancelled'#13#10'<none>';
   RS_OptionFMDDoItems = 'Nothing'#13#10'Exit'#13#10'Shutdown'#13#10'Hibernate';
   RS_DropTargetModeItems = 'Download all'#13#10'Add to favorites';
   RS_OptionCompress = 'None'#13#10'ZIP'#13#10'CBZ'#13#10'PDF'#13#10'EPUB';
@@ -1236,8 +1236,8 @@ begin
   seOptionMaxParallel.MaxValue := MAX_TASKLIMIT;
   seOptionMaxThread.MaxValue := MAX_CONNECTIONPERHOSTLIMIT;
 
-  if cbFilterStatus.Items.Count > 2 then
-    cbFilterStatus.ItemIndex := 2;
+  if cbFilterStatus.Items.Count > 4 then
+    cbFilterStatus.ItemIndex := 4;
 
   InitCheckboxes;
 
@@ -3229,7 +3229,7 @@ begin
   edFilterAuthors.Caption := '';
   edFilterArtists.Caption := '';
   edFilterSummary.Caption := '';
-  cbFilterStatus.ItemIndex := 2;
+  cbFilterStatus.ItemIndex := 4;
   edCustomGenres.Caption := '';
 end;
 
@@ -4704,6 +4704,12 @@ begin
       else
       if Status = '1' then
         HintText += cbFilterStatus.Items[1]
+      else
+      if Status = '2' then
+        HintText += cbFilterStatus.Items[2]
+      else
+      if Status = '3' then
+        HintText += cbFilterStatus.Items[3]
       else
         HintText += Status;
     end;
