@@ -2389,22 +2389,37 @@ msgid "Website"
 msgstr "网址"
 
 #: tmainform.vtfavorites.header.columns[4].text
+#, fuzzy
+#| msgid "Save to"
 msgctxt "TMAINFORM.VTFAVORITES.HEADER.COLUMNS[4].TEXT"
-msgid "Save to"
+msgid "Status"
 msgstr "保存位置"
 
 #: tmainform.vtfavorites.header.columns[5].text
+#, fuzzy
+#| msgid "Date added"
 msgctxt "tmainform.vtfavorites.header.columns[5].text"
-msgid "Date added"
+msgid "Save to"
 msgstr "添加日期"
 
 #: tmainform.vtfavorites.header.columns[6].text
-msgid "Last checked date"
+#, fuzzy
+#| msgid "Last checked date"
+msgctxt "tmainform.vtfavorites.header.columns[6].text"
+msgid "Date added"
 msgstr "上次检查日期"
 
 #: tmainform.vtfavorites.header.columns[7].text
-msgid "Last updated date"
+#, fuzzy
+#| msgid "Last updated date"
+msgctxt "tmainform.vtfavorites.header.columns[7].text"
+msgid "Last checked date"
 msgstr "最后更新日期"
+
+#: tmainform.vtfavorites.header.columns[8].text
+msgctxt "tmainform.vtfavorites.header.columns[8].text"
+msgid "Last updated date"
+msgstr ""
 
 #: tnewchapter.btcancel.caption
 msgctxt "TNEWCHAPTER.BTCANCEL.CAPTION"

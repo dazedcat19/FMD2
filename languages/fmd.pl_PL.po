@@ -2375,21 +2375,32 @@ msgid "Website"
 msgstr "Strona WWW"
 
 #: tmainform.vtfavorites.header.columns[4].text
+#, fuzzy
+#| msgid "Save to"
 msgctxt "TMAINFORM.VTFAVORITES.HEADER.COLUMNS[4].TEXT"
-msgid "Save to"
+msgid "Status"
 msgstr "Zapisz do"
 
 #: tmainform.vtfavorites.header.columns[5].text
 #, fuzzy
+#| msgid "Date added"
 msgctxt "tmainform.vtfavorites.header.columns[5].text"
-msgid "Date added"
+msgid "Save to"
 msgstr "Dodano"
 
 #: tmainform.vtfavorites.header.columns[6].text
+#, fuzzy
+msgctxt "tmainform.vtfavorites.header.columns[6].text"
+msgid "Date added"
+msgstr "Dodano"
+
+#: tmainform.vtfavorites.header.columns[7].text
+msgctxt "tmainform.vtfavorites.header.columns[7].text"
 msgid "Last checked date"
 msgstr ""
 
-#: tmainform.vtfavorites.header.columns[7].text
+#: tmainform.vtfavorites.header.columns[8].text
+msgctxt "tmainform.vtfavorites.header.columns[8].text"
 msgid "Last updated date"
 msgstr ""
 

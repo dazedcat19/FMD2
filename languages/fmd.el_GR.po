@@ -2444,20 +2444,30 @@ msgid "Website"
 msgstr "Ιστότοπος"
 
 #: tmainform.vtfavorites.header.columns[4].text
+#, fuzzy
+#| msgid "Save to"
 msgctxt "TMAINFORM.VTFAVORITES.HEADER.COLUMNS[4].TEXT"
-msgid "Save to"
+msgid "Status"
 msgstr "Αποθήκευση σε"
 
 #: tmainform.vtfavorites.header.columns[5].text
+#, fuzzy
 msgctxt "tmainform.vtfavorites.header.columns[5].text"
+msgid "Save to"
+msgstr "Αποθήκευση σε"
+
+#: tmainform.vtfavorites.header.columns[6].text
+msgctxt "tmainform.vtfavorites.header.columns[6].text"
 msgid "Date added"
 msgstr ""
 
-#: tmainform.vtfavorites.header.columns[6].text
+#: tmainform.vtfavorites.header.columns[7].text
+msgctxt "tmainform.vtfavorites.header.columns[7].text"
 msgid "Last checked date"
 msgstr ""
 
-#: tmainform.vtfavorites.header.columns[7].text
+#: tmainform.vtfavorites.header.columns[8].text
+msgctxt "tmainform.vtfavorites.header.columns[8].text"
 msgid "Last updated date"
 msgstr ""
 

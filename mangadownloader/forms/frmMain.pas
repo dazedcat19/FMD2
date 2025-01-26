@@ -4532,6 +4532,7 @@ begin
       2: HintText:=currentChapter;
       3: HintText:=Website;
       4: HintText:=saveTo;
+      5: HintText:=cbFilterStatus.Items[StrToIntDef(Status, cbFilterStatus.Items.Count - 1)];
     end;
 end;
 
@@ -4579,10 +4580,11 @@ begin
       1: CellText:=Title;
       2: CellText:=currentChapter;
       3: CellText:=Website;
-      4: CellText:=saveTo;
-      5: CellText:=DateTimeToStr(DateAdded);
-      6: CellText:=DateTimeToStr(DateLastChecked);
-      7: CellText:=DateTimeToStr(DateLastUpdated);
+      4: CellText:=cbFilterStatus.Items[StrToIntDef(Status, cbFilterStatus.Items.Count - 1)];
+      5: CellText:=saveTo;
+      6: CellText:=DateTimeToStr(DateAdded);
+      7: CellText:=DateTimeToStr(DateLastChecked);
+      8: CellText:=DateTimeToStr(DateLastUpdated);
     end;
 end;
 

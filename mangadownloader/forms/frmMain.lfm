@@ -2497,19 +2497,23 @@ object MainForm: TMainForm
           end        
           item
             Position = 4
+            Text = 'Status'
+          end        
+          item
+            Position = 5
             Text = 'Save to'
             Width = 200
           end        
           item
-            Position = 5
+            Position = 6
             Text = 'Date added'
           end        
           item
-            Position = 6
+            Position = 7
             Text = 'Last checked date'
           end        
           item
-            Position = 7
+            Position = 8
             Text = 'Last updated date'
           end>
         Header.DefaultHeight = 24
