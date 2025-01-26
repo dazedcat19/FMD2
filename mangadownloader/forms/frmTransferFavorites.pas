@@ -119,6 +119,20 @@ var
   node: PVirtualNode;
   data: PFavContainer;
   module: TModuleContainer;
+  function EscapeRegexSpecialChars(const Input: String): String;
+  const
+    SpecialChars = ['.', '+', '*', '?', '^', '$', '(', ')', '[', ']', '{', '}', '|', '\'];
+  var
+    i: Integer;
+  begin
+    Result := '';
+    for i := 1 to Length(Input) do
+    begin
+      if CharInSet(Input[i], SpecialChars) then
+        Result := Result + '\'; // Add escape character
+      Result := Result + Input[i];
+    end;
+  end;
 begin
   Synchronize(@SyncBegin);
   FOwner.FValidCount := 0;
@@ -133,37 +147,29 @@ begin
       while Assigned(node) do
       begin
         data := FOwner.vtFavs.GetNodeData(node);
-        if data^.Fav.FavoriteInfo.ModuleID = db.Website then
-        begin
-          data^.NewLink := '';
-          data^.State := 0;
-        end
-        else
-        begin
-          try
-            db.Table.SQL.Text := 'SELECT link FROM ' + AnsiQuotedStr(db.TableName, '"') +
-              ' WHERE (title LIKE ' + AnsiQuotedStr(data^.Fav.FavoriteInfo.Title, '"') +
-              ' OR LOWER(alttitles) REGEXP LOWER(' + AnsiQuotedStr('(^|,)[ \t\r\n]*' + data^.Fav.FavoriteInfo.Title + '[ \t\r\n]*(,|$)', '"') + ')' +
-              ') COLLATE NOCASE;';
-            db.Table.Open;
-            if db.Table.RecNo > 0 then
-            begin
-              data^.NewModule := module;
-              data^.NewLink := db.Table.Fields[0].AsString;
-              data^.State := 1;
-              Inc(FOwner.FValidCount);
-            end
-            else
-            begin
-              data^.NewModule := nil;
-              data^.NewLink := '';
-              data^.State := 2;
-              Inc(FOwner.FInvalidCount);
-            end;
-          except
+        try
+          db.Table.SQL.Text := 'SELECT link FROM ' + AnsiQuotedStr(db.TableName, '"') +
+            ' WHERE (title LIKE ' + AnsiQuotedStr(data^.Fav.FavoriteInfo.Title, '"') +
+            ' OR LOWER(alttitles) REGEXP LOWER(' + AnsiQuotedStr('(?i)(^|,)[ \\t\\r\\n]*' + EscapeRegexSpecialChars(data^.Fav.FavoriteInfo.Title) + '[ \\t\\r\\n]*(,|$)', '"') + ')' +
+            ') COLLATE NOCASE;';
+          db.Table.Open;
+          if db.Table.RecNo > 0 then
+          begin
+            data^.NewModule := module;
+            data^.NewLink := db.Table.Fields[0].AsString;
+            data^.State := 1;
+            Inc(FOwner.FValidCount);
+          end
+          else
+          begin
+            data^.NewModule := nil;
+            data^.NewLink := '';
+            data^.State := 2;
+            Inc(FOwner.FInvalidCount);
           end;
-          db.Table.Close;
+        except
         end;
+        db.Table.Close;
         node := FOwner.vtFavs.GetNext(node);
       end;
     end;
@@ -218,45 +224,89 @@ begin
 end;
 
 procedure TTransferFavoritesForm.btOKClick(Sender: TObject);
-var
+var     
+  db: TDBDataProcess;
   Node: PVirtualNode;
   Data: PFavContainer;
   dc: String;
   t: TFavoriteContainer;
+  m: TModuleContainer;
 begin
   FavoriteManager.Lock;
   try
-  Node := vtFavs.GetFirst();
-  while Assigned(Node) do
-  begin
-    Data := vtFavs.GetNodeData(Node);
-    // add new item and remove the old one
-    if Assigned(Data^.NewModule) then
-    begin
-      with Data^.Fav.FavoriteInfo do
+    db := TDBDataProcess.Create;
+    m := TModuleContainer(cbWebsites.Items.Objects[cbWebsites.ItemIndex]);
+    try
+      if db.Connect(m.ID) then
       begin
-        if ckClearDownloadedChapters.Checked then
-          dc := ''
-        else
-          dc := DownloadedChapterList;
-        FavoriteManager.Add(
-          Data^.NewModule,
-          Title,
-          Status,
-          CurrentChapter,
-          dc,
-          SaveTo,
-          Data^.NewLink);
+        db.Table.ReadOnly := True;
+        Node := vtFavs.GetFirst();
+        while Assigned(Node) do
+        begin
+          Data := vtFavs.GetNodeData(Node);
+          // add new item and remove the old one
+          if Assigned(Data^.NewModule) then
+          begin
+            with Data^.Fav.FavoriteInfo do
+            begin
+              if ckClearDownloadedChapters.Checked then
+              begin
+                dc := ''
+              end
+              else
+              begin
+                dc := DownloadedChapterList;
+              end;
+
+              if ModuleID <> db.Website then
+              begin
+                FavoriteManager.Add(
+                  Data^.NewModule,
+                  Title,
+                  Status,
+                  CurrentChapter,
+                  dc,
+                  SaveTo,
+                  Data^.NewLink);
+              end
+              else
+              begin
+                FavoriteManager.Replace(
+                  Data^.Fav.ID,
+                  Data^.NewModule,
+                  Title,
+                  Status,
+                  CurrentChapter,
+                  dc,
+                  SaveTo,
+                  Data^.NewLink);
+              end;
+            end;
+            t := FavoriteManager.Items.Last;
+            if Data^.Fav.FavoriteInfo.ModuleID <> db.Website then
+            begin
+              FavoriteManager.Remove(Data^.Fav);
+            end
+            else
+            begin
+              FavoriteManager.Items.Remove(Data^.Fav);
+              FavoriteManager.UpdateOrder;
+            end;
+            Data^.Fav := t;
+            if ckClearDownloadedChapters.Checked then
+            begin
+              t.Tag := 100; // get new chapterlist
+            end;
+          end;
+          db.Table.Close;
+          Node := vtFavs.GetNext(Node);
+        end;
+        db.Connection.Connected := False;
+        ModalResult := mrOK;
       end;
-      t := FavoriteManager.Items.Last;
-      FavoriteManager.Remove(Data^.Fav);
-      Data^.Fav := t;
-      if ckClearDownloadedChapters.Checked then
-        t.Tag := 100; // get new chapterlist
+    finally
+      db.Free;
     end;
-    Node := vtFavs.GetNext(Node);
-  end;
-  ModalResult := mrOK;
   finally
     FavoriteManager.UnLock;
   end;

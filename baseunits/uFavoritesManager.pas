@@ -87,12 +87,14 @@ type
     destructor Destroy; override;
   public
     procedure DBInsert; inline;
+    procedure DBReplace(const OldId: String);
     procedure DBUpdateTitle; inline;
     procedure DBUpdateEnabled; inline;
     procedure DBUpdateDateLastChecked; inline;
     procedure DBUpdateSaveTo; inline;
     procedure DBUpdateLastUpdated; inline;
   published
+    property ID: String read Fid;
     property Enabled: Boolean read FEnabled write SetEnabled;
   end;
 
@@ -137,6 +139,8 @@ type
     function IsMangaExistByLink(const AModuleID, ALink: String): Boolean; inline;
     // Add new manga to the list
     procedure Add(const AModule: Pointer; const ATitle, AStatus, ACurrentChapter, ADownloadedChapterList, ASaveTo, ALink: String);
+    // Replace manga from same site
+    procedure Replace(const OldId: String; const AModule: Pointer; const ATitle, AStatus, ACurrentChapter, ADownloadedChapterList, ASaveTo, ALink: String);
     // Delete directly, must be inside lock/unlock
     procedure Delete(const Pos: Integer);
     procedure Remove(const T: TFavoriteContainer);
@@ -226,6 +230,26 @@ begin
   Fid:=LowerCase(FavoriteInfo.ModuleID+FavoriteInfo.Link);
   with FavoriteInfo do
     FManager.FFavoritesDB.Add(
+      Fid,
+      FOrder,
+      FEnabled,
+      ModuleID,
+      Link,
+      Title,
+      Status,
+      CurrentChapter,
+      DownloadedChapterList,
+      SaveTo,
+      DateAdded
+      );
+end;
+
+procedure TFavoriteContainer.DBReplace(const OldId: String);
+begin
+  Fid := LowerCase(FavoriteInfo.ModuleID+FavoriteInfo.Link);
+  with FavoriteInfo do
+    FManager.FFavoritesDB.Replace(
+      OldId,
       Fid,
       FOrder,
       FEnabled,
@@ -1002,6 +1026,37 @@ begin
     end;
     F.Status:=STATUS_IDLE;
     F.DBInsert;
+  finally
+    UnLock;
+  end;
+  if not isRunning then
+    Sort(SortColumn);
+end;
+
+procedure TFavoriteManager.Replace(const OldId: String; const AModule: Pointer; const ATitle, AStatus, ACurrentChapter,
+  ADownloadedChapterList, ASaveTo, ALink: String);
+var
+  F: TFavoriteContainer;
+begin
+  if AModule = nil then Exit;
+  Lock;
+  try
+    F:=TFavoriteContainer.Create(Self);
+    F.FOrder:=Items.Add(F);
+    with F.FavoriteInfo do begin
+      Module := AModule;
+      Title := ATitle;
+      Status := AStatus;
+      CurrentChapter := ACurrentChapter;
+      SaveTo := ASaveTo;
+      Link := ALink;
+      DownloadedChapterList := ADownloadedChapterList;
+      DateAdded := Now;
+      DateLastChecked := Now;
+      DateLastUpdated := Now;
+    end;
+    F.Status:=STATUS_IDLE;
+    F.DBReplace(OldId);
   finally
     UnLock;
   end;
