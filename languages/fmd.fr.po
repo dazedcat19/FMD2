@@ -297,11 +297,6 @@ msgid "Enabled"
 msgstr "Activés"
 
 #: frmmain.rs_filterstatusitems
-#, fuzzy
-#| msgid ""
-#| "Completed\n"
-#| "Ongoing\n"
-#| "<none>"
 msgid ""
 "Completed\n"
 "Ongoing\n"
@@ -311,6 +306,8 @@ msgid ""
 msgstr ""
 "Terminé\n"
 "En cours\n"
+"En pause\n"
+"Annulé\n"
 "<non renseigné>"
 
 #: frmmain.rs_fmdalreadyrunning
@@ -354,7 +351,6 @@ msgid "Status:"
 msgstr "Statut :"
 
 #: frmmain.rs_infostatus_unknown
-#, fuzzy
 msgctxt "frmmain.rs_infostatus_unknown"
 msgid "Unknown"
 msgstr "Inconnu"
@@ -2478,18 +2474,14 @@ msgid "Website"
 msgstr "Site"
 
 #: tmainform.vtfavorites.header.columns[4].text
-#, fuzzy
-#| msgid "Save to"
 msgctxt "TMAINFORM.VTFAVORITES.HEADER.COLUMNS[4].TEXT"
 msgid "Status"
-msgstr "Répertoire d'enregistrement"
+msgstr "Statut"
 
 #: tmainform.vtfavorites.header.columns[5].text
-#, fuzzy
-#| msgid "Date added"
 msgctxt "tmainform.vtfavorites.header.columns[5].text"
 msgid "Save to"
-msgstr "Date d'ajout"
+msgstr "Répertoire d'enregistrement"
 
 #: tmainform.vtfavorites.header.columns[6].text
 #, fuzzy

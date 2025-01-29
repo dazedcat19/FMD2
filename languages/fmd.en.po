@@ -294,11 +294,6 @@ msgid "Enabled"
 msgstr "Enabled"
 
 #: frmmain.rs_filterstatusitems
-#, fuzzy
-#| msgid ""
-#| "Completed\n"
-#| "Ongoing\n"
-#| "<none>"
 msgid ""
 "Completed\n"
 "Ongoing\n"
@@ -308,6 +303,8 @@ msgid ""
 msgstr ""
 "Completed\n"
 "Ongoing\n"
+"Hiatus\n"
+"Cancelled\n"
 "<none>"
 
 #: frmmain.rs_fmdalreadyrunning
@@ -351,7 +348,6 @@ msgid "Status:"
 msgstr "Status:"
 
 #: frmmain.rs_infostatus_unknown
-#, fuzzy
 msgctxt "frmmain.rs_infostatus_unknown"
 msgid "Unknown"
 msgstr "Unknown"
@@ -2400,37 +2396,29 @@ msgid "Website"
 msgstr "Website"
 
 #: tmainform.vtfavorites.header.columns[4].text
-#, fuzzy
-#| msgid "Save to"
 msgctxt "TMAINFORM.VTFAVORITES.HEADER.COLUMNS[4].TEXT"
 msgid "Status"
-msgstr "Save to"
+msgstr "Status"
 
 #: tmainform.vtfavorites.header.columns[5].text
-#, fuzzy
-#| msgid "Date added"
 msgctxt "tmainform.vtfavorites.header.columns[5].text"
 msgid "Save to"
-msgstr "Date added"
+msgstr "Save to"
 
 #: tmainform.vtfavorites.header.columns[6].text
-#, fuzzy
-#| msgid "Last checked date"
 msgctxt "tmainform.vtfavorites.header.columns[6].text"
 msgid "Date added"
-msgstr "Last checked date"
+msgstr "Date added"
 
 #: tmainform.vtfavorites.header.columns[7].text
-#, fuzzy
-#| msgid "Last updated date"
 msgctxt "tmainform.vtfavorites.header.columns[7].text"
 msgid "Last checked date"
-msgstr "Last updated date"
+msgstr "Last checked date"
 
 #: tmainform.vtfavorites.header.columns[8].text
 msgctxt "tmainform.vtfavorites.header.columns[8].text"
 msgid "Last updated date"
-msgstr ""
+msgstr "Last updated date"
 
 #: tnewchapter.btcancel.caption
 msgctxt "TNEWCHAPTER.BTCANCEL.CAPTION"

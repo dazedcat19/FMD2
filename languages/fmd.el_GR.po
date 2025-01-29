@@ -295,11 +295,6 @@ msgid "Enabled"
 msgstr ""
 
 #: frmmain.rs_filterstatusitems
-#, fuzzy
-#| msgid ""
-#| "Completed\n"
-#| "Ongoing\n"
-#| "<none>"
 msgid ""
 "Completed\n"
 "Ongoing\n"
@@ -309,6 +304,8 @@ msgid ""
 msgstr ""
 "Ολοκληρωμένο\n"
 "Σε εξέλιξη\n"
+"Σε αναστολή\n"
+"Ακυρώθηκε\n"
 "<καμία>"
 
 #: frmmain.rs_fmdalreadyrunning
@@ -352,7 +349,6 @@ msgid "Status:"
 msgstr "Κατάσταση:"
 
 #: frmmain.rs_infostatus_unknown
-#, fuzzy
 msgctxt "frmmain.rs_infostatus_unknown"
 msgid "Unknown"
 msgstr "Άγνωστο"
@@ -2455,14 +2451,11 @@ msgid "Website"
 msgstr "Ιστότοπος"
 
 #: tmainform.vtfavorites.header.columns[4].text
-#, fuzzy
-#| msgid "Save to"
 msgctxt "TMAINFORM.VTFAVORITES.HEADER.COLUMNS[4].TEXT"
 msgid "Status"
-msgstr "Αποθήκευση σε"
+msgstr "Κατάσταση"
 
 #: tmainform.vtfavorites.header.columns[5].text
-#, fuzzy
 msgctxt "tmainform.vtfavorites.header.columns[5].text"
 msgid "Save to"
 msgstr "Αποθήκευση σε"

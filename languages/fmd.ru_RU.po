@@ -294,11 +294,6 @@ msgid "Enabled"
 msgstr ""
 
 #: frmmain.rs_filterstatusitems
-#, fuzzy
-#| msgid ""
-#| "Completed\n"
-#| "Ongoing\n"
-#| "<none>"
 msgid ""
 "Completed\n"
 "Ongoing\n"
@@ -308,6 +303,8 @@ msgid ""
 msgstr ""
 "Завершено\n"
 "Онгоинг\n"
+"Перерыв\n"
+"Отменено\n"
 "<нет>"
 
 #: frmmain.rs_fmdalreadyrunning
@@ -351,7 +348,6 @@ msgid "Status:"
 msgstr "Статус:"
 
 #: frmmain.rs_infostatus_unknown
-#, fuzzy
 msgctxt "frmmain.rs_infostatus_unknown"
 msgid "Unknown"
 msgstr "Неизвестный"
@@ -2400,18 +2396,14 @@ msgid "Website"
 msgstr "Сайт"
 
 #: tmainform.vtfavorites.header.columns[4].text
-#, fuzzy
-#| msgid "Save to"
 msgctxt "TMAINFORM.VTFAVORITES.HEADER.COLUMNS[4].TEXT"
 msgid "Status"
-msgstr "Сохранить в"
+msgstr "Статус"
 
 #: tmainform.vtfavorites.header.columns[5].text
-#, fuzzy
-#| msgid "Date added"
 msgctxt "tmainform.vtfavorites.header.columns[5].text"
 msgid "Save to"
-msgstr "Добавлена"
+msgstr "Сохранить в"
 
 #: tmainform.vtfavorites.header.columns[6].text
 #, fuzzy

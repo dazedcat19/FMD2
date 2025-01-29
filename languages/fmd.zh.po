@@ -294,11 +294,6 @@ msgid "Enabled"
 msgstr "启用"
 
 #: frmmain.rs_filterstatusitems
-#, fuzzy
-#| msgid ""
-#| "Completed\n"
-#| "Ongoing\n"
-#| "<none>"
 msgid ""
 "Completed\n"
 "Ongoing\n"
@@ -308,6 +303,8 @@ msgid ""
 msgstr ""
 "已完成\n"
 "进行中\n"
+"休刊中\n"
+"已中止\n"
 "<无>"
 
 #: frmmain.rs_fmdalreadyrunning
@@ -351,7 +348,6 @@ msgid "Status:"
 msgstr "状态："
 
 #: frmmain.rs_infostatus_unknown
-#, fuzzy
 msgctxt "frmmain.rs_infostatus_unknown"
 msgid "Unknown"
 msgstr "未知"
@@ -2400,37 +2396,29 @@ msgid "Website"
 msgstr "网址"
 
 #: tmainform.vtfavorites.header.columns[4].text
-#, fuzzy
-#| msgid "Save to"
 msgctxt "TMAINFORM.VTFAVORITES.HEADER.COLUMNS[4].TEXT"
 msgid "Status"
-msgstr "保存位置"
+msgstr "状态"
 
 #: tmainform.vtfavorites.header.columns[5].text
-#, fuzzy
-#| msgid "Date added"
 msgctxt "tmainform.vtfavorites.header.columns[5].text"
 msgid "Save to"
-msgstr "添加日期"
+msgstr "保存位置"
 
 #: tmainform.vtfavorites.header.columns[6].text
-#, fuzzy
-#| msgid "Last checked date"
 msgctxt "tmainform.vtfavorites.header.columns[6].text"
 msgid "Date added"
-msgstr "上次检查日期"
+msgstr "添加日期"
 
 #: tmainform.vtfavorites.header.columns[7].text
-#, fuzzy
-#| msgid "Last updated date"
 msgctxt "tmainform.vtfavorites.header.columns[7].text"
 msgid "Last checked date"
-msgstr "最后更新日期"
+msgstr "上次检查日期"
 
 #: tmainform.vtfavorites.header.columns[8].text
 msgctxt "tmainform.vtfavorites.header.columns[8].text"
 msgid "Last updated date"
-msgstr ""
+msgstr "最后更新日期"
 
 #: tnewchapter.btcancel.caption
 msgctxt "TNEWCHAPTER.BTCANCEL.CAPTION"

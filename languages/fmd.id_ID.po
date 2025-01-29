@@ -298,11 +298,6 @@ msgid "Enabled"
 msgstr "Aktif"
 
 #: frmmain.rs_filterstatusitems
-#, fuzzy
-#| msgid ""
-#| "Completed\n"
-#| "Ongoing\n"
-#| "<none>"
 msgid ""
 "Completed\n"
 "Ongoing\n"
@@ -312,6 +307,8 @@ msgid ""
 msgstr ""
 "Tamat\n"
 "Bersambung\n"
+"Hiatus\n"
+"Dibatalkan\n"
 "<tidak ada>"
 
 #: frmmain.rs_fmdalreadyrunning
@@ -336,7 +333,7 @@ msgstr "Impor"
 
 #: frmmain.rs_infoalttitles
 msgid "Alternative Title(s):"
-msgstr ""
+msgstr "Judul Alternatif:"
 
 #: frmmain.rs_infoartists
 msgid "Artist(s):"
@@ -355,7 +352,6 @@ msgid "Status:"
 msgstr "Status:"
 
 #: frmmain.rs_infostatus_unknown
-#, fuzzy
 msgctxt "frmmain.rs_infostatus_unknown"
 msgid "Unknown"
 msgstr "Tidak diketahui"
@@ -2404,37 +2400,29 @@ msgid "Website"
 msgstr "Situs"
 
 #: tmainform.vtfavorites.header.columns[4].text
-#, fuzzy
-#| msgid "Save to"
 msgctxt "TMAINFORM.VTFAVORITES.HEADER.COLUMNS[4].TEXT"
 msgid "Status"
-msgstr "Lokasi penyimpanan"
+msgstr "Status"
 
 #: tmainform.vtfavorites.header.columns[5].text
-#, fuzzy
-#| msgid "Date added"
 msgctxt "tmainform.vtfavorites.header.columns[5].text"
 msgid "Save to"
-msgstr "Waktu ditambahkan"
+msgstr "Lokasi penyimpanan"
 
 #: tmainform.vtfavorites.header.columns[6].text
-#, fuzzy
-#| msgid "Last checked date"
 msgctxt "tmainform.vtfavorites.header.columns[6].text"
 msgid "Date added"
-msgstr "Waktu terakhir diperiksa"
+msgstr "Waktu ditambahkan"
 
 #: tmainform.vtfavorites.header.columns[7].text
-#, fuzzy
-#| msgid "Last updated date"
 msgctxt "tmainform.vtfavorites.header.columns[7].text"
 msgid "Last checked date"
-msgstr "Waktu terakhir diperbarui"
+msgstr "Waktu terakhir diperiksa"
 
 #: tmainform.vtfavorites.header.columns[8].text
 msgctxt "tmainform.vtfavorites.header.columns[8].text"
 msgid "Last updated date"
-msgstr ""
+msgstr "Waktu terakhir diperbarui"
 
 #: tnewchapter.btcancel.caption
 msgctxt "tnewchapter.btcancel.caption"
