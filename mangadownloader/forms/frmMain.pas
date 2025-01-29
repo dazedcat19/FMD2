@@ -970,6 +970,7 @@ resourcestring
   RS_Selected = 'Selected: %d';
   RS_InfoWebsite = 'Website:';
   RS_InfoTitle = 'Title:';
+  RS_InfoAltTitles = 'Alternative Title(s):';
   RS_InfoAuthors = 'Author(s):';
   RS_InfoArtists = 'Artist(s):';
   RS_InfoGenres = 'Genre(s):';
@@ -4692,6 +4693,8 @@ begin
     if dataProcess.FilterAllSites then
       HintText += RS_InfoWebsite + LineEnding + TModuleContainer(Module).Name + LineEnding2;
     HintText += RS_InfoTitle + LineEnding + Title;
+    if AltTitles <> '' then
+      HintText += LineEnding2 + RS_InfoAltTitles + LineEnding + AltTitles;
     if Authors <> '' then
       HintText += LineEnding2 + RS_InfoAuthors + LineEnding + Authors;
     if Artists <> '' then
@@ -4702,18 +4705,25 @@ begin
     begin
       HintText += LineEnding2 + RS_InfoStatus + LineEnding;
       if Status = '0' then
+      begin
         HintText += cbFilterStatus.Items[0]
-      else
-      if Status = '1' then
+      end
+      else if Status = '1' then
+      begin
         HintText += cbFilterStatus.Items[1]
-      else
-      if Status = '2' then
+      end
+      else if Status = '2' then
+      begin
         HintText += cbFilterStatus.Items[2]
-      else
-      if Status = '3' then
+      end
+      else if Status = '3' then
+      begin
         HintText += cbFilterStatus.Items[3]
+      end
       else
+      begin
         HintText += Status;
+      end;
     end;
     if Summary <> '' then
       HintText += LineEnding2 + RS_InfoSummary + LineEnding + Summary;
@@ -5088,12 +5098,19 @@ begin
       Lines.Clear;
       edURL.Text := mangaInfo.URL;
       AddTextToInfo(RS_InfoTitle, mangaInfo.Title);
+      AddTextToInfo(RS_InfoAltTitles, mangaInfo.AltTitles);
       AddTextToInfo(RS_InfoAuthors, mangaInfo.Authors);
       AddTextToInfo(RS_InfoArtists, mangaInfo.Artists);
       AddTextToInfo(RS_InfoGenres, mangaInfo.Genres);
       i := StrToIntDef(mangaInfo.Status, -1);
       if (i > -1) and (i < cbFilterStatus.Items.Count) then
+      begin
         AddTextToInfo(RS_InfoStatus, cbFilterStatus.Items[i]);
+      end
+      else
+      begin
+        AddTextToInfo(RS_InfoStatus, mangaInfo.Status);
+      end;
       AddTextToInfo(RS_InfoSummary, mangaInfo.Summary);
       CaretPos := Point(0, 0);
     finally

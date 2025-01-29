@@ -332,6 +332,10 @@ msgstr "Historique"
 msgid "Import"
 msgstr "Import"
 
+#: frmmain.rs_infoalttitles
+msgid "Alternative Title(s):"
+msgstr ""
+
 #: frmmain.rs_infoartists
 msgid "Artist(s):"
 msgstr "Artiste·s :"

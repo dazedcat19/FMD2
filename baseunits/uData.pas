@@ -131,8 +131,8 @@ begin
       Summary := '';
     if Title = '' then
       Title := 'N/A';
-    if AltTitles = '' then
-      AltTitles := 'N/A';
+    if (LeftStr(AltTitles, 1) = '<') or (AltTitles = '-') or (AltTitles = ':') then
+      AltTitles := '';
     FillBaseMangaInfo(MangaInfo, bmangaInfo);
 
     // cleanup chapters

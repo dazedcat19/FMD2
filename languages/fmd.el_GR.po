@@ -330,6 +330,10 @@ msgstr "History"
 msgid "Import"
 msgstr "Εισαγωγή"
 
+#: frmmain.rs_infoalttitles
+msgid "Alternative Title(s):"
+msgstr ""
+
 #: frmmain.rs_infoartists
 msgid "Artist(s):"
 msgstr "Καλλιτέχνης(ες):"

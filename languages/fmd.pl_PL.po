@@ -327,6 +327,10 @@ msgstr "Historia"
 msgid "Import"
 msgstr "Importuj"
 
+#: frmmain.rs_infoalttitles
+msgid "Alternative Title(s):"
+msgstr ""
+
 #: frmmain.rs_infoartists
 msgid "Artist(s):"
 msgstr "Wykonawca:"
