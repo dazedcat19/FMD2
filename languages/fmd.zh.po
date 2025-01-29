@@ -93,6 +93,7 @@ msgid "Invalid"
 msgstr "无效"
 
 #: frmaccountmanager.rs_unknown
+msgctxt "frmaccountmanager.rs_unknown"
 msgid "Unknown"
 msgstr "未知"
 
@@ -348,6 +349,12 @@ msgstr "题材(s):"
 #: frmmain.rs_infostatus
 msgid "Status:"
 msgstr "状态："
+
+#: frmmain.rs_infostatus_unknown
+#, fuzzy
+msgctxt "frmmain.rs_infostatus_unknown"
+msgid "Unknown"
+msgstr "未知"
 
 #: frmmain.rs_infosummary
 msgid "Summary:"

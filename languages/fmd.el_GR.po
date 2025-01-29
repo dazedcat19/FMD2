@@ -94,6 +94,7 @@ msgid "Invalid"
 msgstr "Μη έγκυρο"
 
 #: frmaccountmanager.rs_unknown
+msgctxt "frmaccountmanager.rs_unknown"
 msgid "Unknown"
 msgstr "Άγνωστο"
 
@@ -349,6 +350,12 @@ msgstr "Είδος(η):"
 #: frmmain.rs_infostatus
 msgid "Status:"
 msgstr "Κατάσταση:"
+
+#: frmmain.rs_infostatus_unknown
+#, fuzzy
+msgctxt "frmmain.rs_infostatus_unknown"
+msgid "Unknown"
+msgstr "Άγνωστο"
 
 #: frmmain.rs_infosummary
 msgid "Summary:"

@@ -94,6 +94,7 @@ msgid "Invalid"
 msgstr "Inválido"
 
 #: frmaccountmanager.rs_unknown
+msgctxt "frmaccountmanager.rs_unknown"
 msgid "Unknown"
 msgstr "Desconocido"
 
@@ -349,6 +350,12 @@ msgstr "Género(s):"
 #: frmmain.rs_infostatus
 msgid "Status:"
 msgstr "Estado:"
+
+#: frmmain.rs_infostatus_unknown
+#, fuzzy
+msgctxt "frmmain.rs_infostatus_unknown"
+msgid "Unknown"
+msgstr "Desconocido"
 
 #: frmmain.rs_infosummary
 msgid "Summary:"

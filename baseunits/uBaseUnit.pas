@@ -2686,7 +2686,7 @@ begin
   end
   else
   begin
-    Result := 'Unknown'
+    Result := RS_InfoStatus_Unknown
   end;
 end;
 

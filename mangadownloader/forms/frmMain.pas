@@ -975,6 +975,7 @@ resourcestring
   RS_InfoArtists = 'Artist(s):';
   RS_InfoGenres = 'Genre(s):';
   RS_InfoStatus = 'Status:';
+  RS_InfoStatus_Unknown = 'Unknown';
   RS_InfoSummary = 'Summary:';
   RS_FMDAlreadyRunning = 'Free Manga Downloader already running!';
   RS_ModeSearching = 'Mode: Searching...';

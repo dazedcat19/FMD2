@@ -95,6 +95,7 @@ msgid "Invalid"
 msgstr "Geçersiz"
 
 #: frmaccountmanager.rs_unknown
+msgctxt "frmaccountmanager.rs_unknown"
 msgid "Unknown"
 msgstr "Bilinmeyen"
 
@@ -350,6 +351,12 @@ msgstr "Tür(ler):"
 #: frmmain.rs_infostatus
 msgid "Status:"
 msgstr "Durum:"
+
+#: frmmain.rs_infostatus_unknown
+#, fuzzy
+msgctxt "frmmain.rs_infostatus_unknown"
+msgid "Unknown"
+msgstr "Bilinmeyen"
 
 #: frmmain.rs_infosummary
 msgid "Summary:"
