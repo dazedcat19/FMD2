@@ -1005,7 +1005,6 @@ end;
 function TDBDataProcess.Search(ATitle: String): Boolean;
 var
   i: Integer;
-  s: String;
   Titles: array[0..1] of TFieldValuePair;
 begin
   if FQuery.Active then
@@ -1052,7 +1051,6 @@ begin
 
             AddSQLPairedFilter(Titles);
           end;
-          s := SQL.Text;
           FFiltered := True;
         end
         else
@@ -1119,7 +1117,7 @@ var
     Titles[1].Field := 'alttitles';
     Titles[1].Value := stTitle;
 
-    AddSQLPairedFilter(Titles);
+    AddSQLPairedFilter(Titles, False, False, useRegExpr);
 
     // filter authors
     AddSQLSimpleFilter('authors', stAuthors, False, False, useRegExpr);

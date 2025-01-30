@@ -16,10 +16,10 @@ type
     constructor Create(const AFilename: String);
     procedure Add(const Aid:String;const AOrder:Integer;const AEnabled:Boolean;
       const AModuleID,ALink,ATitle,AStatus,ACurrentChapter,ADownloadedChapterList,ASaveTo:String;
-      const ADateAdded:TDateTime);
+      const ADateAdded:TDateTime); inline;
     procedure Replace(const OldId, Aid:String;const AOrder:Integer;const AEnabled:Boolean;
       const AModuleID,ALink,ATitle,AStatus,ACurrentChapter,ADownloadedChapterList,ASaveTo:String;
-      const ADateAdded:TDateTime);
+      const ADateAdded:TDateTime); inline;
     procedure UpdateLastUpdated(const Aid,ADownloadedChapterList:String;const ADateLastUpdated:TDateTime); inline;
     procedure UpdateOrder(const Aid:String;const Aorder:Integer); inline;
     procedure UpdateTitle(const Aid,Atitle:String); inline;

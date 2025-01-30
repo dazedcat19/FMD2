@@ -87,7 +87,7 @@ type
     destructor Destroy; override;
   public
     procedure DBInsert; inline;
-    procedure DBReplace(const OldId: String);
+    procedure DBReplace(const OldId: String); inline;
     procedure DBUpdateTitle; inline;
     procedure DBUpdateEnabled; inline;
     procedure DBUpdateDateLastChecked; inline;
