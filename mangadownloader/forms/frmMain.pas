@@ -4529,12 +4529,18 @@ begin
   if Node^.Index>=FavoriteManager.Count then Exit;
   with FavoriteManager.Items[Node^.Index].FavoriteInfo do
     case Column of
-      1: if Trim(Link)='' then HintText:=RS_HintFavoriteProblem
-         else HintText:=Title;
-      2: HintText:=currentChapter;
-      3: HintText:=Website;
-      4: HintText:=saveTo;
-      5: HintText:=cbFilterStatus.Items[StrToIntDef(Status, cbFilterStatus.Items.Count - 1)];
+      1: if Trim(Link) = '' then
+         begin
+           HintText := RS_HintFavoriteProblem;
+         end
+         else
+         begin
+           HintText := Title;
+         end;
+      2: HintText := currentChapter;
+      3: HintText := Website;
+      4: HintText := cbFilterStatus.Items[StrToIntDef(Status, cbFilterStatus.Items.Count - 1)];
+      5: HintText := saveTo;
     end;
 end;
 

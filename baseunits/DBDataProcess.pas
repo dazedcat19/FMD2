@@ -14,6 +14,10 @@ uses
   sqlite3backup, sqlite3dyn, sqldb, DB, RegExpr, SQLiteData;
 
 type
+  TFieldValuePair = record
+    Field: String;
+    Value: String;
+  end;
 
   { TDBDataProcess }
 
@@ -50,6 +54,8 @@ type
     procedure AddSQLCond(const sqltext: String; useOR: Boolean = False);
     procedure AddSQLSimpleFilter(const fieldname, Value: String;
       useNOT: Boolean = False; useOR: Boolean = False; useRegexp: Boolean = False);
+    procedure AddSQLPairedFilter(const Pairs: array of TFieldValuePair;
+      useNOT: Boolean = False; useOR: Boolean = False; useRegexp: Boolean = False);
     function GetConnected: Boolean;
     function InternalOpen(const FilePath: String = ''): Boolean;
     function GetWebsiteName(const RecIndex: Integer): String;
@@ -71,6 +77,8 @@ type
     function OpenTable(const ATableName: String = '';
       CheckRecordCount: Boolean = False): Boolean;
     function TableExist(const ATableName: String): Boolean;
+    function RegexEscapeInput(const Input: String): String;
+    function RegexEscapeAltTitles(const ATitle: String): String;
     function Search(ATitle: String): Boolean;
     function CanFilter(const checkedGenres, uncheckedGenres: TStringList;
       const stTitle, stAuthors, stArtists, stStatus, stSummary: String;
@@ -396,9 +404,56 @@ begin
   else
     scond := '';
   if useRegexp then
-    AddSQLCond('"' + fieldname + '"' + scond + ' REGEXP ' + QuotedStr(svalue), useOR)
+    AddSQLCond('LOWER("' + fieldname + '")' + scond + ' REGEXP ' + QuotedStr(svalue), useOR)
   else
-    AddSQLCond('"' + fieldname + '"' + scond + ' LIKE ' + QuotedLike(svalue), useOR);
+    AddSQLCond('LOWER("' + fieldname + '")' + scond + ' LIKE ' + QuotedLike(svalue), useOR);
+end;
+
+procedure TDBDataProcess.AddSQLPairedFilter(const Pairs: array of TFieldValuePair;
+  useNOT, useOR, useRegexp: Boolean);
+var
+  i: Integer;
+  scond, svalue, sqlCondition: String;
+begin
+  sqlCondition := '';
+
+  for i := 0 to High(Pairs) do
+  begin
+    if (Pairs[i].Field = '') or (Pairs[i].Value = '') then
+    begin
+      Continue;
+    end;
+
+    svalue := LowerCase(Trim(Pairs[i].Value));
+
+    if useNOT then
+    begin
+      scond := ' NOT';
+    end
+    else
+    begin
+      scond := '';
+    end;
+
+    if useRegexp then
+    begin
+      sqlCondition := sqlCondition + 'LOWER("' + Pairs[i].Field + '")' + scond + ' REGEXP ' + QuotedStr(svalue);
+    end
+    else
+    begin
+      sqlCondition := sqlCondition + 'LOWER("' + Pairs[i].Field + '")' + scond + ' LIKE ' + QuotedLike(svalue);
+    end;
+
+    if i < High(Pairs) then
+    begin
+      sqlCondition := sqlCondition + ' OR '; // Add OR between pair conditions
+    end;
+  end;
+
+  if sqlCondition <> '' then
+  begin
+    AddSQLCond('(' + sqlCondition + ')', useOR);
+  end;
 end;
 
 function TDBDataProcess.GetConnected: Boolean;
@@ -924,9 +979,34 @@ begin
     end;
 end;
 
+function TDBDataProcess.RegexEscapeInput(const Input: String): String;
+const
+  RegexSpecialChars = ['.', '+', '*', '?', '^', '$', '(', ')', '[', ']', '{', '}', '|', '\'];
+var
+  i: Integer;
+begin
+  Result := '';
+  for i := 1 to Length(Input) do
+  begin
+    if CharInSet(Input[i], RegexSpecialChars) then
+      Result := Result + '\'; // Add escape character
+    Result := Result + Input[i];
+  end;
+end;
+
+function TDBDataProcess.RegexEscapeAltTitles(const ATitle: String): String;
+const
+  HeadRegex = '(?i)(^|,)[ \\t\\r\\n]*';
+  TailRegex = '[ \\t\\r\\n]*(,|$)';
+begin
+  Result := HeadRegex + RegexEscapeInput(ATitle) + TailRegex;
+end;
+
 function TDBDataProcess.Search(ATitle: String): Boolean;
 var
   i: Integer;
+  s: String;
+  Titles: array[0..1] of TFieldValuePair;
 begin
   if FQuery.Active then
   begin
@@ -953,8 +1033,10 @@ begin
                 if (SQL[i] = 'UNION ALL') or (SQL[i] = ')') then
                 begin
                   SQL.Insert(i, 'AND');
-                  SQL.Insert(i + 1, '"title" LIKE ' + QuotedLike(ATitle));
-                  Inc(i, 3);
+                  SQL.Insert(i + 1, '("title" LIKE ' + QuotedLike(ATitle));
+                  SQL.Insert(i + 2, 'OR');
+                  SQL.Insert(i + 3, '"alttitles" LIKE ' + QuotedLike(ATitle) + ')');
+                  Inc(i, 5);
                 end
                 else
                   Inc(i);
@@ -962,7 +1044,15 @@ begin
             end;
           end
           else
-            AddSQLSimpleFilter('title', ATitle);
+          begin
+            Titles[0].Field := 'title';
+            Titles[0].Value := ATitle;
+            Titles[1].Field := 'alttitles';
+            Titles[1].Value := ATitle;
+
+            AddSQLPairedFilter(Titles);
+          end;
+          s := SQL.Text;
           FFiltered := True;
         end
         else
@@ -1017,13 +1107,19 @@ var
   procedure GenerateSQLFilter;
   var
     j: Integer;
+    Titles: array[0..1] of TFieldValuePair;
   begin
     // filter new manga based on date
     if searchNewManga then
       AddSQLCond('"jdn" > "' + IntToStr(DateToJDN(Now)-minusDay) + '"');
 
     // filter title
-    AddSQLSimpleFilter('title', stTitle, False, False, useRegExpr);
+    Titles[0].Field := 'title';
+    Titles[0].Value := stTitle;
+    Titles[1].Field := 'alttitles';
+    Titles[1].Value := stTitle;
+
+    AddSQLPairedFilter(Titles);
 
     // filter authors
     AddSQLSimpleFilter('authors', stAuthors, False, False, useRegExpr);

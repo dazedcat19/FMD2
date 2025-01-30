@@ -119,20 +119,6 @@ var
   node: PVirtualNode;
   data: PFavContainer;
   module: TModuleContainer;
-  function EscapeRegexSpecialChars(const Input: String): String;
-  const
-    SpecialChars = ['.', '+', '*', '?', '^', '$', '(', ')', '[', ']', '{', '}', '|', '\'];
-  var
-    i: Integer;
-  begin
-    Result := '';
-    for i := 1 to Length(Input) do
-    begin
-      if CharInSet(Input[i], SpecialChars) then
-        Result := Result + '\'; // Add escape character
-      Result := Result + Input[i];
-    end;
-  end;
 begin
   Synchronize(@SyncBegin);
   FOwner.FValidCount := 0;
@@ -150,7 +136,7 @@ begin
         try
           db.Table.SQL.Text := 'SELECT link FROM ' + AnsiQuotedStr(db.TableName, '"') +
             ' WHERE (title LIKE ' + AnsiQuotedStr(data^.Fav.FavoriteInfo.Title, '"') +
-            ' OR LOWER(alttitles) REGEXP LOWER(' + AnsiQuotedStr('(?i)(^|,)[ \\t\\r\\n]*' + EscapeRegexSpecialChars(data^.Fav.FavoriteInfo.Title) + '[ \\t\\r\\n]*(,|$)', '"') + ')' +
+            ' OR LOWER(alttitles) REGEXP LOWER(' + AnsiQuotedStr(db.RegexEscapeAltTitles(data^.Fav.FavoriteInfo.Title), '"') + ')' +
             ') COLLATE NOCASE;';
           db.Table.Open;
           if db.Table.RecNo > 0 then
