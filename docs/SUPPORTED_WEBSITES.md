@@ -286,7 +286,6 @@
 | MangaDoor | [![http://mangadoor.com](https://img.shields.io/website?url=http://mangadoor.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://mangadoor.com)](http://mangadoor.com) | - | - | - |
 | MangaEden | [![https://www.mangaeden.com](https://img.shields.io/website?url=https://www.mangaeden.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangaeden.com)](https://www.mangaeden.com) | - | - | - |
 | MangaEden_IT | [![https://www.mangaeden.com](https://img.shields.io/website?url=https://www.mangaeden.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangaeden.com)](https://www.mangaeden.com) | - | - | - |
-| MangaEffect | [![https://mangaeffect.com](https://img.shields.io/website?url=https://mangaeffect.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangaeffect.com)](https://mangaeffect.com) | - | - | - |
 | MangaEsp | [![https://mangaesp.net](https://img.shields.io/website?url=https://mangaesp.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangaesp.net)](https://mangaesp.net) | - | - | - |
 | Mangaf | [![https://mangaforall.com](https://img.shields.io/website?url=https://mangaforall.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangaforall.com)](https://mangaforall.com) | - | - | - |
 | Mangafast | [![https://mangafast.net](https://img.shields.io/website?url=https://mangafast.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangafast.net)](https://mangafast.net) | - | - | - |
@@ -728,4 +727,5 @@
 | ZManga | [![https://zmanga.org](https://img.shields.io/website?url=https://zmanga.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://zmanga.org)](https://zmanga.org) | - | - | - |
 | Đọc Truyện 5s | [![https://dongmoe.com](https://img.shields.io/website?url=https://dongmoe.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://dongmoe.com)](https://dongmoe.com) | OK | 20.01.2025 | - |
 | 古风漫画网 | [![https://www.gufengmh.com](https://img.shields.io/website?url=https://www.gufengmh.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.gufengmh.com)](https://www.gufengmh.com) | OK | 06.01.2025 | - |
+| ~MangaEffect~ | ~https://mangaeffect.com~ | Removed | 30.01.2025 | Merged to MangaRead |
 | ~MangaGalaxy~ | ~https://mangagalaxy.net~ | Removed | 15.12.2024 | Merged to Vortex Scans |
