@@ -997,7 +997,9 @@ msgid "Show balloon hint"
 msgstr "Benachrichtigung anzeigen"
 
 #: tmainform.cboptionshowdeletetaskdialog.caption
-msgid "Delete task/favorite"
+#, fuzzy
+#| msgid "Delete task/favorite"
+msgid "Delete download/manga/favourite"
 msgstr "Lösche Aufgabe/Favorite"
 
 #: tmainform.cboptionshowdownloadmangalistdialog.caption
@@ -2401,7 +2403,8 @@ msgctxt "TMAINFORM.VTFAVORITES.HEADER.COLUMNS[4].TEXT"
 msgid "Status"
 msgstr "Status"
 
-#: tmainform.vtfavorites.header.columns[5].text\
+#: tmainform.vtfavorites.header.columns[5].text
+#, fuzzy
 msgctxt "tmainform.vtfavorites.header.columns[5].text"
 msgid "Save to"
 msgstr "Speichern unter"

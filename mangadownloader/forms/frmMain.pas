@@ -2146,10 +2146,10 @@ var
 begin
   if vtDownload.SelectedCount = 0 then Exit;
   if DLManager.Count = 0 then Exit;
-  if (cbOptionShowDeleteTaskDialog.Checked) then
-    if MessageDlg('', RS_DlgRemoveTask,
-      mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
+  if cbOptionShowDeleteTaskDialog.Checked then
+    if MessageDlg('', RS_DlgRemoveTask, mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
       Exit;
+
   vtDownload.BeginUpdate;
   DLManager.Lock;
   try
@@ -2294,6 +2294,8 @@ begin
           SilentThreadManager.Add(MD_DownloadAll, TModuleContainer(Module), Title, Link, SaveTo);
       xNode := vtFavorites.GetNextSelected(xNode);
     end;
+    if OptionSortDownloadsOnNewTasks then
+      DLManager.Sort(DLManager.SortColumn);
   except
     on E: Exception do
       ExceptionHandler(Self, E);
@@ -3272,7 +3274,7 @@ begin
     Exit;
   end;
   if cbOptionShowDeleteTaskDialog.Checked then
-    if MessageDlg('', RS_DlgRemoveFavorite, mtConfirmation, [mbYes, mbNo], 0) = mrNo then
+    if MessageDlg('', RS_DlgRemoveFavorite, mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
       Exit;
 
   FavoriteManager.Lock;
@@ -3570,9 +3572,9 @@ end;
 procedure TMainForm.miDownloadDeleteCompletedClick(Sender: TObject);
 begin
   if cbOptionShowDeleteTaskDialog.Checked then
-    if not (MessageDlg('', RS_DlgRemoveFinishTasks,
-      mtConfirmation, [mbYes, mbNo], 0) = mrYes) then
+    if MessageDlg('', RS_DlgRemoveFinishTasks, mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
       Exit;
+
   DLManager.RemoveAllFinishedTasks;
   if Sender <> nil then
   UpdateVtDownload;
@@ -3646,7 +3648,9 @@ var
 begin
   if vtMangaList.SelectedCount = 0 then Exit;
   if dataProcess.Table.Active = False then Exit;
-  if MessageDlg('', RS_DlgRemoveItem, mtConfirmation, [mbYes, mbNo], 0) = mrNo then Exit;
+  if cbOptionShowDeleteTaskDialog.Checked then
+    if MessageDlg('', RS_DlgRemoveItem, mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
+      Exit;
   try
     vtMangaList.BeginUpdate;
     deleteCount := 0;
@@ -3740,6 +3744,8 @@ begin
         SilentThreadManager.Add(MD_DownloadAll, TModuleContainer(data^.Module), data^.Title, data^.Link);
       xNode := vtMangaList.GetNextSelected(xNode);
     end;
+    if OptionSortDownloadsOnNewTasks then
+      DLManager.Sort(DLManager.SortColumn);
   except
     on E: Exception do
       ExceptionHandler(Self, E);

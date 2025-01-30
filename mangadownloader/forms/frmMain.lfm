@@ -4566,7 +4566,7 @@ object MainForm: TMainForm
               Top = 27
               Width = 817
               Align = alTop
-              Caption = 'Delete task/favorite'
+              Caption = 'Delete download/manga/favourite'
               ParentFont = False
               TabOrder = 1
             end

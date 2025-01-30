@@ -993,7 +993,9 @@ msgid "Show balloon hint"
 msgstr "Εμφάνιση αναδυόμενων παραθύρων συμβουλών"
 
 #: tmainform.cboptionshowdeletetaskdialog.caption
-msgid "Delete task/favorite"
+#, fuzzy
+#| msgid "Delete task/favorite"
+msgid "Delete download/manga/favourite"
 msgstr "Διαγραφή εργασίας / αγαπημένου"
 
 #: tmainform.cboptionshowdownloadmangalistdialog.caption

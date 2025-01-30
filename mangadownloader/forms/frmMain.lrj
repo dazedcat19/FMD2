@@ -257,7 +257,7 @@
 {"hash":184038819,"name":"tmainform.tsdialogs.caption","sourcebytes":[68,105,97,108,111,103,115],"value":"Dialogs"},
 {"hash":263412434,"name":"tmainform.gbdialogs.caption","sourcebytes":[83,104,111,119,32,100,105,97,108,111,103,32,99,111,110,102,105,114,109,97,116,105,111,110,32,102,111,114],"value":"Show dialog confirmation for"},
 {"hash":252071892,"name":"tmainform.cboptionshowquitdialog.caption","sourcebytes":[69,120,105,116,32,70,77,68],"value":"Exit FMD"},
-{"hash":242423477,"name":"tmainform.cboptionshowdeletetaskdialog.caption","sourcebytes":[68,101,108,101,116,101,32,116,97,115,107,47,102,97,118,111,114,105,116,101],"value":"Delete task/favorite"},
+{"hash":45965381,"name":"tmainform.cboptionshowdeletetaskdialog.caption","sourcebytes":[68,101,108,101,116,101,32,100,111,119,110,108,111,97,100,47,109,97,110,103,97,47,102,97,118,111,117,114,105,116,101],"value":"Delete download/manga/favourite"},
 {"hash":221590857,"name":"tmainform.cboptionshowdownloadmangalistdialog.caption","sourcebytes":[68,111,119,110,108,111,97,100,32,109,97,110,103,97,32,108,105,115,116,32,105,102,32,101,109,112,116,121],"value":"Download manga list if empty"},
 {"hash":194645779,"name":"tmainform.tswebsites.caption","sourcebytes":[87,101,98,115,105,116,101,115],"value":"Websites"},
 {"hash":194645779,"name":"tmainform.tswebsiteselection.caption","sourcebytes":[87,101,98,115,105,116,101,115],"value":"Websites"},

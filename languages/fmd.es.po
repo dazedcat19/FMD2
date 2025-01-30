@@ -997,7 +997,9 @@ msgid "Show balloon hint"
 msgstr "Mostrar globo de sugerencia"
 
 #: tmainform.cboptionshowdeletetaskdialog.caption
-msgid "Delete task/favorite"
+#, fuzzy
+#| msgid "Delete task/favorite"
+msgid "Delete download/manga/favourite"
 msgstr "Borrar Tarea/Favorito"
 
 #: tmainform.cboptionshowdownloadmangalistdialog.caption
