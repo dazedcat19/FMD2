@@ -5,7 +5,7 @@ unit frmWebsiteOptionCustom;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, StdCtrls, Spin, WebsiteModules;
+  Classes, SysUtils, Forms, Controls, StdCtrls, Spin, WebsiteModules, Graphics;
 
 type
 
@@ -223,6 +223,16 @@ var
       Name := AName;
       Caption := ACaption;
       AutoSize := True;
+      ParentFont := False;
+      if AControl is TGroupBox then
+      begin
+        Font.Style := [fsBold];
+      end
+      else
+      begin
+        Font.Style := [];
+      end;
+
       if AParent <> nil then
       begin
         Parent := AParent;
