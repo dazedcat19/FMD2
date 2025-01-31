@@ -2294,8 +2294,6 @@ begin
           SilentThreadManager.Add(MD_DownloadAll, TModuleContainer(Module), Title, Link, SaveTo);
       xNode := vtFavorites.GetNextSelected(xNode);
     end;
-    if OptionSortDownloadsOnNewTasks then
-      DLManager.Sort(DLManager.SortColumn);
   except
     on E: Exception do
       ExceptionHandler(Self, E);
@@ -3744,8 +3742,6 @@ begin
         SilentThreadManager.Add(MD_DownloadAll, TModuleContainer(data^.Module), data^.Title, data^.Link);
       xNode := vtMangaList.GetNextSelected(xNode);
     end;
-    if OptionSortDownloadsOnNewTasks then
-      DLManager.Sort(DLManager.SortColumn);
   except
     on E: Exception do
       ExceptionHandler(Self, E);

@@ -418,6 +418,8 @@ begin
         MainForm.ExceptionHandler(Self, E);
     end;
   end;
+  if OptionSortDownloadsOnNewTasks then
+    DLManager.Sort(DLManager.SortColumn);
 end;
 
 constructor TSilentThread.Create(const AManager: TSilentThreadManager);
