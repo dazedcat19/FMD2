@@ -73,6 +73,7 @@ type
     procedure Unlock; inline;
 
     function Connect(const AWebsite: String): Boolean;
+    function ConnectFile(const AFile: String): Boolean;
     function Open(const AWebsite: String = ''): Boolean;
     function OpenTable(const ATableName: String = '';
       CheckRecordCount: Boolean = False): Boolean;
@@ -699,6 +700,15 @@ begin
     Result := InternalOpen(filepath)
   else
     Result := False;
+end;
+
+function TDBDataProcess.ConnectFile(const AFile: String): Boolean;
+begin
+  try
+    Result := InternalOpen(AFile);
+  except
+    Result := False;
+  end;
 end;
 
 function TDBDataProcess.Open(const AWebsite: String): Boolean;

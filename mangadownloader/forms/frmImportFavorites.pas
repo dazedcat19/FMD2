@@ -13,7 +13,7 @@ interface
 uses
   Classes, SysUtils, Forms, Dialogs, StdCtrls, Buttons, EditBtn,
   LazFileUtils, uBaseUnit, WebsiteModules, FMDOptions, RegExpr,
-  frmNewChapter;
+  frmNewChapter, DBDataProcess;
 
 type
 
@@ -140,11 +140,108 @@ begin
 end;
 
 procedure TImportFavorites.FMDHandle;
+var
+  db: TDBDataProcess;
+  m: TModuleContainer;                                   
+  dbfile, link, title, saveto, website, moduleid: String;
+  hasModuleID, hasWebsite :Boolean;
+  columnList, unimportedMangas: TStringList;
 begin
-  // todo: legacy import
+  dbfile := CleanAndExpandDirectory(edPath.Text) + 'favorites.db';
+  if NOT FileExistsUTF8(dbfile) then
+  begin
+    Exit;
+  end;
 
-  MessageDlg('', RS_ImportCompleted,
-                 mtConfirmation, [mbYes], 0)
+  db := TDBDataProcess.Create;
+  unimportedMangas := TStringList.Create;
+  columnList := TStringList.Create;
+  try
+    if db.ConnectFile(dbfile) then
+    begin
+      db.Table.ReadOnly := True;
+      db.Table.SQL.Text := 'PRAGMA table_info(favorites)'; // Get column metadata
+      db.Table.Open;
+
+      hasModuleID := False;
+      hasWebsite := False;
+
+      while not db.Table.EOF do
+      begin
+        columnList.Add(db.Table.FieldByName('name').AsString);
+        db.Table.Next;
+      end;
+
+      hasModuleID := columnList.IndexOf('moduleid') <> -1;
+      hasWebsite := columnList.IndexOf('website') <> -1;
+      db.Table.Close;
+      db.Table.SQL.Text := 'SELECT * FROM favorites';
+      db.Table.Open;
+
+      while not db.Table.EOF do
+      begin
+        if hasModuleID then
+        begin
+          moduleid := db.Table.FieldByName('moduleid').AsString;
+        end;
+        if hasWebsite then
+        begin
+          website := db.Table.FieldByName('website').AsString;
+        end;
+        link := db.Table.FieldByName('link').AsString;
+        title := db.Table.FieldByName('title').AsString;
+        saveto := db.Table.FieldByName('saveto').AsString;
+
+        if (hasModuleID) and (moduleid <> '') then
+        begin
+          m := Modules.LocateModule(moduleid);
+        end
+        else if (hasWebsite) and (website <> '') then
+        begin
+          m := Modules.LocateModuleByHost(website);
+        end;
+
+        if Assigned(m) then
+        begin
+          SilentThreadManager.Add(
+            MD_AddToFavorites,
+            m,
+            title,
+            link,
+            saveto
+          );
+        end
+        else
+        begin
+          unimportedMangas.Add(title + ' <' + website + link + '>');
+        end;
+
+        db.Table.Next;
+      end;
+    end;
+  finally
+    db.Table.Close;
+  end;
+
+  if unimportedMangas.Count > 0 then
+  begin
+    with TNewChapter.Create(Self) do try
+      Caption := RS_ListUnimportedCaption;
+      lbNotification.Caption := '';
+      btCancel.Visible := False;
+      btQueue.Visible := False;
+      btDownload.Visible := True;
+      btDownload.Caption := RS_BtnOK;
+      mmMemo.Lines.Text := unimportedMangas.Text;
+      ShowModal;
+    finally
+      Free;
+    end;
+  end;
+  db.Free;
+  unimportedMangas.Free;
+
+  MessageDlg('', RS_ImportCompleted, mtConfirmation, [mbYes], 0);
 end;
 
 procedure TImportFavorites.Run;
