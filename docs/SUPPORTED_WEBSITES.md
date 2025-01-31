@@ -410,7 +410,7 @@
 | Mangceh | [![https://mangceh.me](https://img.shields.io/website?url=https://mangceh.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangceh.me)](https://mangceh.me) | - | - | - |
 | ManhuaAZ | [![https://manhuaaz.com](https://img.shields.io/website?url=https://manhuaaz.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuaaz.com)](https://manhuaaz.com) | - | - | - |
 | ManhuaBox | [![https://manhuabox.net](https://img.shields.io/website?url=https://manhuabox.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuabox.net)](https://manhuabox.net) | - | - | - |
-| Manhuafast | [![https://manhuafast.com](https://img.shields.io/website?url=https://manhuafast.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuafast.com)](https://manhuafast.com) | - | - | - |
+| Manhuafast | [![https://manhuafast.net](https://img.shields.io/website?url=https://manhuafast.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuafast.net)](https://manhuafast.net) | OK | 31.01.2025 | - |
 | Manhuaga | [![https://manhuaga.com](https://img.shields.io/website?url=https://manhuaga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuaga.com)](https://manhuaga.com) | - | - | - |
 | Manhuagold | [![https://manhuagold.top](https://img.shields.io/website?url=https://manhuagold.top%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuagold.top)](https://manhuagold.top) | OK | 21.01.2025 | - |
 | ManHuaGui | [![https://www.manhuagui.com](https://img.shields.io/website?url=https://www.manhuagui.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.manhuagui.com)](https://www.manhuagui.com) | - | - | - |
