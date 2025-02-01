@@ -5,13 +5,15 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'abbde9b6468f45939e5603416d73ac47'
-	m.Name                     = 'WeebCentral'
+	m.Name                     = 'Weeb Central'
 	m.RootURL                  = 'https://weebcentral.com'
 	m.Category                 = 'English'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.MaxTaskLimit             = 2
+	m.MaxConnectionLimit       = 4
 	m.SortedList               = true
 end
 
