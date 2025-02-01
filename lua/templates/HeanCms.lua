@@ -61,7 +61,7 @@ function _M.GetInfo()
 	MANGAINFO.Summary   = x.XPathString('json(*).description')
 
 	thumbnail = x.XPathString('json(*).thumbnail')
-	if string.find(thumbnail, 'media', 1, true) == nil then
+	if string.find(thumbnail, 'http', 1, true) == nil then
 		thumbnail = CDN_URL .. '/' .. thumbnail
 	end
 	MANGAINFO.CoverLink = thumbnail
@@ -109,7 +109,7 @@ function _M.GetPageNumber()
 	x = CreateTXQuery(HTTP.Document)
 	for i in x.XPath('json(*).chapter.chapter_data.images()').Get() do
 		image = i.ToString()
-		if string.find(image, 'media', 1, true) == nil then
+		if string.find(image, 'http', 1, true) == nil then
 			image = CDN_URL .. '/' .. image
 		end
 		TASK.PageLinks.Add(image)
