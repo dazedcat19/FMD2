@@ -112,6 +112,14 @@ msgstr "Kullanıcı adı veya şifre boş olamaz!"
 msgid "Import completed."
 msgstr "İçe aktarma tamamlandı."
 
+#: frmimportfavorites.rs_importfailed
+msgid "Import could not find a suitable file."
+msgstr ""
+
+#: frmimportfavorites.rs_importthreadstatus
+msgid "Importing..."
+msgstr ""
+
 #: frmimportfavorites.rs_listunimportedcaption
 msgid "List of unimported manga"
 msgstr "İçe aktarılmayan manga listesi"

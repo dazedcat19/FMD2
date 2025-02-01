@@ -114,6 +114,14 @@ msgstr "Nama pengguna atau kata sandi tidak boleh kosong!"
 msgid "Import completed."
 msgstr "Selesai mengimpor."
 
+#: frmimportfavorites.rs_importfailed
+msgid "Import could not find a suitable file."
+msgstr ""
+
+#: frmimportfavorites.rs_importthreadstatus
+msgid "Importing..."
+msgstr ""
+
 #: frmimportfavorites.rs_listunimportedcaption
 msgid "List of unimported manga"
 msgstr "Daftar komik yang tidak bisa diimpor"

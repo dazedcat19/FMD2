@@ -31,12 +31,12 @@ object ImportFavorites: TImportFavorites
     ItemHeight = 15
     ItemIndex = 0
     Items.Strings = (
-      'Domdomsoft Manga Downloader'
       'Free Manga Downloader'
+      'Domdomsoft Manga Downloader'
     )
     Style = csDropDownList
     TabOrder = 0
-    Text = 'Domdomsoft Manga Downloader'
+    Text = 'Free Manga Downloader'
   end
   object edPath: TDirectoryEdit
     Left = 8

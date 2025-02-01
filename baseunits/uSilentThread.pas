@@ -20,7 +20,7 @@ uses
 
 type
 
-  TMetaDataType = (MD_DownloadAll, MD_AddToFavorites);
+  TMetaDataType = (MD_DownloadAll, MD_AddToFavorites, MD_ImportToFavorites);
 
   { TSilentThreadMetaData }
 
@@ -31,8 +31,12 @@ type
     Title: String;
     URL: String;
     SaveTo: String;
+    Status: String;
+    NumChapter: String;
+    ChapterLinks: String;
     constructor Create(const AType: TMetaDataType;
-      const AModule: TModuleContainer; const ATitle, AURL, ASaveTo: String);
+      const AModule: TModuleContainer; const ATitle, AURL,
+      ASaveTo, AStatus, ANumChapter, AChapterLinks: String);
   end;
 
   TSilentThreadManager = class;
@@ -49,9 +53,13 @@ type
     FTitle: String;
     FURL: String;
     FSaveTo: String;
+    FStatus: String;
+    FNumChapter: String;
+    FChapterLinks: String;
   protected
     procedure SyncDownloadAll;
     procedure SyncAddToFavorite;
+    procedure SyncImportToFavorite;
     procedure Execute; override;
   public
     constructor Create(const AManager: TSilentThreadManager);
@@ -77,7 +85,11 @@ type
     procedure RemoveThread(const T: TSilentThread);
     function GetMetaData(const T: TSilentThread): Boolean;
   public
-    procedure Add(const AType: TMetaDataType; const AModule: TModuleContainer; const ATitle, AURL: String; const ASaveTo: String = '');
+    procedure Add(const AType: TMetaDataType; const AModule: TModuleContainer; const ATitle, AURL: String); overload;
+    procedure Add(const AType: TMetaDataType; const AModule: TModuleContainer; const ATitle, AURL: String;
+      const ASaveTo: String); overload;
+    procedure Add(const AType: TMetaDataType; const AModule: TModuleContainer; const ATitle, AURL: String;
+      const ASaveTo, AStatus, ANumChapter, AChapterLinks: String); overload;
     procedure StopAll(const WaitFor: Boolean = True);
     procedure UpdateLoadStatus;
     procedure BeginAdd;
@@ -109,14 +121,28 @@ begin
 end;
 
 procedure TSilentThreadManager.Add(const AType: TMetaDataType;
+  const AModule: TModuleContainer; const ATitle, AURL: String);
+begin
+  Add(AType, AModule, ATitle, AURL, '', '', '', '');
+end;
+
+procedure TSilentThreadManager.Add(const AType: TMetaDataType;
   const AModule: TModuleContainer; const ATitle, AURL: String;
   const ASaveTo: String);
 begin
-  if (AType=MD_AddToFavorites) and (FavoriteManager.IsMangaExist(ATitle,AModule.ID)) then Exit;
+  Add(AType, AModule, ATitle, AURL, ASaveTo, '', '', '');
+end;
+
+procedure TSilentThreadManager.Add(const AType: TMetaDataType;
+  const AModule: TModuleContainer; const ATitle, AURL: String;
+  const ASaveTo, AStatus, ANumChapter, AChapterLinks: String);
+begin
+  if ((AType=MD_AddToFavorites) or (AType=MD_ImportToFavorites)) and (FavoriteManager.IsMangaExist(ATitle,AModule.ID)) then Exit;
   EnterCriticalsection(FMetaDatasGuardian);
   try
     FMetaDatas.Add(TSilentThreadMetaData.Create(
-      AType, AModule, ATitle, AURL, ASaveTo));
+      AType, AModule, ATitle, AURL, ASaveTo,
+      AStatus, ANumChapter, AChapterLinks));
     if not FLockAdd then
       StartThread;
   finally
@@ -151,19 +177,32 @@ begin
   Result:=False;
   EnterCriticalSection(FMetaDatasGuardian);
   try
-    if FMetaDatas.Count=0 then Exit;
-    if FThreads.Count>OptionMaxBackgroundLoadThreads then Exit;
-    M:=FMetaDatas.Items[0];
+    if FMetaDatas.Count=0 then
+    begin
+      Exit;
+    end;
+    if FThreads.Count>OptionMaxBackgroundLoadThreads then
+    begin
+      Exit;
+    end;
+
+    M := FMetaDatas.Items[0];
     FMetaDatas.Delete(0);
-    T.FType:=M.MetaDataType;
-    T.FModule:=M.Module;
-    T.FTitle:=M.Title;
-    T.FURL:=M.URL;
-    T.FSaveTo:=M.SaveTo;
+    T.FType := M.MetaDataType;
+    T.FModule := M.Module;
+    T.FTitle := M.Title;
+    T.FURL := M.URL;
+    T.FSaveTo := M.SaveTo;
+    T.FStatus := M.Status;
+    T.FNumChapter := M.NumChapter;
+    T.FChapterLinks := M.ChapterLinks;
     M.Free;
-    Result:=True;
+    Result := True;
+
     if (FMetaDatas.Count>0) and (FThreads.Count<OptionMaxBackgroundLoadThreads) then
+    begin
       TSilentThread.Create(Self);
+    end;
   finally
     LeaveCriticalSection(FMetaDatasGuardian);
   end;
@@ -204,10 +243,13 @@ end;
 procedure TSilentThreadManager.UpdateLoadStatus;
 begin
   if Count > 0 then
-    MainForm.sbMain.Panels[1].Text :=
-      Format(RS_SilentThreadLoadStatus, [FThreads.Count, Count])
+  begin
+    MainForm.sbMain.Panels[1].Text := Format(RS_SilentThreadLoadStatus, [FThreads.Count, Count])
+  end
   else
+  begin
     MainForm.sbMain.Panels[1].Text := '';
+  end;
 end;
 
 procedure TSilentThreadManager.BeginAdd;
@@ -245,7 +287,8 @@ end;
 { TSilentThreadMetaData }
 
 constructor TSilentThreadMetaData.Create(const AType: TMetaDataType;
-  const AModule: TModuleContainer; const ATitle, AURL, ASaveTo: String);
+  const AModule: TModuleContainer; const ATitle, AURL,
+  ASaveTo, AStatus, ANumChapter, AChapterLinks: String);
 begin
   inherited Create;
   MetaDataType := AType;
@@ -253,6 +296,9 @@ begin
   Title := ATitle;
   URL := AURL;
   SaveTo := ASaveTo;
+  Status := AStatus;
+  NumChapter := ANumChapter;
+  ChapterLinks := AChapterLinks;
 end;
 
 { TSilentThread }
@@ -380,8 +426,7 @@ begin
           '',
           OptionChangeUnicodeCharacter,
           OptionChangeUnicodeCharacterStr);
-      if Trim(FTitle) = '' then
-        FTitle := FInfo.MangaInfo.Title;
+
       FavoriteManager.Add(
         FModule,
         FTitle,
@@ -390,7 +435,39 @@ begin
         FInfo.MangaInfo.ChapterLinks.Text,
         s,
         FURL);
-      UpdateVtFavorites;
+    end;
+  except
+    on E: Exception do
+      MainForm.ExceptionHandler(Self, E);
+  end;
+end;
+ 
+procedure TSilentThread.SyncImportToFavorite;
+var
+  s: String;
+begin
+  try
+    with MainForm do
+    begin
+      if Trim(FTitle) = '' then
+      begin
+        FTitle := FInfo.MangaInfo.Title;
+      end;
+      if FSaveTo = '' then
+      begin
+        FillSaveTo;
+	OverrideSaveTo(FModule);
+        FSaveTo := edSaveTo.Text;
+      end;
+
+      FavoriteManager.Add(
+        FModule,
+        FTitle,
+        FInfo.MangaInfo.Status,
+        IntToStr(FInfo.MangaInfo.NumChapter),
+        FInfo.MangaInfo.ChapterLinks.Text,
+        FSaveTo,
+        FURL);
     end;
   except
     on E: Exception do
@@ -399,27 +476,52 @@ begin
 end;
 
 procedure TSilentThread.Execute;
+
 begin
   while FManager.GetMetaData(Self) do
   begin
     Synchronize(FManager.UpdateLoadStatus);
+
     try
       FInfo.HTTP.Reset;
       FInfo.MangaInfo.Clear;
       FInfo.Module := FModule;
       FInfo.MangaInfo.Title := FTitle;
-      if (FInfo.GetInfoFromURL(FURL)=NO_ERROR) and not(Terminated) then
       case FType of
-        MD_DownloadAll: Synchronize(SyncDownloadAll);
-        MD_AddToFavorites: Synchronize(SyncAddToFavorite);
+        MD_DownloadAll:
+          begin
+            if (FInfo.GetInfoFromURL(FURL)=NO_ERROR) and not(Terminated) then
+            begin
+              Synchronize(SyncDownloadAll);
+            end;
+          end;
+        MD_AddToFavorites:
+          begin
+            if (FInfo.GetInfoFromURL(FURL)=NO_ERROR) and not(Terminated) then
+            begin
+              Synchronize(SyncAddToFavorite);
+            end;
+          end;
+        MD_ImportToFavorites:
+          begin
+            FInfo.MangaInfo.Status := FStatus;
+            FInfo.MangaInfo.NumChapter := StrToIntDef(FNumChapter, 0);
+            FInfo.MangaInfo.ChapterLinks.Text := FChapterLinks;
+            Synchronize(SyncImportToFavorite);
+          end;
       end;
     except
       on E: Exception do
         MainForm.ExceptionHandler(Self, E);
     end;
   end;
+
   if OptionSortDownloadsOnNewTasks then
+  begin
     DLManager.Sort(DLManager.SortColumn);
+  end;
+  MainForm.UpdateVtFavorites;
+  MainForm.vtFavoritesFilterCountChange;
 end;
 
 constructor TSilentThread.Create(const AManager: TSilentThreadManager);

@@ -111,6 +111,14 @@ msgstr "Το όνομα χρήστη ή ο κωδικός πρόσβασης δ�
 msgid "Import completed."
 msgstr "Η εισαγωγή ολοκληρώθηκε."
 
+#: frmimportfavorites.rs_importfailed
+msgid "Import could not find a suitable file."
+msgstr ""
+
+#: frmimportfavorites.rs_importthreadstatus
+msgid "Importing..."
+msgstr ""
+
 #: frmimportfavorites.rs_listunimportedcaption
 msgid "List of unimported manga"
 msgstr "Λίστα μη εισηγμένων manga"

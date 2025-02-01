@@ -2896,7 +2896,8 @@ end;
 
 procedure TMainForm.btFavoritesImportClick(Sender: TObject);
 begin
-  with TImportFavorites.Create(Self) do try
+  with TImportFavorites.Create(Self) do
+  try
     ShowModal;
   finally
     Free;

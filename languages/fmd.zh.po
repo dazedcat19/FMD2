@@ -110,6 +110,14 @@ msgstr "用户名或密码不能为空！"
 msgid "Import completed."
 msgstr "导入完成。"
 
+#: frmimportfavorites.rs_importfailed
+msgid "Import could not find a suitable file."
+msgstr ""
+
+#: frmimportfavorites.rs_importthreadstatus
+msgid "Importing..."
+msgstr ""
+
 #: frmimportfavorites.rs_listunimportedcaption
 msgid "List of unimported manga"
 msgstr "未导入漫画列表"

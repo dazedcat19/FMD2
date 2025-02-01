@@ -111,6 +111,14 @@ msgstr "Le nom d'utilisateur et le mot de passe ne peuvent pas être vides !"
 msgid "Import completed."
 msgstr "Import terminé."
 
+#: frmimportfavorites.rs_importfailed
+msgid "Import could not find a suitable file."
+msgstr ""
+
+#: frmimportfavorites.rs_importthreadstatus
+msgid "Importing..."
+msgstr ""
+
 #: frmimportfavorites.rs_listunimportedcaption
 msgid "List of unimported manga"
 msgstr "Liste des mangas non importés"
