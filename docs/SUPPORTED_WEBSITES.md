@@ -195,7 +195,7 @@
 | KLManga | [![https://klz9.com](https://img.shields.io/website?url=https://klz9.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://klz9.com)](https://klz9.com) | OK | 18.01.2025 | - |
 | KoMBatch | [![https://kombatch.com](https://img.shields.io/website?url=https://kombatch.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kombatch.com)](https://kombatch.com) | - | - | - |
 | KomikAV | [![https://komikav.com](https://img.shields.io/website?url=https://komikav.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikav.com)](https://komikav.com) | - | - | - |
-| KomikCast | [![https://komikcast.bz](https://img.shields.io/website?url=https://komikcast.bz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikcast.bz)](https://komikcast.bz) | - | - | - |
+| KomikCast | [![https://komikcast01.com](https://img.shields.io/website?url=https://komikcast01.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikcast01.com)](https://komikcast01.com) | OK | 01.02.2025 | - |
 | KomikGo | [![https://komikgo.com](https://img.shields.io/website?url=https://komikgo.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikgo.com)](https://komikgo.com) | - | - | - |
 | KomikGO | [![https://komikgo.xyz](https://img.shields.io/website?url=https://komikgo.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikgo.xyz)](https://komikgo.xyz) | - | - | - |
 | KomikGue | [![http://www.komikgue.com](https://img.shields.io/website?url=http://www.komikgue.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.komikgue.com)](http://www.komikgue.com) | - | - | - |
