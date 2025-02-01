@@ -59,13 +59,14 @@ procedure TImportFavorites.FMDHandle;
 var
   db: TDBDataProcess;
   m: TModuleContainer;
-  dbfile, fmd1path, fmd2path, website, moduleid, link, title,
-  saveto, status, currentchapter, downloadedchapterlist: String;
-  hasModuleID, hasWebsite, hasStatus, overrideSave :Boolean;
+  dbfile, fmd1path, fmd2path, dbfilepath, website, moduleid, link, title,
+  saveto, status, currentchapter, downloadedchapterlist, favoriteenabled: String;
+  hasModuleID, hasWebsite, hasStatus :Boolean;
   columnList: TStringList;
 begin
   fmd1path := CleanAndExpandDirectory(edPath.Text) + 'works/favorites.db';
   fmd2path := CleanAndExpandDirectory(edPath.Text) + 'userdata/favorites.db';
+  dbfilepath := CleanAndExpandDirectory(edPath.Text) + 'favorites.db';
   if FileExistsUTF8(fmd1path) then
   begin
     dbfile := fmd1path;
@@ -73,6 +74,10 @@ begin
   else if FileExistsUTF8(fmd2path) then
   begin
     dbfile := fmd2path;
+  end
+  else if FileExistsUTF8(dbfilepath) then
+  begin
+    dbfile := dbfilepath;
   end
   else
   begin
@@ -124,6 +129,7 @@ begin
         saveto := db.Table.FieldByName('saveto').AsString;
         currentchapter := db.Table.FieldByName('currentchapter').AsString;
         downloadedchapterlist := db.Table.FieldByName('downloadedchapterlist').AsString;
+        favoriteenabled := db.Table.FieldByName('enabled').AsString;
 
         if (hasModuleID) and (moduleid <> '') then
         begin
@@ -148,7 +154,8 @@ begin
             saveto,
             status,
             currentchapter,
-            downloadedchapterlist
+            downloadedchapterlist,
+            StrToBoolDef(favoriteenabled, True)
           );
         end
         else

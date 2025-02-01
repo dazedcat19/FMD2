@@ -138,7 +138,7 @@ type
     function LocateMangaByLink(const AModuleID, ALink: String): TFavoriteContainer;
     function IsMangaExistByLink(const AModuleID, ALink: String): Boolean; inline;
     // Add new manga to the list
-    procedure Add(const AModule: Pointer; const ATitle, AStatus, ACurrentChapter, ADownloadedChapterList, ASaveTo, ALink: String);
+    procedure Add(const AModule: Pointer; const ATitle, AStatus, ACurrentChapter, ADownloadedChapterList, ASaveTo, ALink: String; AEnabled: Boolean = True);
     // Replace manga from same site
     procedure Replace(const OldId: String; const AModule: Pointer; const ATitle, AStatus, ACurrentChapter, ADownloadedChapterList, ASaveTo, ALink: String);
     // Delete directly, must be inside lock/unlock
@@ -1002,7 +1002,7 @@ begin
 end;
 
 procedure TFavoriteManager.Add(const AModule: Pointer; const ATitle, AStatus, ACurrentChapter,
-  ADownloadedChapterList, ASaveTo, ALink: String);
+  ADownloadedChapterList, ASaveTo, ALink: String; AEnabled: Boolean);
 var
   F: TFavoriteContainer;
 begin
@@ -1011,6 +1011,7 @@ begin
   try
     if IsMangaExist(ATitle, TModuleContainer(AModule).ID) then Exit;
     F:=TFavoriteContainer.Create(Self);
+    F.Enabled := AEnabled;
     F.FOrder:=Items.Add(F);
     with F.FavoriteInfo do begin
       Module := AModule;
@@ -1066,6 +1067,10 @@ end;
 
 procedure TFavoriteManager.Delete(const Pos: Integer);
 begin
+  if Items[Pos].FEnabled then
+  begin
+    Dec(FEnabledCount);
+  end;
   FFavoritesDB.Delete(Items[Pos].Fid);
   Items[Pos].Free;
   Items.Delete(Pos);
@@ -1074,6 +1079,10 @@ end;
 
 procedure TFavoriteManager.Remove(const T: TFavoriteContainer);
 begin
+  if T.FEnabled then
+  begin
+    Dec(FEnabledCount);
+  end;
   FFavoritesDB.Delete(T.Fid);
   T.Free;
   Items.Remove(T);
