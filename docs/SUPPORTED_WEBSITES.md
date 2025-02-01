@@ -493,7 +493,7 @@
 | NiAddFR | [![https://fr.niadd.com](https://img.shields.io/website?url=https://fr.niadd.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://fr.niadd.com)](https://fr.niadd.com) | - | - | - |
 | NiAddIT | [![https://it.niadd.com](https://img.shields.io/website?url=https://it.niadd.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://it.niadd.com)](https://it.niadd.com) | - | - | - |
 | NiAddRU | [![https://ru.niadd.com](https://img.shields.io/website?url=https://ru.niadd.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://ru.niadd.com)](https://ru.niadd.com) | - | - | - |
-| NicoManga | [![https://nicomanga.com](https://img.shields.io/website?url=https://nicomanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://nicomanga.com)](https://nicomanga.com) | OK | 18.01.2025 | - |
+| NicoManga | [![https://nicomanga.com](https://img.shields.io/website?url=https://nicomanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://nicomanga.com)](https://nicomanga.com) | OK | 01.02.2025 | - |
 | NightComic | [![https://nightcomic.com](https://img.shields.io/website?url=https://nightcomic.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://nightcomic.com)](https://nightcomic.com) | - | - | - |
 | Nightow | [![http://nightow.net](https://img.shields.io/website?url=http://nightow.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://nightow.net)](http://nightow.net) | - | - | - |
 | NightScans | [![https://nightscans.net](https://img.shields.io/website?url=https://nightscans.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://nightscans.net)](https://nightscans.net) | - | - | - |

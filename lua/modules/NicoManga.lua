@@ -85,7 +85,7 @@ function GetPageNumber()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('//img/@data-src', TASK.PageLinks)
+	CreateTXQuery(HTTP.Document).XPathStringAll('//img/@data-srcset', TASK.PageLinks)
 
 	return no_error
 end
