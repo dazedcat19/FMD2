@@ -2548,15 +2548,18 @@ end;
 
 procedure TMainForm.btDownloadClick(Sender: TObject);
 var
-  links,names:TStrings;
-  node:PVirtualNode;
+  links, names: TStrings;
+  node: PVirtualNode;
   s:String;
-  c,p,r,i,j,k,l:Integer;
+  c, p, r, i, j, k, l: Integer;
 begin
   if clbChapterList.CheckedCount = 0 then
+  begin
     Exit;
-  links:=TStringList.Create;
-  names:=TStringList.Create;
+  end;
+
+  links := TStringList.Create;
+  names := TStringList.Create;
   try
     node:=clbChapterList.GetFirstChecked();
     while Assigned(node) do
@@ -2564,7 +2567,7 @@ begin
       if (vsVisible in node^.States) then
       begin
         links.Add(ChapterList[node^.Index].Link);
-        s:=CustomRename(OptionChapterCustomRename,
+        s := CustomRename(OptionChapterCustomRename,
           mangaInfo.Website,
           mangaInfo.Title,
           mangaInfo.Authors,
@@ -2574,20 +2577,19 @@ begin
           OptionChangeUnicodeCharacter,
           OptionChangeUnicodeCharacterStr);
         names.Add(s);
-        ChapterList[node^.Index].Downloaded:=True;
-        clbChapterList.ReinitNode(node,False);
+        ChapterList[node^.Index].Downloaded := True;
+        clbChapterList.ReinitNode(node, False);
       end;
-      node:=clbChapterList.GetNextChecked(node);
+      node := clbChapterList.GetNextChecked(node);
     end;
     clbChapterList.Repaint;
-    if links.Count<>0 then
+    if links.Count <> 0 then
     begin
-      s:=edSaveTo.Text;
-      if OptionGenerateMangaFolder and
-        not((LastViewMangaInfoSender = miDownloadViewMangaInfo) or
-            (LastViewMangaInfoSender = miFavoritesViewInfos)) // ignore custom saveto options
-        then
-        s:=AppendPathDelim(s)+CustomRename(
+      FillSaveTo;
+      s := edSaveTo.Text;
+      if OptionGenerateMangaFolder then
+      begin
+        s := AppendPathDelim(s)+CustomRename(
           OptionMangaCustomRename,
           mangaInfo.Website,
           mangaInfo.Title,
@@ -2597,38 +2599,45 @@ begin
           '',
           OptionChangeUnicodeCharacter,
           OptionChangeUnicodeCharacterStr);
-      s:=ReplaceRegExpr('\.*$', s, '', False);
-      c:=1;
-      p:=links.Count;
-      r:=0;
-      if btDownload.Tag>=links.Count then
+      end;
+      s := ReplaceRegExpr('\.*$', s, '', False);
+      c := 1;
+      p := links.Count;
+      r := 0;
+      if btDownload.Tag >= links.Count then
       begin
-        c:=links.Count;
-        p:=1;
+        c := links.Count;
+        p := 1;
       end
       else
-      if btDownload.Tag>1 then
+      if btDownload.Tag > 1 then
       begin
-        c:=btDownload.Tag;
-        p:=links.Count div c;
-        r:=links.Count mod c;
+        c := btDownload.Tag;
+        p := links.Count div c;
+        r := links.Count mod c;
       end;
       btDownload.Tag:=0;
-      k:=0;
-      for i:=1 to c do
+      k := 0;
+      for i := 1 to c do
       begin
-        if i<=r then
-          l:=p+1
+        if i <= r then
+        begin
+          l := p + 1
+        end
         else
-        if i=c then
-          l:=links.Count-k
+        if i = c then
+        begin
+          l := links.Count - k
+        end
         else
-          l:=p;
+        begin
+          l := p;
+        end;
         DLManager.Lock;
         try
           with DLManager.AddTask do
           begin
-            for j:=1 to l do
+            for j := 1 to l do
             begin
               ChapterLinks.Add(links[k]);
               ChapterNames.Add(names[k]);
@@ -2636,34 +2645,39 @@ begin
             end;
             if cbAddAsStopped.Checked then
             begin
-              DownloadInfo.Status:=Format('[%d/%d] %s',[0,ChapterLinks.Count,RS_Stopped]);
-              Status:=STATUS_STOP;
+              DownloadInfo.Status := Format('[%d/%d] %s', [0, ChapterLinks.Count, RS_Stopped]);
+              Status := STATUS_STOP;
             end
             else
             begin
-              DownloadInfo.Status:=Format('[%d/%d] %s',[0,ChapterLinks.Count,RS_Waiting]);
-              Status:=STATUS_WAIT;
+              DownloadInfo.Status := Format('[%d/%d] %s', [0, ChapterLinks.Count, RS_Waiting]);
+              Status := STATUS_WAIT;
             end;
-            DownloadInfo.ModuleID:=mangaInfo.ModuleID;
-            DownloadInfo.Link:=mangaInfo.Link;
-            DownloadInfo.Title:=mangaInfo.Title;
-            DownloadInfo.DateAdded:=Now;
-            DownloadInfo.DateLastDownloaded:=Now;
-            DownloadInfo.SaveTo:=s;
-            CurrentDownloadChapterPtr:=0;
+            DownloadInfo.ModuleID := mangaInfo.ModuleID;
+            DownloadInfo.Link := mangaInfo.Link;
+            DownloadInfo.Title := mangaInfo.Title;
+            DownloadInfo.DateAdded := Now;
+            DownloadInfo.DateLastDownloaded := Now;
+            DownloadInfo.SaveTo := s;
+            CurrentDownloadChapterPtr := 0;
             DBInsert;
           end;
         finally
           DLManager.UnLock;
         end;
         if OptionSortDownloadsOnNewTasks then
+        begin
           DLManager.Sort(DLManager.SortColumn);
+        end;
       end;
-      DLManager.DownloadedChapters.Chapters[mangaInfo.ModuleID, mangaInfo.Link]:=links.Text;
-      FavoriteManager.AddToDownloadedChaptersList(mangaInfo.ModuleID,mangaInfo.Link,links);
+
+      DLManager.DownloadedChapters.Chapters[mangaInfo.ModuleID, mangaInfo.Link] := links.Text;
+      FavoriteManager.AddToDownloadedChaptersList(mangaInfo.ModuleID, mangaInfo.Link, links);
       DLManager.CheckAndActiveTask;
       if OptionShowDownloadsTabOnNewTasks then
-        pcMain.ActivePage:=tsDownload;
+      begin
+        pcMain.ActivePage := tsDownload;
+      end;
       UpdateVtDownload;
     end;
   finally
@@ -2679,6 +2693,7 @@ begin
   if mangaInfo.Title <> '' then
   begin
     // save to
+    FillSaveTo;
     OverrideSaveTo(Modules.LocateModule(mangaInfo.ModuleID));
     s := edSaveTo.Text;
     if OptionGenerateMangaFolder then

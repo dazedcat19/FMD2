@@ -363,7 +363,7 @@ begin
         if FSaveTo = '' then
         begin
           FillSaveTo;
-	        OverrideSaveTo(d.DownloadInfo.Module);
+          OverrideSaveTo(d.DownloadInfo.Module);
           FSaveTo := edSaveTo.Text;
           // save to
           if OptionGenerateMangaFolder then
