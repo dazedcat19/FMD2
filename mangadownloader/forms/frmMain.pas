@@ -2141,14 +2141,25 @@ end;
 procedure TMainForm.miDownloadDeleteTaskClick(Sender: TObject);
 var
   xNode: PVirtualNode;
-  i: Integer;
+  deletedxNodes: array of PVirtualNode;
+  i, x: Integer;
   f, d, s: String;
 begin
-  if vtDownload.SelectedCount = 0 then Exit;
-  if DLManager.Count = 0 then Exit;
+  if vtDownload.SelectedCount = 0 then
+  begin
+    Exit;
+  end;
+  if DLManager.Count = 0 then
+  begin
+    Exit;
+  end;
   if cbOptionShowDeleteTaskDialog.Checked then
+  begin
     if MessageDlg('', RS_DlgRemoveTask, mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
+    begin
       Exit;
+    end;
+  end;
 
   vtDownload.BeginUpdate;
   DLManager.Lock;
@@ -2165,7 +2176,10 @@ begin
         end;
       xNode := vtDownload.GetPreviousSelected(xNode);
     end;
+
     // cleaning the data
+    Setlength(deletedxNodes, vtDownload.SelectedCount);
+    x := 0;
     xNode := vtDownload.GetPreviousSelected(nil);
     while Assigned(xNode) do
     begin
@@ -2173,25 +2187,37 @@ begin
       with DLManager.Items[xNode^.Index] do
       begin
         if Running then
+        begin
           TaskThread.WaitFor;
-        if (Sender = miDownloadDeleteTaskData) or (Sender = miDownloadDeleteTaskDataFavorite)
+        end;
+
+        if ((Sender = miDownloadDeleteTaskData) or (Sender = miDownloadDeleteTaskDataFavorite))
           and (ChapterNames.Count > 0) then
         begin
           d := CorrectPathSys(DownloadInfo.SaveTo);
-          for i := 0 to ChapterNames.Count - 1 do begin
+          for i := 0 to ChapterNames.Count - 1 do
+          begin
             f := CorrectPathSys(d + ChapterNames[i]);
             if DirectoryExistsUTF8(f) then
+            begin
               DeleteDirectory(f, False);
+            end;
             f := RemovePathDelim(f);
             for s in FMDSupportedPackedOutputExt do
+            begin
               if FileExistsUTF8(f + s) then
+              begin
                 DeleteFileUTF8(f + s);
+              end;
+            end;
           end;
           RemoveDirUTF8(d);
         end;
+
         if (Sender = miDownloadDeleteTaskDataFavorite) and
           (FavoriteManager.Items.Count <> 0) and
           (FavoriteManager.isRunning = False) then
+        begin
           try
             FavoriteManager.Lock;
             for i := 0 to FavoriteManager.Count - 1 do
@@ -2206,6 +2232,10 @@ begin
           finally
             FavoriteManager.UnLock;
           end;
+        end;
+
+        deletedxNodes[x] := xNode;
+        Inc(x);
         DLManager.Delete(xNode^.Index);
       end;
       xNode := vtDownload.GetPreviousSelected(xNode);
@@ -2213,6 +2243,27 @@ begin
   finally
     DLManager.UnLock;
   end;
+
+  vtDownload.BeginUpdate;
+  try
+    for x := 0 to High(deletedxNodes) do
+    begin
+      vtDownload.DeleteNode(deletedxNodes[x])
+    end;
+
+    if edDownloadsSearch.Text <> '' then
+    begin
+      xNode := vtDownload.GetFirst();
+      while Assigned(xNode) do
+      begin
+        vtDownload.IsFiltered[xNode] := Pos(UpperCase(edDownloadsSearch.Text), UpperCase(DLManager.Items[xNode^.Index].DownloadInfo.Title)) = 0;
+        xNode := vtDownload.GetNext(xNode);
+      end;
+    end;
+  finally
+    vtDownload.EndUpdate;
+  end;
+
   vtDownload.RootNodeCount := DLManager.Items.Count;
   vtDownload.EndUpdate;
   UpdateVtFavorites;
@@ -3265,28 +3316,61 @@ end;
 procedure TMainForm.miFavoritesDeleteClick(Sender: TObject);
 var
   xNode: PVirtualNode;
+  deletedxNodes: array of PVirtualNode;
+  x: Integer;
 begin
   if vtFavorites.SelectedCount = 0 then Exit;
-  if FavoriteManager.isRunning then begin
-    MessageDlg('', RS_DlgFavoritesCheckIsRunning,
-      mtInformation, [mbOK], 0);
+  if FavoriteManager.isRunning then
+  begin
+    MessageDlg('', RS_DlgFavoritesCheckIsRunning, mtInformation, [mbOK], 0);
     Exit;
   end;
   if cbOptionShowDeleteTaskDialog.Checked then
+  begin
     if MessageDlg('', RS_DlgRemoveFavorite, mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
+    begin
       Exit;
+    end;
+  end;
 
+  Setlength(deletedxNodes, vtFavorites.SelectedCount);
+  x := 0;
   FavoriteManager.Lock;
   try
     xNode := vtFavorites.GetLast();
     while Assigned(xNode) do begin
       if vtFavorites.Selected[xNode] then
+      begin
+        deletedxNodes[x] := xNode;
+        Inc(x);
         FavoriteManager.Delete(xNode^.Index);
+      end;
       xNode := vtFavorites.GetPreviousSelected(xNode);
     end;
   finally
     FavoriteManager.UnLock;
   end;
+
+  vtFavorites.BeginUpdate;
+  try
+    for x := 0 to High(deletedxNodes) do
+    begin
+      vtFavorites.DeleteNode(deletedxNodes[x])
+    end;
+
+    if edFavoritesSearch.Text <> '' then
+    begin
+      xNode := vtFavorites.GetFirst();
+      while Assigned(xNode) do
+      begin
+        vtFavorites.IsFiltered[xNode] := Pos(UpperCase(edFavoritesSearch.Text), UpperCase(FavoriteManager.Items[xNode^.Index].FavoriteInfo.Title)) = 0;
+        xNode := vtFavorites.GetNext(xNode);
+      end;
+    end;
+  finally 
+    vtFavorites.EndUpdate;
+  end;
+
   UpdateVtFavorites;
   vtFavoritesFilterCountChange;
 end;
