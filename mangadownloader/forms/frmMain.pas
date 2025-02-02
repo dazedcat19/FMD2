@@ -2244,7 +2244,6 @@ begin
     DLManager.UnLock;
   end;
 
-  vtDownload.BeginUpdate;
   try
     for x := 0 to High(deletedxNodes) do
     begin
@@ -2261,7 +2260,6 @@ begin
       end;
     end;
   finally
-    vtDownload.EndUpdate;
   end;
 
   vtDownload.RootNodeCount := DLManager.Items.Count;
@@ -3333,6 +3331,7 @@ begin
     end;
   end;
 
+  vtFavorites.BeginUpdate;
   Setlength(deletedxNodes, vtFavorites.SelectedCount);
   x := 0;
   FavoriteManager.Lock;
@@ -3351,7 +3350,6 @@ begin
     FavoriteManager.UnLock;
   end;
 
-  vtFavorites.BeginUpdate;
   try
     for x := 0 to High(deletedxNodes) do
     begin
@@ -3367,10 +3365,10 @@ begin
         xNode := vtFavorites.GetNext(xNode);
       end;
     end;
-  finally 
-    vtFavorites.EndUpdate;
+  finally
   end;
 
+  vtFavorites.EndUpdate;
   UpdateVtFavorites;
   vtFavoritesFilterCountChange;
 end;
