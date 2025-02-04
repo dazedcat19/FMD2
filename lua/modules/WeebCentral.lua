@@ -74,6 +74,7 @@ function GetInfo()
 
 	x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Title     = x.XPathString('(//h1)[1]')
+	MANGAINFO.AltTitles = x.XPathStringAll('//li[./strong="Associated Name(s)"]//li')
 	MANGAINFO.CoverLink = x.XPathString('//meta[@property="og:image"]/@content')
 	MANGAINFO.Authors   = x.XPathStringAll('//li[contains(., "Author")]/span/a')
 	MANGAINFO.Genres    = x.XPathStringAll('//li[contains(., "Tags")]/span/a|//li[contains(., "Type")]/a')
