@@ -207,10 +207,12 @@ function GetInfo()
 
 		if mstatus == 'ok' then
 			MANGAINFO.Title     = x.XPathString('data/attributes/title/*', minfo)
+			MANGAINFO.AltTitles = x.XPathString('string-join(data/attributes/altTitles?*/*, ", ")', minfo)
+			MANGAINFO.CoverLink = COVER_URL .. '/' .. mid .. '/' .. x.XPathString('json(*).data.relationships()[type="cover_art"].attributes.fileName') .. '.256.jpg'
 			MANGAINFO.Summary   = x.XPathString('data/attributes/description/en', minfo)
 			MANGAINFO.Authors   = x.XPathStringAll('json(*).data.relationships()[type="author"].attributes.name')
 			MANGAINFO.Artists   = x.XPathStringAll('json(*).data.relationships()[type="artist"].attributes.name')
-			MANGAINFO.CoverLink = COVER_URL .. '/' .. mid .. '/' .. x.XPathString('json(*).data.relationships()[type="cover_art"].attributes.fileName') .. '.256.jpg'
+			MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('data/attributes/status', minfo))
 
 			-- Fetch genre, demographic, and rating:
 			MANGAINFO.Genres = x.XPathStringAll('json(*).data.attributes.tags().attributes.name.en')
@@ -218,15 +220,6 @@ function GetInfo()
 			if demographic ~= 'Null' then MANGAINFO.Genres = MANGAINFO.Genres .. ', ' .. demographic end
 			local rating = x.XPathString('data/attributes/contentRating', minfo):gsub("^%l", string.upper)
 			if rating ~= 'Null' then MANGAINFO.Genres = MANGAINFO.Genres .. ', ' .. rating end
-
-			-- Set status to 'completed' if it's not 'ongoing' or 'hiatus'. The status 'cancelled' will also be set to 'completed':
-			local status = x.XPathString('data/attributes/status', minfo)
-			if (status == 'ongoing') or (status == 'hiatus') then
-				status = 'ongoing'
-			else
-				status = 'completed'
-			end
-			MANGAINFO.Status = MangaInfoStatusIfPos(status)
 
 			-- Get user defined options for fetching all chapters respecting these options:
 			local optgroup   = MODULE.GetOption('luashowscangroup')
