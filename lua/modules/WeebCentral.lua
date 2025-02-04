@@ -67,7 +67,7 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local v, x = nil
+	local official, v, x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
@@ -76,9 +76,14 @@ function GetInfo()
 	MANGAINFO.Title     = x.XPathString('(//h1)[1]')
 	MANGAINFO.CoverLink = x.XPathString('//meta[@property="og:image"]/@content')
 	MANGAINFO.Authors   = x.XPathStringAll('//li[contains(., "Author")]/span/a')
-	MANGAINFO.Genres    = x.XPathStringAll('//li[contains(., "Tags")]/span/a')
+	MANGAINFO.Genres    = x.XPathStringAll('//li[contains(., "Tags")]/span/a|//li[contains(., "Type")]/a')
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//li[contains(., "Status")]/a'), 'Hiatus|Ongoing', 'Canceled|Complete')
 	MANGAINFO.Summary   = x.XPathString('//li[contains(., "Description")]/p')
+
+	official = x.XPathString('//li[./strong[contains(., "Official Translation")]]/a')
+	if string.find(official, 'Yes', 1, true) ~= nil then 
+		MANGAINFO.Summary = 'Official Translation\n' .. MANGAINFO.Summary
+	end
 
 	u = MANGAINFO.URL:gsub('(.*/series/.*)/.*', '%1') .. '/full-chapter-list'
 	if not HTTP.GET(u) then return net_problem end
