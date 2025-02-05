@@ -184,6 +184,8 @@ begin
           if cont and used then
             Synchronize(@SyncReopenUsed);
         end;
+
+        dataProcess.Open(FModule.ID);
       end
       else
         FFailedList.Add(Format(RS_FailedDownload, [FModule.Name + ' Manga List', HTTP.ResultCode,

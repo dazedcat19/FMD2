@@ -2550,7 +2550,7 @@ procedure TMainForm.btDownloadClick(Sender: TObject);
 var
   links, names: TStrings;
   node: PVirtualNode;
-  s:String;
+  s, sRename: String;
   c, p, r, i, j, k, l: Integer;
 begin
   if clbChapterList.CheckedCount = 0 then
@@ -2585,21 +2585,32 @@ begin
     clbChapterList.Repaint;
     if links.Count <> 0 then
     begin
-      FillSaveTo;
+      // save to
+      if edSaveTo.Text = '' then
+      begin
+        FillSaveTo;
+        OverrideSaveTo(Modules.LocateModule(mangaInfo.ModuleID));
+      end;
       s := edSaveTo.Text;
       if OptionGenerateMangaFolder then
       begin
-        s := AppendPathDelim(s)+CustomRename(
-          OptionMangaCustomRename,
-          mangaInfo.Website,
-          mangaInfo.Title,
-          mangaInfo.Authors,
-          mangaInfo.Artists,
-          '',
-          '',
-          OptionChangeUnicodeCharacter,
-          OptionChangeUnicodeCharacterStr);
+        sRename := CustomRename(
+            OptionMangaCustomRename,
+            mangaInfo.Website,
+            mangaInfo.Title,
+            mangaInfo.Authors,
+            mangaInfo.Artists,
+            '',
+            '',
+            OptionChangeUnicodeCharacter,
+            OptionChangeUnicodeCharacterStr);
+
+        if Pos(sRename, s) = 0 then
+        begin
+          s := AppendPathDelim(s) + sRename;
+        end;
       end;
+
       s := ReplaceRegExpr('\.*$', s, '', False);
       c := 1;
       p := links.Count;
@@ -2688,16 +2699,20 @@ end;
 
 procedure TMainForm.btAddToFavoritesClick(Sender: TObject);
 var
-  s: String;
+  s, sRename: String;
 begin
   if mangaInfo.Title <> '' then
   begin
     // save to
-    FillSaveTo;
-    OverrideSaveTo(Modules.LocateModule(mangaInfo.ModuleID));
+    if edSaveTo.Text = '' then
+    begin
+      FillSaveTo;
+      OverrideSaveTo(Modules.LocateModule(mangaInfo.ModuleID));
+    end;
     s := edSaveTo.Text;
     if OptionGenerateMangaFolder then
-      s := AppendPathDelim(s) + CustomRename(
+    begin
+      sRename := CustomRename(
           OptionMangaCustomRename,
           mangaInfo.Website,
           mangaInfo.Title,
@@ -2707,6 +2722,12 @@ begin
           '',
           OptionChangeUnicodeCharacter,
           OptionChangeUnicodeCharacterStr);
+
+      if Pos(sRename, s) = 0 then
+      begin
+        s := AppendPathDelim(s) + sRename;
+      end;
+    end;
 
     FavoriteManager.Add(
       mangaInfo.Module,
@@ -5166,11 +5187,11 @@ begin
   edSaveTo.Text := ASaveTo;
   LastViewMangaInfoSender := ASender;
   if edSaveTo.Text = '' then
+  begin
     FillSaveTo;
-  
-  if (LastViewMangaInfoSender <> miDownloadViewMangaInfo) and (LastViewMangaInfoSender <> miFavoritesViewInfos) then
     OverrideSaveTo(AModule);
-  
+  end;
+
 
   DisableAddToFavorites(AModule);
   //check if manga already in FavoriteManager list
