@@ -112,6 +112,7 @@ begin
 
       while not db.Table.EOF do
       begin
+        m := nil;
         if hasModuleID then
         begin
           moduleid := db.Table.FieldByName('moduleid').AsString;

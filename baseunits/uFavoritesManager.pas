@@ -1173,7 +1173,8 @@ function CompareFavoriteContainer(const Item1, Item2: TFavoriteContainer): Integ
         1: Result := Title;
         2: Result := currentChapter;
         3: Result := Website;
-        4: Result := SaveTo;
+        4: Result := Status;
+        5: Result := SaveTo;
         else
           Result := '';
       end;
@@ -1183,16 +1184,16 @@ function CompareFavoriteContainer(const Item1, Item2: TFavoriteContainer): Integ
   begin
     with ARow.FavoriteInfo do
       case ARow.FManager.SortColumn of
-        5: Result := DateAdded;
-        6: Result := DateLastChecked;
-        7: Result := DateLastUpdated;
+        6: Result := DateAdded;
+        7: Result := DateLastChecked;
+        8: Result := DateLastUpdated;
         else
           Result := Now;
       end;
   end;
 
 begin
-  if (Item1.FManager.SortColumn >= 5) and (Item1.FManager.SortColumn <= 7) then
+  if (Item1.FManager.SortColumn >= 6) and (Item1.FManager.SortColumn <= 8) then
   begin
     if Item1.FManager.SortDirection then
       Result := CompareDateTime(GetDateTime(Item2), GetDateTime(Item1))
