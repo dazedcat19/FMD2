@@ -6029,6 +6029,24 @@ procedure TMainForm.LoadFormInformation;
     end;
   end;
 
+  function IsWithinAnyMonitor(ALeft, ATop, AWidth, AHeight: Integer): Boolean;
+  var
+    i: Integer;
+    MonitorRect: TRect;
+  begin
+    Result := False;
+    for i := 0 to Screen.MonitorCount - 1 do
+    begin
+      MonitorRect := Screen.Monitors[i].BoundsRect;
+      if (ALeft + AWidth > MonitorRect.Left) and (ALeft < MonitorRect.Right) and
+         (ATop + AHeight > MonitorRect.Top) and (ATop < MonitorRect.Bottom) then
+      begin
+        Result := True;
+        Exit;
+      end;
+    end;
+  end;
+
 var
   index: LongInt;
 begin
@@ -6043,21 +6061,20 @@ begin
       pcMain.PageIndex := ReadInteger('form', 'pcMainPageIndex', 0);
 
     Left := ReadInteger('form', 'MainFormLeft', Left);
-    if (Left < 0) or (Left > Screen.DesktopWidth) then
-      Left := 0;
     Top := ReadInteger('form', 'MainFormTop', Top);
-    if (Top < 0) or (Top > Screen.DesktopHeight) then
-      Top := 0;
     Width := ReadInteger('form', 'MainFormWidth', Width);
-    if Width > Screen.DesktopWidth then
-      Width := Screen.DesktopWidth;
     Height := ReadInteger('form', 'MainFormHeight', Height);
-    if Height > Screen.DesktopHeight then
-      Height := Screen.DesktopHeight;
+
+    if not IsWithinAnyMonitor(Left, Top, Width, Height) then
+    begin
+      Left := 0;
+      Top := 0;
+    end;
+
     CurrentFormLeft := Left;
     CurrentFormTop := Top;
-    CurrentFormWidth := Width;
-    CurrentFormHeight := Height;
+    CurrentFormWidth := Min(Width, Screen.DesktopWidth);
+    CurrentFormHeight := Min(Height, Screen.DesktopHeight);
 
     if Screen.PixelsPerInch > 96 then begin
       Width := ScaleScreenTo96(Width);
