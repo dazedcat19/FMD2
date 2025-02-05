@@ -579,7 +579,7 @@ begin
       end;
       Result := uPacker.Execute;
       if not Result then
-        Logger.SendWarning(Self.ClassName+', failed to compress. '+uPacker.SavedFileName);
+        Logger.SendWarning(Self.ClassName+', failed to compress. ' + uPacker.SavedFileName);
     except
       on E: Exception do
       begin
@@ -630,7 +630,7 @@ function TTaskThread.GetExceptionInfo: String;
 begin
   Result :=
     '  Flag        : ' + GetEnumName(TypeInfo(TFlagType), Integer(Flag)) + LineEnding +
-    '  Website     : ' + Container.DownloadInfo.ModuleID + LineEnding +
+    '  Website     : ' + Container.DownloadInfo.ModuleID + ' (' + Container.DownloadInfo.Website + ')' + LineEnding +
     '  Title       : ' + Container.DownloadInfo.title + LineEnding +
     '  Chapterlink : ' + Container.ChapterLinks[Container.CurrentDownloadChapterPtr] + LineEnding +
     '  Chaptername : ' + Container.ChapterNames[Container.CurrentDownloadChapterPtr] + LineEnding;

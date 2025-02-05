@@ -112,11 +112,13 @@ begin
   p := TProcess.Create(nil);
   try
     if FileExists(FSavedFileName) then
+    begin
       if not DeleteFile(FSavedFileName) then
       begin
-        Logger.SendError(Self.ClassName + '.Do7Zip Error: failed to delete existing file '+FSavedFileName);
+        Logger.SendError(Self.ClassName + '.Do7Zip Error: failed to delete existing file ' + FSavedFileName);
         Exit;
       end;
+    end;
 
     fFileName := 'FQDNlist.txt';
     with TStringList.Create do
@@ -130,7 +132,24 @@ begin
         end;
         Add(FFileList[i]);
       end;
-      SaveToFile(fFileName);
+
+      try
+        SaveToFile(fFileName);
+      except
+        on E: EFCreateError do
+        begin
+          // If first attempt fails, try the second path
+          try
+            fFileName := AppendPathDelim(ExtractFilePath(FSavedFileName)) + fFileName;
+            SaveToFile(fFileName);
+          except
+            on E2: Exception do
+            begin
+              MainForm.ExceptionHandler(Self, E2);
+            end;
+          end;
+        end;
+      end;
     finally
       Free;
     end;
@@ -140,7 +159,7 @@ begin
       Add('a');
       Add('-tzip');
       Add('-mx0');
-      Add('-mmt'+IntToStr(CPUCount));
+      Add('-mmt' + IntToStr(CPUCount));
       Add('-sccUTF-8');
       Add('-scsUTF-8');
       Add('-stl');
@@ -151,29 +170,31 @@ begin
       Add(FSavedFileName);
       Add('@' + fFileName);
     end;
-    sout:='';
-    serr:='';
-    p.ShowWindow:=swoHIDE;
-    p.RunCommandLoop(sout,serr,exit_status);
+    sout := '';
+    serr := '';
+    p.ShowWindow := swoHIDE;
+    p.RunCommandLoop(sout, serr, exit_status);
     Result := exit_status = 0;
     DeleteFile(fFileName);
     if not Result then
     begin
-      serr:='';
-      s:=IntToStr(exit_status)+' ';
+      serr := '';
+      s := IntToStr(exit_status) + ' ';
       case exit_status of
-        1: s+='Warning';
-        2: s+='Fatal error';
-        7: s+='Command line error';
-        8: s+='Not enough memory operation';
-        255: s+='User stopped the process';
+        1: s += 'Warning';
+        2: s += 'Fatal error';
+        7: s += 'Command line error';
+        8: s += 'Not enough memory operation';
+        255: s += 'User stopped the process';
         else
-          s:='Unknown';
+          s := 'Unknown';
       end;
-      s+=' '+MaybeQuoteIfNotQuoted(p.Executable);
-      for i:=0 to p.Parameters.Count-1 do
-        s+=' '+MaybeQuoteIfNotQuoted(p.Parameters[i]);
-      Logger.SendError(Self.ClassName+'.Do7zip Error: '+s);
+      s += ' ' + MaybeQuoteIfNotQuoted(p.Executable);
+      for i := 0 to p.Parameters.Count-1 do
+      begin
+        s += ' ' + MaybeQuoteIfNotQuoted(p.Parameters[i]);
+      end;
+      Logger.SendError(Self.ClassName + '.Do7zip Error: ' + s);
     end;
   finally
     p.Free;
