@@ -5,9 +5,9 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '4bb36f93b168480a90fd12ea6844247d'
-	m.Name                     = 'Manhwa18z'
-	m.RootURL                  = 'https://manhwa18z.com'
-	m.Category                 = 'English'
+	m.Name                     = 'Manhwa Toon'
+	m.RootURL                  = 'https://www.manhwatoon.com'
+	m.Category                 = 'Webcomics'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
@@ -18,10 +18,6 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.Madara'
--- XPathTokenAuthors = 'Author(s)'
--- XPathTokenArtists = 'Artist(s)'
--- XPathTokenGenres  = 'Genre(s)'
--- XPathTokenStatus  = 'Status'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions

@@ -427,9 +427,9 @@
 | Manhuaus | [![https://manhuaus.com](https://img.shields.io/website?url=https://manhuaus.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuaus.com)](https://manhuaus.com) | - | - | - |
 | ManhuaVN | [![https://manhuavn.top](https://img.shields.io/website?url=https://manhuavn.top%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuavn.top)](https://manhuavn.top) | - | - | - |
 | Manhwa Clan | [![https://manhwaclan.com](https://img.shields.io/website?url=https://manhwaclan.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwaclan.com)](https://manhwaclan.com) | OK | 05.02.2025 | - |
+| Manhwa Toon | [![https://www.manhwatoon.com](https://img.shields.io/website?url=https://www.manhwatoon.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.manhwatoon.com)](https://www.manhwatoon.com) | OK | 06.02.2025 | - |
 | Manhwa18 | [![https://pornwa.club](https://img.shields.io/website?url=https://pornwa.club%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://pornwa.club)](https://pornwa.club) | - | - | - |
 | Manhwa18Net | [![https://manhwa18.net](https://img.shields.io/website?url=https://manhwa18.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwa18.net)](https://manhwa18.net) | - | - | - |
-| Manhwa18z | [![https://manhwa18z.com](https://img.shields.io/website?url=https://manhwa18z.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwa18z.com)](https://manhwa18z.com) | - | - | - |
 | Manhwa68 | [![https://manhwa68.com](https://img.shields.io/website?url=https://manhwa68.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwa68.com)](https://manhwa68.com) | - | - | - |
 | ManhwaClub | [![https://manhwa.club](https://img.shields.io/website?url=https://manhwa.club%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwa.club)](https://manhwa.club) | - | - | - |
 | Manhwadesu | [![https://manhwadesu.asia](https://img.shields.io/website?url=https://manhwadesu.asia%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwadesu.asia)](https://manhwadesu.asia) | - | - | - |
