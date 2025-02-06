@@ -5,8 +5,8 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '57036d4eb36747c6927839062a2428a4'
-	m.Name                     = 'ManhuaNext'
-	m.RootURL                  = 'https://manhuanext.com'
+	m.Name                     = 'SpidyScans'
+	m.RootURL                  = 'https://spidyscans.xyz'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
