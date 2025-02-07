@@ -182,6 +182,9 @@
 | Japscan | [![http://www.japscan.co](https://img.shields.io/website?url=http://www.japscan.co%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.japscan.co)](http://www.japscan.co) | - | - | - |
 | JiroComics | [![https://jirocomics.com](https://img.shields.io/website?url=https://jirocomics.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://jirocomics.com)](https://jirocomics.com) | - | - | - |
 | JManga | [![https://jmanga.mx](https://img.shields.io/website?url=https://jmanga.mx%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://jmanga.mx)](https://jmanga.mx) | OK | 21.01.2025 | - |
+| KaliScanCom | [![https://kaliscan.com](https://img.shields.io/website?url=https://kaliscan.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kaliscan.com)](https://kaliscan.com) | OK | 07.02.2025 | - |
+| KaliScanIo | [![https://kaliscan.io](https://img.shields.io/website?url=https://kaliscan.io%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kaliscan.io)](https://kaliscan.io) | OK | 07.02.2025 | - |
+| KaliScanMe | [![https://kaliscan.me](https://img.shields.io/website?url=https://kaliscan.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kaliscan.me)](https://kaliscan.me) | OK | 07.02.2025 | - |
 | Kanzenin | [![https://kanzenin.info](https://img.shields.io/website?url=https://kanzenin.info%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kanzenin.info)](https://kanzenin.info) | - | - | - |
 | KappaBeast | [![https://kappabeast.com](https://img.shields.io/website?url=https://kappabeast.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kappabeast.com)](https://kappabeast.com) | - | - | - |
 | KDT Scans | [![https://kdtscans.com](https://img.shields.io/website?url=https://kdtscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kdtscans.com)](https://kdtscans.com) | - | - | - |
@@ -422,7 +425,6 @@
 | ManhuaPlusOnline | [![https://manhuaplus.online](https://img.shields.io/website?url=https://manhuaplus.online%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuaplus.online)](https://manhuaplus.online) | - | - | - |
 | ManhuaPlusOrg | [![https://manhuaplus.org](https://img.shields.io/website?url=https://manhuaplus.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuaplus.org)](https://manhuaplus.org) | OK | 21.01.2025 | - |
 | Manhuas | [![https://manhuas.net](https://img.shields.io/website?url=https://manhuas.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuas.net)](https://manhuas.net) | - | - | - |
-| ManhuaScan | [![https://manhuascan.com](https://img.shields.io/website?url=https://manhuascan.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuascan.com)](https://manhuascan.com) | - | - | - |
 | ManhuasWorld | [![https://manhuasworld.com](https://img.shields.io/website?url=https://manhuasworld.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuasworld.com)](https://manhuasworld.com) | - | - | - |
 | ManHuaTai | [![http://www.manhuatai.com](https://img.shields.io/website?url=http://www.manhuatai.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.manhuatai.com)](http://www.manhuatai.com) | - | - | - |
 | Manhuaus | [![https://manhuaus.com](https://img.shields.io/website?url=https://manhuaus.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuaus.com)](https://manhuaus.com) | - | - | - |
