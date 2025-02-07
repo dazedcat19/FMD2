@@ -291,7 +291,7 @@
 | Mangafast | [![https://mangafast.net](https://img.shields.io/website?url=https://mangafast.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangafast.net)](https://mangafast.net) | - | - | - |
 | MangaFenix | [![https://manga-fenix.com](https://img.shields.io/website?url=https://manga-fenix.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga-fenix.com)](https://manga-fenix.com) | - | - | - |
 | MangaFenix | [![https://manga-fenix.com](https://img.shields.io/website?url=https://manga-fenix.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga-fenix.com)](https://manga-fenix.com) | - | - | - |
-| MangaFire | [![https://mangafire.to](https://img.shields.io/website?url=https://mangafire.to%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangafire.to)](https://mangafire.to) | - | - | - |
+| MangaFire | [![https://mangafire.to](https://img.shields.io/website?url=https://mangafire.to%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangafire.to)](https://mangafire.to) | OK | 08.02.2025 | - |
 | MangaForFreeCom | [![https://mangaforfree.com](https://img.shields.io/website?url=https://mangaforfree.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangaforfree.com)](https://mangaforfree.com) | - | - | - |
 | MangaForFreeNet | [![https://mangaforfree.net](https://img.shields.io/website?url=https://mangaforfree.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangaforfree.net)](https://mangaforfree.net) | - | - | - |
 | MangaFoxFun | [![https://mangafox.fun](https://img.shields.io/website?url=https://mangafox.fun%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangafox.fun)](https://mangafox.fun) | - | - | - |

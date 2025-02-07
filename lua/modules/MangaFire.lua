@@ -12,7 +12,6 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
-	m.SortedList               = true
 
 	local fmd = require 'fmd.env'
 	local slang = fmd.SelectedLanguage
@@ -48,7 +47,42 @@ end
 
 DirectoryPagination = '/newest?page='
 
-local function decode_unicode(str)
+----------------------------------------------------------------------------------------------------
+-- Auxiliary Functions
+----------------------------------------------------------------------------------------------------
+
+local Langs = {
+	["en"] = "English",
+	["fr"] = "French",
+	["ja"] = "Japanese",
+	["pt-br"] = "Portuguese (Br)",
+	["pt"] = "Portuguese (Pt)",
+	["es-la"] = "Spanish (LATAM)",
+	["es"] = "Spanish (Es)"
+}
+
+function GetLangList()
+	local t = {}
+	for k, v in pairs(Langs) do table.insert(t, v); end
+	table.sort(t)
+	return t
+end
+
+function FindLanguage(lang)
+	local t = GetLangList()
+	for i, v in ipairs(t) do
+		if i == lang then
+			lang = v
+			break
+		end
+	end
+	for k, v in pairs(Langs) do
+		if v == lang then return k; end
+	end
+	return nil
+end
+
+function decode_unicode(str)
 	return str:gsub("\\u(%x%x%x%x)", function(hex) return require("utf8").char(tonumber(hex, 16)) end)
 end
 
@@ -87,27 +121,30 @@ function GetInfo()
 
 	x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Title     = x.XPathString('//h1')
+	MANGAINFO.AltTitles = x.XPathString('//div[@class="manga-detail"]//h6')
 	MANGAINFO.CoverLink = x.XPathString('(//div[@class="poster"])[1]//img/@src')
 	MANGAINFO.Authors   = x.XPathStringAll('//div[@class="meta"]/div[./span="Author:"]/span/a')
 	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="meta"]/div[./span="Genres:"]/span/a')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@class="info"]/p'), 'Releasing|On_hiatus', 'Completed|Discontinued')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@class="info"]/p'), 'Releasing', 'Completed', 'On_hiatus', 'Discontinued')
 	MANGAINFO.Summary   = x.XPathString('string-join(//div[@class="modal-content p-4"]/text(), "\r\n")')
 
 	chapterlist     = {'chapter', 'volume'}
 	sel_chapterlist = (MODULE.GetOption('chapterlist') or 0) + 1
-	optlang        = MODULE.GetOption('lang')
-	optlangid      = FindLanguage(optlang)
+	optlang         = MODULE.GetOption('lang')
+	optlangid       = FindLanguage(optlang)
 
 	if optlangid == nil then langparam = '' else langparam = optlangid end
 
-	if HTTP.GET(MODULE.RootURL .. '/ajax/read/' .. URL:match('%.(.-)$') .. '/' .. chapterlist[sel_chapterlist] .. '/' .. langparam) then
-		s = decode_unicode(HTTP.Document.ToString():gsub('\\"', '"'))
-		x = CreateTXQuery(s)
-		x.ParseHTML(x.XPathString('json(*).result'))
-		for v in x.XPath('//a').Get() do
-			MANGAINFO.ChapterLinks.Add(v.GetAttribute('data-id'))
-			MANGAINFO.ChapterNames.Add(x.XPathString('text()', v))
-		end
+	u = MODULE.RootURL .. '/ajax/read/' .. URL:match('%.(.-)$') .. '/' .. chapterlist[sel_chapterlist] .. '/' .. langparam
+
+	if not HTTP.GET(u) then return net_problem end
+
+	s = decode_unicode(HTTP.Document.ToString():gsub('\\"', '"'))
+	x = CreateTXQuery(s)
+	x.ParseHTML(x.XPathString('json(*).result'))
+	for v in x.XPath('//a').Get() do
+		MANGAINFO.ChapterLinks.Add(v.GetAttribute('data-id'))
+		MANGAINFO.ChapterNames.Add(x.XPathString('text()', v))
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
@@ -118,43 +155,11 @@ end
 function GetPageNumber()
 	local chapterlist     = {'chapter', 'volume'}
 	local sel_chapterlist = (MODULE.GetOption('chapterlist') or 0) + 1
-
-	local u = MODULE.RootURL .. '/ajax/read/' .. chapterlist[sel_chapterlist] .. '/' .. URL:match('(%d+)')
+	local u = MODULE.RootURL .. '/ajax/read/' .. chapterlist[sel_chapterlist] .. URL
 
 	if not HTTP.GET(u) then return net_problem end
 
 	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).result.images()(1)', TASK.PageLinks)
 
 	return no_error
-end
-
-local Langs = {
-	["en"] = "English",
-	["fr"] = "French",
-	["ja"] = "Japanese",
-	["pt-br"] = "Portuguese (Br)",
-	["pt"] = "Portuguese (Pt)",
-	["es-la"] = "Spanish (LATAM)",
-	["es"] = "Spanish (Es)"
-}
-
-function GetLangList()
-	local t = {}
-	for k, v in pairs(Langs) do table.insert(t, v); end
-	table.sort(t)
-	return t
-end
-
-function FindLanguage(lang)
-	local t = GetLangList()
-	for i, v in ipairs(t) do
-		if i == lang then
-			lang = v
-			break
-		end
-	end
-	for k, v in pairs(Langs) do
-		if v == lang then return k; end
-	end
-	return nil
 end
