@@ -455,6 +455,7 @@
 | MerakiScans | [![https://merakiscans.com](https://img.shields.io/website?url=https://merakiscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://merakiscans.com)](https://merakiscans.com) | - | - | - |
 | MethodScans | [![https://methodscans.com](https://img.shields.io/website?url=https://methodscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://methodscans.com)](https://methodscans.com) | - | - | - |
 | Mexat | [![http://manga.mexat.com](https://img.shields.io/website?url=http://manga.mexat.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://manga.mexat.com)](http://manga.mexat.com) | - | - | - |
+| MGJinx | [![https://mgjinx.com](https://img.shields.io/website?url=https://mgjinx.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mgjinx.com)](https://mgjinx.com) | OK | 07.02.2025 | - |
 | MGKomik | [![https://mgkomik.com](https://img.shields.io/website?url=https://mgkomik.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mgkomik.com)](https://mgkomik.com) | - | - | - |
 | MHscans | [![https://mhscans.com](https://img.shields.io/website?url=https://mhscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mhscans.com)](https://mhscans.com) | - | - | - |
 | Milftoon | [![https://milftoon.xxx](https://img.shields.io/website?url=https://milftoon.xxx%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://milftoon.xxx)](https://milftoon.xxx) | - | - | - |
