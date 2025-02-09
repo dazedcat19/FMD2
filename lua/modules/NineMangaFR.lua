@@ -4,10 +4,10 @@
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                       = '9a8d27a872c04065b994ff34d88db399'
-	m.Name                     = 'NineMangaDE'
-	m.RootURL                  = 'https://de.ninemanga.com'
-	m.Category                 = 'German'
+	m.ID                       = 'e172f944cfdf4af287b2ddb39c5b5b85'
+	m.Name                     = 'NineMangaFR'
+	m.RootURL                  = 'https://fr.ninemanga.com'
+	m.Category                 = 'Portuguese'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
@@ -37,7 +37,10 @@ function GetInfo()
 
 	local x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.AltTitles = x.XPathString('//li[contains(b, "Alternative(s):")]/substring-after(., "Alternative(s):")')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//ul[@class="message"]/li[contains(b, "Status")]/a[1]'), 'Laufende', 'Abgeschlossen')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//ul[@class="message"]/li[contains(b, "Statut")]/a[1]'), 'En cours', 'Complété')
+
+	HTTP.Reset()
+	HTTP.Headers.Values['Referer'] = MANGAINFO.URL
 
 	return no_error
 end

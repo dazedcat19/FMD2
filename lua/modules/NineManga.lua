@@ -1,26 +1,43 @@
 ----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = '68c51e4148ee471fa221cd2d05cb216a'
+	m.Name                     = 'NineManga'
+	m.RootURL                  = 'https://www.ninemanga.com'
+	m.Category                 = 'English'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnGetImageURL            = 'GetImageURL'
+end
+
+----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.NineManga'
--- DirectoryPagination = '/'            --> Override template variable by uncommenting this line.
--- DirectorySuffix     = ''             --> Override template variable by uncommenting this line.
--- MangaInfoParameters = ''             --> Override template variable by uncommenting this line.
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
--- Get info and chapter list for current manga.
-function GetInfo()
-	Template.GetInfo()
+-- Get links and names from the manga list of the current website.
+function GetNameAndLink()
+	Template.GetNameAndLink()
 
 	return no_error
 end
 
--- Get LINKS and NAMES from the manga list of the current website.
-function GetNameAndLink()
-	Template.GetNameAndLink()
+-- Get info and chapter list for the current manga.
+function GetInfo()
+	Template.GetInfo()
+
+	local x = CreateTXQuery(HTTP.Document)
+	MANGAINFO.AltTitles = x.XPathString('//li[contains(b, "Alternative(s):")]/substring-after(., "Alternative(s):")')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//ul[@class="message"]/li[contains(b, "Status")]/a[1]'))
 
 	return no_error
 end
@@ -36,25 +53,5 @@ end
 function GetImageURL()
 	Template.GetImageURL()
 
-	return no_error
-end
-
-----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	function AddWebsiteModule(id, name, url, category)
-		local m = NewWebsiteModule()
-		m.ID               = id
-		m.Name             = name
-		m.RootURL          = url
-		m.Category         = category
-		m.OnGetInfo        = 'GetInfo'
-		m.OnGetNameAndLink = 'GetNameAndLink'
-		m.OnGetPageNumber  = 'GetPageNumber'
-		m.OnGetImageURL    = 'GetImageURL'
-	end
-	AddWebsiteModule('68c51e4148ee471fa221cd2d05cb216a', 'NineManga', 'http://www.ninemanga.com', 'English')
-	AddWebsiteModule('a28662b823d449aa9f4cb246d9cd2921', 'NineManga', 'http://en.ninemanga.com', 'English')
+	return true
 end
