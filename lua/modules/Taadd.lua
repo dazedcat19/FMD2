@@ -42,7 +42,7 @@ function GetNameAndLink()
 	if not HTTP.GET(u) then return net_problem end
 
 	x = CreateTXQuery(HTTP.Document)
-	x.XPathHREFTitleAll('//div[@class="intro"]//a', LINKS, NAMES)
+	x.XPathHREFTitleAll('//div[@class="intro"]/h2/a', LINKS, NAMES)
 	j = tonumber(x.XPathString('(//span[@class="pagetor"])[1]//a[last()-1]')) or 1
 	if j > i then i = j end
 	UPDATELIST.CurrentDirectoryPageNumber = i
