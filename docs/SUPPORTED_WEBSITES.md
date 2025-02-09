@@ -638,6 +638,7 @@
 | SundayWebEvery | [![https://www.sunday-webry.com](https://img.shields.io/website?url=https://www.sunday-webry.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.sunday-webry.com)](https://www.sunday-webry.com) | - | - | - |
 | SwordManga | [![https://swordmanga.com](https://img.shields.io/website?url=https://swordmanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://swordmanga.com)](https://swordmanga.com) | - | - | - |
 | SyoSetu | [![https://syosetu.top](https://img.shields.io/website?url=https://syosetu.top%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://syosetu.top)](https://syosetu.top) | - | - | - |
+| Taadd | [![https://www.taadd.com](https://img.shields.io/website?url=https://www.taadd.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.taadd.com)](https://www.taadd.com) | OK | 09.02.2025 | - |
 | Tapas | [![https://tapas.io](https://img.shields.io/website?url=https://tapas.io%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://tapas.io)](https://tapas.io) | - | - | - |
 | TapTrans | [![https://taptaptaptaptap.net](https://img.shields.io/website?url=https://taptaptaptaptap.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://taptaptaptaptap.net)](https://taptaptaptaptap.net) | - | - | - |
 | TCBScans | [![https://tcbscans.me](https://img.shields.io/website?url=https://tcbscans.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://tcbscans.me)](https://tcbscans.me) | - | - | - |
@@ -647,7 +648,6 @@
 | Temple Scan | [![https://templetoons.com](https://img.shields.io/website?url=https://templetoons.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://templetoons.com)](https://templetoons.com) | - | - | - |
 | TempleScanEsp | [![https://templescanesp.net](https://img.shields.io/website?url=https://templescanesp.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://templescanesp.net)](https://templescanesp.net) | - | - | - |
 | TenManga | [![http://www.tenmanga.com](https://img.shields.io/website?url=http://www.tenmanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.tenmanga.com)](http://www.tenmanga.com) | - | - | - |
-| TenManga | [![https://www.tenmanga.com](https://img.shields.io/website?url=https://www.tenmanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.tenmanga.com)](https://www.tenmanga.com) | - | - | - |
 | TheBlank | [![https://theblank.net](https://img.shields.io/website?url=https://theblank.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://theblank.net)](https://theblank.net) | - | - | - |
 | TheCatScans | [![https://reader2.thecatscans.com](https://img.shields.io/website?url=https://reader2.thecatscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://reader2.thecatscans.com)](https://reader2.thecatscans.com) | - | - | - |
 | TheNonamesScans | [![https://the-nonames.com](https://img.shields.io/website?url=https://the-nonames.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://the-nonames.com)](https://the-nonames.com) | - | - | - |
