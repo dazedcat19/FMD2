@@ -4,15 +4,15 @@
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                         = '1acdfb072dc744c694a481ef0f4da6c3'
-	m.Name                       = 'NovelCoolFR'
-	m.RootURL                    = 'https://fr.novelcool.com'
-	m.Category                   = 'French'
-	m.OnGetDirectoryPageNumber   = 'GetDirectoryPageNumber'
-	m.OnGetNameAndLink           = 'GetNameAndLink'
-	m.OnGetInfo                  = 'GetInfo'
-	m.OnGetPageNumber            = 'GetPageNumber'
-	m.OnGetImageURL              = 'GetImageURL'
+	m.ID                       = '1acdfb072dc744c694a481ef0f4da6c3'
+	m.Name                     = 'NovelCoolFR'
+	m.RootURL                  = 'https://fr.novelcool.com'
+	m.Category                 = 'French'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnGetImageURL            = 'GetImageURL'
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -20,8 +20,6 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.NovelCool'
--- DirectoryPagination = '/'            --> Override template variable by uncommenting this line.
--- DirectorySuffix     = ''             --> Override template variable by uncommenting this line.
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -41,15 +39,9 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
-	local x = nil
-	local u = MaybeFillHost(MODULE.RootURL, URL)
-
-	if not HTTP.GET(u) then return net_problem end
-
-	MANGAINFO.Status    = MangaInfoStatusIfPos(CreateTXQuery(HTTP.Document).XPathString('(//div[contains(@class, "bookinfo-category-list")])[2]/a'))
 
 	return no_error
 end
@@ -65,5 +57,5 @@ end
 function GetImageURL()
 	Template.GetImageURL()
 
-	return no_error
+	return true
 end

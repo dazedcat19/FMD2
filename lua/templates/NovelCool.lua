@@ -10,6 +10,8 @@ local _M = {}
 
 DirectoryPagination = '/category/index_'
 DirectorySuffix     = '.html'
+StatusOngoing       = 'Ongoing'
+StatusCompleted     = 'Completed'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -28,7 +30,6 @@ end
 
 -- Get links and names from the manga list of the current website.
 function _M.GetNameAndLink()
-	local x = nil
 	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1) .. DirectorySuffix
 
 	if not HTTP.GET(u) then return net_problem end
@@ -38,7 +39,7 @@ function _M.GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function _M.GetInfo()
 	local x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
@@ -50,8 +51,8 @@ function _M.GetInfo()
 	MANGAINFO.CoverLink = x.XPathString('//div[@class="bk-intro"]//img[@class="bookinfo-pic-img"]/@src')
 	MANGAINFO.Authors   = x.XPathStringAll('//div[@class="bk-intro"]//div[@class="bookinfo-author"]/a/span')
 	MANGAINFO.Genres    = x.XPathStringAll('(//div[@class="bookinfo-category-list"])[1]//span')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('(//div[@class="bk-status"]//a'))
-	MANGAINFO.Summary   = x.XPathString('//div[@class="bk-summary-txt"]')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[contains(@class, "bk-cate-type1")]/a'), StatusOngoing, StatusCompleted)
+	MANGAINFO.Summary   = x.XPathString('(//div[@class="bk-summary-txt"])[1]')
 
 	x.XPathHREFTitleAll('//div[@class="chp-item"]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
@@ -67,14 +68,8 @@ function _M.GetPageNumber()
 	if not HTTP.GET(u) then return net_problem end
 
 	x = CreateTXQuery(HTTP.Document)
-
 	x.XPathStringAll('(//select[@class="sl-page"])[last()]/option/@value', TASK.PageContainerLinks)
 	TASK.PageNumber = TASK.PageContainerLinks.Count
-
-	if TASK.PageContainerLinks.Count == 0 then
-		x.ParseHTML('[' .. GetBetween('all_imgs_url: [', '],', x.XPathString('//script[contains(., "all_imgs_url")]')) .. ']')
-		x.XPathStringAll('json(*)()', TASK.PageLinks)
-	end
 
 	return no_error
 end
@@ -83,12 +78,11 @@ end
 function _M.GetImageURL()
 	local u = MaybeFillHost(MODULE.RootURL, TASK.PageContainerLinks[WORKID])
 
-	if HTTP.GET(u) then
-		TASK.PageLinks[WORKID] = CreateTXQuery(HTTP.Document).XPathString('//img[contains(@class, "manga_pic")]/@src')
-		return true
-	end
+	if not HTTP.GET(u) then return net_problem end
 
-	return false
+	TASK.PageLinks[WORKID] = CreateTXQuery(HTTP.Document).XPathString('(//img[contains(@class, "manga_pic")])[1]/@src')
+
+	return true
 end
 
 ----------------------------------------------------------------------------------------------------

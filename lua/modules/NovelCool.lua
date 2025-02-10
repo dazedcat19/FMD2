@@ -4,15 +4,15 @@
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                         = 'c2151316f4e44b1ba3e4ddbcfea73278'
-	m.Name                       = 'NovelCool'
-	m.RootURL                    = 'https://www.novelcool.com'
-	m.Category                   = 'English'
-	m.OnGetDirectoryPageNumber   = 'GetDirectoryPageNumber'
-	m.OnGetNameAndLink           = 'GetNameAndLink'
-	m.OnGetInfo                  = 'GetInfo'
-	m.OnGetPageNumber            = 'GetPageNumber'
-	m.OnGetImageURL              = 'GetImageURL'
+	m.ID                       = 'c2151316f4e44b1ba3e4ddbcfea73278'
+	m.Name                     = 'NovelCool'
+	m.RootURL                  = 'https://www.novelcool.com'
+	m.Category                 = 'English'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnGetImageURL            = 'GetImageURL'
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -20,8 +20,6 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.NovelCool'
--- DirectoryPagination = '/'            --> Override template variable by uncommenting this line.
--- DirectorySuffix     = ''             --> Override template variable by uncommenting this line.
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -41,7 +39,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
 
@@ -59,5 +57,5 @@ end
 function GetImageURL()
 	Template.GetImageURL()
 
-	return no_error
+	return true
 end

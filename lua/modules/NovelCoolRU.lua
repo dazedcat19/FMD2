@@ -4,15 +4,15 @@
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                         = '81965c5c3fc448648f32dcbe10804fd9'
-	m.Name                       = 'NovelCoolRU'
-	m.RootURL                    = 'https://ru.novelcool.com'
-	m.Category                   = 'Russian'
-	m.OnGetDirectoryPageNumber   = 'GetDirectoryPageNumber'
-	m.OnGetNameAndLink           = 'GetNameAndLink'
-	m.OnGetInfo                  = 'GetInfo'
-	m.OnGetPageNumber            = 'GetPageNumber'
-	m.OnGetImageURL              = 'GetImageURL'
+	m.ID                       = '81965c5c3fc448648f32dcbe10804fd9'
+	m.Name                     = 'NovelCoolRU'
+	m.RootURL                  = 'https://ru.novelcool.com'
+	m.Category                 = 'Russian'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnGetImageURL            = 'GetImageURL'
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -20,8 +20,8 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.NovelCool'
--- DirectoryPagination = '/'            --> Override template variable by uncommenting this line.
--- DirectorySuffix     = ''             --> Override template variable by uncommenting this line.
+StatusOngoing   = 'постоянный'
+StatusCompleted = 'Завершенный'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -41,15 +41,9 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
-	local x = nil
-	local u = MaybeFillHost(MODULE.RootURL, URL)
-
-	if not HTTP.GET(u) then return net_problem end
-
-	MANGAINFO.Status    = MangaInfoStatusIfPos(CreateTXQuery(HTTP.Document).XPathString('(//div[contains(@class, "bookinfo-category-list")])[2]/a'), 'постоянный', 'Завершенный')
 
 	return no_error
 end
@@ -65,5 +59,5 @@ end
 function GetImageURL()
 	Template.GetImageURL()
 
-	return no_error
+	return true
 end

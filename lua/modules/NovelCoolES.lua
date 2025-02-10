@@ -4,15 +4,15 @@
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                         = '424747b0135c4240a902eb9cfcb11db9'
-	m.Name                       = 'NovelCoolES'
-	m.RootURL                    = 'https://es.novelcool.com'
-	m.Category                   = 'Spanish'
-	m.OnGetDirectoryPageNumber   = 'GetDirectoryPageNumber'
-	m.OnGetNameAndLink           = 'GetNameAndLink'
-	m.OnGetInfo                  = 'GetInfo'
-	m.OnGetPageNumber            = 'GetPageNumber'
-	m.OnGetImageURL              = 'GetImageURL'
+	m.ID                       = '424747b0135c4240a902eb9cfcb11db9'
+	m.Name                     = 'NovelCoolES'
+	m.RootURL                  = 'https://es.novelcool.com'
+	m.Category                 = 'Spanish'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnGetImageURL            = 'GetImageURL'
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -20,8 +20,8 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.NovelCool'
--- DirectoryPagination = '/'            --> Override template variable by uncommenting this line.
--- DirectorySuffix     = ''             --> Override template variable by uncommenting this line.
+StatusOngoing   = 'En marcha'
+StatusCompleted = 'Terminado'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -41,15 +41,9 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
-	local x = nil
-	local u = MaybeFillHost(MODULE.RootURL, URL)
-
-	if not HTTP.GET(u) then return net_problem end
-
-	MANGAINFO.Status    = MangaInfoStatusIfPos(CreateTXQuery(HTTP.Document).XPathString('(//div[contains(@class, "bookinfo-category-list")])[3]/a'), 'En marcha', 'Terminado')
 
 	return no_error
 end
@@ -65,5 +59,5 @@ end
 function GetImageURL()
 	Template.GetImageURL()
 
-	return no_error
+	return true
 end
