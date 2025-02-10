@@ -79,14 +79,15 @@ function GetPageNumber()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	TASK.PageNumber = tonumber(CreateTXQuery(HTTP.Document).XPathCount('(//select[@id="page"])[1]/option')) or 0
+	CreateTXQuery(HTTP.Document).XPathStringAll('(//select[@id="page"])[last()]/option/@value', TASK.PageContainerLinks)
+	TASK.PageNumber = TASK.PageContainerLinks.Count
 
 	return no_error
 end
 
 -- Extract/Build/Repair image urls before downloading them.
 function GetImageURL()
-	local u = MaybeFillHost(MODULE.RootURL, URL):gsub('/+$', '') .. '/page-' .. (WORKID + 1)
+	local u = MaybeFillHost(MODULE.RootURL, TASK.PageContainerLinks[WORKID])
 
 	if not HTTP.GET(u) then return net_problem end
 
