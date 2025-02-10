@@ -941,7 +941,7 @@ object MainForm: TMainForm
                       BevelOuter = bvNone
                       ClientHeight = 221
                       ClientWidth = 150
-                      Color = clWhite
+                      Color = clWindow
                       ParentBackground = False
                       ParentColor = False
                       TabOrder = 0
@@ -955,6 +955,7 @@ object MainForm: TMainForm
                         BorderStyle = bsSingle
                         ClientHeight = 217
                         ClientWidth = 146
+                        Color = clWindow
                         ParentBackground = False
                         TabOrder = 0
                         object imCover: TImage
@@ -983,6 +984,7 @@ object MainForm: TMainForm
                       Top = 0
                       Width = 477
                       Align = alClient
+                      Color = clWindow
                       HideSelection = False
                       ReadOnly = True
                       ScrollBars = ssAutoVertical
@@ -5223,7 +5225,7 @@ object MainForm: TMainForm
             Align = alClient
             BorderSpacing.Top = 4
             BorderSpacing.Bottom = 4
-            Color = clWhite
+            Color = clWindow
             Font.Style = [fsBold]
             HideSelection = False
             ParentFont = False

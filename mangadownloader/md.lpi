@@ -306,7 +306,7 @@
         <Mode0 Name="default"/>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="11">
+    <RequiredPackages Count="13">
       <Item1>
         <PackageName Value="RunTimeTypeInfoControls"/>
       </Item1>
@@ -340,6 +340,12 @@
       <Item11>
         <PackageName Value="internettools"/>
       </Item11>
+      <Item12>
+        <PackageName Value="MetaDarkStyle"/>
+      </Item12>
+      <Item13>
+        <PackageName Value="metadarkstyledsgn"/>
+      </Item13>
     </RequiredPackages>
     <Units Count="27">
       <Unit0>

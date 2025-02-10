@@ -24,7 +24,7 @@ uses
   AnimatedGif, uBaseUnit, uDownloadsManager, uFavoritesManager,
   uSilentThread, uMisc, uGetMangaInfosThread, frmDropTarget, frmAccountManager,
   frmWebsiteOptionCustom, frmCustomColor, frmLogger, frmTransferFavorites,
-  frmLuaModulesUpdater, CheckUpdate, DBDataProcess,
+  frmLuaModulesUpdater, CheckUpdate, DBDataProcess, uDarkStyleParams,
   SimpleTranslator, httpsendthread, DateUtils, SimpleException;
 
 type
@@ -2381,6 +2381,7 @@ end;
 procedure TMainForm.LoadAbout;
 var
   fs: TFileStream;
+  fp: TFontParams;
   s: String;
   _OpenSSSL_version: function(t: integer): PAnsiChar; cdecl;
 begin
@@ -2393,6 +2394,14 @@ begin
       fs.free;
     end;
   end;
+
+  if IsDarkModeEnabled then
+  begin
+    rmAbout.GetTextAttributes(0, fp);
+    fp.Color := RGBToColor(245, 245, 245);
+    rmAbout.SetTextAttributes(0, -1, fp);
+  end;
+
 
   // load changelog.txt
   if FileExistsUTF8(CHANGELOG_FILE) then mmChangelog.Lines.LoadFromFile(CHANGELOG_FILE);
@@ -5119,6 +5128,10 @@ begin
       Lines.Add('');
     p := SelStart;
     GetTextAttributes(p, fp);
+    if IsDarkModeEnabled then
+    begin
+      fp.Color := RGBToColor(245, 245, 245);
+    end;
     fp.Style += [fsBold, fsUnderline];
     Inc(fp.Size);
     SetTextAttributes(p, 0, fp);

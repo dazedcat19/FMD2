@@ -14,6 +14,7 @@ uses
   Forms, LazFileUtils, jsonini, simpleipc, sqlite3dyn, uBaseUnit,
   FMDVars, webp, CheckUpdate, DBUpdater, SelfUpdater, uDownloadsManager,
   LuaWebsiteModules, LuaBase, SimpleException, Classes, sysutils, frmMain,
+  uMetaDarkStyle, uDarkStyleSchemes, uDarkStyleParams,
   MultiLog, FileChannel, ssl_openssl_lib, blcksock, ssl_openssl, SQLiteData;
 
 var
@@ -210,7 +211,9 @@ begin
   if FileExists(FMD_DIRECTORY + DLLWebPName) then
     DLLWebPName := FMD_DIRECTORY + DLLWebPName;
 
-  Application.Scaled:=True;
+  Application.Scaled := True;
+  PreferredAppMode := pamAllowDark;
+  uMetaDarkStyle.ApplyMetaDarkStyle(DefaultDark);
   Application.Initialize;
   Application.CreateForm(TMainForm, MainForm);
   Application.Run;
