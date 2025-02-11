@@ -262,7 +262,6 @@
 | Manga3S | [![https://manga3s.com](https://img.shields.io/website?url=https://manga3s.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga3s.com)](https://manga3s.com) | - | - | - |
 | Manga68 | [![https://manga68.com](https://img.shields.io/website?url=https://manga68.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga68.com)](https://manga68.com) | - | - | - |
 | Manga9 | [![https://manga9.co](https://img.shields.io/website?url=https://manga9.co%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga9.co)](https://manga9.co) | - | - | - |
-| Manga99 | [![http://www.manga99.com](https://img.shields.io/website?url=http://www.manga99.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.manga99.com)](http://www.manga99.com) | - | - | - |
 | MangaAction | [![https://manga-action.com](https://img.shields.io/website?url=https://manga-action.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga-action.com)](https://manga-action.com) | - | - | - |
 | MangaAe | [![https://manga.ae](https://img.shields.io/website?url=https://manga.ae%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga.ae)](https://manga.ae) | - | - | - |
 | MangaArabTeam | [![https://mangaarabteam.com](https://img.shields.io/website?url=https://mangaarabteam.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangaarabteam.com)](https://mangaarabteam.com) | - | - | - |
@@ -277,7 +276,6 @@
 | MangaCrab | [![https://mangacrab.com](https://img.shields.io/website?url=https://mangacrab.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangacrab.com)](https://mangacrab.com) | - | - | - |
 | MangaCultivator | [![https://mangacultivator.com](https://img.shields.io/website?url=https://mangacultivator.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangacultivator.com)](https://mangacultivator.com) | - | - | - |
 | MangaDao | [![https://mangadao.com](https://img.shields.io/website?url=https://mangadao.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangadao.com)](https://mangadao.com) | - | - | - |
-| MangaDeep | [![http://www.mangadeep.com](https://img.shields.io/website?url=http://www.mangadeep.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.mangadeep.com)](http://www.mangadeep.com) | - | - | - |
 | MangaDemon | [![https://demonicscans.org](https://img.shields.io/website?url=https://demonicscans.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://demonicscans.org)](https://demonicscans.org) | - | - | - |
 | MangaDenizi | [![https://www.mangadenizi.com](https://img.shields.io/website?url=https://www.mangadenizi.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangadenizi.com)](https://www.mangadenizi.com) | - | - | - |
 | MangaDex | [![https://mangadex.org](https://img.shields.io/website?url=https://mangadex.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangadex.org)](https://mangadex.org) | OK | 12.12.2024 | - |
@@ -647,7 +645,7 @@
 | TecnoScan | [![https://tecnoscann.com](https://img.shields.io/website?url=https://tecnoscann.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://tecnoscann.com)](https://tecnoscann.com) | - | - | - |
 | Temple Scan | [![https://templetoons.com](https://img.shields.io/website?url=https://templetoons.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://templetoons.com)](https://templetoons.com) | - | - | - |
 | TempleScanEsp | [![https://templescanesp.net](https://img.shields.io/website?url=https://templescanesp.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://templescanesp.net)](https://templescanesp.net) | - | - | - |
-| TenManga | [![http://www.tenmanga.com](https://img.shields.io/website?url=http://www.tenmanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.tenmanga.com)](http://www.tenmanga.com) | - | - | - |
+| TenManga | [![https://www.tenmanga.com](https://img.shields.io/website?url=https://www.tenmanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.tenmanga.com)](https://www.tenmanga.com) | OK | 11.02.2025 | - |
 | TheBlank | [![https://theblank.net](https://img.shields.io/website?url=https://theblank.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://theblank.net)](https://theblank.net) | - | - | - |
 | TheCatScans | [![https://reader2.thecatscans.com](https://img.shields.io/website?url=https://reader2.thecatscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://reader2.thecatscans.com)](https://reader2.thecatscans.com) | - | - | - |
 | TheNonamesScans | [![https://the-nonames.com](https://img.shields.io/website?url=https://the-nonames.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://the-nonames.com)](https://the-nonames.com) | - | - | - |
@@ -728,6 +726,8 @@
 | ~HanaScan~ | ~https://hanascan.com~ | Removed | 07.02.2025 | - |
 | ~HeroScan~ | ~https://heroscan.com~ | Removed | 07.02.2025 | - |
 | ~LHTranslationArchive~ | ~https://archive.lhtranslation.net~ | Removed | 07.02.2025 | - |
+| ~Manga99~ | ~http://www.manga99.com~ | Removed | 11.02.2025 | - |
+| ~MangaDeep~ | ~http://www.mangadeep.com~ | Removed | 11.02.2025 | - |
 | ~MangaEffect~ | ~https://mangaeffect.com~ | Removed | 30.01.2025 | Merged to MangaRead |
 | ~MangaGalaxy~ | ~https://mangagalaxy.net~ | Removed | 15.12.2024 | Merged to Vortex Scans |
 | ~MangaLife~ | ~https://manga4life.com~ | Removed | 07.02.2025 | Moved to Weeb Central |
