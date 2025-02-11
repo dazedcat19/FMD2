@@ -11,6 +11,7 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -87,4 +88,11 @@ function GetPageNumber()
 	CreateTXQuery(HTTP.Document).XPathStringAll('//div[@id="readerarea"]/img/@src', TASK.PageLinks)
 
 	return no_error
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+
+	return true
 end
