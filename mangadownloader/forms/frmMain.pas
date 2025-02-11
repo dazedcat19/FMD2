@@ -829,6 +829,13 @@ type
     { public declarations }
   end;
 
+  { TCustomHintWindow }
+
+  TCustomHintWindow = class(THintWindow)
+  public
+    procedure Paint; override;
+  end;
+
   { TOpenDBThread }
 
   TOpenDBThread = class(TThread)
@@ -1039,6 +1046,31 @@ begin
   if ParentControl.ControlCount > 0 then
     for i := 0 to ParentControl.ControlCount - 1 do
       ParentControl.Controls[i].Cursor := Cur;
+end;
+
+{ TCustomHintWindow }
+
+procedure TCustomHintWindow.Paint;
+var
+  R: TRect;
+begin
+  R := ClientRect;
+
+  // Set background color
+  Canvas.Brush.Color := clWindow;
+  Canvas.FillRect(R);
+
+  // Draw border
+  Canvas.Pen.Color := clWindowText;
+  Canvas.Rectangle(R);
+
+  // Set text properties
+  Canvas.Font.Color := clWindowText;
+  Canvas.Font.Style := [];
+
+  // Draw multi-line text with word wrapping
+  InflateRect(R, -4, -4); // Add padding
+  DrawText(Canvas.Handle, PChar(Caption), -1, R, DT_WORDBREAK or DT_LEFT);
 end;
 
 { TSearchDBThread }
@@ -2395,13 +2427,9 @@ begin
     end;
   end;
 
-  if IsDarkModeEnabled then
-  begin
-    rmAbout.GetTextAttributes(0, fp);
-    fp.Color := RGBToColor(245, 245, 245);
-    rmAbout.SetTextAttributes(0, -1, fp);
-  end;
-
+  rmAbout.GetTextAttributes(0, fp);
+  fp.Color := ColorToRGB(clWindowText);
+  rmAbout.SetTextAttributes(0, -1, fp);
 
   // load changelog.txt
   if FileExistsUTF8(CHANGELOG_FILE) then mmChangelog.Lines.LoadFromFile(CHANGELOG_FILE);
@@ -2771,6 +2799,8 @@ end;
 procedure TMainForm.appPropertiesMainShowHint(var HintStr: String;
   var CanShow: Boolean; var HintInfo: THintInfo);
 begin
+  HintInfo.HintWindowClass := TCustomHintWindow;
+
   if HintInfo.HintControl = vtMangaList then
   begin
     HintInfo.HintMaxWidth := 500;
@@ -5128,10 +5158,7 @@ begin
       Lines.Add('');
     p := SelStart;
     GetTextAttributes(p, fp);
-    if IsDarkModeEnabled then
-    begin
-      fp.Color := RGBToColor(245, 245, 245);
-    end;
+    fp.Color := ColorToRGB(clWindowText);
     fp.Style += [fsBold, fsUnderline];
     Inc(fp.Size);
     SetTextAttributes(p, 0, fp);

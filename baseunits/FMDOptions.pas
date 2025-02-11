@@ -196,6 +196,24 @@ var
   //modulelist color
   CL_MDNewUpdate: TColor = $FDC594;
 
+  //custom color darkmode
+  //mangalist color
+  CL_MNNewMangaDark: TColor = $C85A00;
+  CL_MNCompletedMangaDark: TColor = $008200;
+
+  //favoritelist color
+  CL_FVBrokenFavoriteDark: TColor = $0000C8;
+  CL_FVCheckingDark: TColor = $0096AA;
+  CL_FVNewChapterFoundDark: TColor = $C85A00;
+  CL_FVCompletedMangaDark: TColor = $008200;
+  CL_FVEmptyChaptersDark: TColor = $005AC8;
+
+  //chapterlist color
+  CL_CHDownloadedDark: TColor = $008200;
+
+  //modulelist color
+  CL_MDNewUpdateDark: TColor = $C85A00;
+
 // set base directory
 procedure SetFMDdirectory(const ADir: String);
 procedure SetAppDataDirectory(const ADir: String);
