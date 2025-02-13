@@ -1458,6 +1458,10 @@ msgctxt "tmainform.edmangalistsearch.texthint"
 msgid "Search title..."
 msgstr "Başlık ara..."
 
+#: tmainform.edoptionchangeunicodecharacterstr.texthint
+msgid "Unicode Char"
+msgstr ""
+
 #: tmainform.edoptionchaptercustomrename.texthint
 msgctxt "tmainform.edoptionchaptercustomrename.texthint"
 msgid "Custom rename"
@@ -1466,6 +1470,11 @@ msgstr "Kişisel yeniden adlandırma"
 #: tmainform.edoptiondefaultpath.texthint
 msgid "Default download path"
 msgstr "Varsayılan indirme yolu"
+
+#: tmainform.edoptiondefaultuseragent.texthint
+msgctxt "tmainform.edoptiondefaultuseragent.texthint"
+msgid "Default user-agent"
+msgstr ""
 
 #: tmainform.edoptionexternalparams.texthint
 msgctxt "tmainform.edoptionexternalparams.texthint"
@@ -1683,6 +1692,7 @@ msgid "Connection timeout (seconds)"
 msgstr "Bağlantı zaman aşımı (saniye)"
 
 #: tmainform.lboptiondefaultuseragent.caption
+msgctxt "tmainform.lboptiondefaultuseragent.caption"
 msgid "Default user-agent"
 msgstr ""
 

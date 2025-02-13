@@ -82,7 +82,7 @@ resourcestring
 
 implementation
 
-uses frmCustomColor, math;
+uses frmCustomColor, frmMain, math;
 
 var
   AccountThreadList: TAccountCheck;
@@ -256,19 +256,22 @@ var
 begin
   if vtAccountList.SelectedCount=0 then Exit;
   m:=PModuleContainer(vtAccountList.GetNodeData(vtAccountList.GetFirstSelected))^;
-  with TAccountSetForm.Create(Self) do
+
+  AccountSetForm := TAccountSetForm.Create(Self);
+  ReplaceWithCustom(AccountSetForm);
+  with AccountSetForm do
     try
-      Caption:=m.Name;
+      Caption := m.Name;
       with m.Account do
       begin
-        edUsername.Text:=Username;
-        edPassword.Text:=Password;
+        edUsername.Text := Username;
+        edPassword.Text := Password;
         if ShowModal = mrOK then
         begin
           if (edUsername.Text <> Username) or (edPassword.Text <> Password) then
           begin
-            Username:=edUsername.Text;
-            Password:=edPassword.Text;
+            Username := edUsername.Text;
+            Password := edPassword.Text;
             btRefreshClick(btRefresh);
           end;
         end;

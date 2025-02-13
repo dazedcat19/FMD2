@@ -1458,6 +1458,10 @@ msgctxt "tmainform.edmangalistsearch.texthint"
 msgid "Search title..."
 msgstr "Suche Titel..."
 
+#: tmainform.edoptionchangeunicodecharacterstr.texthint
+msgid "Unicode Char"
+msgstr ""
+
 #: tmainform.edoptionchaptercustomrename.texthint
 msgctxt "tmainform.edoptionchaptercustomrename.texthint"
 msgid "Custom rename"
@@ -1466,6 +1470,12 @@ msgstr "Benutzerdefinierte Umbenennung"
 #: tmainform.edoptiondefaultpath.texthint
 msgid "Default download path"
 msgstr "Standard Download Pfad"
+
+#: tmainform.edoptiondefaultuseragent.texthint
+#, fuzzy
+msgctxt "tmainform.edoptiondefaultuseragent.texthint"
+msgid "Default user-agent"
+msgstr "Standard User-Agent"
 
 #: tmainform.edoptionexternalparams.texthint
 msgctxt "tmainform.edoptionexternalparams.texthint"
@@ -1683,6 +1693,7 @@ msgid "Connection timeout (seconds)"
 msgstr "Verbindungsunterbrechung (sekunden)"
 
 #: tmainform.lboptiondefaultuseragent.caption
+msgctxt "tmainform.lboptiondefaultuseragent.caption"
 msgid "Default user-agent"
 msgstr "Standard User-Agent"
 

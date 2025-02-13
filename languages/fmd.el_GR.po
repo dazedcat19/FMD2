@@ -1505,6 +1505,10 @@ msgctxt "tmainform.edmangalistsearch.texthint"
 msgid "Search title..."
 msgstr "Αναζήτηση τίτλου..."
 
+#: tmainform.edoptionchangeunicodecharacterstr.texthint
+msgid "Unicode Char"
+msgstr ""
+
 #: tmainform.edoptionchaptercustomrename.texthint
 msgctxt "tmainform.edoptionchaptercustomrename.texthint"
 msgid "Custom rename"
@@ -1513,6 +1517,11 @@ msgstr "Προσαρμ. μετονομασία"
 #: tmainform.edoptiondefaultpath.texthint
 msgid "Default download path"
 msgstr "Προεπιλεγμένη διαδρομή λήψης"
+
+#: tmainform.edoptiondefaultuseragent.texthint
+msgctxt "tmainform.edoptiondefaultuseragent.texthint"
+msgid "Default user-agent"
+msgstr ""
 
 #: tmainform.edoptionexternalparams.texthint
 msgctxt "tmainform.edoptionexternalparams.texthint"
@@ -1732,6 +1741,7 @@ msgid "Connection timeout (seconds)"
 msgstr "Χρονικό όριο σύνδεσης (δευτ/λεπτα)"
 
 #: tmainform.lboptiondefaultuseragent.caption
+msgctxt "tmainform.lboptiondefaultuseragent.caption"
 msgid "Default user-agent"
 msgstr ""
 

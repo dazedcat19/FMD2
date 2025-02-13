@@ -19,13 +19,18 @@ uses
   {$endif}
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, LCLType,
   ExtCtrls, ComCtrls, Buttons, Spin, Menus, VirtualTrees, RichMemo, simpleipc, process,
-  lclproc, types, LCLIntf, EditBtn, PairSplitter, MultiLog,
+  lclproc, types, LCLIntf, EditBtn, GroupedEdit, PairSplitter, MultiLog,
   FileChannel, FileUtil, LazStringUtils, TAGraph, TASources, TASeries, TATools,
   AnimatedGif, uBaseUnit, uDownloadsManager, uFavoritesManager,
   uSilentThread, uMisc, uGetMangaInfosThread, frmDropTarget, frmAccountManager,
-  frmWebsiteOptionCustom, frmCustomColor, frmLogger, frmTransferFavorites,
-  frmLuaModulesUpdater, CheckUpdate, DBDataProcess, uDarkStyleParams,
+  frmAccountSet, frmWebsiteOptionCustom, frmCustomColor, frmLogger, frmTransferFavorites,
+  frmLuaModulesUpdater, CheckUpdate, DBDataProcess, uDarkStyleParams, uWin32WidgetSetDark,
   SimpleTranslator, httpsendthread, DateUtils, SimpleException;
+
+
+{ TCustom }
+
+procedure ReplaceWithCustom(AForm: TForm);
 
 type
 
@@ -836,6 +841,37 @@ type
     procedure Paint; override;
   end;
 
+  { TCustomEdit }
+
+  TCustomEdit = class(TEdit)
+  private
+    procedure WMPaint(var Msg: TWMPaint); message WM_PAINT;
+    procedure CMTextChanged(var Msg: TMessage); message CM_TEXTCHANGED;
+    procedure WMEraseBkgnd(var Msg: TWMEraseBkgnd); message WM_ERASEBKGND;
+  protected
+    procedure CreateWnd; override;
+  end;
+
+  { TCustomGEEdit }
+  // Add/Override WMPaint to a subclass of TEditButton that didn't? have it originally
+  
+  TCustomGEEdit = class(TGEEdit)
+  private
+    procedure WMPaint(var Msg: TWMPaint); message WM_PAINT;
+    procedure CMTextChanged(var Msg: TMessage); message CM_TEXTCHANGED;
+    procedure WMEraseBkgnd(var Msg: TWMEraseBkgnd); message WM_ERASEBKGND;
+  protected
+    procedure CreateWnd; override;
+  end;
+
+  { TCustomEditBtn }
+  // Override the default Class for the edit box of TEditButton
+
+  TCustomEditBtn = class(TEditButton)
+  protected
+    function GetEditorClassType: TGEEditClass; override;
+  end;
+
   { TOpenDBThread }
 
   TOpenDBThread = class(TThread)
@@ -1073,6 +1109,328 @@ begin
   DrawText(Canvas.Handle, PChar(Caption), -1, R, DT_WORDBREAK or DT_LEFT);
 end;
 
+{ TCustomEdit }
+
+function ReplaceEditWithCustom(AEdit: TEdit): TCustomEdit;
+var
+  CustomEdit: TCustomEdit;
+  Parent: TWinControl;
+  ControlIndex: Integer;
+  Side: TAnchorKind;
+  i: Integer;
+  Control: TControl;
+begin
+  if not Assigned(AEdit) then
+  begin
+    Exit(nil);
+  end;
+
+  Parent := AEdit.Parent;
+  ControlIndex := Parent.GetControlIndex(AEdit);
+  CustomEdit := TCustomEdit.Create(Parent);
+
+  // Copy all properties from TEdit to TCustomEdit
+  with CustomEdit do
+  begin
+    Anchors := AEdit.Anchors;
+    Align := AEdit.Align;
+    Text := AEdit.Text;
+    TextHint := AEdit.TextHint;
+    Font := AEdit.Font;
+    Color := AEdit.Color;
+    Width := AEdit.Width;
+    Height := AEdit.Height;
+    Left := AEdit.Left;
+    Top := AEdit.Top;
+    TabOrder := AEdit.TabOrder;
+    Enabled := AEdit.Enabled;
+    Visible := AEdit.Visible;
+    ReadOnly := AEdit.ReadOnly;
+
+    // Copy event handlers
+    OnChange := AEdit.OnChange;
+    OnClick := AEdit.OnClick;
+    OnDblClick := AEdit.OnDblClick;
+    OnEnter := AEdit.OnEnter;
+    OnExit := AEdit.OnExit;
+    OnKeyDown := AEdit.OnKeyDown;
+    OnKeyPress := AEdit.OnKeyPress;
+    OnKeyUp := AEdit.OnKeyUp;
+    OnMouseDown := AEdit.OnMouseDown;
+    OnMouseMove := AEdit.OnMouseMove;
+    OnMouseUp := AEdit.OnMouseUp;
+
+    for Side := Low(TAnchorKind) to High(TAnchorKind) do
+    begin
+      AnchorSide[Side].Assign(AEdit.AnchorSide[Side]);
+    end;
+  end;
+
+  // Update anchors for other controls anchored to AEdit
+  for i := 0 to Parent.ControlCount - 1 do
+  begin
+    Control := Parent.Controls[i];
+    if Control <> AEdit then
+    begin
+      for Side := Low(TAnchorKind) to High(TAnchorKind) do
+      begin
+        if Control.AnchorSide[Side].Control = AEdit then
+        begin
+          Control.AnchorSide[Side].Control := CustomEdit;
+        end;
+      end;
+    end;
+  end;
+
+  if AEdit.Focused then
+    CustomEdit.SetFocus;
+
+  // Remove the original control
+  AEdit.Free;
+
+  // Insert the new control at the original index position
+  Parent.InsertControl(CustomEdit, ControlIndex);
+
+  Result := CustomEdit;
+end;
+
+procedure TCustomEdit.CreateWnd;
+begin
+  inherited;
+  Invalidate; // Force repaint to ensure hint is drawn correctly
+end;
+
+procedure TCustomEdit.CMTextChanged(var Msg: TMessage);
+begin
+  inherited;
+  Invalidate; // Repaint when text changes to correctly show/hide hint
+end;
+
+procedure TCustomEdit.WMEraseBkgnd(var Msg: TWMEraseBkgnd);
+begin
+  Msg.Result := 1; // Prevent flickering by skipping default background erasing
+end;
+
+procedure TCustomEdit.WMPaint(var Msg: TWMPaint);
+var
+  ACanvas: TCanvas;
+  R: TRect;
+begin
+  inherited; // Call normal painting of the Edit first
+
+  if (Text = '') and (TextHint <> '') then
+  begin
+    ACanvas := TCanvas.Create;
+    try
+      ACanvas.Handle := Msg.DC; // Use the provided device context
+      ACanvas.Font.Assign(Self.Font);
+      ACanvas.Font.Color := clGrayText;
+      ACanvas.Brush.Style := bsClear; // Prevent background from being drawn
+      R := ClientRect;
+      ACanvas.TextOut(R.Left + 1, R.Top + 1, TextHint);
+    finally
+      ACanvas.Free;
+    end;
+  end;
+end;
+
+{ TCustomEditBtn }
+
+function ReplaceEditBtnWithCustom(AEditBtn: TEditButton): TCustomEditBtn;
+var
+  CustomEditBtn: TCustomEditBtn;
+  Parent: TWinControl;
+  ControlIndex: Integer;
+  Side: TAnchorKind;
+  i: Integer;
+  Control: TControl;
+begin
+  if not Assigned(AEditBtn) then
+  begin
+    Exit(nil);
+  end;
+
+  Parent := AEditBtn.Parent;
+  ControlIndex := Parent.GetControlIndex(AEditBtn);
+  CustomEditBtn := TCustomEditBtn.Create(Parent);
+
+  // Copy all properties from TEditButton to TCustomEditBtn
+  with CustomEditBtn do
+  begin
+    Anchors := AEditBtn.Anchors;
+    Align := AEditBtn.Align;
+    Text := AEditBtn.Text;
+    TextHint := AEditBtn.TextHint;
+    Font := AEditBtn.Font;
+    Color := AEditBtn.Color;
+    Width := AEditBtn.Width;
+    Height := AEditBtn.Height;
+    Left := AEditBtn.Left;
+    Top := AEditBtn.Top;
+    TabOrder := AEditBtn.TabOrder;
+    Enabled := AEditBtn.Enabled;
+    Visible := AEditBtn.Visible;
+    ReadOnly := AEditBtn.ReadOnly;
+
+    // Copy button-related properties
+    if AEditBtn.Images <> nil then
+    begin
+      Images := AEditBtn.Images;
+    end;
+    ImageIndex := AEditBtn.ImageIndex;
+    ImageWidth := AEditBtn.ImageWidth;
+    Glyph := AEditBtn.Glyph;
+    NumGlyphs := AEditBtn.NumGlyphs;
+
+    // Copy event handlers
+    OnChange := AEditBtn.OnChange;
+    OnClick := AEditBtn.OnClick;
+    OnDblClick := AEditBtn.OnDblClick;
+    OnEnter := AEditBtn.OnEnter;
+    OnExit := AEditBtn.OnExit;
+    OnKeyDown := AEditBtn.OnKeyDown;
+    OnKeyPress := AEditBtn.OnKeyPress;
+    OnKeyUp := AEditBtn.OnKeyUp;
+    OnMouseDown := AEditBtn.OnMouseDown;
+    OnMouseMove := AEditBtn.OnMouseMove;
+    OnMouseUp := AEditBtn.OnMouseUp;
+
+    // Copy button event handlers
+    OnButtonClick := AEditBtn.OnButtonClick;
+
+    for Side := Low(TAnchorKind) to High(TAnchorKind) do
+    begin
+      AnchorSide[Side].Assign(AEditBtn.AnchorSide[Side]);
+    end;
+  end;
+
+  // Update anchors for other controls anchored to AEditBtn
+  for i := 0 to Parent.ControlCount - 1 do
+  begin
+    Control := Parent.Controls[i];
+    if Control <> AEditBtn then
+    begin
+      for Side := Low(TAnchorKind) to High(TAnchorKind) do
+      begin
+        if Control.AnchorSide[Side].Control = AEditBtn then
+        begin
+          Control.AnchorSide[Side].Control := CustomEditBtn;
+        end;
+      end;
+    end;
+  end;
+
+  if AEditBtn.Focused then
+    CustomEditBtn.SetFocus;
+
+  // Remove the original control
+  AEditBtn.Free;
+
+  // Insert the new control at the original index position
+  Parent.InsertControl(CustomEditBtn, ControlIndex);
+
+  Result := CustomEditBtn;
+end;
+
+procedure TCustomGEEdit.WMPaint(var Msg: TWMPaint);
+var
+  ACanvas: TCanvas;
+  R: TRect;
+  DC: HDC;
+begin
+  inherited;
+
+  if (Text = '') and (TextHint <> '') then
+  begin
+    ACanvas := TCanvas.Create;
+    try
+      ACanvas.Handle := Msg.DC;
+      ACanvas.Font.Assign(Self.Font);
+      ACanvas.Font.Color := clGrayText;
+      ACanvas.Brush.Style := bsClear;
+      R := ClientRect;
+      ACanvas.TextOut(R.Left + 1, R.Top + 1, TextHint);
+    finally
+      ACanvas.Free;
+    end;
+  end;
+end;
+
+procedure TCustomGEEdit.CreateWnd;
+begin
+  inherited;
+  Invalidate;
+end;
+
+procedure TCustomGEEdit.CMTextChanged(var Msg: TMessage);
+begin
+  inherited;
+  Invalidate;
+end;
+
+procedure TCustomGEEdit.WMEraseBkgnd(var Msg: TWMEraseBkgnd);
+begin
+  Msg.Result := 1;
+end;
+
+function TCustomEditBtn.GetEditorClassType: TGEEditClass;
+begin
+  Result := TCustomGEEdit;
+end;
+
+{ TCustom }
+
+procedure ReplaceWithCustom(AForm: TForm);
+begin
+  if (not Assigned(AForm)) or not (IsDarkModeEnabled) then
+  begin
+    Exit;
+  end;
+
+  if AForm = MainForm then
+  begin
+    // TEdit
+    MainForm.edMangaListSearch := ReplaceEditWithCustom(MainForm.edMangaListSearch);
+    MainForm.edCustomGenres := ReplaceEditWithCustom(MainForm.edCustomGenres);
+    MainForm.edFilterTitle := ReplaceEditWithCustom(MainForm.edFilterTitle);
+    MainForm.edFilterAuthors := ReplaceEditWithCustom(MainForm.edFilterAuthors);
+    MainForm.edFilterArtists := ReplaceEditWithCustom(MainForm.edFilterArtists);
+    MainForm.edFilterSummary := ReplaceEditWithCustom(MainForm.edFilterSummary);
+    MainForm.edOptionExternalParams := ReplaceEditWithCustom(MainForm.edOptionExternalParams);
+    MainForm.edOptionHost := ReplaceEditWithCustom(MainForm.edOptionHost);
+    MainForm.edOptionUser := ReplaceEditWithCustom(MainForm.edOptionUser);
+    MainForm.edOptionPass := ReplaceEditWithCustom(MainForm.edOptionPass);
+    MainForm.edOptionDefaultUserAgent := ReplaceEditWithCustom(MainForm.edOptionDefaultUserAgent);
+    MainForm.edOptionMangaCustomRename := ReplaceEditWithCustom(MainForm.edOptionMangaCustomRename);
+    MainForm.edOptionChapterCustomRename := ReplaceEditWithCustom(MainForm.edOptionChapterCustomRename);
+    MainForm.edOptionFilenameCustomRename := ReplaceEditWithCustom(MainForm.edOptionFilenameCustomRename);
+    MainForm.edOptionChangeUnicodeCharacterStr := ReplaceEditWithCustom(MainForm.edOptionChangeUnicodeCharacterStr);
+
+    // TEditButton
+    MainForm.edDownloadsSearch := ReplaceEditBtnWithCustom(MainForm.edDownloadsSearch);
+    MainForm.edURL := ReplaceEditBtnWithCustom(MainForm.edURL);
+    MainForm.edFilterMangaInfoChapters := ReplaceEditBtnWithCustom(MainForm.edFilterMangaInfoChapters);
+    MainForm.edSaveTo := ReplaceEditBtnWithCustom(MainForm.edSaveTo);
+    MainForm.edFavoritesSearch := ReplaceEditBtnWithCustom(MainForm.edFavoritesSearch);
+    MainForm.edOptionExternalPath := ReplaceEditBtnWithCustom(MainForm.edOptionExternalPath);
+    MainForm.edOptionDefaultPath := ReplaceEditBtnWithCustom(MainForm.edOptionDefaultPath);
+    MainForm.edWebsitesSearch := ReplaceEditBtnWithCustom(MainForm.edWebsitesSearch);
+    MainForm.edLogFileName := ReplaceEditBtnWithCustom(MainForm.edLogFileName);
+  end;
+
+  if AForm = WebsiteSettingsForm then
+  begin
+    WebsiteSettingsForm.edSearch := ReplaceEditBtnWithCustom(WebsiteSettingsForm.edSearch);
+    WebsiteSettingsForm.edSearchProperty := ReplaceEditBtnWithCustom(WebsiteSettingsForm.edSearchProperty);
+  end;
+
+  if AForm = AccountSetForm then
+  begin
+    AccountSetForm.edUsername := ReplaceEditWithCustom(AccountSetForm.edUsername);
+    AccountSetForm.edPassword := ReplaceEditWithCustom(AccountSetForm.edPassword);
+  end;
+end;
+
 { TSearchDBThread }
 
 procedure TSearchDBThread.SyncBeforeSearch;
@@ -1208,9 +1566,12 @@ end;
 { TMainForm }
 
 procedure TMainForm.FormCreate(Sender: TObject);
+var
+  NewEdit: TCustomEdit;
 begin
   Randomize;
   FormMain := Self;
+  ReplaceWithCustom(MainForm);
   {$ifdef windows}
   PrevWndProc := windows.WNDPROC(windows.GetWindowLongPtr(Self.Handle, GWL_WNDPROC));
   windows.SetWindowLongPtr(Self.Handle, GWL_WNDPROC, PtrInt(@WndCallback));
@@ -1228,6 +1589,12 @@ begin
 
   ForceDirectoriesUTF8(USERDATA_FOLDER);
   ForceDirectoriesUTF8(DATA_FOLDER);
+
+  if IsDarkModeEnabled then
+  begin
+    TryEnforceDarkStyleForCtrl(rmAbout);
+    TryEnforceDarkStyleForCtrl(rmInformation);
+  end;
 
   // load about
   LoadAbout;
@@ -1314,6 +1681,7 @@ begin
 
   WebsiteSettingsForm := TWebsiteSettingsForm.Create(Self);
   EmbedForm(WebsiteSettingsForm, tsWebsiteAdvanced);
+  ReplaceWithCustom(WebsiteSettingsForm);
 
   LuaModulesUpdaterForm := TLuaModulesUpdaterForm.Create(Self);
   EmbedForm(LuaModulesUpdaterForm, tsWebsiteModules);
@@ -1380,6 +1748,7 @@ begin
 
   if AlwaysLoadLuaFromFile then
     Caption := Caption + ' --lua-dofile';
+
 end;
 
 procedure TMainForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -1461,7 +1830,7 @@ begin
     FMDInstance.StopServer;
     FreeAndNil(FMDInstance);
   end;
-  isNormalExit:=True;
+  isNormalExit := True;
 
   Logger.Send('NormalExit', isNormalExit);
 end;
@@ -5196,6 +5565,7 @@ procedure TMainForm.ViewMangaInfo(const AModule: Pointer; const ALink, ATitle,
   ASaveTo: String; const ASender: TObject; const AMangaListNode: PVirtualNode);
 var
   fav: TFavoriteContainer;
+  fp: TFontParams;
 begin
   if (ALink = '') or (AModule = nil) then Exit;
 
@@ -5211,8 +5581,13 @@ begin
   edURL.Text := FillHost(TModuleContainer(AModule).RootURL, ALink);
   pcMain.ActivePage := tsInformation;
   imCover.Picture.Assign(nil);
+
   rmInformation.Clear;
+  rmInformation.GetTextAttributes(0, fp);
+  fp.Color := ColorToRGB(clWindowText);
+  rmInformation.SetTextAttributes(0, -1, fp);
   rmInformation.Lines.Add(RS_Loading);
+
   clbChapterList.Clear;
   if Assigned(gifWaiting) then
   begin

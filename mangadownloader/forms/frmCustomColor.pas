@@ -19,7 +19,7 @@ type
 
   TThemeCustomColorManager = class
   private
-    FThemeColorMappings: array[0..9] of TColorMapping;
+    FThemeColorMappings: array[0..10] of TColorMapping;
     procedure SetColorMapping(Index: Integer; const AName: String; ALight, ADark: TColor);
   public
     constructor Create;
@@ -415,15 +415,16 @@ constructor TThemeCustomColorManager.Create;
 begin
   // Initialize theme color mappings
   SetColorMapping(0, 'BSDisabled', clBtnShadow, clGrayText);
-  SetColorMapping(1, 'MNNewManga', CL_MNNewManga, CL_MNNewMangaDark);
-  SetColorMapping(2, 'MNCompletedManga', CL_MNCompletedManga, CL_MNCompletedMangaDark);
-  SetColorMapping(3, 'FVBrokenFavorite', CL_FVBrokenFavorite, CL_FVBrokenFavoriteDark);
-  SetColorMapping(4, 'FVChecking', CL_FVChecking, CL_FVCheckingDark);
-  SetColorMapping(5, 'FVNewChapterFound', CL_FVNewChapterFound, CL_FVNewChapterFoundDark);
-  SetColorMapping(6, 'FVCompletedManga', CL_FVCompletedManga, CL_FVCompletedMangaDark);
-  SetColorMapping(7, 'FVEmptyChapters', CL_FVEmptyChapters, CL_FVEmptyChaptersDark);
-  SetColorMapping(8, 'CHDownloaded', CL_CHDownloaded, CL_CHDownloadedDark);
-  SetColorMapping(9, 'MDNewUpdate', CL_MDNewUpdate, CL_MDNewUpdateDark);
+  SetColorMapping(1, 'BSTreeLine', clBtnShadow, clGrayText);
+  SetColorMapping(2, 'MNNewManga', CL_MNNewManga, CL_MNNewMangaDark);
+  SetColorMapping(3, 'MNCompletedManga', CL_MNCompletedManga, CL_MNCompletedMangaDark);
+  SetColorMapping(4, 'FVBrokenFavorite', CL_FVBrokenFavorite, CL_FVBrokenFavoriteDark);
+  SetColorMapping(5, 'FVChecking', CL_FVChecking, CL_FVCheckingDark);
+  SetColorMapping(6, 'FVNewChapterFound', CL_FVNewChapterFound, CL_FVNewChapterFoundDark);
+  SetColorMapping(7, 'FVCompletedManga', CL_FVCompletedManga, CL_FVCompletedMangaDark);
+  SetColorMapping(8, 'FVEmptyChapters', CL_FVEmptyChapters, CL_FVEmptyChaptersDark);
+  SetColorMapping(9, 'CHDownloaded', CL_CHDownloaded, CL_CHDownloadedDark);
+  SetColorMapping(10, 'MDNewUpdate', CL_MDNewUpdate, CL_MDNewUpdateDark);
 end;
 
 procedure TThemeCustomColorManager.SetColorMapping(Index: Integer; const AName: String; ALight, ADark: TColor);
@@ -465,6 +466,7 @@ end;
 procedure TThemeCustomColorManager.CheckListColors;
 begin
   BasicListColors[2] := CheckDefaultCustomColors('BSDisabled', BasicListColors[2]);
+  BasicListColors[13] := CheckDefaultCustomColors('BSTreeLine', BasicListColors[13]);
 
   MangaListColors[0] := CheckDefaultCustomColors('MNNewManga', MangaListColors[0]);
   MangaListColors[1] := CheckDefaultCustomColors('MNCompletedManga', MangaListColors[1]);

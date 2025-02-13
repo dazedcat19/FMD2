@@ -1457,6 +1457,10 @@ msgctxt "tmainform.edmangalistsearch.texthint"
 msgid "Search title..."
 msgstr "搜索标题..."
 
+#: tmainform.edoptionchangeunicodecharacterstr.texthint
+msgid "Unicode Char"
+msgstr ""
+
 #: tmainform.edoptionchaptercustomrename.texthint
 msgctxt "TMAINFORM.EDOPTIONCHAPTERCUSTOMRENAME.TEXTHINT"
 msgid "Custom rename"
@@ -1465,6 +1469,12 @@ msgstr "自定义重命名"
 #: tmainform.edoptiondefaultpath.texthint
 msgid "Default download path"
 msgstr "默认下载路径"
+
+#: tmainform.edoptiondefaultuseragent.texthint
+#, fuzzy
+msgctxt "tmainform.edoptiondefaultuseragent.texthint"
+msgid "Default user-agent"
+msgstr "默认用户代理"
 
 #: tmainform.edoptionexternalparams.texthint
 msgctxt "TMAINFORM.EDOPTIONEXTERNALPARAMS.TEXTHINT"
@@ -1682,6 +1692,7 @@ msgid "Connection timeout (seconds)"
 msgstr "连接超时（秒）"
 
 #: tmainform.lboptiondefaultuseragent.caption
+msgctxt "tmainform.lboptiondefaultuseragent.caption"
 msgid "Default user-agent"
 msgstr "默认用户代理"
 

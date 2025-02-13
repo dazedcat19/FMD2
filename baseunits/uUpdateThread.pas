@@ -591,6 +591,7 @@ end;
 procedure TUpdateListManagerThread.StatusBarShowHint(Sender: TObject;
   HintInfo: PHintInfo);
 begin
+  HintInfo^.HintWindowClass := TCustomHintWindow;
   HintInfo^.HintStr := Trim(websites.Text);
 end;
 

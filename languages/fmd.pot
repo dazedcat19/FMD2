@@ -1384,6 +1384,10 @@ msgstr ""
 msgid "Search title..."
 msgstr ""
 
+#: tmainform.edoptionchangeunicodecharacterstr.texthint
+msgid "Unicode Char"
+msgstr ""
+
 #: tmainform.edoptionchaptercustomrename.texthint
 msgctxt "tmainform.edoptionchaptercustomrename.texthint"
 msgid "Custom rename"
@@ -1391,6 +1395,11 @@ msgstr ""
 
 #: tmainform.edoptiondefaultpath.texthint
 msgid "Default download path"
+msgstr ""
+
+#: tmainform.edoptiondefaultuseragent.texthint
+msgctxt "tmainform.edoptiondefaultuseragent.texthint"
+msgid "Default user-agent"
 msgstr ""
 
 #: tmainform.edoptionexternalparams.texthint
@@ -1586,6 +1595,7 @@ msgid "Connection timeout (seconds)"
 msgstr ""
 
 #: tmainform.lboptiondefaultuseragent.caption
+msgctxt "tmainform.lboptiondefaultuseragent.caption"
 msgid "Default user-agent"
 msgstr ""
 

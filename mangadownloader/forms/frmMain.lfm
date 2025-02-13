@@ -3545,6 +3545,7 @@ object MainForm: TMainForm
                 Width = 800
                 Anchors = [akTop, akLeft, akRight]
                 TabOrder = 1
+                TextHint = 'Default user-agent'
               end
               object lbOptionDefaultUserAgent: TLabel
                 AnchorSideLeft.Control = gbOptionsConnectionsGeneral
@@ -4139,6 +4140,7 @@ object MainForm: TMainForm
                 Width = 80
                 Enabled = False
                 TabOrder = 1
+                TextHint = 'Unicode Char'
               end
             end
             object lbDefaultDownloadPath: TLabel
