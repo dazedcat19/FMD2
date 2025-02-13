@@ -888,13 +888,13 @@ const
   CL_HLRedMarks         = $8080FF;
   CL_HLYellowMarks      = $80EBFE;
 
-  CL_BarGrayLine        = $bcbcbc;
-  CL_BarGray            = $e6e6e6;
+  CL_BarLine            = clBtnFace;
+  CL_Bar                = clWindow;
 
   CL_BarGreenLine       = $25b006;
   CL_BarGreen           = $42d932;
 
-  CL_BarOrangeLine       = $00b399;
+  CL_BarOrangeLine      = $00b399;
   CL_BarOrange          = $1870e9;
 
   CL_BarRedLine         = $1a1ab1;
@@ -4288,11 +4288,11 @@ begin
     // base bar
     BarRect := CellRect;
     BarRect.Inflate(-2,-2);
-    BarRect.Right-=1;
+    BarRect.Right -= 1;
     Pen.Style := psSolid;
     Brush.Style := bsSolid;
-    Pen.Color := CL_BarGrayLine;
-    Brush.Color := CL_BarGray;
+    Pen.Color := CL_BarLine;
+    Brush.Color := CL_Bar;
     Rectangle(BarRect);
 
     // progress bar
@@ -4306,8 +4306,8 @@ begin
                            Brush.Color := CL_BarRed;
                          end;
         STATUS_WAIT    : begin
-                           Pen.Color   := CL_BarGrayLine;
-                           Brush.Color := CL_BarGray;
+                           Pen.Color   := CL_BarLine;
+                           Brush.Color := CL_Bar;
                          end;
         STATUS_DOWNLOAD: begin
                            Pen.Color   := CL_BarBlueLine;
@@ -4329,12 +4329,12 @@ begin
       end;
       Frame(BarRect);
       BarRect.Inflate(-2,-2);
-      GradientFill(BarRect, BlendColor(Brush.Color,CL_BarGray,128), Brush.Color, gdHorizontal);
+      GradientFill(BarRect, BlendColor(Brush.Color, CL_Bar, 128), Brush.Color, gdHorizontal);
     end;
     // text
     if DownloadInfo.Progress <> '' then
     begin
-      Font.Color := clBlack;
+      Font.Color := clWindowText;
       Brush.Style := bsClear;
       GetTextSize(DownloadInfo.Progress, ww, hh);
       TextOut(CellRect.Left + ((CellRect.Right - CellRect.Left - ww) div 2),

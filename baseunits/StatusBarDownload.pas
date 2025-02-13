@@ -59,8 +59,8 @@ implementation
 uses uBaseUnit;
 
 const
-  CL_ProgressBarBaseLine = $bcbcbc;
-  CL_ProgressBarBase     = $e6e6e6;
+  CL_ProgressBarBaseLine = clBtnFace;
+  CL_ProgressBarBase     = clWindow;
   CL_ProgressBarLine     = $25b006;
   CL_ProgressBar         = $42d932;
 
@@ -182,6 +182,8 @@ begin
       TextRect(FProgressBarRect, FProgressBarRect.Left + ((FProgressBarRect.Right - FProgressBarRect.Left - txtWidth) div 2),
         FProgressBarRect.Top + ((FProgressBarRect.Bottom - FProgressBarRect.Top - txtHeight) div 2), FProgressText);
     end;
+    Font.Color := clWindowText;
+    Brush.Style := bsClear;
     txtHeight := GetTextHeight(FStatusText);
     TextRect(FStatusTextRect, FStatusTextRect.Left, FStatusTextRect.Top + ((FStatusTextRect.Bottom - FStatusTextRect.Top - txtHeight) div 2), FStatusText);
   end;

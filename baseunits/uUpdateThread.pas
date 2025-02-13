@@ -140,8 +140,8 @@ uses
   frmMain, FMDVars, LuaWebsiteModuleHandler, Dialogs;
 
 const
-  CL_ProgressBarBaseLine = $bcbcbc;
-  CL_ProgressBarBase     = $e6e6e6;
+  CL_ProgressBarBaseLine = clBtnFace;
+  CL_ProgressBarBase     = clWindow;
   CL_ProgressBarLine     = $25b006;
   CL_ProgressBar         = $42d932;
 
@@ -577,6 +577,7 @@ begin
       FProgressBarPercentsRect.Inflate(-2, -2);
       GradientFill(FProgressBarPercentsRect, BlendColor(Brush.Color, CL_ProgressBarBase, 128), Brush.Color, gdHorizontal);
     end;
+    Font.Color := clWindowText;
     Brush.Style := bsClear;
     txtHeight := GetTextHeight(FStatusText);
     TextRect(FStatusTextRect, FStatusTextRect.Left, FStatusTextRect.Top + ((FStatusTextRect.Bottom - FStatusTextRect.Top - txtHeight) div 2), FStatusText);

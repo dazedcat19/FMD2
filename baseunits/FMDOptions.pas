@@ -169,8 +169,8 @@ var
 
   OptionRestartFMD: Boolean = False;
 
-  //custom color
-  //basiclist
+  // custom color
+  // basiclist
   CL_BSNormalText: TColor = clWindowText;
   CL_BSFocusedSelectionText: TColor = clHighlightText;
   CL_BSUnfocesedSelectionText: TColor = clWindowText;
@@ -179,39 +179,43 @@ var
   CL_BSSortedColumn: TColor = $F8E6D6;
   CL_BSEnabledWebsiteSettings: TColor = clYellow;
 
-  //mangalist color
+  // mangalist color
   CL_MNNewManga: TColor = $FDC594;
   CL_MNCompletedManga: TColor = $B8FFB8;
 
-  //favoritelist color
+  // favoritelist color
   CL_FVBrokenFavorite: TColor = $8080FF;
   CL_FVChecking: TColor = $80EBFE;
   CL_FVNewChapterFound: TColor = $FDC594;
   CL_FVCompletedManga: TColor = $B8FFB8;
   CL_FVEmptyChapters: TColor = $CCDDFF;
 
-  //chapterlist color
+  // chapterlist color
   CL_CHDownloaded: TColor = $B8FFB8;
 
-  //modulelist color
+  // modulelist color
   CL_MDNewUpdate: TColor = $FDC594;
 
-  //custom color darkmode
-  //mangalist color
+  // custom color darkmode
+  // basiclist
+  CL_BSSortedColumnDark: TColor = $E19650;
+  CL_BSEnabledWebsiteSettingsDark: TColor = $009696;
+
+  // mangalist color
   CL_MNNewMangaDark: TColor = $C85A00;
   CL_MNCompletedMangaDark: TColor = $008200;
 
-  //favoritelist color
+  // favoritelist color
   CL_FVBrokenFavoriteDark: TColor = $0000C8;
   CL_FVCheckingDark: TColor = $0096AA;
   CL_FVNewChapterFoundDark: TColor = $C85A00;
   CL_FVCompletedMangaDark: TColor = $008200;
   CL_FVEmptyChaptersDark: TColor = $005AC8;
 
-  //chapterlist color
+  // chapterlist color
   CL_CHDownloadedDark: TColor = $008200;
 
-  //modulelist color
+  // modulelist color
   CL_MDNewUpdateDark: TColor = $C85A00;
 
 // set base directory

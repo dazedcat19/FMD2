@@ -1516,7 +1516,7 @@ object MainForm: TMainForm
                     Align = alRight
                     BorderSpacing.Left = 4
                     Caption = '[?]'
-                    Font.Color = clBlue
+                    Font.Color = clHighlight
                     ParentColor = False
                     ParentFont = False
                     ParentShowHint = False
@@ -2896,7 +2896,7 @@ object MainForm: TMainForm
                 Top = 73
                 Width = 13
                 Caption = '[?]'
-                Font.Color = clBlue
+                Font.Color = clHighlight
                 ParentColor = False
                 ParentFont = False
                 ParentShowHint = False
@@ -3955,7 +3955,7 @@ object MainForm: TMainForm
                 Width = 13
                 Caption = '[?]'
                 Enabled = False
-                Font.Color = clBlue
+                Font.Color = clHighlight
                 ParentColor = False
                 ParentFont = False
                 ParentShowHint = False
@@ -4020,7 +4020,7 @@ object MainForm: TMainForm
                 Top = 165
                 Width = 13
                 Caption = '[?]'
-                Font.Color = clBlue
+                Font.Color = clHighlight
                 ParentColor = False
                 ParentFont = False
                 ParentShowHint = False
@@ -4101,7 +4101,7 @@ object MainForm: TMainForm
                 Top = 259
                 Width = 13
                 Caption = '[?]'
-                Font.Color = clBlue
+                Font.Color = clHighlight
                 ParentColor = False
                 ParentFont = False
                 ParentShowHint = False
@@ -4175,7 +4175,7 @@ object MainForm: TMainForm
               BorderSpacing.Left = 4
               Caption = '[?]'
               Enabled = False
-              Font.Color = clBlue
+              Font.Color = clHighlight
               ParentColor = False
               ParentFont = False
               ParentShowHint = False
