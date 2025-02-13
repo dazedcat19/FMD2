@@ -12,7 +12,7 @@ interface
 
 uses
   Classes, SysUtils, typinfo, fgl, uData, LazFileUtils, uBaseUnit, uMisc,
-  WebsiteModules, DBDataProcess, FMDOptions, httpsendthread,
+  WebsiteModules, DBDataProcess, FMDOptions, httpsendthread, uCustomControls,
   BaseThread, MultiLog, ExtCtrls, Forms, Controls, Buttons, Graphics;
 
 type

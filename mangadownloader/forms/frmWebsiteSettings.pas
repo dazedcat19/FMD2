@@ -6,15 +6,15 @@ interface
 
 uses
   Classes, SysUtils, WebsiteModules, VirtualPropertyGrid, frmCustomColor, Forms,
-  Controls, PairSplitter, EditBtn, VirtualTrees, uBaseUnit, Graphics;
+  Controls, PairSplitter, EditBtn, VirtualTrees, uBaseUnit, Graphics, uCustomControls;
 
 type
 
   { TWebsiteSettingsForm }
 
   TWebsiteSettingsForm = class(TForm)
-    edSearch: TEditButton;
-    edSearchProperty: TEditButton;
+    edSearch: TCustomEditButton;
+    edSearchProperty: TCustomEditButton;
     spMain: TPairSplitter;
     spList: TPairSplitterSide;
     spProps: TPairSplitterSide;

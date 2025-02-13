@@ -13,7 +13,7 @@ interface
 uses
   Classes, SysUtils, Forms, Dialogs, StdCtrls, Buttons, EditBtn,
   LazFileUtils, uBaseUnit, WebsiteModules, FMDOptions, RegExpr,
-  frmNewChapter, DBDataProcess, Controls;
+  frmNewChapter, DBDataProcess, Controls, uCustomControls;
 
 type
 
@@ -23,7 +23,7 @@ type
     btImport: TBitBtn;
     btCancel: TBitBtn;
     cbSoftware: TComboBox;
-    edPath: TDirectoryEdit;
+    edPath: TCustomDirectoryEdit;
     lbSelectSoftware: TLabel;
     procedure btImportClick(Sender: TObject);
   private

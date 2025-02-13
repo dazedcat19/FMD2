@@ -45,7 +45,7 @@ object WebsiteSettingsForm: TWebsiteSettingsForm
         OnFocusChanged = vtWebsiteFocusChanged
         OnGetText = vtWebsiteGetText
       end
-      object edSearch: TEditButton
+      object edSearch: TCustomEditButton
         Left = 0
         Height = 23
         Top = 0
@@ -106,7 +106,7 @@ object WebsiteSettingsForm: TWebsiteSettingsForm
       ChildSizing.VerticalSpacing = 6
       ClientWidth = 417
       ClientHeight = 461
-      object edSearchProperty: TEditButton
+      object edSearchProperty: TCustomEditButton
         Left = 0
         Height = 23
         Top = 0

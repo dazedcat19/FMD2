@@ -338,7 +338,7 @@ object MainForm: TMainForm
                 end
               end
             end
-            object edDownloadsSearch: TEditButton
+            object edDownloadsSearch: TCustomEditButton
               Left = 0
               Height = 23
               Top = 1
@@ -675,7 +675,7 @@ object MainForm: TMainForm
             OnClick = btUpdateListClick
             ShowCaption = False
           end
-          object edMangaListSearch: TEdit
+          object edMangaListSearch: TCustomEdit
             AnchorSideLeft.Control = cbSelectManga
             AnchorSideTop.Control = cbSelectManga
             AnchorSideTop.Side = asrBottom
@@ -857,7 +857,7 @@ object MainForm: TMainForm
                   ParentBackground = False
                   ParentFont = False
                   TabOrder = 0
-                  object edURL: TEditButton
+                  object edURL: TCustomEditButton
                     Left = 0
                     Height = 23
                     Top = 0
@@ -1287,7 +1287,7 @@ object MainForm: TMainForm
                     ParentColor = False
                     ParentFont = False
                   end
-                  object edFilterMangaInfoChapters: TEditButton
+                  object edFilterMangaInfoChapters: TCustomEditButton
                     Left = 0
                     Height = 23
                     Top = 0
@@ -1338,7 +1338,7 @@ object MainForm: TMainForm
                     TextHint = 'Filter'
                     Visible = False
                   end
-                  object edSaveTo: TEditButton
+                  object edSaveTo: TCustomEditButton
                     AnchorSideLeft.Control = lbSaveTo
                     AnchorSideTop.Control = btReadOnline
                     AnchorSideRight.Control = btReadOnline
@@ -1494,7 +1494,7 @@ object MainForm: TMainForm
                     ParentColor = False
                     ParentFont = False
                   end
-                  object edCustomGenres: TEdit
+                  object edCustomGenres: TCustomEdit
                     Left = 97
                     Height = 23
                     Top = 0
@@ -1565,7 +1565,7 @@ object MainForm: TMainForm
                       ParentColor = False
                       ParentFont = False
                     end
-                    object edFilterTitle: TEdit
+                    object edFilterTitle: TCustomEdit
                       Left = 114
                       Height = 23
                       Top = 0
@@ -1585,7 +1585,7 @@ object MainForm: TMainForm
                       ParentColor = False
                       ParentFont = False
                     end
-                    object edFilterAuthors: TEdit
+                    object edFilterAuthors: TCustomEdit
                       Left = 114
                       Height = 23
                       Top = 27
@@ -1605,7 +1605,7 @@ object MainForm: TMainForm
                       ParentColor = False
                       ParentFont = False
                     end
-                    object edFilterArtists: TEdit
+                    object edFilterArtists: TCustomEdit
                       Left = 114
                       Height = 23
                       Top = 54
@@ -1655,7 +1655,7 @@ object MainForm: TMainForm
                       ParentColor = False
                       ParentFont = False
                     end
-                    object edFilterSummary: TEdit
+                    object edFilterSummary: TCustomEdit
                       Left = 114
                       Height = 23
                       Top = 108
@@ -2700,7 +2700,7 @@ object MainForm: TMainForm
         OnClick = btFavoritesCheckNewChapterClick
         TabOrder = 1
       end
-      object edFavoritesSearch: TEditButton
+      object edFavoritesSearch: TCustomEditButton
         Left = 0
         Height = 23
         Top = 4
@@ -2874,7 +2874,7 @@ object MainForm: TMainForm
                 Caption = 'Parameters:'
                 ParentColor = False
               end
-              object edOptionExternalParams: TEdit
+              object edOptionExternalParams: TCustomEdit
                 AnchorSideLeft.Control = lbOptionExternalParams
                 AnchorSideTop.Control = lbOptionExternalParams
                 AnchorSideTop.Side = asrBottom
@@ -2902,7 +2902,7 @@ object MainForm: TMainForm
                 ParentShowHint = False
                 ShowHint = True
               end
-              object edOptionExternalPath: TEditButton
+              object edOptionExternalPath: TCustomEditButton
                 Left = 4
                 Height = 23
                 Top = 23
@@ -3389,7 +3389,7 @@ object MainForm: TMainForm
                   ParentColor = False
                   ParentFont = False
                 end
-                object edOptionHost: TEdit
+                object edOptionHost: TCustomEdit
                   AnchorSideLeft.Control = cbOptionProxyType
                   AnchorSideTop.Control = lbOptionHost
                   AnchorSideTop.Side = asrCenter
@@ -3420,7 +3420,7 @@ object MainForm: TMainForm
                   Caption = 'Username'
                   ParentColor = False
                 end
-                object edOptionUser: TEdit
+                object edOptionUser: TCustomEdit
                   AnchorSideLeft.Control = lbOptionUser
                   AnchorSideLeft.Side = asrBottom
                   AnchorSideTop.Control = lbOptionUser
@@ -3462,7 +3462,7 @@ object MainForm: TMainForm
                   Caption = 'Password'
                   ParentColor = False
                 end
-                object edOptionPass: TEdit
+                object edOptionPass: TCustomEdit
                   AnchorSideLeft.Control = edOptionUser
                   AnchorSideTop.Control = lbOptionPass
                   AnchorSideTop.Side = asrCenter
@@ -3533,7 +3533,7 @@ object MainForm: TMainForm
                   Value = 8080
                 end
               end
-              object edOptionDefaultUserAgent: TEdit
+              object edOptionDefaultUserAgent: TCustomEdit
                 AnchorSideLeft.Control = gbOptionsConnectionsGeneral
                 AnchorSideTop.Control = lbOptionDefaultUserAgent
                 AnchorSideTop.Side = asrBottom
@@ -3929,7 +3929,7 @@ object MainForm: TMainForm
                 Enabled = False
                 ParentColor = False
               end
-              object edOptionMangaCustomRename: TEdit
+              object edOptionMangaCustomRename: TCustomEdit
                 AnchorSideLeft.Control = lbOptionMangaCustomRename
                 AnchorSideTop.Control = lbOptionMangaCustomRename
                 AnchorSideTop.Side = asrBottom
@@ -3998,7 +3998,7 @@ object MainForm: TMainForm
                 Caption = 'Chapter name:'
                 ParentColor = False
               end
-              object edOptionChapterCustomRename: TEdit
+              object edOptionChapterCustomRename: TCustomEdit
                 AnchorSideLeft.Control = lbOptionChapterCustomRename
                 AnchorSideTop.Control = lbOptionChapterCustomRename
                 AnchorSideTop.Side = asrBottom
@@ -4107,7 +4107,7 @@ object MainForm: TMainForm
                 ParentShowHint = False
                 ShowHint = True
               end
-              object edOptionFilenameCustomRename: TEdit
+              object edOptionFilenameCustomRename: TCustomEdit
                 AnchorSideLeft.Control = lbOptionFilenameCustomRename
                 AnchorSideTop.Control = lbOptionFilenameCustomRename
                 AnchorSideTop.Side = asrBottom
@@ -4130,7 +4130,7 @@ object MainForm: TMainForm
                 Caption = 'Filename:'
                 ParentColor = False
               end
-              object edOptionChangeUnicodeCharacterStr: TEdit
+              object edOptionChangeUnicodeCharacterStr: TCustomEdit
                 AnchorSideLeft.Control = cbOptionChangeUnicodeCharacter
                 AnchorSideLeft.Side = asrBottom
                 AnchorSideTop.Control = cbOptionChangeUnicodeCharacter
@@ -4217,7 +4217,7 @@ object MainForm: TMainForm
               ParentShowHint = False
               ShowHint = True
             end
-            object edOptionDefaultPath: TEditButton
+            object edOptionDefaultPath: TCustomEditButton
               Left = 4
               Height = 23
               Top = 27
@@ -4708,7 +4708,7 @@ object MainForm: TMainForm
                     end
                   end
                 end
-                object edWebsitesSearch: TEditButton
+                object edWebsitesSearch: TCustomEditButton
                   Left = 0
                   Height = 23
                   Top = 0
@@ -4945,7 +4945,7 @@ object MainForm: TMainForm
                 OnClick = btOpenLogClick
                 TabOrder = 3
               end
-              object edLogFileName: TEditButton
+              object edLogFileName: TCustomEditButton
                 AnchorSideLeft.Control = ckEnableLogging
                 AnchorSideTop.Control = lbLogFileName
                 AnchorSideTop.Side = asrBottom

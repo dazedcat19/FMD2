@@ -306,46 +306,49 @@
         <Mode0 Name="default"/>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="13">
+    <RequiredPackages Count="14">
       <Item1>
-        <PackageName Value="RunTimeTypeInfoControls"/>
+        <PackageName Value="CustomControls"/>
       </Item1>
       <Item2>
-        <PackageName Value="LazControls"/>
+        <PackageName Value="RunTimeTypeInfoControls"/>
       </Item2>
       <Item3>
-        <PackageName Value="TAChartLazarusPkg"/>
+        <PackageName Value="LazControls"/>
       </Item3>
       <Item4>
-        <PackageName Value="laz_synapse"/>
+        <PackageName Value="TAChartLazarusPkg"/>
       </Item4>
       <Item5>
-        <PackageName Value="dcpcrypt"/>
+        <PackageName Value="laz_synapse"/>
       </Item5>
       <Item6>
-        <PackageName Value="richmemopackage"/>
+        <PackageName Value="dcpcrypt"/>
       </Item6>
       <Item7>
-        <PackageName Value="richmemo_design"/>
+        <PackageName Value="richmemopackage"/>
       </Item7>
       <Item8>
-        <PackageName Value="LCL"/>
+        <PackageName Value="richmemo_design"/>
       </Item8>
       <Item9>
-        <PackageName Value="virtualtreeview_package"/>
+        <PackageName Value="LCL"/>
       </Item9>
       <Item10>
-        <PackageName Value="multiloglaz"/>
+        <PackageName Value="virtualtreeview_package"/>
       </Item10>
       <Item11>
-        <PackageName Value="internettools"/>
+        <PackageName Value="multiloglaz"/>
       </Item11>
       <Item12>
-        <PackageName Value="MetaDarkStyle"/>
+        <PackageName Value="internettools"/>
       </Item12>
       <Item13>
-        <PackageName Value="metadarkstyledsgn"/>
+        <PackageName Value="MetaDarkStyle"/>
       </Item13>
+      <Item14>
+        <PackageName Value="metadarkstyledsgn"/>
+      </Item14>
     </RequiredPackages>
     <Units Count="27">
       <Unit0>

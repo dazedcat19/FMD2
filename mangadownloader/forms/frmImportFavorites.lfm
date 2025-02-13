@@ -38,7 +38,7 @@ object ImportFavorites: TImportFavorites
     TabOrder = 0
     Text = 'Free Manga Downloader'
   end
-  object edPath: TDirectoryEdit
+  object edPath: TCustomDirectoryEdit
     Left = 8
     Height = 23
     Top = 58

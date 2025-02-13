@@ -257,9 +257,7 @@ begin
   if vtAccountList.SelectedCount=0 then Exit;
   m:=PModuleContainer(vtAccountList.GetNodeData(vtAccountList.GetFirstSelected))^;
 
-  AccountSetForm := TAccountSetForm.Create(Self);
-  ReplaceWithCustom(AccountSetForm);
-  with AccountSetForm do
+  with TAccountSetForm.Create(Self) do
     try
       Caption := m.Name;
       with m.Account do

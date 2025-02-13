@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  ExtCtrls, Buttons;
+  ExtCtrls, Buttons, uCustomControls;
 
 type
 
@@ -16,8 +16,8 @@ type
     btOk: TBitBtn;
     btCancel: TBitBtn;
     ckShowPassword: TCheckBox;
-    edUsername: TEdit;
-    edPassword: TEdit;
+    edPassword: TCustomEdit;
+    edUsername: TCustomEdit;
     Label2: TLabel;
     Label3: TLabel;
     procedure btOkClick(Sender: TObject);

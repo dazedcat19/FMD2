@@ -31,7 +31,7 @@ object AccountSetForm: TAccountSetForm
     Caption = 'Password'
     ParentColor = False
   end
-  object edUsername: TEdit
+  object edUsername: TCustomEdit
     Left = 8
     Height = 23
     Top = 29
@@ -40,7 +40,7 @@ object AccountSetForm: TAccountSetForm
     TabOrder = 0
     TextHint = 'Username'
   end
-  object edPassword: TEdit
+  object edPassword: TCustomEdit
     Left = 8
     Height = 23
     Top = 79
