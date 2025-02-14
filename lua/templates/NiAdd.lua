@@ -76,7 +76,7 @@ end
 
 -- Extract/Build/Repair image urls before downloading them.
 function _M.GetImageURL()
-	local u = MaybeFillHost(MODULE.RootURL, TASK.PageContainerLinks[WORKID]:gsub('^https?://[^/]+(/.+)$', '%1'))
+	local u = MaybeFillHost(MODULE.RootURL, TASK.PageContainerLinks[WORKID]:gsub('^https?://[^/]+', ''))
 
 	if not HTTP.GET(u) then return net_problem end
 
