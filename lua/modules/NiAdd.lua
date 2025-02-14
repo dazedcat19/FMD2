@@ -17,6 +17,7 @@ function Init()
 	end
 	AddWebsiteModule('1230bae145b3452580164d00acc05e6f', 'https://www.niadd.com', 'English')
 	AddWebsiteModule('c7677c10dd6649c39ed92ac53dd8b4cc', 'https://niadd.com')
+	AddWebsiteModule('9df276cd1d794ccfb9ef135c8e8f8b0d', 'https://english.niadd.com')
 end
 
 ----------------------------------------------------------------------------------------------------
