@@ -5,7 +5,7 @@ unit frmWebsiteSettings;
 interface
 
 uses
-  Classes, SysUtils, WebsiteModules, VirtualPropertyGrid, frmCustomColor, Forms,
+  Classes, SysUtils, WebsiteModules, VirtualPropertyGrid, frmCustomColor, Forms, LCLType,
   Controls, PairSplitter, EditBtn, VirtualTrees, uBaseUnit, Graphics, uCustomControls;
 
 type
@@ -34,7 +34,14 @@ type
       Node: PVirtualNode; Column: TColumnIndex);
     procedure vtWebsiteGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
       Column: TColumnIndex; TextType: TVSTTextType; var CellText: String);
-  private
+    procedure SettingsViewPaintText(Sender: TBaseVirtualTree; const TargetCanvas: TCanvas;
+      Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType);
+    procedure SettingsViewKeyAction(Sender: TBaseVirtualTree; var CharCode: Word;
+      var Shift: TShiftState; var DoDefault: Boolean);
+    procedure SettingsViewMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+  private 
+    FWebsiteSettingsNode: PVirtualNode;
   public
     SettingsView: TVirtualPropertyGrid;
     procedure LoadWebsiteSettings;
@@ -59,6 +66,9 @@ begin
   begin
     Parent := spProps;
     Align := alClient;
+    OnPaintText := @SettingsViewPaintText;
+    OnKeyAction := @SettingsViewKeyAction;
+    OnMouseUp := @SettingsViewMouseUp;;
     AutoFullExpand := True;
     CleanEnumName := True;
     Header.Columns[0].Width := 300;
@@ -113,9 +123,52 @@ begin
     PModuleContainer(Sender.GetNodeData(Node2))^.Name);
 end;
 
+procedure TWebsiteSettingsForm.SettingsViewPaintText(Sender: TBaseVirtualTree;
+  const TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
+  TextType: TVSTTextType);
+begin
+  with TargetCanvas.Font do
+  begin
+    if PModuleContainer(Sender.GetNodeData(FWebsiteSettingsNode))^.Settings.Enabled then
+    begin
+      Color := clWindowText;
+    end
+    else
+    begin
+      Color := clGrayText;
+    end;
+  end;
+end;
+
+procedure TWebsiteSettingsForm.SettingsViewKeyAction(Sender: TBaseVirtualTree;
+  var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
+begin
+  if (CharCode = VK_SPACE) or (CharCode = VK_RETURN) then
+  begin
+    SettingsView.Invalidate;
+  end;
+end;
+
+procedure TWebsiteSettingsForm.SettingsViewMouseUp(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+  HitInfo: THitInfo;
+begin
+  if Button = mbLeft then
+  begin
+    SettingsView.GetHitTestInfoAt(X, Y, True, HitInfo);
+
+    if (HitInfo.HitNode <> nil) and (HitInfo.HitNode^.CheckType = ctCheckBox) then
+    begin
+      SettingsView.Invalidate;
+    end;
+  end;
+end;
+
 procedure TWebsiteSettingsForm.vtWebsiteFocusChanged(Sender: TBaseVirtualTree;
   Node: PVirtualNode; Column: TColumnIndex);
 begin
+  FWebsiteSettingsNode := Node;
   SettingsView.TIObject := PModuleContainer(Sender.GetNodeData(Node))^.Settings;
 end;
 
