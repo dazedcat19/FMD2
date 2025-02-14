@@ -3,20 +3,16 @@
 ----------------------------------------------------------------------------------------------------
 
 function Init()
-	function AddWebsiteModule(id, url, cat)
-		local m = NewWebsiteModule()
-		m.ID                       = id
-		m.Name                     = 'NiAddEN'
-		m.RootURL                  = url
-		m.Category                 = cat
-		m.OnGetNameAndLink         = 'GetNameAndLink'
-		m.OnGetInfo                = 'GetInfo'
-		m.OnGetPageNumber          = 'GetPageNumber'
-		m.OnGetImageURL            = 'GetImageURL'
-		m.TotalDirectory           = #DirectoryPages
-	end
-	AddWebsiteModule('1230bae145b3452580164d00acc05e6f', 'https://www.niadd.com', 'English')
-	AddWebsiteModule('c7677c10dd6649c39ed92ac53dd8b4cc', 'https://niadd.com')
+	local m = NewWebsiteModule()
+	m.ID                       = '6f3f9352aa6a4751bfcccc695105c571'
+	m.Name                     = 'NiAddIT'
+	m.RootURL                  = 'https://it.niadd.com'
+	m.Category                 = 'Italian'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnGetImageURL            = 'GetImageURL'
+	m.TotalDirectory           = #DirectoryPages
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -24,6 +20,8 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.NiAdd'
+StatusOngoing   = 'In corso'
+StatusCompleted = 'Completato'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -39,6 +37,8 @@ end
 -- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
+
+	MANGAINFO.AltTitles = CreateTXQuery(HTTP.Document).XPathString('//td[@class="bookside-general-type"]//div[./span="Alternative (s):"]/text()')
 
 	HTTP.Reset()
 	HTTP.Headers.Values['Referer'] = MANGAINFO.URL
