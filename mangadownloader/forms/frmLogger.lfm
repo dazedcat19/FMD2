@@ -16,7 +16,7 @@ object FormLogger: TFormLogger
   OnDestroy = FormDestroy
   Position = poMainFormCenter
   LCLVersion = '3.6.0.0'
-  object tvLog: TLogTreeView
+  object tvLog: TCustomLogTreeView
     Left = 6
     Height = 237
     Top = 40
@@ -24,13 +24,16 @@ object FormLogger: TFormLogger
     Align = alBottom
     Anchors = [akTop, akLeft, akRight, akBottom]
     HotTrack = True
+    ParentShowHint = False
     PopupMenu = pmLog
     ReadOnly = True
     ScrollBars = ssAutoBoth
+    ShowHint = True
     ShowTime = True
     TabOrder = 3
     TimeFormat = 'hh:nn:ss:zzz'
-    Options = [tvoAllowMultiselect, tvoAutoItemHeight, tvoHideSelection, tvoHotTrack, tvoKeepCollapsedNodes, tvoReadOnly, tvoShowButtons, tvoShowLines, tvoShowRoot, tvoToolTips, tvoThemedDraw]
+    ToolTips = False
+    Options = [tvoAllowMultiselect, tvoAutoItemHeight, tvoHideSelection, tvoHotTrack, tvoKeepCollapsedNodes, tvoReadOnly, tvoShowButtons, tvoShowLines, tvoShowRoot, tvoThemedDraw]
   end
   object ckStayOnTop: TCheckBox
     Left = 6

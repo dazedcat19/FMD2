@@ -13,8 +13,14 @@
         <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
     </CompilerOptions>
-    <Description Value="Custom [TEdit, TEditButton, THintWindow]:
-That allows painting of text and background colours"/>
+    <Description Value="TCustomEdit, TCustomEditButton, TCustomDirectoryEdit:
+-Allow setting of text hint color inside edit box
+
+TCustomHintWindow:
+-Allow setting of background, border and text color
+
+TCustomLogTreeView:
+-Override hint window to act like a customisable tooltip"/>
     <Version Major="1"/>
     <Files>
       <Item>
@@ -29,6 +35,9 @@ That allows painting of text and background colours"/>
       </Item>
       <Item>
         <PackageName Value="LCLBase"/>
+      </Item>
+      <Item>
+        <PackageName Value="multiloglaz"/>
       </Item>
     </RequiredPkgs>
     <UsageOptions>

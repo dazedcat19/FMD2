@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls, Spin,
-  ExtCtrls, Buttons, Menus, Clipbrd, ComCtrls, LogTreeView, MultiLog;
+  ExtCtrls, Buttons, Menus, Clipbrd, ComCtrls, LogTreeView, MultiLog, uCustomControls;
 
 type
 
@@ -20,7 +20,7 @@ type
     pmLog: TPopupMenu;
     seLogLimit: TSpinEdit;
     tmClearLog: TTimer;
-    tvLog: TLogTreeView;
+    tvLog: TCustomLogTreeView;
     procedure btnClearLogClick(Sender: TObject);
     procedure ckStayOnTopChange(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);

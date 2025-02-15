@@ -308,37 +308,37 @@
     </RunParams>
     <RequiredPackages Count="14">
       <Item1>
-        <PackageName Value="CustomControls"/>
+        <PackageName Value="RunTimeTypeInfoControls"/>
       </Item1>
       <Item2>
-        <PackageName Value="RunTimeTypeInfoControls"/>
+        <PackageName Value="LazControls"/>
       </Item2>
       <Item3>
-        <PackageName Value="LazControls"/>
+        <PackageName Value="TAChartLazarusPkg"/>
       </Item3>
       <Item4>
-        <PackageName Value="TAChartLazarusPkg"/>
+        <PackageName Value="laz_synapse"/>
       </Item4>
       <Item5>
-        <PackageName Value="laz_synapse"/>
+        <PackageName Value="dcpcrypt"/>
       </Item5>
       <Item6>
-        <PackageName Value="dcpcrypt"/>
+        <PackageName Value="richmemopackage"/>
       </Item6>
       <Item7>
-        <PackageName Value="richmemopackage"/>
+        <PackageName Value="richmemo_design"/>
       </Item7>
       <Item8>
-        <PackageName Value="richmemo_design"/>
+        <PackageName Value="LCL"/>
       </Item8>
       <Item9>
-        <PackageName Value="LCL"/>
+        <PackageName Value="virtualtreeview_package"/>
       </Item9>
       <Item10>
-        <PackageName Value="virtualtreeview_package"/>
+        <PackageName Value="multiloglaz"/>
       </Item10>
       <Item11>
-        <PackageName Value="multiloglaz"/>
+        <PackageName Value="CustomControls"/>
       </Item11>
       <Item12>
         <PackageName Value="internettools"/>
