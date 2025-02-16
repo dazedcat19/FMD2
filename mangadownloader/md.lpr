@@ -23,6 +23,7 @@ var
   EnableLogging: Boolean = False;
   LogFileName: String = '';
   s: TStringList;
+  iDarkMode: Integer = 0;
   i: Integer;
   v: Integer;
   {$IFDEF DEBUGLEAKS}
@@ -122,6 +123,7 @@ begin
 
   with TJSONIniFile.Create(SETTINGS_FILE) do
     try
+      iDarkMode := ReadInteger('darkmode', 'mode', 0);
       CheckInstance := ReadBool('general', 'OneInstanceOnly', True);
       EnableLogging := ReadBool('logger', 'Enabled', False);
       if EnableLogging then
@@ -211,8 +213,12 @@ begin
   if FileExists(FMD_DIRECTORY + DLLWebPName) then
     DLLWebPName := FMD_DIRECTORY + DLLWebPName;
 
+  Case iDarkMode of
+     0:  PreferredAppMode := pamAllowDark;
+     1:  PreferredAppMode := pamForceDark;
+     2:  PreferredAppMode := pamForceLight;
+  end;
   Application.Scaled := True;
-  PreferredAppMode := pamAllowDark;
   uMetaDarkStyle.ApplyMetaDarkStyle(DefaultDark);
   Application.Initialize;
   Application.CreateForm(TMainForm, MainForm);

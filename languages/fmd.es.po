@@ -1566,6 +1566,14 @@ msgstr "General"
 msgid "Miscellaneous"
 msgstr "Misceláneo"
 
+#: tmainform.lbdarkmode.caption
+msgid "Theme:"
+msgstr ""
+
+#: tmainform.lbdarkmodehint.caption
+msgid "Requires restart to take effect"
+msgstr ""
+
 #: tmainform.lbdefaultdownloadpath.caption
 msgid "Choose the default download path:"
 msgstr "Escoger la Ruta de Descarga por Defecto:"

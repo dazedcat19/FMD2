@@ -2835,14 +2835,229 @@ object MainForm: TMainForm
             ClientHeight = 455
             ClientWidth = 812
             ParentBackground = False
-            TabOrder = 0
+            TabOrder = 0 
+            object lbOptionLanguage: TLabel
+              Left = 4
+              Height = 15
+              Top = 8
+              Width = 804
+              Align = alTop
+              Caption = 'Language:'
+              ParentColor = False
+            end
+            object cbLanguages: TComboBox
+              AnchorSideLeft.Control = lbOptionLanguage
+              AnchorSideTop.Control = lbOptionLanguage
+              AnchorSideTop.Side = asrBottom
+              Left = 4
+              Height = 23
+              Top = 27
+              Width = 224
+              ItemHeight = 15
+              Items.Strings = (
+                'English'
+              )
+              ParentFont = False
+              Style = csDropDownList
+              TabOrder = 1
+            end
+            object lbOptionLetFMDDo: TLabel
+              AnchorSideLeft.Control = cbLanguages
+              AnchorSideTop.Control = cbLanguages
+              AnchorSideTop.Side = asrBottom
+              Left = 4
+              Height = 15
+              Top = 54
+              Width = 117
+              Caption = 'After download finish:'
+              ParentColor = False
+            end
+            object cbOptionLetFMDDo: TComboBox
+              AnchorSideLeft.Control = lbOptionLetFMDDo
+              AnchorSideTop.Control = lbOptionLetFMDDo
+              AnchorSideTop.Side = asrBottom
+              Left = 4
+              Height = 23
+              Top = 73
+              Width = 224
+              ItemHeight = 15
+              Items.Strings = (
+                'Do nothing'
+                'Exit FMD'
+                'Shutdown'
+                'Hibernate'
+              )
+              ParentFont = False
+              Style = csDropDownList
+              TabOrder = 2
+            end
+            object lbDarkmode: TLabel
+              AnchorSideLeft.Control = cbOptionLetFMDDo
+              AnchorSideTop.Control = cbOptionLetFMDDo
+              AnchorSideTop.Side = asrBottom
+              Left = 4
+              Height = 15
+              Top = 100
+              Width = 117
+              Caption = 'Theme:'
+              ParentColor = False
+            end
+            object cbDarkmode: TComboBox
+              AnchorSideLeft.Control = lbDarkmode
+              AnchorSideTop.Control = lbDarkmode
+              AnchorSideTop.Side = asrBottom
+              Left = 4
+              Height = 23
+              Top = 119
+              Width = 224
+              ItemHeight = 15
+              Items.Strings = (
+                'Windows'
+                'Dark'
+                'Light'
+              )
+              ParentFont = False
+              Style = csDropDownList
+              TabOrder = 3
+            end  
+            object lbDarkmodeHint: TLabel 
+              AnchorSideLeft.Control = cbDarkmode
+              AnchorSideLeft.Side = asrBottom
+              AnchorSideTop.Control = cbDarkmode
+              AnchorSideTop.Side = asrCenter
+              Left = 232
+              Height = 15
+              Top = 123
+              Width = 153
+              Caption = 'Requires restart to take effect'
+              ParentColor = False
+              ParentFont = False
+            end
+            object seOptionNewMangaTime: TSpinEdit
+              AnchorSideLeft.Control = cbDarkmode
+              AnchorSideTop.Control = cbDarkmode
+              AnchorSideTop.Side = asrBottom
+              Left = 4
+              Height = 23
+              Top = 216
+              Width = 50
+              BorderSpacing.Top = 20
+              MaxValue = 365
+              MinValue = 1
+              ParentFont = False
+              TabOrder = 4
+              Value = 1
+            end
+            object lbOptionNewMangaTime: TLabel
+              AnchorSideLeft.Control = seOptionNewMangaTime
+              AnchorSideLeft.Side = asrBottom
+              AnchorSideTop.Control = seOptionNewMangaTime
+              AnchorSideTop.Side = asrCenter
+              Left = 58
+              Height = 15
+              Top = 220
+              Width = 238
+              Caption = 'New manga based on  it''s update time (days)'
+              ParentColor = False
+              ParentFont = False
+            end 
+            object cbOptionMinimizeOnStart: TCheckBox
+              AnchorSideLeft.Control = seOptionNewMangaTime
+              AnchorSideTop.Control = seOptionNewMangaTime
+              AnchorSideTop.Side = asrBottom
+              Left = 4
+              Height = 19
+              Top = 259
+              Width = 110
+              BorderSpacing.Top = 20
+              Caption = 'Minimize on start'
+              ParentFont = False
+              TabOrder = 5
+            end
+            object cbOptionMinimizeToTray: TCheckBox
+              AnchorSideLeft.Control = cbOptionMinimizeOnStart
+              AnchorSideTop.Control = cbOptionMinimizeOnStart
+              AnchorSideTop.Side = asrBottom
+              Left = 4
+              Height = 19
+              Top = 282
+              Width = 104
+              Caption = 'Minimize to tray'
+              ParentFont = False
+              TabOrder = 6
+            end
+            object cbOptionOneInstanceOnly: TCheckBox
+              AnchorSideLeft.Control = cbOptionMinimizeToTray
+              AnchorSideTop.Control = cbOptionMinimizeToTray
+              AnchorSideTop.Side = asrBottom
+              Left = 4
+              Height = 19
+              Top = 305
+              Width = 175
+              Caption = 'Permit only one FMD running'
+              ParentFont = False
+              TabOrder = 7
+            end
+            object cbOptionLiveSearch: TCheckBox
+              AnchorSideLeft.Control = cbOptionOneInstanceOnly
+              AnchorSideTop.Control = cbOptionOneInstanceOnly
+              AnchorSideTop.Side = asrBottom
+              Left = 4
+              Height = 19
+              Top = 328
+              Width = 208
+              Caption = 'Enable live search (slow on long list)'
+              ParentFont = False
+              TabOrder = 8
+            end
+            object cbOptionDeleteCompletedTasksOnClose: TCheckBox
+              AnchorSideTop.Control = cbOptionLiveSearch
+              AnchorSideTop.Side = asrBottom
+              Left = 4
+              Height = 19
+              Top = 351
+              Width = 187
+              Caption = 'Delete completed tasks on close'
+              TabOrder = 9
+            end
+            object cbOptionSortDownloadsOnNewTasks: TCheckBox
+              AnchorSideTop.Control = cbOptionDeleteCompletedTasksOnClose
+              AnchorSideTop.Side = asrBottom
+              Left = 4
+              Height = 19
+              Top = 374
+              Width = 283
+              Caption = 'Sort Downloads when adding new download tasks'
+              TabOrder = 10
+            end
+            object cbOptionVacuumDatabasesOnExit: TCheckBox
+              AnchorSideTop.Control = cbOptionSortDownloadsOnNewTasks
+              AnchorSideTop.Side = asrBottom
+              Left = 4
+              Height = 19
+              Top = 397
+              Width = 155
+              Caption = 'Vacuum databases on exit'
+              TabOrder = 11
+            end
+            object cbOptionEnableLongNamePaths: TCheckBox
+              AnchorSideLeft.Control = sbGeneralSettings
+              AnchorSideTop.Control = cbOptionVacuumDatabasesOnExit
+              AnchorSideTop.Side = asrBottom
+              Left = 4
+              Height = 19
+              Top = 420
+              Width = 528
+              Caption = 'Enable long name paths (Can break most/all interaction with the file in Windows and other apps)'
+              TabOrder = 12
+            end
             object gbOptionExternal: TGroupBox
               AnchorSideLeft.Control = sbGeneralSettings
               AnchorSideTop.Control = cbOptionEnableLongNamePaths
               AnchorSideTop.Side = asrBottom
               Left = 4
               Height = 118
-              Top = 359
+              Top = 459
               Width = 650
               Anchors = [akTop, akLeft, akRight]
               BorderSpacing.Top = 20
@@ -2952,177 +3167,6 @@ object MainForm: TMainForm
                 TabOrder = 0
                 TextHint = 'External program path'
               end
-            end
-            object cbOptionMinimizeToTray: TCheckBox
-              AnchorSideTop.Side = asrBottom
-              Left = 4
-              Height = 19
-              Top = 182
-              Width = 104
-              Caption = 'Minimize to tray'
-              ParentFont = False
-              TabOrder = 1
-            end
-            object cbOptionOneInstanceOnly: TCheckBox
-              AnchorSideLeft.Control = cbOptionMinimizeToTray
-              AnchorSideTop.Control = cbOptionMinimizeToTray
-              AnchorSideTop.Side = asrBottom
-              Left = 4
-              Height = 19
-              Top = 205
-              Width = 175
-              Caption = 'Permit only one FMD running'
-              ParentFont = False
-              TabOrder = 2
-            end
-            object cbOptionLiveSearch: TCheckBox
-              AnchorSideLeft.Control = cbOptionOneInstanceOnly
-              AnchorSideTop.Control = cbOptionOneInstanceOnly
-              AnchorSideTop.Side = asrBottom
-              Left = 4
-              Height = 19
-              Top = 228
-              Width = 208
-              Caption = 'Enable live search (slow on long list)'
-              ParentFont = False
-              TabOrder = 3
-            end
-            object lbOptionLanguage: TLabel
-              Left = 4
-              Height = 15
-              Top = 8
-              Width = 804
-              Align = alTop
-              Caption = 'Language:'
-              ParentColor = False
-            end
-            object cbLanguages: TComboBox
-              AnchorSideLeft.Control = lbOptionLanguage
-              AnchorSideTop.Control = lbOptionLanguage
-              AnchorSideTop.Side = asrBottom
-              Left = 4
-              Height = 23
-              Top = 27
-              Width = 224
-              ItemHeight = 15
-              Items.Strings = (
-                'English'
-              )
-              ParentFont = False
-              Style = csDropDownList
-              TabOrder = 4
-            end
-            object lbOptionLetFMDDo: TLabel
-              AnchorSideLeft.Control = cbLanguages
-              AnchorSideTop.Control = cbLanguages
-              AnchorSideTop.Side = asrBottom
-              Left = 4
-              Height = 15
-              Top = 54
-              Width = 117
-              Caption = 'After download finish:'
-              ParentColor = False
-            end
-            object cbOptionLetFMDDo: TComboBox
-              AnchorSideLeft.Control = lbOptionLetFMDDo
-              AnchorSideTop.Control = lbOptionLetFMDDo
-              AnchorSideTop.Side = asrBottom
-              Left = 4
-              Height = 23
-              Top = 73
-              Width = 224
-              ItemHeight = 15
-              Items.Strings = (
-                'Do nothing'
-                'Exit FMD'
-                'Shutdown'
-                'Hibernate'
-              )
-              ParentFont = False
-              Style = csDropDownList
-              TabOrder = 5
-            end
-            object seOptionNewMangaTime: TSpinEdit
-              AnchorSideLeft.Control = cbOptionLetFMDDo
-              AnchorSideTop.Control = cbOptionLetFMDDo
-              AnchorSideTop.Side = asrBottom
-              Left = 4
-              Height = 23
-              Top = 116
-              Width = 50
-              BorderSpacing.Top = 20
-              MaxValue = 365
-              MinValue = 1
-              ParentFont = False
-              TabOrder = 6
-              Value = 1
-            end
-            object lbOptionNewMangaTime: TLabel
-              AnchorSideLeft.Control = seOptionNewMangaTime
-              AnchorSideLeft.Side = asrBottom
-              AnchorSideTop.Control = seOptionNewMangaTime
-              AnchorSideTop.Side = asrCenter
-              Left = 58
-              Height = 15
-              Top = 120
-              Width = 238
-              Caption = 'New manga based on  it''s update time (days)'
-              ParentColor = False
-              ParentFont = False
-            end
-            object cbOptionMinimizeOnStart: TCheckBox
-              AnchorSideLeft.Control = seOptionNewMangaTime
-              AnchorSideTop.Control = seOptionNewMangaTime
-              AnchorSideTop.Side = asrBottom
-              Left = 4
-              Height = 19
-              Top = 159
-              Width = 110
-              BorderSpacing.Top = 20
-              Caption = 'Minimize on start'
-              ParentFont = False
-              TabOrder = 7
-            end
-            object cbOptionDeleteCompletedTasksOnClose: TCheckBox
-              AnchorSideTop.Control = cbOptionLiveSearch
-              AnchorSideTop.Side = asrBottom
-              Left = 4
-              Height = 19
-              Top = 251
-              Width = 187
-              Caption = 'Delete completed tasks on close'
-              TabOrder = 8
-            end
-            object cbOptionSortDownloadsOnNewTasks: TCheckBox
-              AnchorSideTop.Control = cbOptionDeleteCompletedTasksOnClose
-              AnchorSideTop.Side = asrBottom
-              Left = 4
-              Height = 19
-              Top = 274
-              Width = 283
-              Caption = 'Sort Downloads when adding new download tasks'
-              TabOrder = 9
-            end
-            object cbOptionVacuumDatabasesOnExit: TCheckBox
-              AnchorSideTop.Control = cbOptionSortDownloadsOnNewTasks
-              AnchorSideTop.Side = asrBottom
-              Left = 4
-              Height = 19
-              Top = 297
-              Width = 155
-              Caption = 'Vacuum databases on exit'
-              TabOrder = 10
-            end
-            object cbOptionEnableLongNamePaths: TCheckBox
-              AnchorSideLeft.Control = sbGeneralSettings
-              AnchorSideTop.Control = cbOptionVacuumDatabasesOnExit
-              AnchorSideTop.Side = asrBottom
-              Left = 4
-              Height = 19
-              Top = 320
-              Width = 528
-              Caption = 'Enable long name paths (Can break most/all interaction with the file in Windows and other apps)'
-              TabOrder = 11
             end
           end
         end

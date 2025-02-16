@@ -118,6 +118,7 @@ type
     lbDownloadFilterCustomDateTo: TLabel;
     lbOptionMaxFavoriteThreads: TLabel;
     lbOptionDefaultUserAgent: TLabel;
+    lbDarkmodeHint: TLabel;
     lbOptionMaxUpdateListThreads: TLabel;
     lbOptionMaxBackgroundLoudThreads: TLabel;
     lbPNGCompressionLevel: TLabel;
@@ -328,6 +329,7 @@ type
     cbFilterStatus: TComboBox;
     cbLanguages: TComboBox;
     cbOptionLetFMDDo: TComboBox;
+    cbDarkmode: TComboBox;
     edOptionPort: TEdit;
     gbDialogs: TGroupBox;
     gbOptionProxy: TGroupBox;
@@ -339,6 +341,7 @@ type
     lbOptionPDFQuality: TLabel;
     lbOptionAutoCheckFavIntervalMinutes: TLabel;
     lbOptionLetFMDDo: TLabel;
+    lbDarkmode: TLabel;
     lbOptionNewMangaTime: TLabel;
     lbOptionLanguage: TLabel;
     lbFilterCustomGenres: TLabel;
@@ -5308,6 +5311,7 @@ procedure TMainForm.LoadOptions;
 begin
   with settingsfile do begin
     // general
+    cbDarkmode.ItemIndex := ReadInteger('darkmode', 'mode', 0);
     cbOptionOneInstanceOnly.Checked := ReadBool('general', 'OneInstanceOnly', True);
     cbOptionLiveSearch.Checked := ReadBool('general', 'LiveSearch', True);
     cbOptionMinimizeOnStart.Checked := ReadBool('general', 'MinimizeOnStart', False);
@@ -5465,6 +5469,8 @@ begin
         s := s.TrimRight([',']);
         WriteString('general', 'MangaListSelect', s);
       end;
+      if cbDarkmode.ItemIndex > -1 then
+        WriteInteger('darkmode', 'mode', cbDarkmode.ItemIndex);
       WriteBool('general', 'LiveSearch', cbOptionLiveSearch.Checked);
       WriteBool('general', 'OneInstanceOnly', cbOptionOneInstanceOnly.Checked);
       if cbLanguages.ItemIndex > -1 then
