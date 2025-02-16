@@ -1581,6 +1581,18 @@ msgstr "Sonstiges"
 msgid "Theme (Requires restart to take effect):"
 msgstr ""
 
+#: tmainform.lbdarkmodehint.caption
+#, fuzzy
+msgctxt "tmainform.lbdarkmodehint.caption"
+msgid "[?]"
+msgstr "[?]"
+
+#: tmainform.lbdarkmodehint.hint
+msgid ""
+"Only supports Windows 10 1809 and above.\n"
+"Theme's auto disable on any unsupported versions."
+msgstr ""
+
 #: tmainform.lbdefaultdownloadpath.caption
 msgid "Choose the default download path:"
 msgstr "Wähle den Standard Download Pfad:"

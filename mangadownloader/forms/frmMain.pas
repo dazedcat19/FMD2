@@ -114,6 +114,7 @@ type
     gbOptionsConnectiosMiscellaneous: TGroupBox;
     gbOptionsConnectionsGeneral: TGroupBox;
     IconDLLeft: TImageList;
+    lbDarkmodeHint: TLabel;
     lbDownloadFilterCustomDateFrom: TLabel;
     lbDownloadFilterCustomDateTo: TLabel;
     lbOptionMaxFavoriteThreads: TLabel;
@@ -729,6 +730,8 @@ type
     Timer1Hour: TTimer;
     TimerBackup: TTimer;
 
+    winBuildNumber: DWORD;
+
     procedure OnTimer1Hour(Sender:TObject);
     procedure OnTimerBackup(Sender:TObject);
 
@@ -1180,11 +1183,10 @@ end;
 { TMainForm }
 
 procedure TMainForm.FormCreate(Sender: TObject);
-var
-  NewEdit: TCustomEdit;
 begin
   Randomize;
   FormMain := Self;
+  winBuildNumber := 0;
   {$ifdef windows}
   PrevWndProc := windows.WNDPROC(windows.GetWindowLongPtr(Self.Handle, GWL_WNDPROC));
   windows.SetWindowLongPtr(Self.Handle, GWL_WNDPROC, PtrInt(@WndCallback));
@@ -1353,7 +1355,6 @@ begin
     Enabled:=True;
   end;
 
-  Self.Caption := Self.Caption + ' v' + FMD_VERSION_STRING;
   AddToAboutStatus(RS_Version, FMD_VERSION_STRING, pnAboutVersion);
   if REVISION_NUMBER <> '' then
     AddToAboutStatus(RS_Revision, REVISION_NUMBER+' ('+REVISION_SHA+')', pnAboutVersion);
@@ -6266,6 +6267,7 @@ procedure TMainForm.ApplyLanguage;
 var
   idxSelectManga,
   idxLanguages,
+  idxDarkmode,
   idxFilterStatus,
   idxOptionLetFMDDo,
   idxOptionProxyType,
@@ -6277,13 +6279,15 @@ begin
   if AvailableLanguages.Count = 0 then Exit;
   if cbLanguages.ItemIndex < 0 then Exit;
   if cbLanguages.ItemIndex >= AvailableLanguages.Count then Exit;
+  if winBuildNumber < 17763 then cbDarkmode.Enabled := False else cbDarkmode.Enabled := True;
   if SimpleTranslator.LastSelected <> AvailableLanguages.Names[cbLanguages.ItemIndex] then
   begin
     // TCombobox.Items will be cleared upon changing language,
     // and ItemIndex will fall to -1
     // save TComboBox.ItemIndex
-    idxSelectManga:=cbSelectManga.ItemIndex;
+    idxSelectManga := cbSelectManga.ItemIndex;
     idxLanguages := cbLanguages.ItemIndex;
+    idxDarkmode := cbDarkmode.ItemIndex;
     idxFilterStatus := cbFilterStatus.ItemIndex;
     idxOptionLetFMDDo := cbOptionLetFMDDo.ItemIndex;
     idxOptionProxyType := cbOptionProxyType.ItemIndex;
@@ -6294,9 +6298,10 @@ begin
     if SimpleTranslator.SetLangByIndex(cbLanguages.ItemIndex) then
     begin
       // assign new value
+      lbDarkmodeHint.Hint := lbDarkmodeHint.Hint;
       lbOptionExternalParamsHint.Hint := Format(RS_LblOptionExternalParamsHint,
         [EXPARAM_PATH, EXPARAM_CHAPTER, EXPARAM_PATH, EXPARAM_CHAPTER]);
-      lbOptionPDFQualityHint.Hint:=lbOptionPDFQuality.Hint;
+      lbOptionPDFQualityHint.Hint := lbOptionPDFQuality.Hint;
 
       cbFilterStatus.Items.Text := RS_FilterStatusItems;
       cbOptionLetFMDDo.Items.Text := RS_OptionFMDDoItems;
@@ -6309,6 +6314,7 @@ begin
       // restore ItemIndex
       cbSelectManga.ItemIndex:=idxSelectManga;
       cbLanguages.ItemIndex := idxLanguages;
+      cbDarkmode.ItemIndex := idxDarkmode;
       cbFilterStatus.ItemIndex := idxFilterStatus;
       cbOptionLetFMDDo.ItemIndex := idxOptionLetFMDDo;
       cbOptionProxyType.ItemIndex := idxOptionProxyType;
@@ -6317,6 +6323,7 @@ begin
       cbWebPSaveAs.ItemIndex := idxOptionWebPConvertTo;
       cbPNGCompressionLevel.ItemIndex := idxOptionWebPPNGLevel;
       Self.Repaint;
+      Self.Caption := Self.Caption + ' v' + FMD_VERSION_STRING;
       vtMangaList.Repaint;
       tvDownloadFilterRefresh(True);
 

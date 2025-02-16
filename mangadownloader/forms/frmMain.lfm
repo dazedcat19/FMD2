@@ -2919,6 +2919,23 @@ object MainForm: TMainForm
               ParentFont = False
               Style = csDropDownList
               TabOrder = 3
+            end  
+            object lbDarkmodeHint: TLabel
+              AnchorSideLeft.Control = cbDarkmode
+              AnchorSideLeft.Side = asrBottom
+              AnchorSideTop.Control = cbDarkmode
+              AnchorSideTop.Side = asrCenter
+              Left = 232
+              Height = 15
+              Hint = 'Only supports Windows 10 1809 and above.'#13#10'Theme''s auto disable on any unsupported versions.'
+              Top = 123
+              Width = 13
+              Caption = '[?]'
+              Font.Color = clHighlight
+              ParentColor = False
+              ParentFont = False
+              ParentShowHint = False
+              ShowHint = True
             end
             object seOptionNewMangaTime: TSpinEdit
               AnchorSideLeft.Control = cbDarkmode

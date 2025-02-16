@@ -14,7 +14,7 @@ uses
   Forms, LazFileUtils, jsonini, simpleipc, sqlite3dyn, uBaseUnit,
   FMDVars, webp, CheckUpdate, DBUpdater, SelfUpdater, uDownloadsManager,
   LuaWebsiteModules, LuaBase, SimpleException, Classes, sysutils, frmMain,
-  uMetaDarkStyle, uDarkStyleSchemes, uDarkStyleParams,
+  uDarkStyle, uMetaDarkStyle, uDarkStyleSchemes, uDarkStyleParams,
   MultiLog, FileChannel, ssl_openssl_lib, blcksock, ssl_openssl, SQLiteData;
 
 var
@@ -222,5 +222,6 @@ begin
   uMetaDarkStyle.ApplyMetaDarkStyle(DefaultDark);
   Application.Initialize;
   Application.CreateForm(TMainForm, MainForm);
+  MainForm.winBuildNumber := g_buildNumber;
   Application.Run;
 end.
