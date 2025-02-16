@@ -2899,7 +2899,7 @@ object MainForm: TMainForm
               Height = 15
               Top = 100
               Width = 117
-              Caption = 'Theme:'
+              Caption = 'Theme (Requires restart to take effect):'
               ParentColor = False
             end
             object cbDarkmode: TComboBox
@@ -2912,26 +2912,13 @@ object MainForm: TMainForm
               Width = 224
               ItemHeight = 15
               Items.Strings = (
-                'Windows'
+                'System'
                 'Dark'
                 'Light'
               )
               ParentFont = False
               Style = csDropDownList
               TabOrder = 3
-            end  
-            object lbDarkmodeHint: TLabel 
-              AnchorSideLeft.Control = cbDarkmode
-              AnchorSideLeft.Side = asrBottom
-              AnchorSideTop.Control = cbDarkmode
-              AnchorSideTop.Side = asrCenter
-              Left = 232
-              Height = 15
-              Top = 123
-              Width = 153
-              Caption = 'Requires restart to take effect'
-              ParentColor = False
-              ParentFont = False
             end
             object seOptionNewMangaTime: TSpinEdit
               AnchorSideLeft.Control = cbDarkmode

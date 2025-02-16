@@ -211,6 +211,13 @@ msgstr "Sprawdzanie..."
 msgid "Custom"
 msgstr ""
 
+#: frmmain.rs_darkmode
+msgid ""
+"System\n"
+"Dark\n"
+"Light"
+msgstr ""
+
 #: frmmain.rs_dlgcannotconnecttoserver
 msgid "Cannot connect to the server."
 msgstr "Nie można się połączyć z serwerem."
@@ -1549,11 +1556,7 @@ msgid "Miscellaneous"
 msgstr ""
 
 #: tmainform.lbdarkmode.caption
-msgid "Theme:"
-msgstr ""
-
-#: tmainform.lbdarkmodehint.caption
-msgid "Requires restart to take effect"
+msgid "Theme (Requires restart to take effect):"
 msgstr ""
 
 #: tmainform.lbdefaultdownloadpath.caption

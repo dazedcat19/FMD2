@@ -217,6 +217,13 @@ msgstr "Memeriksa..."
 msgid "Custom"
 msgstr "Ubah suai"
 
+#: frmmain.rs_darkmode
+msgid ""
+"System\n"
+"Dark\n"
+"Light"
+msgstr ""
+
 #: frmmain.rs_dlgcannotconnecttoserver
 msgid "Cannot connect to the server."
 msgstr "Tidak dapat terhubung ke peladen."
@@ -1570,11 +1577,7 @@ msgid "Miscellaneous"
 msgstr "Lain-lain"
 
 #: tmainform.lbdarkmode.caption
-msgid "Theme:"
-msgstr ""
-
-#: tmainform.lbdarkmodehint.caption
-msgid "Requires restart to take effect"
+msgid "Theme (Requires restart to take effect):"
 msgstr ""
 
 #: tmainform.lbdefaultdownloadpath.caption

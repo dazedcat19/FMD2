@@ -118,7 +118,6 @@ type
     lbDownloadFilterCustomDateTo: TLabel;
     lbOptionMaxFavoriteThreads: TLabel;
     lbOptionDefaultUserAgent: TLabel;
-    lbDarkmodeHint: TLabel;
     lbOptionMaxUpdateListThreads: TLabel;
     lbOptionMaxBackgroundLoudThreads: TLabel;
     lbPNGCompressionLevel: TLabel;
@@ -921,6 +920,7 @@ const
 resourcestring
   RS_FilterStatusItems = 'Completed'#13#10'Ongoing'#13#10'Hiatus'#13#10'Cancelled'#13#10'<none>';
   RS_OptionFMDDoItems = 'Nothing'#13#10'Exit'#13#10'Shutdown'#13#10'Hibernate';
+  RS_Darkmode = 'System'#13#10'Dark'#13#10'Light';
   RS_DropTargetModeItems = 'Download all'#13#10'Add to favorites';
   RS_OptionCompress = 'None'#13#10'ZIP'#13#10'CBZ'#13#10'PDF'#13#10'EPUB';
   RS_WebPConvertTo = 'WebP'#13#10'PNG'#13#10'JPEG';
@@ -6300,6 +6300,7 @@ begin
 
       cbFilterStatus.Items.Text := RS_FilterStatusItems;
       cbOptionLetFMDDo.Items.Text := RS_OptionFMDDoItems;
+      cbDarkmode.Items.Text := RS_Darkmode;
       rgDropTargetMode.Items.Text := RS_DropTargetModeItems;
       rgOptionCompress.Items.Text := RS_OptionCompress;
       cbWebPSaveAs.Items.Text := RS_WebPConvertTo;
