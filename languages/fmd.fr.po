@@ -696,6 +696,10 @@ msgctxt "TACCOUNTSETFORM.LABEL3.CAPTION"
 msgid "Password"
 msgstr "Mot de passe"
 
+#: tcustomcolorform.btresetcolors.caption
+msgid "Reset list colors"
+msgstr ""
+
 #: tcustomcolorform.caption
 msgid "CustomColorForm"
 msgstr "CustomColorForm"

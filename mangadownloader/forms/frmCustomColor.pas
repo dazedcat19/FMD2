@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Types, Forms, Graphics, Dialogs, ColorBox, ComCtrls,
-  VirtualTrees, FMDOptions, jsonini, uDarkStyleParams;
+  Buttons, VirtualTrees, FMDOptions, jsonini, uDarkStyleParams;
 
 type
   TColorMapping = record
@@ -63,6 +63,7 @@ type
   { TCustomColorForm }
 
   TCustomColorForm = class(TForm)
+    btResetColors: TBitBtn;
     CBColors: TColorBox;
     btColors: TColorButton;
     pcCustomColorList: TPageControl;
@@ -77,6 +78,7 @@ type
     VTMangaList: TVirtualStringTree;
     VTFavoriteList: TVirtualStringTree;
     procedure btColorsColorChanged(Sender: TObject);
+    procedure btResetColorsClick(Sender: TObject);
     procedure CBColorsChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure tsBasicListShow(Sender: TObject);
@@ -866,6 +868,65 @@ procedure TCustomColorForm.btColorsColorChanged(Sender: TObject);
 begin
   CBColors.Selected := btColors.ButtonColor;
   SetSelectedColor(btColors.ButtonColor);
+end;
+
+procedure TCustomColorForm.btResetColorsClick(Sender: TObject);
+begin
+  if SelectedColorList = VTBasicList then
+  begin
+    VTBasicList.CI[0] := clWindow;
+    VTBasicList.CI[1] := clBtnFace;
+    VTBasicList.CI[2] := clBtnShadow;
+    VTBasicList.CI[3] := clHighlight;
+    VTBasicList.CI[4] := clHighLight;
+    VTBasicList.CI[5] := clHotLight;
+    VTBasicList.CI[6] := clHighLight;
+    VTBasicList.CI[7] := clHotLight;
+    VTBasicList.CI[8] := clBtnShadow;
+    VTBasicList.CI[9] := clBtnShadow;
+    VTBasicList.CI[10] := clWindowText;
+    VTBasicList.CI[11] := clHighlight;
+    VTBasicList.CI[12] := clHotLight;
+    VTBasicList.CI[13] := clBtnShadow;
+    VTBasicList.CI[14] := clMedGray;
+    VTBasicList.CI[15] := clGray;
+    VTBasicList.CI[16] := clWindowText;
+    VTBasicList.CI[17] := clHighlightText;
+    VTBasicList.CI[18] := clWindowText;
+    VTBasicList.CI[19] := clBtnFace;
+    VTBasicList.CI[20] := clWindow;
+    VTBasicList.CI[21] := $F8E6D6;
+    VTBasicList.CI[22] := clYellow;
+  end
+  else if SelectedColorList = VTMangaList then
+  begin
+    VTMangaList.CI[0] := $FDC594;
+    VTMangaList.CI[1] := $B8FFB8;
+  end
+  else if SelectedColorList = VTFavoriteList then
+  begin
+    VTFavoriteList.CI[0] := $8080FF;
+    VTFavoriteList.CI[1] := $80EBFE;
+    VTFavoriteList.CI[2] := $FDC594;
+    VTFavoriteList.CI[3] := $B8FFB8;
+    VTFavoriteList.CI[4] := $CCDDFF;
+  end
+  else if SelectedColorList = VTChapterList then
+  begin
+    VTChapterList.CI[0] := $B8FFB8;
+  end
+  else if SelectedColorList = VTModuleList then
+  begin
+    VTModuleList.CI[0] := $FDC594;
+  end;
+  
+  ThemeColorsManager.CheckListColors;
+  if SelectedColorList.FocusedNode <> nil then
+  begin
+    btColors.ButtonColor := SelectedColorList.CI[SelectedColorList.FocusedNode^.Index];
+    CBColors.Selected := SelectedColorList.CI[SelectedColorList.FocusedNode^.Index];
+  end;
+  SelectedColorList.Repaint;
 end;
 
 procedure TCustomColorForm.FocusSelectedList(const AVT: TVirtualStringTree);

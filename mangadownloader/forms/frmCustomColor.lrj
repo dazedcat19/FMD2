@@ -4,5 +4,6 @@
 {"hash":221522148,"name":"tcustomcolorform.tsmangalist.caption","sourcebytes":[77,97,110,103,97,32,108,105,115,116],"value":"Manga list"},
 {"hash":117201380,"name":"tcustomcolorform.tsfavoritelist.caption","sourcebytes":[70,97,118,111,114,105,116,101,32,108,105,115,116],"value":"Favorite list"},
 {"hash":148485892,"name":"tcustomcolorform.tschapterlist.caption","sourcebytes":[67,104,97,112,116,101,114,32,108,105,115,116],"value":"Chapter list"},
-{"hash":35883876,"name":"tcustomcolorform.tsmodulelist.caption","sourcebytes":[77,111,100,117,108,101,32,108,105,115,116],"value":"Module list"}
+{"hash":35883876,"name":"tcustomcolorform.tsmodulelist.caption","sourcebytes":[77,111,100,117,108,101,32,108,105,115,116],"value":"Module list"},
+{"hash":15725875,"name":"tcustomcolorform.btresetcolors.caption","sourcebytes":[82,101,115,101,116,32,108,105,115,116,32,99,111,108,111,114,115],"value":"Reset list colors"}
 ]}

@@ -695,6 +695,10 @@ msgctxt "taccountsetform.label3.caption"
 msgid "Password"
 msgstr "Şifre"
 
+#: tcustomcolorform.btresetcolors.caption
+msgid "Reset list colors"
+msgstr ""
+
 #: tcustomcolorform.caption
 msgid "CustomColorForm"
 msgstr "KişiselRenkFromu"

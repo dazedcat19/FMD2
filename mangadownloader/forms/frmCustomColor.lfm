@@ -220,4 +220,19 @@ object CustomColorForm: TCustomColorForm
       end
     end
   end
+  object btResetColors: TBitBtn
+    AnchorSideLeft.Control = CBColors
+    AnchorSideTop.Control = CBColors
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = CBColors
+    AnchorSideRight.Side = asrBottom
+    Left = 363
+    Height = 27
+    Top = 48
+    Width = 136
+    Anchors = [akTop, akLeft, akRight]
+    Caption = 'Reset list colors'
+    TabOrder = 2
+    OnClick = btResetColorsClick
+  end
 end
