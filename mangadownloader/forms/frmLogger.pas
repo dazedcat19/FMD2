@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls, Spin,
-  ExtCtrls, Buttons, Menus, Clipbrd, ComCtrls, LogTreeView, MultiLog, uCustomControls;
+  ExtCtrls, Buttons, Menus, Clipbrd, ComCtrls, LogTreeView, MultiLog, uCustomControlsMultilog;
 
 type
 

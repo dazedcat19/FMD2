@@ -306,7 +306,7 @@
         <Mode0 Name="default"/>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="14">
+    <RequiredPackages Count="15">
       <Item1>
         <PackageName Value="RunTimeTypeInfoControls"/>
       </Item1>
@@ -341,14 +341,17 @@
         <PackageName Value="CustomControls"/>
       </Item11>
       <Item12>
-        <PackageName Value="internettools"/>
+        <PackageName Value="CustomControls_Addon_Multilog"/>
       </Item12>
       <Item13>
-        <PackageName Value="MetaDarkStyle"/>
+        <PackageName Value="internettools"/>
       </Item13>
       <Item14>
-        <PackageName Value="metadarkstyledsgn"/>
+        <PackageName Value="MetaDarkStyle"/>
       </Item14>
+      <Item15>
+        <PackageName Value="metadarkstyledsgn"/>
+      </Item15>
     </RequiredPackages>
     <Units Count="27">
       <Unit0>
