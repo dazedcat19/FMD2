@@ -25,7 +25,8 @@ uses
   uSilentThread, uMisc, uGetMangaInfosThread, frmDropTarget, frmAccountManager,
   frmAccountSet, frmWebsiteOptionCustom, frmCustomColor, frmLogger, frmTransferFavorites,
   frmLuaModulesUpdater, CheckUpdate, DBDataProcess, uDarkStyleParams, uWin32WidgetSetDark,
-  SimpleTranslator, httpsendthread, DateUtils, SimpleException, uCustomControls;
+  SimpleTranslator, httpsendthread, DateUtils, SimpleException, uCustomControls,
+  uCustomControlsMultiLog;
 
 
 type
@@ -2781,7 +2782,14 @@ end;
 procedure TMainForm.appPropertiesMainShowHint(var HintStr: String;
   var CanShow: Boolean; var HintInfo: THintInfo);
 begin
-  HintInfo.HintWindowClass := TCustomHintWindow;
+  if HintInfo.HintControl = FormLogger.tvLog then
+  begin
+    HintInfo.HintWindowClass := TCustomHintToolTip;
+  end
+  else
+  begin
+    HintInfo.HintWindowClass := TCustomHintWindow;
+  end;
 
   if HintInfo.HintControl = vtMangaList then
   begin
