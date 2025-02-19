@@ -5,8 +5,8 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '3593adad980d454abe489c42e7158032'
-	m.Name                     = 'Realm Oasis'
-	m.RootURL                  = 'https://realmoasis.com'
+	m.Name                     = 'RizzFables'
+	m.RootURL                  = 'https://rizzfables.com'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -19,22 +19,14 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.MangaThemesia'
-DirectoryPagination = '/comics'
+DirectoryPagination = '/series'
 
 ----------------------------------------------------------------------------------------------------
 -- Auxiliary Functions
 ----------------------------------------------------------------------------------------------------
 
-function FilterSeriesURL(original_url)
-	return original_url:gsub("(/%d+/)([^/]+)", function(prefix, random_part)
-		return '/123456789012345/' .. random_part:gsub("^....s....(%d%d%d%d%d).+", "aaaasaaaa%1aaaaaaaaaaaaaa")
-	end)
-end
-
-function FilterChapterURL(original_url)
-	return original_url:gsub("(/%d+/)([^/]+)", function(prefix, random_part)
-		return '/123456789012345/' .. random_part:gsub("^....c....(%d%d%d%d%d)....(%d%d%d%d%d%d).+", "aaaacaaaa%1aaaa%2aaaa")
-	end)
+function decode_unicode(str)
+	return str:gsub("\\u(%x%x%x%x)", function(hex) return require("utf8").char(tonumber(hex, 16)) end)
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -43,40 +35,18 @@ end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local v, x = nil
-	local u = MODULE.RootURL .. DirectoryPagination
+	Template.GetNameAndLink()
 
-	if not HTTP.GET(u) then return net_problem end
-
-	x = CreateTXQuery(HTTP.Document)
-	for v in x.XPath('//div[@class="bsx"]/a').Get() do
-		LINKS.Add(FilterSeriesURL(v.GetAttribute('href')))
-		NAMES.Add(v.GetAttribute('title'))
-	end
+	CreateTXQuery(HTTP.Document).XPathHREFTitleAll('//div[@class="bsx"]/a', LINKS, NAMES)
 
 	return no_error
 end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local v, x = nil
-	local u = MaybeFillHost(MODULE.RootURL, URL)
+	Template.GetInfo()
 
-	if not HTTP.GET(u) then return net_problem end
-
-	x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//h1[@class="entry-title"]')
-	MANGAINFO.CoverLink = x.XPathString('//div[@itemprop="image"]//img/@src')
-	MANGAINFO.Authors   = x.XPathString('(//div[@class="imptdt" and contains(., "Author")]/i)[1]')
-	MANGAINFO.Artists   = x.XPathString('(//div[@class="imptdt" and contains(., "Artist")]/i)[1]')
-	MANGAINFO.Genres    = x.XPathStringAll('//span[@class="mgen"]/a')
-	MANGAINFO.Summary   = x.XPathString('//div[@itemprop="description"]/substring-before(substring-after(., "var description = """), """;")')
-
-	for v in x.XPath('//div[@id="chapterlist"]//div[@class="eph-num"]/a').Get() do
-		MANGAINFO.ChapterLinks.Add(FilterChapterURL(v.GetAttribute('href')))
-		MANGAINFO.ChapterNames.Add(x.XPathString('span[@class="chapternum"]/normalize-space(.)', v))
-	end
-	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
+	MANGAINFO.Summary = decode_unicode(CreateTXQuery(HTTP.Document).XPathString('//div[@itemprop="description"]/substring-before(substring-after(., "var description = """), """ ;")'))
 
 	return no_error
 end
