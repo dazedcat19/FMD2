@@ -18,12 +18,12 @@ function Init()
 	local lang = {
 		['en'] = {
 			['lang'] = 'Language:',
-			['chapterlist'] = 'Chapter list:',
+			['listtype'] = 'List type:',
 			['type'] = 'Chapter\nVolume'
 		},
 		['id_ID'] = {
 			['lang'] = 'Bahasa:',
-			['chapterlist'] = 'Daftar bab:',
+			['listtype'] = 'Tipe daftar:',
 			['type'] = 'Bab\nJilid'
 		},
 		get =
@@ -38,7 +38,7 @@ function Init()
 	local t = GetLangList()
 	for k, v in ipairs(t) do items = items .. '\r\n' .. v; end
 	m.AddOptionComboBox('lang', lang:get('lang'), items, 1)
-	m.AddOptionComboBox('chapterlist', lang:get('chapterlist'), lang:get('type'), 0)
+	m.AddOptionComboBox('listtype', lang:get('listtype'), lang:get('type'), 0)
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -114,7 +114,7 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local langparam, optlang, optlangid, chapterlist, s, sel_chapterlist, v, x = nil
+	local langparam, listtype, optlang, optlangid, s, sel_listtype, v, x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
@@ -128,14 +128,14 @@ function GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@class="info"]/p'), 'Releasing', 'Completed', 'On_hiatus', 'Discontinued')
 	MANGAINFO.Summary   = x.XPathString('string-join(//div[@class="modal-content p-4"]/text(), "\r\n")')
 
-	chapterlist     = {'chapter', 'volume'}
-	sel_chapterlist = (MODULE.GetOption('chapterlist') or 0) + 1
-	optlang         = MODULE.GetOption('lang')
-	optlangid       = FindLanguage(optlang)
+	listtype     = {'chapter', 'volume'}
+	sel_listtype = (MODULE.GetOption('listtype') or 0) + 1
+	optlang      = MODULE.GetOption('lang')
+	optlangid    = FindLanguage(optlang)
 
 	if optlangid == nil then langparam = '' else langparam = optlangid end
 
-	u = MODULE.RootURL .. '/ajax/read/' .. URL:match('%.(.-)$') .. '/' .. chapterlist[sel_chapterlist] .. '/' .. langparam
+	u = MODULE.RootURL .. '/ajax/read/' .. URL:match('%.(.-)$') .. '/' .. listtype[sel_listtype] .. '/' .. langparam
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -153,9 +153,9 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	local chapterlist     = {'chapter', 'volume'}
-	local sel_chapterlist = (MODULE.GetOption('chapterlist') or 0) + 1
-	local u = MODULE.RootURL .. '/ajax/read/' .. chapterlist[sel_chapterlist] .. URL
+	local listtype     = {'chapter', 'volume'}
+	local sel_listtype = (MODULE.GetOption('listtype') or 0) + 1
+	local u = MODULE.RootURL .. '/ajax/read/' .. listtype[sel_listtype] .. URL
 
 	if not HTTP.GET(u) then return net_problem end
 
