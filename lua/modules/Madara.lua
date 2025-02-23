@@ -363,10 +363,7 @@ function Init()
 
 	cat = 'Indonesian'
 	AddWebsiteModule('6c3cb7a05d8243d8817a81d3875ff1a1', 'MangaYosh', 'https://mangayosh.xyz')
-	AddWebsiteModule('9ff90d87df4c48fbb1cd310cbccca181', 'KomikGo', 'https://komikgo.com')
-	AddWebsiteModule('deafed31465943078a7b67ddf4885fda', 'KomikTap', 'https://manhwa.komiktap.co')
 	AddWebsiteModule('fce276573cab499fad96374d1df22121', 'Mangceh', 'https://mangceh.me')
-	AddWebsiteModule('1da2819dd79f4967a12953495ec52afe', 'Manhwaid', 'https://manhwaid.club')
 	AddWebsiteModule('545acbf017814caab2b6bb28e48779fa', 'MGKomik', 'https://mgkomik.com')
 
 	cat = 'H-Sites'
@@ -391,7 +388,6 @@ function Init()
 	AddWebsiteModule('1a9038c97ad04b6b8c54425a01b0bcb9', 'BakaguyaScan', 'https://bakaguya-scan.tk')
 	AddWebsiteModule('2458c40d646f4c0796aa550558e5e6b4', 'MundoWuxia', 'https://mundowuxia.com')
 	AddWebsiteModule('06e732a1ccdc4894877e5dee6e065df1', 'LeviatanScans', 'https://es.leviatanscans.com')
-	AddWebsiteModule('aeb97b0ab5db4fbfa12990119f1904e2', 'MangaFenix', 'https://manga-fenix.com')
 	AddWebsiteModule('8bb50a7089ca41439e99813df2c8bf49', 'HZmangas', 'https://hzmangas.com')
 	AddWebsiteModule('48d4e659f6ed4498a8586258371a4015', 'AncientEmpireScan', 'https://www.ancientempirescan.website')
 	AddWebsiteModule('73cfa250c661470c81428d99cdb8a140', 'MangaCrab', 'https://mangacrab.com')
@@ -473,7 +469,6 @@ function Init()
 
 	cat = 'Spanish'
 	AddWebsiteModule('22c481c279c740b897ffc906ab808502', 'TuMangaNet', 'https://tumanga.net')
-	AddWebsiteModule('e4a3a8ed254e4e9a9113693c098bb743', 'MangaFenix', 'https://manga-fenix.com')
 	AddWebsiteModule('a8ad2a81768742caa7135047f28c2b00', 'SwordManga', 'https://swordmanga.com')
 	AddWebsiteModule('rrad2a81768742caa7135047f282b777', 'MangaMonarca', 'https://mangamonarca.xyz')
 	AddWebsiteModule('48822a81768742caa7135047f282bf57', 'TiempodeWebeo', 'https://tiempodewebeo.com')
