@@ -541,31 +541,45 @@ procedure TDBDataProcess.AttachAllSites;
   end;
 
 var
-  i: Integer;
+  i, attachedMax: Integer;
   m: TModuleContainer;
+  tempDataProcess: TDBDataProcess;
 begin
   RemoveCurrentSite;
   if (not FConn.Connected) or (SitesList.Count = 0) then Exit;
   DetachAllSites;
   FConn.ExecuteDirect('END TRANSACTION');
+  attachedMax := 125;
+  tempDataProcess := TDBDataProcess.Create;
+
   try
-    for i:=0 to SitesList.Count-1 do
+    for i := 0 to SitesList.Count - 1 do
     begin
       // default max attached database that came with sqlite3.dll was 7
       // use custom build attached database with max 125
       // if FAttachedSites.Count=7 then Break;
+      if attachedMax = 0 then
+      begin 
+        SendLogWarning(ClassName + '[' + Website + '].AttachAllSites.Warning! Can''t attach all sites, the limit of 125 reached.');
+        Break;
+      end;
+
       m := TModuleContainer(FSitesList.Objects[i]);
       if (FAttachedSites.IndexOf(m.ID) = -1) and (FileExists(DBDataFilePath(m.ID))) then
       begin
+        tempDataProcess.Open(m.ID); // Check database structure so theres no errors if databases mismatch
+        attachedMax := attachedMax - 1;
         FConn.ExecuteDirect('ATTACH ' + QuotedStr(DBDataFilePath(m.ID)) + ' AS "' + m.ID + '"');
         FAttachedSites.AddObject(m.ID, m);
       end;
     end;
   except
     on E: Exception do
-      SendLogException(Self.ClassName+'['+Website+'].AttachAllSites.Error!'+
-        ' try to attach '+QuotedStr(SitesList[i]), E)
+      SendLogException(ClassName + '[' + Website + '].AttachAllSites.Error!' +
+        ' try to attach ' + QuotedStr(SitesList[i]), E)
   end;
+  tempDataProcess.Close;
+  tempDataProcess.Free;
   FConn.ExecuteDirect('BEGIN TRANSACTION');
   FAllSitesAttached := FAttachedSites.Count > 0;
 end;
@@ -885,25 +899,29 @@ end;
 
 function TDBDataProcess.AddData(const Title, AltTitles, Link, Authors, Artists, Genres,
   Status, Summary: String; NumChapter, JDN: Integer): Boolean;
+var
+  sql: String;
 begin
-  Result:=False;
-  if Link='' then Exit;
-  if FConn.Connected=False then Exit;
+  Result := False;
+  if Link = '' then Exit;
+  if FConn.Connected = False then Exit;
   try
-    FConn.ExecuteDirect(
-      'INSERT INTO "'+FTableName+'" ('+DBDataProcessParam+') VALUES ('+
-      QuotedStr(Link)+', '+
-      QuotedStr(Title)+', '+
-      QuotedStr(AltTitles)+', '+
-      QuotedStr(Authors)+', '+
-      QuotedStr(Artists)+', '+
-      QuotedStr(Genres)+', '+
-      QuotedStr(Status)+', '+
-      QuotedStr(Summary)+', '+
-      QuotedStr(IntToStr(NumChapter))+', '+
-      QuotedStr(IntToStr(JDN))+');');
-    Result:=True;
+    sql := 'INSERT INTO "' + FTableName + '" (' + DBDataProcessParam + ') VALUES (' +
+           QuotedStr(Link) + ', ' +
+           QuotedStr(Title) + ', ' +
+           QuotedStr(AltTitles) + ', ' +
+           QuotedStr(Authors) + ', ' +
+           QuotedStr(Artists) + ', ' +
+           QuotedStr(Genres) + ', ' +
+           QuotedStr(Status) + ', ' +
+           QuotedStr(Summary) + ', ' +
+           QuotedStr(IntToStr(NumChapter)) + ', ' +
+           QuotedStr(IntToStr(JDN)) + ');';
+    FConn.ExecuteDirect(sql);
+    Result := True;
   except
+    on E: Exception do
+      SendLogException(ClassName + '[' + Website + '].AddData.Error!' + LineEnding + sql, E);
   end;
 end;
 
@@ -919,29 +937,33 @@ function TDBDataProcess.UpdateData(const Title, AltTitles, Link, Authors, Artist
 var
   sql: String;
 begin
-  Result:=False;
-  if Link='' then Exit;
-  if FConn.Connected=False then Exit;
+  Result := False;
+  if Link = '' then Exit;
+  if FConn.Connected = False then Exit;
   try
-    sql:='UPDATE ';
-    if (AWebsite<>'') and (AWebsite<>FWebsite) and FAllSitesAttached then
-      sql+='"'+AWebsite+'"."'+FTableName+'"'
+    sql := 'UPDATE ';
+    if (AWebsite <> '') and (AWebsite <> FWebsite) and FAllSitesAttached then
+    begin
+      sql += '"' + AWebsite + '"."' + FTableName + '"';
+    end
     else
-      sql+='"'+FTableName+'"';
-    sql+=' SET "title"='+QuotedStr(Title)+
-         ', "alttitles"='+QuotedStr(AltTitles)+
-         ', "authors"='+QuotedStr(Authors)+
-         ', "artists"='+QuotedStr(Artists)+
-         ', "genres"='+QuotedStr(Genres)+
-         ', "status"='+QuotedStr(Status)+
-         ', "summary"='+QuotedStr(Summary)+
-         ', "numchapter"='+QuotedStr(IntToStr(NumChapter))+
-         ' WHERE ("link"='+QuotedStr(Link)+');';
+    begin
+      sql += '"' + FTableName + '"';
+    end;
+    sql += ' SET "title"=' + QuotedStr(Title) +
+           ', "alttitles"=' + QuotedStr(AltTitles) +
+           ', "authors"=' + QuotedStr(Authors) +
+           ', "artists"=' + QuotedStr(Artists) +
+           ', "genres"=' + QuotedStr(Genres) +
+           ', "status"=' + QuotedStr(Status) +
+           ', "summary"=' + QuotedStr(Summary) +
+           ', "numchapter"=' + QuotedStr(IntToStr(NumChapter)) +
+           ' WHERE ("link"=' + QuotedStr(Link) + ');';
     FConn.ExecuteDirect(sql);
-    Result:=True;
+    Result := True;
   except
     on E: Exception do
-      SendLogException(ClassName+'['+Website+'].UpdateData.Error!'+LineEnding+sql,E);
+      SendLogException(ClassName + '[' + Website + '].UpdateData.Error!' + LineEnding + sql, E);
   end;
 end;
 
@@ -1070,7 +1092,7 @@ begin
       FQuery.Open;
     except
       on E: Exception do
-        SendLogException(Self.ClassName+'['+Website+'].Search.Error!'#13#10 +
+        SendLogException(Self.ClassName + '[' + Website + '].Search.Error!'#13#10 +
           'SQL:'#13#10 + FQuery.SQL.Text, E);
     end;
   end;
