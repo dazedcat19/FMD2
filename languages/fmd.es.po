@@ -36,6 +36,7 @@ msgstr "Abortar"
 
 #: dbupdater.rs_downloading
 #, object-pascal-format
+msgctxt "dbupdater.rs_downloading"
 msgid "Downloading %s"
 msgstr "Descargando %s"
 
@@ -123,15 +124,33 @@ msgstr ""
 msgid "List of unimported manga"
 msgstr "Lista de manga sin importar"
 
+#: frmluamodulesupdater.rs_awaitingproceed
+msgid "Awaiting permission to proceed..."
+msgstr ""
+
 #: frmluamodulesupdater.rs_checking
 msgctxt "frmluamodulesupdater.rs_checking"
 msgid "Checking..."
 msgstr "Revisando..."
 
+#: frmluamodulesupdater.rs_checklocalmodules
+msgid "Checking local modules..."
+msgstr ""
+
 #: frmluamodulesupdater.rs_checkupdate
 msgctxt "frmluamodulesupdater.rs_checkupdate"
 msgid "Check update"
 msgstr "Revisar actualización"
+
+#: frmluamodulesupdater.rs_deletingflaggedmodules
+msgid "Deleting flagged modules..."
+msgstr ""
+
+#: frmluamodulesupdater.rs_downloadingmodule
+#, object-pascal-format, fuzzy
+msgctxt "frmluamodulesupdater.rs_downloadingmodule"
+msgid "Downloading %s"
+msgstr "Descargando %s"
 
 #: frmluamodulesupdater.rs_finishchecking
 msgid "Finish checking"
@@ -140,6 +159,10 @@ msgstr "Revisión finalizada"
 #: frmluamodulesupdater.rs_finishdownload
 msgid "Finish download"
 msgstr "Descarga terminada"
+
+#: frmluamodulesupdater.rs_githubconnecting
+msgid "Connecting to GitHub..."
+msgstr ""
 
 #: frmluamodulesupdater.rs_modulesupdatedrestart
 msgid "Modules updated, restart now?"

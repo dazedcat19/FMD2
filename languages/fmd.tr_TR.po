@@ -37,6 +37,7 @@ msgstr "İptal"
 
 #: dbupdater.rs_downloading
 #, object-pascal-format
+msgctxt "dbupdater.rs_downloading"
 msgid "Downloading %s"
 msgstr "%s indiriliyor"
 
@@ -124,15 +125,33 @@ msgstr ""
 msgid "List of unimported manga"
 msgstr "İçe aktarılmayan manga listesi"
 
+#: frmluamodulesupdater.rs_awaitingproceed
+msgid "Awaiting permission to proceed..."
+msgstr ""
+
 #: frmluamodulesupdater.rs_checking
 msgctxt "frmluamodulesupdater.rs_checking"
 msgid "Checking..."
 msgstr "Kontrol ediliyor..."
 
+#: frmluamodulesupdater.rs_checklocalmodules
+msgid "Checking local modules..."
+msgstr ""
+
 #: frmluamodulesupdater.rs_checkupdate
 msgctxt "frmluamodulesupdater.rs_checkupdate"
 msgid "Check update"
 msgstr "Güncellemelere bak"
+
+#: frmluamodulesupdater.rs_deletingflaggedmodules
+msgid "Deleting flagged modules..."
+msgstr ""
+
+#: frmluamodulesupdater.rs_downloadingmodule
+#, object-pascal-format, fuzzy
+msgctxt "frmluamodulesupdater.rs_downloadingmodule"
+msgid "Downloading %s"
+msgstr "%s indiriliyor"
 
 #: frmluamodulesupdater.rs_finishchecking
 msgid "Finish checking"
@@ -141,6 +160,10 @@ msgstr "Kontrolü durdur"
 #: frmluamodulesupdater.rs_finishdownload
 msgid "Finish download"
 msgstr "İndirmeyi durdur"
+
+#: frmluamodulesupdater.rs_githubconnecting
+msgid "Connecting to GitHub..."
+msgstr ""
 
 #: frmluamodulesupdater.rs_modulesupdatedrestart
 msgid "Modules updated, restart now?"

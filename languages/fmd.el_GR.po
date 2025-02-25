@@ -39,6 +39,7 @@ msgstr "Άκυρο"
 
 #: dbupdater.rs_downloading
 #, object-pascal-format
+msgctxt "dbupdater.rs_downloading"
 msgid "Downloading %s"
 msgstr ""
 
@@ -123,14 +124,32 @@ msgstr ""
 msgid "List of unimported manga"
 msgstr "Λίστα μη εισηγμένων manga"
 
+#: frmluamodulesupdater.rs_awaitingproceed
+msgid "Awaiting permission to proceed..."
+msgstr ""
+
 #: frmluamodulesupdater.rs_checking
 msgctxt "frmluamodulesupdater.rs_checking"
 msgid "Checking..."
 msgstr "Έλεγχος..."
 
+#: frmluamodulesupdater.rs_checklocalmodules
+msgid "Checking local modules..."
+msgstr ""
+
 #: frmluamodulesupdater.rs_checkupdate
 msgctxt "frmluamodulesupdater.rs_checkupdate"
 msgid "Check update"
+msgstr ""
+
+#: frmluamodulesupdater.rs_deletingflaggedmodules
+msgid "Deleting flagged modules..."
+msgstr ""
+
+#: frmluamodulesupdater.rs_downloadingmodule
+#, object-pascal-format
+msgctxt "frmluamodulesupdater.rs_downloadingmodule"
+msgid "Downloading %s"
 msgstr ""
 
 #: frmluamodulesupdater.rs_finishchecking
@@ -139,6 +158,10 @@ msgstr ""
 
 #: frmluamodulesupdater.rs_finishdownload
 msgid "Finish download"
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubconnecting
+msgid "Connecting to GitHub..."
 msgstr ""
 
 #: frmluamodulesupdater.rs_modulesupdatedrestart
