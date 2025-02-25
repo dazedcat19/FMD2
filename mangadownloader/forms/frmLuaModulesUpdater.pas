@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  Buttons, Menus, ExtCtrls, VirtualTrees, synautil, httpsendthread, BaseThread,
+  Buttons, Menus, ExtCtrls, VirtualTrees, synautil, httpsendthread, BaseThread, StatusBarDownload,
   XQueryEngineHTML, GitHubRepoV3, MultiLog, fpjson, jsonparser, jsonscanner, dateutils;
 
 type
@@ -114,7 +114,7 @@ type
 
   { TCheckUpdateThread }
 
-  TCheckUpdateThread = class(TBaseThread)
+  TCheckUpdateThread = class(TStatusBarDownload)
   private
     FGitHubRepo: TGitHubRepo;
     FOwner: TLuaModulesUpdaterForm;
@@ -123,6 +123,7 @@ type
     FMainRepos: TLuaModulesRepos;
     FThreads: TFPList;
     FThreadsCS: TRTLCriticalSection;
+    FDownloadTotalCount: Integer;
     FDownloadedCount: Integer;
     FProceed: Boolean;
     FStatusList: TStringList;
@@ -149,6 +150,11 @@ var
   LuaModulesUpdaterForm: TLuaModulesUpdaterForm;
 
 resourcestring
+  RS_CheckLocalModules = 'Checking local modules...';
+  RS_AwaitingProceed = 'Awaiting permission to proceed...';
+  RS_DeletingFlaggedModules = 'Deleting flagged modules...';
+  RS_DownloadingModule = 'Downloading %s';
+  RS_GitHubConnecting = 'Connecting to GitHub...';
   RS_CheckUpdate = 'Check update';
   RS_Checking = 'Checking...';
   RS_FinishChecking = 'Finish checking';
@@ -365,6 +371,8 @@ begin
   FModule.oflag := FModule.flag;
   FModule.flag := fDownloading;
   FOwner.FOwner.ListDirty;
+  FOwner.UpdateProgressBar(FOwner.FDownloadedCount, FOwner.FDownloadTotalCount);
+  FOwner.UpdateStatusText(Format(RS_DownloadingModule, [ExtractFileName(FModule.name)]));
   if FHTTP.GET(FOwner.FGitHubRepo.GetDownloadURL(FModule.name)) then
   begin
     if ForceDirectories(LUA_REPO_FOLDER) then
@@ -402,8 +410,8 @@ end;
 constructor TDownloadThread.Create(const Owner: TCheckUpdateThread; const T: TLuaModuleRepo);
 begin
   inherited Create(False);
-  FHTTP := THTTPSendThread.Create(Self);
   FOwner := Owner;
+  FHTTP := THTTPSendThread.Create(Self);
   FModule := T;
   FOwner.AddThread(Self);
 end;
@@ -505,7 +513,12 @@ begin
       begin
         yesRestart := OptionModulesUpdaterAutoRestart;
         if not yesRestart then
+        begin
+          LoadingProgressBar;
+          UpdateStatusText(RS_AwaitingProceed);
+
           with TfrmDialogYN.Create(FOwner) do
+          begin
             try
               Caption := RS_ModulesUpdatedTitle;
               lbMessage.Caption := RS_ModulesUpdatedRestart;
@@ -514,8 +527,12 @@ begin
             finally
               free;
             end;
+          end;
+        end;
         if yesRestart then
+        begin
           MainForm.RestartFMD;
+        end;
       end;
     end;
   except
@@ -618,15 +635,17 @@ begin
   FStatusList.Clear;
 
   // do delete first
-  for i:=0 to FRepos.Items.Count-1 do
+  for i := 0 to FRepos.Items.Count-1 do
   begin
-    if FRepos[i].flag=fDelete then
+    UpdateProgressBar(i + 1, FRepos.Items.Count);
+    UpdateStatusText(RS_DeletingFlaggedModules);
+    if FRepos[i].flag = fDelete then
     begin
-      m:=FRepos[i];
-      f := LUA_REPO_FOLDER + TrimFilename(m.name);
+      m := FRepos[i];
+      f := LUA_REPO_FOLDER + TrimFilename(m.Name);
       if FileExists(f) and DeleteFile(f) then
       begin
-        AddStatus(Format(RS_StatusDelete, [m.name]));
+        AddStatus(Format(RS_StatusDelete, [m.Name]));
         m.flag := fDeleted;
       end;
     end;
@@ -646,7 +665,7 @@ begin
       if Terminated then
         Break;
       TDownloadThread.Create(Self, FRepos[i]);
-      message := FGitHubRepo.GetLastCommitMessage(m.name);
+      message := FGitHubRepo.GetLastCommitMessage(m.Name);
       if message <> '' then
          m.last_message := message;
       Inc(i);
@@ -683,16 +702,21 @@ var
   trepos: TLuaModulesRepos;
 begin
   FRepos := FOwner.Repos.Clone;
+
+  LoadingProgressBar;
+  UpdateStatusText(RS_GitHubConnecting);
   if FGitHubRepo.GetUpdate then
   begin
     FReposUp := TLuaModulesRepos.Create;
-    for i:=0 to FGitHubRepo.Tree.Count-1 do
+    for i := 0 to FGitHubRepo.Tree.Count-1 do
+    begin
       FReposUp.Add(FGitHubRepo.Tree[i].path).sha := FGitHubRepo.Tree[i].sha;
+    end;
     FReposUp.Sort;
   end;
 
-  if FReposUp=nil then FReposUp:=FRepos.Clone;
-  if (FReposUp.Count<>0) and not Terminated then
+  if FReposUp = nil then FReposUp := FRepos.Clone;
+  if (FReposUp.Count <> 0) and not Terminated then
   begin
     // check
     foundupdate := SyncRepos(FRepos, FReposUp);
@@ -701,6 +725,8 @@ begin
     for i := 0 to FRepos.Items.Count - 1 do
     begin
       m := FRepos[i];
+      UpdateProgressBar(i + 1, FRepos.Items.Count);
+      UpdateStatusText(RS_CheckLocalModules);
       if m.flag = fFailedDownload then
          foundupdate := True
       else
@@ -728,14 +754,21 @@ begin
     if foundupdate and (not Terminated) then
     begin
       if OptionModulesUpdaterShowUpdateWarning then
+      begin
+        LoadingProgressBar;
+        UpdateStatusText(RS_AwaitingProceed);
         Synchronize(@SyncAskToProceed)
+      end
       else
       begin
         FProceed := True;
         Sleep(1500); // delay to show the update status
       end;
       if FProceed then
+      begin
+        FDownloadTotalCount := FStatusList.Count;
         Download;
+      end;
     end;
 
     // cleanup
@@ -780,10 +813,11 @@ end;
 
 constructor TCheckUpdateThread.Create(const AOwner: TLuaModulesUpdaterForm);
 begin
-  inherited Create(False);
+  inherited Create(False, MainForm, MainForm.IconList, 24);
   InitCriticalSection(FThreadsCS);
   FOwner := AOwner;
   FThreads := TFPList.Create;
+  FDownloadTotalCount := 0;
   FDownloadedCount := 0;
   FStatusList := TStringList.Create;
   FGitHubRepo := TGitHubRepo.Create(CONFIG_FILE, LUA_REPO_WORK_FILE, Self);

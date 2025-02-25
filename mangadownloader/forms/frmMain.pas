@@ -3670,7 +3670,7 @@ begin
         updateList.websites.AddObject(m.Name, m);
     end;
     if (in_list_count <> 0) and (in_list_count = cbSelectManga.Items.Count) then
-      MessageDlg('', RS_DlgFavoritesCheckIsRunning, mtInformation, [mbYes], 0);
+      MessageDlg('', RS_DlgUpdateListCheckIsRunning, mtInformation, [mbYes], 0);
   end;
 end;
 
@@ -3708,7 +3708,7 @@ begin
     for i := 0 to updateList.websites.Count-1 do
       if m = updateList.websites.Objects[i] then
       begin
-        MessageDlg('', RS_DlgFavoritesCheckIsRunning, mtInformation, [mbYes], 0);
+        MessageDlg('', RS_DlgUpdateListCheckIsRunning, mtInformation, [mbYes], 0);
         Exit;
       end;
     updateList.websites.AddObject(m.Name, m);
