@@ -2739,6 +2739,10 @@ msgstr "Memuat: %d/%d"
 msgid "%s has %d new manga(s)"
 msgstr "%s memiliki %d komik baru"
 
+#: uupdatethread.rs_dlgupdatelistcheckisrunning
+msgid "Update list(s) is running!"
+msgstr ""
+
 #: uupdatethread.rs_gettingdirectory
 msgid "Getting directory"
 msgstr "Memuat direktori"

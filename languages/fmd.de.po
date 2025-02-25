@@ -2735,6 +2735,10 @@ msgstr "Lade: %d/%d"
 msgid "%s has %d new manga(s)"
 msgstr "%s hat %d neue(n) Manga(s)"
 
+#: uupdatethread.rs_dlgupdatelistcheckisrunning
+msgid "Update list(s) is running!"
+msgstr ""
+
 #: uupdatethread.rs_gettingdirectory
 msgid "Getting directory"
 msgstr "Lade Verzeichnis"

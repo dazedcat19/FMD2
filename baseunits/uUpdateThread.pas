@@ -119,6 +119,7 @@ type
   end;
   
 resourcestring
+  RS_DlgUpdateListCheckIsRunning = 'Update list(s) is running!';
   RS_UpdatingList = 'Updating list';
   RS_GettingDirectory = 'Getting directory';
   RS_LookingForNewTitle = 'Looking for new title(s)';

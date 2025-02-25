@@ -2735,6 +2735,10 @@ msgstr "加载: %d/%d"
 msgid "%s has %d new manga(s)"
 msgstr "%s 有 %d 新漫画(s)"
 
+#: uupdatethread.rs_dlgupdatelistcheckisrunning
+msgid "Update list(s) is running!"
+msgstr ""
+
 #: uupdatethread.rs_gettingdirectory
 msgid "Getting directory"
 msgstr "获取目录"
