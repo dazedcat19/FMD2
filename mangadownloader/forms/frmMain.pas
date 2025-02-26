@@ -763,6 +763,9 @@ type
 
     procedure AddChapterNameToList;
 
+    // Check and set path for long path compatibilty
+    function CheckLongNamePaths(APath: String): String;
+
     // Create silent thread
     procedure AddSilentThread(URL: string; MetaDataType: TMetaDataType); overload;
     procedure AddSilentThread(URL: string); overload;
@@ -5130,6 +5133,17 @@ begin
   else
     mt:=MD_AddToFavorites;
   AddSilentThread(URL,mt);
+end;
+
+function TMainForm.CheckLongNamePaths(APath: String): String;
+begin
+  if cbOptionEnableLongNamePaths.Checked then
+  begin
+    if Pos('\\?\', APath) = 0 then
+      APath := '\\?\' + APath;
+  end;
+
+  Result := APath;
 end;
 
 procedure TMainForm.AddTextToInfo(const ATitle, AValue: String);

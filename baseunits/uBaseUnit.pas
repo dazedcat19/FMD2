@@ -1454,13 +1454,11 @@ begin
   s := UTF8Decode(Result);
   if Length(s) > MAX_PATHDIR then
   begin
-    if MainForm.cbOptionEnableLongNamePaths.Checked then
+    s := MainForm.CheckLongNamePaths(s);
+    if not MainForm.cbOptionEnableLongNamePaths.Checked then
     begin
-      if Pos('\\?\', s) = 0 then
-        s := '\\?\' + s;
-    end
-    else
       SetLength(s, MAX_PATHDIR);
+    end;
     Result := UTF8Encode(s);
   end;
   {$ELSE}
@@ -2304,11 +2302,7 @@ begin
 
     if f = '' then Exit;
     f := p + FileName + '.' + f;
-    if MainForm.cbOptionEnableLongNamePaths.Checked then
-    begin
-      if Pos('\\?\', f) = 0 then
-        f := '\\?\' + f;
-    end;
+    f := MainForm.CheckLongNamePaths(f);
     if FileExists(f) then DeleteFile(f);
     try
       fs := TFileStream.Create(f, fmCreate);

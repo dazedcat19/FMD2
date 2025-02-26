@@ -882,11 +882,8 @@ var
       begin
         for i := 0 to Container.PageLinks.Count - 1 do
         begin
-          if MainForm.cbOptionEnableLongNamePaths.Checked then
-          begin
-            if Pos('\\?\', CurrentWorkingDir) = 0 then
-              CurrentWorkingDir := '\\?\' + CurrentWorkingDir;
-          end;
+          CurrentWorkingDir := MainForm.CheckLongNamePaths(CurrentWorkingDir);
+
           if ImageFileExists(CurrentWorkingDir + GetFileName(i)) then
           begin
             Container.PageLinks[i] := 'D';
@@ -941,30 +938,49 @@ begin
     DynamicPageLink := TModuleContainer(Container.DownloadInfo.Module).DynamicPageLink;
 
     if Trim(Container.CustomFileName) = '' then
+    begin
       Container.CustomFileName := DEFAULT_FILENAME_CUSTOMRENAME;
+    end;
 
     while Container.ChaptersStatus.Count < Container.CurrentDownloadChapterPtr - 1 do
+    begin
       Container.ChaptersStatus.Add('D');
+    end;
     while Container.ChaptersStatus.Count < Container.ChapterLinks.Count do
+    begin
       Container.ChaptersStatus.Add('P');
+    end;
 
     if OptionAlwaysStartTaskFromFailedChapters and (Container.CurrentDownloadChapterPtr <> 0) then
+    begin
       Container.CurrentDownloadChapterPtr := 0;
+    end;
 
     while Container.CurrentDownloadChapterPtr < Container.ChapterLinks.Count do
     begin
       while Container.ChaptersStatus[Container.CurrentDownloadChapterPtr] = 'D' do
+      begin
         Inc(Container.CurrentDownloadChapterPtr);
+      end;
 
       WaitForThreads;
-      if Terminated then Exit;
+      if Terminated then
+      begin
+        Exit;
+      end;
 
       //check path
       if OptionGenerateChapterFolder then
+      begin
         CurrentWorkingDir := CorrectPathSys(Container.DownloadInfo.SaveTo) +
-          Container.ChapterNames[Container.CurrentDownloadChapterPtr]
+          Container.ChapterNames[Container.CurrentDownloadChapterPtr];
+      end
       else
+      begin
         CurrentWorkingDir := Container.DownloadInfo.SaveTo;
+      end;
+
+      CurrentWorkingDir := MainForm.CheckLongNamePaths(CurrentWorkingDir);
       if not ForceDirectories(CurrentWorkingDir) then
       begin
         StatusFailedToCreateDir;
@@ -973,7 +989,9 @@ begin
       end;
 
       if Assigned(TModuleContainer(Container.DownloadInfo.Module).OnTaskStart) then
+      begin
         TModuleContainer(Container.DownloadInfo.Module).OnTaskStart(Container, TModuleContainer(Container.DownloadInfo.Module));
+      end;
 
       // set current working custom filename
       CurrentCustomFileName :=  CustomRename(Container.CustomFileName,
@@ -1017,7 +1035,9 @@ begin
 
       // Get the real image urls
       if Container.PageLinks.Count = 0 then
+      begin
         Container.PageLinks.Add('W');
+      end;
       Container.PageNumber := Container.PageLinks.Count;
       if (not DynamicPageLink) and CheckForPrepare then
       begin
@@ -1036,7 +1056,10 @@ begin
         Container.Status := STATUS_PREPARE;
 
         Checkout;
-        if Terminated then Exit;
+        if Terminated then
+        begin
+          Exit;
+        end;
 
         //check if pagelink is found. Else set again to 'W'(some script return '')
         if Container.PageLinks.Count > 0 then
@@ -1044,7 +1067,9 @@ begin
           for i := 0 to Container.PageLinks.Count - 1 do
           begin
             if Trim(Container.PageLinks[i]) = '' then
+            begin
               Container.PageLinks[i] := 'W';
+            end;
           end;
         end;
       end;
@@ -1071,7 +1096,10 @@ begin
         Container.Status := STATUS_DOWNLOAD;
 
         Checkout;
-        if Terminated then Exit;
+        if Terminated then
+        begin
+          Exit;
+        end;
 
         //check if all page is downloaded
         if CheckForFinish then
@@ -1079,7 +1107,9 @@ begin
           Container.DownloadInfo.Progress := '';
           Container.Status := STATUS_COMPRESS;
           if not Compress then
+          begin
             Container.Status := STATUS_FAILED;
+          end;
         end
         else
         begin
@@ -1098,9 +1128,13 @@ begin
       end;
 
       if Container.Status = STATUS_FAILED  then
-        Container.ChaptersStatus[Container.CurrentDownloadChapterPtr] := 'F'
+      begin
+        Container.ChaptersStatus[Container.CurrentDownloadChapterPtr] := 'F';
+      end
       else
+      begin
         Container.ChaptersStatus[Container.CurrentDownloadChapterPtr] := 'D';
+      end;
 
       Container.CurrentPageNumber := 0;
       Container.PageLinks.Clear;
@@ -1112,9 +1146,13 @@ begin
       begin
         Container.CurrentDownloadChapterPtr := FirstFailedChapters;
         if Container.CurrentDownloadChapterPtr <> -1 then
-          Inc(FailedRetryCount)
+        begin
+          Inc(FailedRetryCount);
+        end
         else
+        begin
           Container.CurrentDownloadChapterPtr := Container.ChapterLinks.Count;
+        end;
       end;
     end;
 
