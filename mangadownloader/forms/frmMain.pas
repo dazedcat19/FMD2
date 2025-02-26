@@ -766,6 +766,9 @@ type
     // Check and set path for long path compatibilty
     function CheckLongNamePaths(APath: String): String;
 
+    // Trim path of any spaces in folder names
+    function TrimPath(APath: String): String;
+
     // Create silent thread
     procedure AddSilentThread(URL: string; MetaDataType: TMetaDataType); overload;
     procedure AddSilentThread(URL: string); overload;
@@ -2614,7 +2617,7 @@ begin
         FillSaveTo;
         OverrideSaveTo(Modules.LocateModule(mangaInfo.ModuleID));
       end;
-      s := edSaveTo.Text;
+      s := TrimPath(edSaveTo.Text);
       if OptionGenerateMangaFolder then
       begin
         sRename := CustomRename(
@@ -2732,7 +2735,7 @@ begin
       FillSaveTo;
       OverrideSaveTo(Modules.LocateModule(mangaInfo.ModuleID));
     end;
-    s := edSaveTo.Text;
+    s := TrimPath(edSaveTo.Text);
     if OptionGenerateMangaFolder then
     begin
       sRename := CustomRename(
@@ -5146,6 +5149,28 @@ begin
   Result := APath;
 end;
 
+function TMainForm.TrimPath(APath: String): String;
+var
+  PathList: TStringList;
+  i: Integer;
+begin
+  PathList := TStringList.Create;
+  try
+    PathList.Delimiter := '\';  // Split path by "\"
+    PathList.StrictDelimiter := True;  // Prevent ignoring empty parts
+    PathList.DelimitedText := APath;
+
+    // Trim spaces from each folder, except for the root (C:, D:, etc.)
+    for i := 1 to PathList.Count - 1 do
+      PathList[i] := TrimRight(PathList[i]);
+
+    // Reconstruct the cleaned path
+    Result := PathList.DelimitedText.Replace('"', '');  // Remove added quotes
+  finally
+    PathList.Free;
+  end;
+end;
+
 procedure TMainForm.AddTextToInfo(const ATitle, AValue: String);
 var
   p: Integer;
@@ -5178,9 +5203,15 @@ end;
 procedure TMainForm.FillSaveTo;
 begin
   if LastUserPickedSaveTo = '' then
+  begin
     LastUserPickedSaveTo := Trim(settingsfile.ReadString('saveto', 'SaveTo', DEFAULT_PATH));
+  end;
+
   if LastUserPickedSaveTo = '' then
+  begin
     LastUserPickedSaveTo := DEFAULT_PATH;
+  end;
+
   edSaveTo.Text := LastUserPickedSaveTo;
 end;
 
@@ -5946,7 +5977,7 @@ procedure TMainForm.edOptionDefaultPathButtonClick(Sender: TObject);
 begin
   with TSelectDirectoryDialog.Create(nil) do
     try
-      InitialDir := edOptionDefaultPath.Text;
+      InitialDir := TrimPath(edOptionDefaultPath.Text);
       if Execute then
         edOptionDefaultPath.Text := FileName;
     finally
@@ -5970,7 +6001,7 @@ procedure TMainForm.edSaveToButtonClick(Sender: TObject);
 begin
   with TSelectDirectoryDialog.Create(nil) do
     try
-      InitialDir := edSaveTo.Text;
+      InitialDir := TrimPath(edSaveTo.Text);
       if Execute then
         edSaveTo.Text := FileName;
     finally
