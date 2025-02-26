@@ -46,7 +46,7 @@ resourcestring
 
 implementation
 
-uses FMDVars;
+uses FMDVars, frmMain;
 
 { TSelfUpdaterThread }
 
@@ -68,14 +68,16 @@ end;
 
 procedure TSelfUpdaterThread.SyncShowFailed;
 begin
-  MessageDlg(RS_FailedTitle, FFailedMessage, mtError, [mbOK], 0);
+  CenteredMessageDlg(MainForm, RS_FailedTitle, FFailedMessage, mtError, [mbOK], 0);
 end;
 
 procedure TSelfUpdaterThread.SyncFinishRestart;
 begin
-  if MessageDlg(RS_FinishRestartTitle, RS_FinishRestart, mtConfirmation,
+  if CenteredMessageDlg(MainForm, RS_FinishRestartTitle, RS_FinishRestart, mtConfirmation,
     mbYesNo, 0) = mrYes then
+  begin
     ProceedUpdate;
+  end;
 end;
 
 procedure TSelfUpdaterThread.ProceedUpdate;

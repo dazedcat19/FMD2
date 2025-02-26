@@ -51,7 +51,7 @@ resourcestring
 
 implementation
 
-uses FMDVars, LazFileUtils;
+uses FMDVars, LazFileUtils, frmMain;
 
 function GetDBURL(const AName: String): String;
 begin
@@ -86,7 +86,7 @@ end;
 
 procedure TDBUpdaterThread.SyncShowFailed;
 begin
-  MessageDlg(RS_FailedItemsTitle, Format(RS_FailedItems, [FFailedList.Text]),
+  CenteredMessageDlg(MainForm, RS_FailedItemsTitle, Format(RS_FailedItems, [FFailedList.Text]),
     mtError, [mbOK], 0);
 end;
 

@@ -36,19 +36,31 @@ resourcestring
 
 implementation
 
+uses
+  frmMain;
+
 {$R *.lfm}
 
 { TAccountSetForm }
 
 procedure TAccountSetForm.btOkClick(Sender: TObject);
 begin
-  if (edUsername.Text = '') or (edPassword.Text = '') then begin
-    MessageDlg(RS_CantBeEmpty, mtError, [mbOK], 0);
-    if edUsername.Text = '' then edUsername.SetFocus
-    else edPassword.SetFocus;
+  if (edUsername.Text = '') or (edPassword.Text = '') then
+  begin
+    CenteredMessageDlg(Self, RS_CantBeEmpty, mtError, [mbOK], 0);
+    if edUsername.Text = '' then
+    begin
+      edUsername.SetFocus;
+    end
+    else
+    begin
+      edPassword.SetFocus;
+    end;
   end
   else
+  begin
     ModalResult := mrOK;
+  end;
 end;
 
 procedure TAccountSetForm.ckShowPasswordEditingDone(Sender: TObject);

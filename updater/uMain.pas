@@ -233,8 +233,9 @@ end;
 procedure TDownloadThread.MainThreadErrorGetting;
 begin
   if not _NoError then
-    MessageDlg('Error', FErrorMessage,
-      mtError, [mbOK], 0);
+  begin
+    CenteredMessageDlg(MainForm, 'Error', FErrorMessage, mtError, [mbOK], 0);
+  end;
 end;
 
 procedure TDownloadThread.SockOnStatus(Sender: TObject; Reason: THookSocketReason;
@@ -653,7 +654,7 @@ begin
     end
     else
     begin
-      MessageDlg(Application.Title, RS_InvalidURL, mtError, [mbOK], 0);
+      CenteredMessageDlg(Self, Application.Title, RS_InvalidURL, mtError, [mbOK], 0);
       Self.Close;
     end;
   end;

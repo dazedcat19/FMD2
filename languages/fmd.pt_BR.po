@@ -246,6 +246,26 @@ msgstr ""
 "Escuro\n"
 "Claro"
 
+#: frmmain.rs_dialogconfirmation
+msgid "Confirmation"
+msgstr ""
+
+#: frmmain.rs_dialogcustom
+msgid "Message"
+msgstr ""
+
+#: frmmain.rs_dialogerror
+msgid "Error"
+msgstr ""
+
+#: frmmain.rs_dialoginformation
+msgid "Information"
+msgstr ""
+
+#: frmmain.rs_dialogwarning
+msgid "Warning"
+msgstr ""
+
 #: frmmain.rs_dlgcannotconnecttoserver
 msgid "Cannot connect to the server."
 msgstr "Não é possível conectar ao servidor."
