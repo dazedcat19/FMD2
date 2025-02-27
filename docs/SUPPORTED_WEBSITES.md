@@ -218,6 +218,7 @@
 | KumaScans | [![https://kumascans.com](https://img.shields.io/website?url=https://kumascans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kumascans.com)](https://kumascans.com) | - | - | - |
 | Kurumizaka | [![https://kurumizaka.online](https://img.shields.io/website?url=https://kurumizaka.online%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kurumizaka.online)](https://kurumizaka.online) | - | - | - |
 | LazyBoysScan | [![https://lazyboysscan.com](https://img.shields.io/website?url=https://lazyboysscan.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lazyboysscan.com)](https://lazyboysscan.com) | - | - | - |
+| LectorJPG | [![https://lectorjpg.com](https://img.shields.io/website?url=https://lectorjpg.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lectorjpg.com)](https://lectorjpg.com) | OK | 28.02.2025 | - |
 | LectorKNS | [![https://lectorkns.eyudud.net](https://img.shields.io/website?url=https://lectorkns.eyudud.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lectorkns.eyudud.net)](https://lectorkns.eyudud.net) | - | - | - |
 | LectorManga | [![https://lectormanga.com](https://img.shields.io/website?url=https://lectormanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lectormanga.com)](https://lectormanga.com) | - | - | - |
 | LectorMiau | [![https://lectormiau.com](https://img.shields.io/website?url=https://lectormiau.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lectormiau.com)](https://lectormiau.com) | - | - | - |
