@@ -37,7 +37,7 @@ resourcestring
 implementation
 
 uses
-  frmMain;
+  frmCustomMessageDlg;
 
 {$R *.lfm}
 

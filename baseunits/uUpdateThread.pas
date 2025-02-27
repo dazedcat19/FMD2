@@ -138,7 +138,7 @@ resourcestring
 implementation
 
 uses
-  frmMain, FMDVars, LuaWebsiteModuleHandler, Dialogs;
+  frmMain, frmCustomMessageDlg, FMDVars, LuaWebsiteModuleHandler, Dialogs;
 
 const
   CL_ProgressBarBaseLine = clBtnFace;

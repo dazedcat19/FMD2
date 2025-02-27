@@ -48,7 +48,7 @@ type
 implementation
 
 uses
-  frmMain, WebsiteModules, FMDVars;
+  frmMain, frmCustomMessageDlg, WebsiteModules, FMDVars;
 
 procedure TGetMangaInfosThread.MainThreadSyncInfos;
 begin

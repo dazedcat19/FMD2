@@ -51,7 +51,7 @@ resourcestring
 
 implementation
 
-uses FMDVars, LazFileUtils, frmMain;
+uses FMDVars, LazFileUtils, frmMain, frmCustomMessageDlg;
 
 function GetDBURL(const AName: String): String;
 begin

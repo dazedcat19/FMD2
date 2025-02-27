@@ -108,6 +108,31 @@ msgstr "Εντάξει"
 msgid "Username or password can't be empty!"
 msgstr "Το όνομα χρήστη ή ο κωδικός πρόσβασης δεν μπορεί να είναι κενά!"
 
+#: frmcustommessagedlg.rs_dialogconfirmation
+msgctxt "frmcustommessagedlg.rs_dialogconfirmation"
+msgid "Confirmation"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogcustom
+msgctxt "frmcustommessagedlg.rs_dialogcustom"
+msgid "Message"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogerror
+msgctxt "frmcustommessagedlg.rs_dialogerror"
+msgid "Error"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialoginformation
+msgctxt "frmcustommessagedlg.rs_dialoginformation"
+msgid "Information"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogwarning
+msgctxt "frmcustommessagedlg.rs_dialogwarning"
+msgid "Warning"
+msgstr ""
+
 #: frmimportfavorites.rs_importcompleted
 msgid "Import completed."
 msgstr "Η εισαγωγή ολοκληρώθηκε."
@@ -246,26 +271,6 @@ msgstr ""
 "Σύστημα\n"
 "Σκοτεινό\n"
 "Φωτεινό"
-
-#: frmmain.rs_dialogconfirmation
-msgid "Confirmation"
-msgstr ""
-
-#: frmmain.rs_dialogcustom
-msgid "Message"
-msgstr ""
-
-#: frmmain.rs_dialogerror
-msgid "Error"
-msgstr ""
-
-#: frmmain.rs_dialoginformation
-msgid "Information"
-msgstr ""
-
-#: frmmain.rs_dialogwarning
-msgid "Warning"
-msgstr ""
 
 #: frmmain.rs_dlgcannotconnecttoserver
 msgid "Cannot connect to the server."
@@ -761,6 +766,11 @@ msgstr "Λίστα Manga"
 msgid "Module list"
 msgstr "Λίστα ενοτήτων"
 
+#: tcustommessagedlg.caption
+msgctxt "tcustommessagedlg.caption"
+msgid "Custom Message Dialog Form"
+msgstr ""
+
 #: tformdroptarget.miaddtofavorites.caption
 msgctxt "tformdroptarget.miaddtofavorites.caption"
 msgid "Add to favorites"
@@ -811,10 +821,6 @@ msgstr ""
 
 #: tfrmdialogyn.lbmessage.caption
 msgid "lbMessage"
-msgstr ""
-
-#: tfrmmessagedlg.caption
-msgid "MessageDlgForm"
 msgstr ""
 
 #: timportfavorites.btcancel.caption

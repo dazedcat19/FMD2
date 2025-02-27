@@ -28,12 +28,6 @@ uses
   SimpleTranslator, httpsendthread, DateUtils, SimpleException, uCustomControls,
   uCustomControlsMultiLog;
 
-function CenteredMessageDlg(const AForm: TForm; const ACaption, AMsg: String; ADlgType: TMsgDlgType;
-  AButtons: TMsgDlgButtons; AHelpCtx: Longint = 0): TModalResult; overload;
-
-function CenteredMessageDlg(const AForm: TForm; const AMsg: String; ADlgType: TMsgDlgType;
-  AButtons: TMsgDlgButtons; AHelpCtx: Longint = 0): TModalResult; overload;
-
 type
 
   { TMainForm }
@@ -980,12 +974,6 @@ resourcestring
   RS_OlderThan6months = 'Older than 6 months';
   RS_Custom = 'Custom';
 
-  RS_DialogWarning = 'Warning';
-  RS_DialogError = 'Error';
-  RS_DialogInformation = 'Information';
-  RS_DialogConfirmation = 'Confirmation';
-  RS_DialogCustom = 'Message';
-
   RS_Import = 'Import';
   RS_Software = 'Software';
   RS_SoftwarePath = 'Path to the software (e.g. C:\MangaDownloader)';
@@ -1022,7 +1010,7 @@ uses
   frmImportFavorites, frmShutdownCounter, frmSelectDirectory,
   frmWebsiteSettings, WebsiteModules, uUpdateThread, FMDVars, RegExpr, sqlite3dyn, Clipbrd,
   ssl_openssl_lib, LazFileUtils, LazUTF8, webp, DBUpdater, pcre2, pcre2lib, dynlibs,
-  LuaWebsiteModules, LuaBase, uBackupSettings;
+  LuaWebsiteModules, LuaBase, uBackupSettings, frmCustomMessageDlg;
 
 var
   // thread for open db
@@ -1046,10 +1034,16 @@ begin
   begin
     Screen.UpdateMonitors;
     Screen.UpdateScreen;
+
     if Screen.MonitorCount < MainForm.Monitor.MonitorNum then
+    begin
       MainForm.DefaultMonitor := dmMainForm;
+    end;
+
     if (MainForm.Left > Screen.Width) or (MainForm.Top > Screen.Height) then
+    begin
       MainForm.MoveToDefaultPosition;
+    end;
   end;
   Result := CallWindowProc(PrevWndProc, Ahwnd, uMsg, WParam, LParam);
 end;
@@ -1059,54 +1053,19 @@ procedure ChangeAllCursor(const ParentControl: TWinControl; const Cur: TCursor);
 var
   i: Integer;
 begin
-  if ParentControl = nil then Exit;
+  if ParentControl = nil then
+  begin
+    Exit;
+  end;
+
   ParentControl.Cursor := Cur;
   if ParentControl.ControlCount > 0 then
+  begin
     for i := 0 to ParentControl.ControlCount - 1 do
+    begin
       ParentControl.Controls[i].Cursor := Cur;
-end;
-
-function CenteredMessageDlg(const AForm: TForm; const ACaption, AMsg: String; ADlgType: TMsgDlgType;
-  AButtons: TMsgDlgButtons; AHelpCtx: Longint = 0): TModalResult; overload;
-var
-  Dlg: TForm;
-begin
-  Dlg := CreateMessageDialog(AMsg, ADlgType, AButtons);
-  try
-    Dlg.Caption := ACaption;
-    Dlg.HelpContext := AHelpCtx;
-
-    // Calculate and set the dialog's position
-    Dlg.Position := poDesigned;
-    Dlg.Left := AForm.Left + (AForm.Width - Dlg.Width) div 2;
-    Dlg.Top := AForm.Top + (AForm.Height - Dlg.Height) div 2;
-
-    // Show the dialog and return the result
-    Result := Dlg.ShowModal;
-  finally
-    Dlg.Free;
+    end;
   end;
-end;
-
-// Overloaded function without caption
-function CenteredMessageDlg(const AForm: TForm; const AMsg: String; ADlgType: TMsgDlgType;
-  AButtons: TMsgDlgButtons; AHelpCtx: Longint = 0): TModalResult; overload;
-var
-  DefaultCaption: string;
-begin
-  // Generate a default caption based on the dialog type
-  case ADlgType of
-    mtWarning: DefaultCaption := RS_DialogWarning;
-    mtError: DefaultCaption := RS_DialogError;
-    mtInformation: DefaultCaption := RS_DialogInformation;
-    mtConfirmation: DefaultCaption := RS_DialogConfirmation;
-    mtCustom: DefaultCaption := RS_DialogCustom;
-  else
-    DefaultCaption := RS_DialogCustom;
-  end;
-
-  // Call the version with the caption
-  Result := CenteredMessageDlg(AForm, DefaultCaption, AMsg, ADlgType, AButtons, AHelpCtx);
 end;
 
 { TSearchDBThread }
@@ -1373,7 +1332,10 @@ begin
   AddVT(Self.vtOptionMangaSiteSelection);
 
   // logger
-  FormLogger := TFormLogger.Create(Self);
+  FormLogger := TFormLogger.Create(Self); 
+
+  // Custom Message Dialog
+  CustomMessageDlg := TCustomMessageDlg.Create(Self);
 
   // hint
   ShowHint := True;

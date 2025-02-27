@@ -107,6 +107,31 @@ msgstr "OK"
 msgid "Username or password can't be empty!"
 msgstr "Имя пользователя и пароль не могут быть пустыми!"
 
+#: frmcustommessagedlg.rs_dialogconfirmation
+msgctxt "frmcustommessagedlg.rs_dialogconfirmation"
+msgid "Confirmation"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogcustom
+msgctxt "frmcustommessagedlg.rs_dialogcustom"
+msgid "Message"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogerror
+msgctxt "frmcustommessagedlg.rs_dialogerror"
+msgid "Error"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialoginformation
+msgctxt "frmcustommessagedlg.rs_dialoginformation"
+msgid "Information"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogwarning
+msgctxt "frmcustommessagedlg.rs_dialogwarning"
+msgid "Warning"
+msgstr ""
+
 #: frmimportfavorites.rs_importcompleted
 msgid "Import completed."
 msgstr "Импорт завершен."
@@ -245,26 +270,6 @@ msgstr ""
 "Система\n"
 "Тёмная\n"
 "Светлая"
-
-#: frmmain.rs_dialogconfirmation
-msgid "Confirmation"
-msgstr ""
-
-#: frmmain.rs_dialogcustom
-msgid "Message"
-msgstr ""
-
-#: frmmain.rs_dialogerror
-msgid "Error"
-msgstr ""
-
-#: frmmain.rs_dialoginformation
-msgid "Information"
-msgstr ""
-
-#: frmmain.rs_dialogwarning
-msgid "Warning"
-msgstr ""
 
 #: frmmain.rs_dlgcannotconnecttoserver
 msgid "Cannot connect to the server."
@@ -767,6 +772,11 @@ msgstr "Список манги"
 msgid "Module list"
 msgstr "Список модулей"
 
+#: tcustommessagedlg.caption
+msgctxt "tcustommessagedlg.caption"
+msgid "Custom Message Dialog Form"
+msgstr ""
+
 #: tformdroptarget.miaddtofavorites.caption
 msgctxt "TFORMDROPTARGET.MIADDTOFAVORITES.CAPTION"
 msgid "Add to favorites"
@@ -817,10 +827,6 @@ msgstr ""
 
 #: tfrmdialogyn.lbmessage.caption
 msgid "lbMessage"
-msgstr ""
-
-#: tfrmmessagedlg.caption
-msgid "MessageDlgForm"
 msgstr ""
 
 #: timportfavorites.btcancel.caption

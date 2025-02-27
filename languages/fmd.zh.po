@@ -107,6 +107,31 @@ msgstr "确定"
 msgid "Username or password can't be empty!"
 msgstr "用户名或密码不能为空！"
 
+#: frmcustommessagedlg.rs_dialogconfirmation
+msgctxt "frmcustommessagedlg.rs_dialogconfirmation"
+msgid "Confirmation"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogcustom
+msgctxt "frmcustommessagedlg.rs_dialogcustom"
+msgid "Message"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogerror
+msgctxt "frmcustommessagedlg.rs_dialogerror"
+msgid "Error"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialoginformation
+msgctxt "frmcustommessagedlg.rs_dialoginformation"
+msgid "Information"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogwarning
+msgctxt "frmcustommessagedlg.rs_dialogwarning"
+msgid "Warning"
+msgstr ""
+
 #: frmimportfavorites.rs_importcompleted
 msgid "Import completed."
 msgstr "导入完成。"
@@ -245,26 +270,6 @@ msgstr ""
 "系统\n"
 "深色\n"
 "浅色"
-
-#: frmmain.rs_dialogconfirmation
-msgid "Confirmation"
-msgstr ""
-
-#: frmmain.rs_dialogcustom
-msgid "Message"
-msgstr ""
-
-#: frmmain.rs_dialogerror
-msgid "Error"
-msgstr ""
-
-#: frmmain.rs_dialoginformation
-msgid "Information"
-msgstr ""
-
-#: frmmain.rs_dialogwarning
-msgid "Warning"
-msgstr ""
 
 #: frmmain.rs_dlgcannotconnecttoserver
 msgid "Cannot connect to the server."
@@ -767,6 +772,11 @@ msgstr "漫画列表"
 msgid "Module list"
 msgstr "模块列表"
 
+#: tcustommessagedlg.caption
+msgctxt "tcustommessagedlg.caption"
+msgid "Custom Message Dialog Form"
+msgstr ""
+
 #: tformdroptarget.miaddtofavorites.caption
 msgctxt "TFORMDROPTARGET.MIADDTOFAVORITES.CAPTION"
 msgid "Add to favorites"
@@ -818,10 +828,6 @@ msgstr "提示窗"
 #: tfrmdialogyn.lbmessage.caption
 msgid "lbMessage"
 msgstr "lbMessage"
-
-#: tfrmmessagedlg.caption
-msgid "MessageDlgForm"
-msgstr ""
 
 #: timportfavorites.btcancel.caption
 msgctxt "TIMPORTFAVORITES.BTCANCEL.CAPTION"

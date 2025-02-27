@@ -46,7 +46,7 @@ resourcestring
 
 implementation
 
-uses FMDVars, frmMain;
+uses FMDVars, frmMain, frmCustomMessageDlg;
 
 { TSelfUpdaterThread }
 

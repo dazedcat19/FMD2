@@ -184,7 +184,7 @@ resourcestring
 implementation
 
 uses
-  frmMain, frmNewChapter, FMDVars, DateUtils;
+  frmMain, frmCustomMessageDlg, frmNewChapter, FMDVars, DateUtils;
 
 { TFavoriteContainer }
 

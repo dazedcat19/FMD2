@@ -47,7 +47,7 @@ resourcestring
 implementation
 
 uses
-  frmMain, uSilentThread, FMDVars;
+  frmMain, frmCustomMessageDlg, uSilentThread, FMDVars;
 
 {$R *.lfm}
 

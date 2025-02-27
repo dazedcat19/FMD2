@@ -4191,7 +4191,7 @@ object MainForm: TMainForm
                 Width = 80
                 Enabled = False
                 TabOrder = 1
-                TextHint = 'Unicode Char'
+                TextHint = 'Character'
               end
             end
             object lbDefaultDownloadPath: TLabel
