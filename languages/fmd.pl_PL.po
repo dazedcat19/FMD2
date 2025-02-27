@@ -802,6 +802,10 @@ msgstr ""
 msgid "lbMessage"
 msgstr ""
 
+#: tfrmmessagedlg.caption
+msgid "MessageDlgForm"
+msgstr ""
+
 #: timportfavorites.btcancel.caption
 msgctxt "TIMPORTFAVORITES.BTCANCEL.CAPTION"
 msgid "Cancel"
@@ -1499,7 +1503,7 @@ msgid "Search title..."
 msgstr "Szukaj tytułu ..."
 
 #: tmainform.edoptionchangeunicodecharacterstr.texthint
-msgid "Unicode Char"
+msgid "Character"
 msgstr ""
 
 #: tmainform.edoptionchaptercustomrename.texthint

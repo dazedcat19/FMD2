@@ -3031,7 +3031,7 @@ procedure TMainForm.btCheckLatestVersionClick(Sender: TObject);
 begin
   if Assigned(CheckUpdateThread) or Assigned(SelfUpdaterThread) then
   begin
-    CenteredMessageDlg(Self, RS_DlgUpdaterIsRunning, mtInformation, [mbYes], 0)
+    CenteredMessageDlg(Self, RS_DlgUpdaterIsRunning, mtInformation, [mbOk], 0)
   end
   else
   begin
@@ -3743,7 +3743,7 @@ begin
     end;
     if (in_list_count <> 0) and (in_list_count = cbSelectManga.Items.Count) then
     begin
-      CenteredMessageDlg(Self, RS_DlgUpdateListCheckIsRunning, mtInformation, [mbYes], 0);
+      CenteredMessageDlg(Self, RS_DlgUpdateListCheckIsRunning, mtInformation, [mbOk], 0);
     end;
   end;
 end;
@@ -3786,7 +3786,7 @@ begin
     for i := 0 to updateList.websites.Count-1 do
       if m = updateList.websites.Objects[i] then
       begin
-        CenteredMessageDlg(Self, RS_DlgUpdateListCheckIsRunning, mtInformation, [mbYes], 0);
+        CenteredMessageDlg(Self, RS_DlgUpdateListCheckIsRunning, mtInformation, [mbOk], 0);
         Exit;
       end;
     updateList.websites.AddObject(m.Name, m);
@@ -6157,7 +6157,7 @@ begin
   begin
     tmAnimateMangaInfo.Enabled := False;
     pbWait.Visible := False;
-    CenteredMessageDlg(Self, RS_DlgURLNotSupport, mtInformation, [mbYes], 0);
+    CenteredMessageDlg(Self, RS_DlgURLNotSupport, mtInformation, [mbOk], 0);
     Exit;
   end;
 

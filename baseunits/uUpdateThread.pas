@@ -435,7 +435,7 @@ end;
 procedure TUpdateListManagerThread.DlgReport;
 begin
   CenteredMessageDlg(MainForm, Format(RS_DlgHasNewManga, [module.Name, tempDataProcess.RecordCount]),
-    mtInformation, [mbYes], 0);
+    mtInformation, [mbOK], 0);
 end;
 
 procedure TUpdateListManagerThread.CheckOut(const alimit: Integer; const acs: TCheckStyleType);

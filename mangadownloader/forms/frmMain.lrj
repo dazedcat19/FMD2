@@ -234,7 +234,7 @@
 {"hash":24397,"name":"tmainform.lboptionfilenamecustomrenamehint.caption","sourcebytes":[91,63,93],"value":"[?]"},
 {"hash":222491525,"name":"tmainform.edoptionfilenamecustomrename.texthint","sourcebytes":[67,117,115,116,111,109,32,114,101,110,97,109,101],"value":"Custom rename"},
 {"hash":46419594,"name":"tmainform.lboptionfilenamecustomrename.caption","sourcebytes":[70,105,108,101,110,97,109,101,58],"value":"Filename:"},
-{"hash":263218386,"name":"tmainform.edoptionchangeunicodecharacterstr.texthint","sourcebytes":[85,110,105,99,111,100,101,32,67,104,97,114],"value":"Unicode Char"},
+{"hash":143123234,"name":"tmainform.edoptionchangeunicodecharacterstr.texthint","sourcebytes":[67,104,97,114,97,99,116,101,114],"value":"Character"},
 {"hash":1010826,"name":"tmainform.lbdefaultdownloadpath.caption","sourcebytes":[67,104,111,111,115,101,32,116,104,101,32,100,101,102,97,117,108,116,32,100,111,119,110,108,111,97,100,32,112,97,116,104,58],"value":"Choose the default download path:"},
 {"hash":24397,"name":"tmainform.lboptionpdfqualityhint.caption","sourcebytes":[91,63,93],"value":"[?]"},
 {"hash":265971401,"name":"tmainform.seoptionpdfquality.hint","sourcebytes":[49,48,48,32,61,32,70,108,97,116,101,69,110,99,111,100,101,32,40,108,111,115,115,108,101,115,115,41,44,32,108,111,119,101,114,32,61,32,68,67,84,69,110,99,111,100,101,32,40,108,111,115,115,121,41],"value":"100 = FlateEncode (lossless), lower = DCTEncode (lossy)"},

@@ -290,7 +290,7 @@ begin
   end
   else
   begin
-    CenteredMessageDlg(Self, RS_ImportCompleted, mtConfirmation, [mbYes], 0);
+    CenteredMessageDlg(Self, RS_ImportCompleted, mtConfirmation, [mbOk], 0);
   end;
 end;
 

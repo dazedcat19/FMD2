@@ -158,7 +158,7 @@ end;
 
 procedure TGetMangaInfosThread.MainThreadShowCannotGetInfo;
 begin
-  CenteredMessageDlg(MainForm, RS_DlgCannotGetMangaInfo, mtInformation, [mbYes], 0);
+  CenteredMessageDlg(MainForm, RS_DlgCannotGetMangaInfo, mtInformation, [mbOk], 0);
   MainForm.rmInformation.Clear;
   MainForm.tmAnimateMangaInfo.Enabled := False;
   MainForm.pbWait.Visible := False;
