@@ -152,6 +152,7 @@ var
 
 resourcestring
   RS_GitHubConnectFail = 'Failed to connect to GitHub API for latest module updates.'#13#10'Please try again later.';
+  RS_GitHubRateStats = 'GitHub API core rate - call limit: %d, remaining calls: %d, used calls: %d, limit refresh: %s';
   RS_CheckLocalModules = 'Checking local modules...';
   RS_AwaitingProceed = 'Awaiting permission to proceed...';
   RS_DeletingFlaggedModules = 'Deleting flagged modules...';
@@ -775,6 +776,12 @@ begin
 
   LoadingProgressBar;
   UpdateStatusText(RS_GitHubConnecting);
+
+  if FGitHubRepo.CheckRateLimited then
+  begin
+    Synchronize(@SyncGitHubConnectFail);
+  end;
+
   if FGitHubRepo.GetUpdate then
   begin
     FReposUp := TLuaModulesRepos.Create;
@@ -787,7 +794,6 @@ begin
 
   if FReposUp = nil then
   begin
-    Synchronize(@SyncGitHubConnectFail);
     FReposUp := FRepos.Clone;
   end;
 

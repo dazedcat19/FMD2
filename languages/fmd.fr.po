@@ -195,6 +195,11 @@ msgstr ""
 msgid "Connecting to GitHub..."
 msgstr ""
 
+#: frmluamodulesupdater.rs_githubratestats
+#, object-pascal-format
+msgid "GitHub API core rate - call limit: %d, remaining calls: %d, used calls: %d, limit refresh: %s"
+msgstr ""
+
 #: frmluamodulesupdater.rs_modulesupdatedrestart
 msgid "Modules updated, restart now?"
 msgstr "Modules mis à jour, souhaitez-vous redémarrer maintenant ?"

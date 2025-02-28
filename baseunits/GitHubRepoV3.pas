@@ -5,7 +5,7 @@ unit GitHubRepoV3;
 interface
 
 uses
-  Classes, SysUtils, fgl, httpsendthread, BaseThread, fpjson;
+  Classes, SysUtils, fgl, httpsendthread, BaseThread, fpjson, MultiLog, DateUtils;
 
 type
 { TGitHubRepo }
@@ -47,12 +47,13 @@ type
     function GetLastCommitMessage(const FRepoPath: String): String;
     function GetTree: Boolean;
     function GetUpdate: Boolean;
+    function CheckRateLimited: Boolean;
     function GetDownloadURL(const AName: String): String;
   end;
 
 implementation
 
-uses jsonConf, jsonini, uBaseUnit;
+uses jsonConf, jsonini, uBaseUnit, frmLuaModulesUpdater;
 
 function AppendURLDelim(const URL: String): String;
 begin
@@ -293,11 +294,49 @@ begin
   Result := False;
   old_commit_sha := last_commit_sha;
   new_commit_sha := GetLastCommit;
+
   if (new_commit_sha <> '') and (new_commit_sha <> old_commit_sha) then
   begin
     Result := GetTree;
   end;
+
   FDirty := Result;
+end;
+
+function TGitHubRepo.CheckRateLimited: Boolean;
+var
+  s: String;
+  d: TJSONData;
+  coreLimit, coreRemaining, coreReset, coreUsed: Integer;
+  convertedLocalTime: TDateTime;
+begin
+  Result := True;
+  HTTP.ResetBasic;
+  s := AppendURLDelim(api_url) + 'rate_limit';
+
+  if HTTP.GET(s) then
+  begin
+    d := GetJSON(HTTP.Document);
+    if Assigned(d) then
+    begin
+      try
+        if d.JSONType = jtObject then
+        begin
+          coreLimit := TJSONObject(d).FindPath('resources.core.limit').AsInteger;
+          coreRemaining := TJSONObject(d).FindPath('resources.core.remaining').AsInteger;
+          coreReset := TJSONObject(d).FindPath('resources.core.reset').AsInteger;
+          coreUsed := TJSONObject(d).FindPath('resources.core.used').AsInteger;
+
+          convertedLocalTime := UniversalTimeToLocal(UnixToDateTime(coreReset));
+          Logger.Send(Self.ClassName + ': ' + Format(RS_GitHubRateStats, [coreLimit, coreRemaining, coreUsed, DateTimeToStr(convertedLocalTime)]));
+
+          Result := coreRemaining = 0;
+        end;
+      except
+      end;
+      d.Free;
+    end;
+  end;
 end;
 
 function TGitHubRepo.GetDownloadURL(const AName: String): String;
