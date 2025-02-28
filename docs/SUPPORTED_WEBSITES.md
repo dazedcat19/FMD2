@@ -68,7 +68,7 @@
 | ComicDom | [![https://comicdom.org](https://img.shields.io/website?url=https://comicdom.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comicdom.org)](https://comicdom.org) | - | - | - |
 | ComicExtra | [![https://www.comicextra.me](https://img.shields.io/website?url=https://www.comicextra.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.comicextra.me)](https://www.comicextra.me) | - | - | - |
 | ComicFx | [![https://comicfx.net](https://img.shields.io/website?url=https://comicfx.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comicfx.net)](https://comicfx.net) | - | - | - |
-| ComicK | [![https://comick.io](https://img.shields.io/website?url=https://comick.io%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comick.io)](https://comick.io) | - | - | - |
+| ComicK | [![https://comick.io](https://img.shields.io/website?url=https://comick.io%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comick.io)](https://comick.io) | OK | 01.03.2025 | - |
 | ComicKiba | [![https://comickiba.com](https://img.shields.io/website?url=https://comickiba.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comickiba.com)](https://comickiba.com) | - | - | - |
 | ComickTop | [![https://comick.top](https://img.shields.io/website?url=https://comick.top%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comick.top)](https://comick.top) | - | - | - |
 | Comico | [![http://www.comico.jp](https://img.shields.io/website?url=http://www.comico.jp%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.comico.jp)](http://www.comico.jp) | - | - | - |

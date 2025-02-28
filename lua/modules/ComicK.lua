@@ -91,7 +91,6 @@ function GetInfo()
 		while true do
 			if HTTP.GET(API_URL .. '/comic/' .. mangaId .. '/chapters?page=' .. tostring(page) .. langparam) then
 				local x = CreateTXQuery(HTTP.Document)
-				if x.XPathString('json(*).chapters().title') == '' then break end
 				local chapters = x.XPath('json(*).chapters()')
 				for ic = 1, chapters.Count do
 					local ignore = false
@@ -99,12 +98,11 @@ function GetInfo()
 					-- Ignore chapter if it has delayed time
 					local pa = x.XPathString('json(*).chapters()[' .. ic .. '].publish_at')
 					if pa ~= 'null' then
-						ts = parse_iso8601(pa)
+						if parse_iso8601(pa) >= os.time(os.date('!*t')) then
+							ignore = true
+						end
 					end
-					if ts >= os.time(os.date('!*t')) then
-						ignore = true
-					end
-					
+
 					local groupids = x.XPath('json(*).chapters()[' .. ic .. '].md_chapters_groups().md_groups.title')
 					if groupids.Count == 0 then groupids = x.XPath('json(*).chapters()[' .. ic .. '].group_name()') end
 					local groups = {}
@@ -135,6 +133,10 @@ function GetInfo()
 					end
 				end
 				page = page + 1
+				pages = tonumber(math.ceil(x.XPathString('json(*).total') / x.XPathString('json(*).limit'))) or 1
+				if page > pages then
+					break
+				end
 			else
 				break
 			end
