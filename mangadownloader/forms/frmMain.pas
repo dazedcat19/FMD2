@@ -28,7 +28,6 @@ uses
   SimpleTranslator, httpsendthread, DateUtils, SimpleException, uCustomControls,
   uCustomControlsMultiLog;
 
-
 type
 
   { TMainForm }
@@ -763,6 +762,12 @@ type
 
     procedure AddChapterNameToList;
 
+    // Check and set path for long path compatibilty
+    function CheckLongNamePaths(APath: String): String;
+
+    // Trim path of any spaces in folder names
+    function TrimPath(APath: String): String;
+
     // Create silent thread
     procedure AddSilentThread(URL: string; MetaDataType: TMetaDataType); overload;
     procedure AddSilentThread(URL: string); overload;
@@ -1005,7 +1010,7 @@ uses
   frmImportFavorites, frmShutdownCounter, frmSelectDirectory,
   frmWebsiteSettings, WebsiteModules, uUpdateThread, FMDVars, RegExpr, sqlite3dyn, Clipbrd,
   ssl_openssl_lib, LazFileUtils, LazUTF8, webp, DBUpdater, pcre2, pcre2lib, dynlibs,
-  LuaWebsiteModules, LuaBase, uBackupSettings;
+  LuaWebsiteModules, LuaBase, uBackupSettings, frmCustomMessageDlg;
 
 var
   // thread for open db
@@ -1029,10 +1034,16 @@ begin
   begin
     Screen.UpdateMonitors;
     Screen.UpdateScreen;
+
     if Screen.MonitorCount < MainForm.Monitor.MonitorNum then
+    begin
       MainForm.DefaultMonitor := dmMainForm;
+    end;
+
     if (MainForm.Left > Screen.Width) or (MainForm.Top > Screen.Height) then
+    begin
       MainForm.MoveToDefaultPosition;
+    end;
   end;
   Result := CallWindowProc(PrevWndProc, Ahwnd, uMsg, WParam, LParam);
 end;
@@ -1042,11 +1053,19 @@ procedure ChangeAllCursor(const ParentControl: TWinControl; const Cur: TCursor);
 var
   i: Integer;
 begin
-  if ParentControl = nil then Exit;
+  if ParentControl = nil then
+  begin
+    Exit;
+  end;
+
   ParentControl.Cursor := Cur;
   if ParentControl.ControlCount > 0 then
+  begin
     for i := 0 to ParentControl.ControlCount - 1 do
+    begin
       ParentControl.Controls[i].Cursor := Cur;
+    end;
+  end;
 end;
 
 { TSearchDBThread }
@@ -1313,7 +1332,10 @@ begin
   AddVT(Self.vtOptionMangaSiteSelection);
 
   // logger
-  FormLogger := TFormLogger.Create(Self);
+  FormLogger := TFormLogger.Create(Self); 
+
+  // Custom Message Dialog
+  CustomMessageDlg := TCustomMessageDlg.Create(Self);
 
   // hint
   ShowHint := True;
@@ -1370,7 +1392,7 @@ begin
   if (END_SESSION=False) and
     (cbOptionShowQuitDialog.Checked and (DoAfterFMD = DO_NOTHING) and (not OptionRestartFMD)) then
   begin
-    if MessageDlg('', RS_DlgQuit, mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
+    if CenteredMessageDlg(Self, RS_DlgQuit, mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
     begin
       Logger.Send(Self.ClassName+'.FormClose aborted!');
       CloseAction := caNone;
@@ -2170,7 +2192,7 @@ begin
   end;
   if cbOptionShowDeleteTaskDialog.Checked then
   begin
-    if MessageDlg('', RS_DlgRemoveTask, mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
+    if CenteredMessageDlg(Self, RS_DlgRemoveTask, mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
     begin
       Exit;
     end;
@@ -2611,7 +2633,7 @@ begin
         FillSaveTo;
         OverrideSaveTo(Modules.LocateModule(mangaInfo.ModuleID));
       end;
-      s := edSaveTo.Text;
+      s := TrimPath(edSaveTo.Text);
       if OptionGenerateMangaFolder then
       begin
         sRename := CustomRename(
@@ -2729,7 +2751,7 @@ begin
       FillSaveTo;
       OverrideSaveTo(Modules.LocateModule(mangaInfo.ModuleID));
     end;
-    s := edSaveTo.Text;
+    s := TrimPath(edSaveTo.Text);
     if OptionGenerateMangaFolder then
     begin
       sRename := CustomRename(
@@ -2834,9 +2856,11 @@ end;
 
 procedure TMainForm.FMDInstanceReceiveMsg(Sender: TObject);
 begin
-  MessageDlg(Application.Title, RS_FMDAlreadyRunning, mtWarning, [mbOK], 0);
+  CenteredMessageDlg(Self, Application.Title, RS_FMDAlreadyRunning, mtWarning, [mbOK], 0);
   if WindowState = wsMinimized then
+  begin
     WindowState := wsNormal;
+  end;
   Show;
   BringToFront;
 end;
@@ -2968,9 +2992,13 @@ end;
 procedure TMainForm.btCheckLatestVersionClick(Sender: TObject);
 begin
   if Assigned(CheckUpdateThread) or Assigned(SelfUpdaterThread) then
-    MessageDlg('', RS_DlgUpdaterIsRunning, mtInformation, [mbYes], 0)
+  begin
+    CenteredMessageDlg(Self, RS_DlgUpdaterIsRunning, mtInformation, [mbOk], 0)
+  end
   else
+  begin
     CheckUpdateThread := TCheckUpdateThread.Create;
+  end;
 end;
 
 procedure TMainForm.btClearLogFileClick(Sender: TObject);
@@ -2992,17 +3020,19 @@ end;
 
 procedure TMainForm.btDownloadSplitClick(Sender: TObject);
 var
-  s:String='';
-  c:Integer=-1;
+  s:String = '';
+  c:Integer = -1;
 begin
-  if InputQuery(RS_DlgSplitDownload,RS_DlgDownloadCount,s) and (s<>'') then
+  if InputQuery(RS_DlgSplitDownload, RS_DlgDownloadCount, s) and (s <> '') then
   begin
-    c:=StrToIntDef(s,-1);
-    if c<=0 then
-      MessageDlg(RS_WrongInput,mtError,[mbOK],0)
+    c := StrToIntDef(s,-1);
+    if c <= 0 then
+    begin
+      CenteredMessageDlg(Self, RS_WrongInput, mtError, [mbOK], 0)
+    end
     else
     begin
-      btDownload.Tag:=c;
+      btDownload.Tag := c;
       btDownloadClick(btDownload);
     end;
   end;
@@ -3385,12 +3415,12 @@ begin
   if vtFavorites.SelectedCount = 0 then Exit;
   if FavoriteManager.isRunning then
   begin
-    MessageDlg('', RS_DlgFavoritesCheckIsRunning, mtInformation, [mbOK], 0);
+    CenteredMessageDlg(Self, RS_DlgFavoritesCheckIsRunning, mtInformation, [mbOK], 0);
     Exit;
   end;
   if cbOptionShowDeleteTaskDialog.Checked then
   begin
-    if MessageDlg('', RS_DlgRemoveFavorite, mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
+    if CenteredMessageDlg(Self, RS_DlgRemoveFavorite, mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
     begin
       Exit;
     end;
@@ -3449,7 +3479,7 @@ begin
   if vtFavorites.SelectedCount = 0 then Exit;
   if FavoriteManager.isRunning then
   begin
-    MessageDlg('', RS_DlgFavoritesCheckIsRunning, mtInformation, [mbYes, mbNo], 0);
+    CenteredMessageDlg(Self, RS_DlgFavoritesCheckIsRunning, mtInformation, [mbYes, mbNo], 0);
     Exit;
   end;
   s := '';
@@ -3607,9 +3637,11 @@ procedure TMainForm.mnDownload1ClickClick(Sender: TObject);
 begin
   if cbSelectManga.Items.Count = 0 then Exit;
   if DBUpdaterThread <> nil then
+  begin
     DBUpdaterThread.Add(cbSelectManga.Items)
+  end
   else
-  if MessageDlg('', RS_DlgUpdaterWantToUpdateDB, mtInformation, [mbYes, mbNo], 0) = mrYes then
+  if CenteredMessageDlg(Self, RS_DlgUpdaterWantToUpdateDB, mtInformation, [mbYes, mbNo], 0) = mrYes then
   begin
     DBUpdaterThread := TDBUpdaterThread.Create;
     DBUpdaterThread.Items.Assign(cbSelectManga.Items);
@@ -3667,10 +3699,14 @@ begin
           Break;
         end;
       if in_list = False then
+      begin
         updateList.websites.AddObject(m.Name, m);
+      end;
     end;
     if (in_list_count <> 0) and (in_list_count = cbSelectManga.Items.Count) then
-      MessageDlg('', RS_DlgFavoritesCheckIsRunning, mtInformation, [mbYes], 0);
+    begin
+      CenteredMessageDlg(Self, RS_DlgUpdateListCheckIsRunning, mtInformation, [mbOk], 0);
+    end;
   end;
 end;
 
@@ -3678,9 +3714,10 @@ procedure TMainForm.mnUpdateDownFromServerClick(Sender: TObject);
 begin
   if cbSelectManga.ItemIndex < 0 then Exit;
   if DBUpdaterThread <> nil then
+  begin
     DBUpdaterThread.Add(TModuleContainer(cbSelectManga.Items.Objects[cbSelectManga.ItemIndex]))
-  else
-  if MessageDlg('', RS_DlgUpdaterWantToUpdateDB, mtInformation, [mbYes, mbNo], 0) = mrYes then
+  end
+  else if CenteredMessageDlg(Self, RS_DlgUpdaterWantToUpdateDB, mtInformation, [mbYes, mbNo], 0) = mrYes then
   begin
     DBUpdaterThread := TDBUpdaterThread.Create;
     DBUpdaterThread.Add(TModuleContainer(cbSelectManga.Items.Objects[cbSelectManga.ItemIndex]));
@@ -3693,7 +3730,10 @@ var
   m: TModuleContainer;
   i: Integer;
 begin
-  if cbSelectManga.ItemIndex < 0 then Exit;
+  if cbSelectManga.ItemIndex < 0 then
+  begin
+    Exit;
+  end;
   m := TModuleContainer(cbSelectManga.Items.Objects[cbSelectManga.ItemIndex]);
   if (not isUpdating) then
   begin
@@ -3708,7 +3748,7 @@ begin
     for i := 0 to updateList.websites.Count-1 do
       if m = updateList.websites.Objects[i] then
       begin
-        MessageDlg('', RS_DlgFavoritesCheckIsRunning, mtInformation, [mbYes], 0);
+        CenteredMessageDlg(Self, RS_DlgUpdateListCheckIsRunning, mtInformation, [mbOk], 0);
         Exit;
       end;
     updateList.websites.AddObject(m.Name, m);
@@ -3718,12 +3758,18 @@ end;
 procedure TMainForm.miDownloadDeleteCompletedClick(Sender: TObject);
 begin
   if cbOptionShowDeleteTaskDialog.Checked then
-    if MessageDlg('', RS_DlgRemoveFinishTasks, mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
+  begin
+    if CenteredMessageDlg(Self, RS_DlgRemoveFinishTasks, mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
+    begin
       Exit;
+    end;
+  end;
 
   DLManager.RemoveAllFinishedTasks;
   if Sender <> nil then
-  UpdateVtDownload;
+  begin
+    UpdateVtDownload;
+  end;
   // the reason we put it in here instead of in DLManager because of the size of
   // download list will change during this method
 end;
@@ -3772,7 +3818,11 @@ procedure TMainForm.miDownloadStopClick(Sender: TObject);
 var
   xNode: PVirtualNode;
 begin
-  if vtDownload.SelectedCount = 0 then Exit;
+  if vtDownload.SelectedCount = 0 then
+  begin
+    Exit;
+  end;
+
   DLManager.Lock;
   try
     xNode := vtDownload.GetFirstSelected();
@@ -3792,11 +3842,24 @@ var
   xNode, deleteNode: PVirtualNode;
   deleteCount: Integer;
 begin
-  if vtMangaList.SelectedCount = 0 then Exit;
-  if dataProcess.Table.Active = False then Exit;
+  if vtMangaList.SelectedCount = 0 then
+  begin
+    Exit;
+  end;
+
+  if dataProcess.Table.Active = False then
+  begin
+    Exit;
+  end;
+
   if cbOptionShowDeleteTaskDialog.Checked then
-    if MessageDlg('', RS_DlgRemoveItem, mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
+  begin
+    if CenteredMessageDlg(Self, RS_DlgRemoveItem, mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
+    begin
       Exit;
+    end;
+  end;
+
   try
     vtMangaList.BeginUpdate;
     deleteCount := 0;
@@ -3835,16 +3898,23 @@ var
   mBtns: TMsgDlgButtons;
   data: PMangaInfoData;
 begin
-  if vtMangaList.SelectedCount = 0 then Exit;
+  if vtMangaList.SelectedCount = 0 then
+  begin
+    Exit;
+  end;
 
   SilentThreadManager.BeginAdd;
   try
     YesAll := False;
     NoAll := False;
     if vtMangaList.SelectedCount = 1 then
-      mBtns := [mbYes, mbNo]
+    begin
+      mBtns := [mbYes, mbNo];
+    end
     else
+    begin
       mBtns := [mbYes, mbNo, mbYesToAll, mbNoToAll];
+    end;
 
     xNode := vtMangaList.GetFirstSelected;
     while Assigned(xNode) do
@@ -3852,20 +3922,27 @@ begin
       data := vtMangaList.GetNodeData(xNode);
       AllowedToCreate := True;
       if DLManager.Count > 0 then
+      begin
         for i := 0 to DLManager.Count - 1 do
+        begin
           if data^.Title = DLManager.Items[i].DownloadInfo.title then
           begin
             if YesAll then
+            begin
               AllowedToCreate := True
+            end
             else if NoAll then
+            begin
               AllowedToCreate := False
+            end
             else
             begin
               if OptionShowDownloadsTabOnNewTasks then
+              begin
                 pcMain.ActivePage := tsDownload;
-              mResult := MessageDlg('', DLManager.Items[i].DownloadInfo.title +
-                LineEnding + LineEnding + RS_DlgTitleExistInDLlist, mtConfirmation,
-                  mBtns, 0);
+              end;
+              mResult := CenteredMessageDlg(Self, DLManager.Items[i].DownloadInfo.title +
+                LineEnding + LineEnding + RS_DlgTitleExistInDLlist, mtConfirmation, mBtns, 0);
               case mResult of
                 mrYes : AllowedToCreate := True;
                 mrNo  : AllowedToCreate := False;
@@ -3885,9 +3962,13 @@ begin
             end;
             Break;
           end;
-		  
+        end;
+      end;
+
       if AllowedToCreate then
+      begin
         SilentThreadManager.Add(MD_DownloadAll, TModuleContainer(data^.Module), data^.Title, data^.Link);
+      end;
       xNode := vtMangaList.GetNextSelected(xNode);
     end;
   except
@@ -5132,6 +5213,39 @@ begin
   AddSilentThread(URL,mt);
 end;
 
+function TMainForm.CheckLongNamePaths(APath: String): String;
+begin
+  if cbOptionEnableLongNamePaths.Checked then
+  begin
+    if Pos('\\?\', APath) = 0 then
+      APath := '\\?\' + APath;
+  end;
+
+  Result := APath;
+end;
+
+function TMainForm.TrimPath(APath: String): String;
+var
+  PathList: TStringList;
+  i: Integer;
+begin
+  PathList := TStringList.Create;
+  try
+    PathList.Delimiter := '\';  // Split path by "\"
+    PathList.StrictDelimiter := True;  // Prevent ignoring empty parts
+    PathList.DelimitedText := APath;
+
+    // Trim spaces from each folder, except for the root (C:, D:, etc.)
+    for i := 1 to PathList.Count - 1 do
+      PathList[i] := TrimRight(PathList[i]);
+
+    // Reconstruct the cleaned path
+    Result := PathList.DelimitedText.Replace('"', '');  // Remove added quotes
+  finally
+    PathList.Free;
+  end;
+end;
+
 procedure TMainForm.AddTextToInfo(const ATitle, AValue: String);
 var
   p: Integer;
@@ -5164,9 +5278,15 @@ end;
 procedure TMainForm.FillSaveTo;
 begin
   if LastUserPickedSaveTo = '' then
+  begin
     LastUserPickedSaveTo := Trim(settingsfile.ReadString('saveto', 'SaveTo', DEFAULT_PATH));
+  end;
+
   if LastUserPickedSaveTo = '' then
+  begin
     LastUserPickedSaveTo := DEFAULT_PATH;
+  end;
+
   edSaveTo.Text := LastUserPickedSaveTo;
 end;
 
@@ -5931,37 +6051,49 @@ end;
 procedure TMainForm.edOptionDefaultPathButtonClick(Sender: TObject);
 begin
   with TSelectDirectoryDialog.Create(nil) do
+  begin
     try
-      InitialDir := edOptionDefaultPath.Text;
+      InitialDir := TrimPath(edOptionDefaultPath.Text);
       if Execute then
+      begin
         edOptionDefaultPath.Text := FileName;
+      end;
     finally
       Free;
     end;
+  end;
 end;
 
 procedure TMainForm.edOptionExternalPathButtonClick(Sender: TObject);
 begin
   with TOpenDialog.Create(nil) do
+  begin
     try
       InitialDir := ExtractFileDir(edOptionExternalPath.Text);
       if Execute then
+      begin
         edOptionExternalPath.Text := FileName;
+      end;
     finally
       Free;
     end;
+  end;
 end;
 
 procedure TMainForm.edSaveToButtonClick(Sender: TObject);
 begin
   with TSelectDirectoryDialog.Create(nil) do
+  begin
     try
-      InitialDir := edSaveTo.Text;
+      InitialDir := TrimPath(edSaveTo.Text);
       if Execute then
+      begin
         edSaveTo.Text := FileName;
+      end;
     finally
       Free;
     end;
+  end;
 end;
 
 procedure TMainForm.edURLButtonClick(Sender: TObject);
@@ -5987,7 +6119,7 @@ begin
   begin
     tmAnimateMangaInfo.Enabled := False;
     pbWait.Visible := False;
-    MessageDlg('', RS_DlgURLNotSupport, mtInformation, [mbYes], 0);
+    CenteredMessageDlg(Self, RS_DlgURLNotSupport, mtInformation, [mbOk], 0);
     Exit;
   end;
 
@@ -5999,10 +6131,13 @@ begin
   if (ssCtrl in Shift) and (ssShift in Shift) then
   begin
     if Key = VK_V then
-      medURLPasteandgoClick(medURLPasteandgo)
-    else
-    if Key = VK_C then
+    begin
+      medURLPasteandgoClick(medURLPasteandgo);
+    end
+    else if Key = VK_C then
+    begin
       Clipboard.AsText := edURL.Text;
+    end;
     Key := 0;
   end;
 end;
@@ -6010,7 +6145,9 @@ end;
 procedure TMainForm.UpdateVtChapter;
 begin
   if clbChapterList.RootNodeCount = Length(ChapterList) then
-    clbChapterList.Repaint
+  begin
+    clbChapterList.Repaint;
+  end
   else
   begin
     clbChapterList.BeginUpdate;
@@ -6027,7 +6164,9 @@ end;
 procedure TMainForm.UpdateVtFavorites;
 begin
   if vtFavorites.RootNodeCount = FavoriteManager.Items.Count then
-    vtFavorites.Repaint
+  begin
+    vtFavorites.Repaint;
+  end
   else
   begin
     vtFavorites.BeginUpdate;
@@ -6037,17 +6176,25 @@ begin
   end;
 
   if rbFavoritesShowEnabled.Checked then
-    rbFavoritesShowEnabledChange(rbFavoritesShowEnabled)
+  begin
+    rbFavoritesShowEnabledChange(rbFavoritesShowEnabled);
+  end
   else if rbFavoritesShowDisabled.Checked then
+  begin
     rbFavoritesShowDisabledChange(rbFavoritesShowDisabled);
+  end;
 end;
 
 procedure TMainForm.UpdateVtMangaListFilterStatus;
 begin
   if dataProcess.Filtered then
-    lbMode.Caption := Format(RS_ModeFiltered, [dataProcess.RecordCount])
+  begin
+    lbMode.Caption := Format(RS_ModeFiltered, [dataProcess.RecordCount]);
+  end
   else
+  begin
     lbMode.Caption := Format(RS_ModeAll, [dataProcess.RecordCount]);
+  end;
 end;
 
 procedure TMainForm.LoadFormInformation;

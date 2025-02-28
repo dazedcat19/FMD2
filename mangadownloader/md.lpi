@@ -353,7 +353,7 @@
         <PackageName Value="metadarkstyledsgn"/>
       </Item15>
     </RequiredPackages>
-    <Units Count="27">
+    <Units Count="28">
       <Unit0>
         <Filename Value="md.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -510,6 +510,14 @@
         <Filename Value="..\baseunits\SimpleException\SimpleException.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit26>
+      <Unit27>
+        <Filename Value="forms\frmcustommessagedlg.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="CustomMessageDlg"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="frmCustomMessageDlg"/>
+      </Unit27>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

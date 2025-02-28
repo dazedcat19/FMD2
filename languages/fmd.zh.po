@@ -35,6 +35,7 @@ msgstr "中止"
 
 #: dbupdater.rs_downloading
 #, object-pascal-format
+msgctxt "dbupdater.rs_downloading"
 msgid "Downloading %s"
 msgstr "正在下载 %s"
 
@@ -106,6 +107,31 @@ msgstr "确定"
 msgid "Username or password can't be empty!"
 msgstr "用户名或密码不能为空！"
 
+#: frmcustommessagedlg.rs_dialogconfirmation
+msgctxt "frmcustommessagedlg.rs_dialogconfirmation"
+msgid "Confirmation"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogcustom
+msgctxt "frmcustommessagedlg.rs_dialogcustom"
+msgid "Message"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogerror
+msgctxt "frmcustommessagedlg.rs_dialogerror"
+msgid "Error"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialoginformation
+msgctxt "frmcustommessagedlg.rs_dialoginformation"
+msgid "Information"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogwarning
+msgctxt "frmcustommessagedlg.rs_dialogwarning"
+msgid "Warning"
+msgstr ""
+
 #: frmimportfavorites.rs_importcompleted
 msgid "Import completed."
 msgstr "导入完成。"
@@ -122,15 +148,33 @@ msgstr ""
 msgid "List of unimported manga"
 msgstr "未导入漫画列表"
 
+#: frmluamodulesupdater.rs_awaitingproceed
+msgid "Awaiting permission to proceed..."
+msgstr ""
+
 #: frmluamodulesupdater.rs_checking
 msgctxt "frmluamodulesupdater.rs_checking"
 msgid "Checking..."
 msgstr "正在检查..."
 
+#: frmluamodulesupdater.rs_checklocalmodules
+msgid "Checking local modules..."
+msgstr ""
+
 #: frmluamodulesupdater.rs_checkupdate
 msgctxt "frmluamodulesupdater.rs_checkupdate"
 msgid "Check update"
 msgstr "检查更新"
+
+#: frmluamodulesupdater.rs_deletingflaggedmodules
+msgid "Deleting flagged modules..."
+msgstr ""
+
+#: frmluamodulesupdater.rs_downloadingmodule
+#, object-pascal-format, fuzzy
+msgctxt "frmluamodulesupdater.rs_downloadingmodule"
+msgid "Downloading %s"
+msgstr "正在下载 %s"
 
 #: frmluamodulesupdater.rs_finishchecking
 msgid "Finish checking"
@@ -139,6 +183,21 @@ msgstr "检查完成"
 #: frmluamodulesupdater.rs_finishdownload
 msgid "Finish download"
 msgstr "下载完成"
+
+#: frmluamodulesupdater.rs_githubconnectfail
+msgid ""
+"Failed to connect to GitHub API for latest module updates.\n"
+"Please try again later."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubconnecting
+msgid "Connecting to GitHub..."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubratestats
+#, object-pascal-format
+msgid "GitHub API core rate - call limit: %d, remaining calls: %d, used calls: %d, limit refresh: %s"
+msgstr ""
 
 #: frmluamodulesupdater.rs_modulesupdatedrestart
 msgid "Modules updated, restart now?"
@@ -723,6 +782,11 @@ msgstr "漫画列表"
 #: tcustomcolorform.tsmodulelist.caption
 msgid "Module list"
 msgstr "模块列表"
+
+#: tcustommessagedlg.caption
+msgctxt "tcustommessagedlg.caption"
+msgid "Custom Message Dialog Form"
+msgstr ""
 
 #: tformdroptarget.miaddtofavorites.caption
 msgctxt "TFORMDROPTARGET.MIADDTOFAVORITES.CAPTION"
@@ -1474,7 +1538,7 @@ msgid "Search title..."
 msgstr "搜索标题..."
 
 #: tmainform.edoptionchangeunicodecharacterstr.texthint
-msgid "Unicode Char"
+msgid "Character"
 msgstr ""
 
 #: tmainform.edoptionchaptercustomrename.texthint
@@ -2711,6 +2775,10 @@ msgstr "加载: %d/%d"
 #, object-pascal-format
 msgid "%s has %d new manga(s)"
 msgstr "%s 有 %d 新漫画(s)"
+
+#: uupdatethread.rs_dlgupdatelistcheckisrunning
+msgid "Update list(s) is running!"
+msgstr ""
 
 #: uupdatethread.rs_gettingdirectory
 msgid "Getting directory"

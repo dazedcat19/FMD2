@@ -119,6 +119,7 @@ type
   end;
   
 resourcestring
+  RS_DlgUpdateListCheckIsRunning = 'Update list(s) is running!';
   RS_UpdatingList = 'Updating list';
   RS_GettingDirectory = 'Getting directory';
   RS_LookingForNewTitle = 'Looking for new title(s)';
@@ -137,7 +138,7 @@ resourcestring
 implementation
 
 uses
-  frmMain, FMDVars, LuaWebsiteModuleHandler, Dialogs;
+  frmMain, frmCustomMessageDlg, FMDVars, LuaWebsiteModuleHandler, Dialogs;
 
 const
   CL_ProgressBarBaseLine = clBtnFace;
@@ -433,8 +434,8 @@ end;
 
 procedure TUpdateListManagerThread.DlgReport;
 begin
-  MessageDlg('', Format(RS_DlgHasNewManga, [module.Name, tempDataProcess.RecordCount]),
-    mtInformation, [mbYes], 0);
+  CenteredMessageDlg(MainForm, Format(RS_DlgHasNewManga, [module.Name, tempDataProcess.RecordCount]),
+    mtInformation, [mbOK], 0);
 end;
 
 procedure TUpdateListManagerThread.CheckOut(const alimit: Integer; const acs: TCheckStyleType);

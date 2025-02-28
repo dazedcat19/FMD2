@@ -29,22 +29,28 @@ type
     FStatusText: String;
 
     FTimerRepaint: TTimer;
-    FNeedRepaint: Boolean;
+    FNeedRepaint,
+    FLoading,
+    FLoadingReverse: Boolean;
 
     FHTTP: THTTPSendThread;
     FTotalSize,
-    FCurrentSize: Integer;
+    FCurrentSize,
+    FLoadingStep: Integer;
     FPercents: Double;
   protected
     procedure SyncCreate;
     procedure SyncDestroy;
     procedure TimerRepaintTimer(Sender: TObject);
     procedure StatusBarPaint(Sender: TObject);
-    procedure StatusBarRezise(Sender: TObject);
+    procedure StatusBarResize(Sender: TObject);
     procedure ButtonCancelClick(Sender: TObject);
     procedure HTTPSockOnStatus(Sender: TObject; Reason: THookSocketReason;
       const Value: String);
     procedure UpdateStatusText(AStatusText: String);
+    procedure UpdateProgressBar(AIndex, ACount: Integer);
+    procedure LoadingProgressBar;
+    procedure LoadingProgressBarMarquee;
   public
     constructor Create(CreateSuspended: Boolean = True; AOwnerForm: TForm = nil;
       AImageList: TImageList = nil; AButtonCancelImageIndex: Integer = -1);
@@ -56,7 +62,7 @@ type
 
 implementation
 
-uses uBaseUnit;
+uses uBaseUnit, Math;
 
 const
   CL_ProgressBarBaseLine = clBtnFace;
@@ -72,7 +78,8 @@ var
 begin
   FControlMargin := FOwnerForm.ScaleFontTo96(2);
   FStatusBar := TPanel.Create(nil);
-  with FStatusBar do begin
+  with FStatusBar do
+  begin
     Parent := FOwnerForm;
     DoubleBuffered := True;
     Align := alBottom;
@@ -86,14 +93,15 @@ begin
     BorderStyle := bsNone;
     BorderSpacing.Top := FControlMargin;
     OnPaint := @StatusBarPaint;
-    OnResize := @StatusBarRezise;
+    OnResize := @StatusBarResize;
     Canvas.Brush.Style := bsSolid;
     Canvas.Pen.Style := psSolid;
     FResized := True;
   end;
 
   FButtonCancel := TSpeedButton.Create(FStatusBar);
-  with FButtonCancel do begin
+  with FButtonCancel do
+  begin
     Parent := FStatusBar;
     Align := alNone;
     AutoSize := False;
@@ -110,19 +118,21 @@ begin
     BorderSpacing.Bottom := FControlMargin;
     Width := Height;
     OnClick := @ButtonCancelClick;
-    if Assigned(FImageList) and (FButtonCancelImageIndex > -1) then begin
+    if Assigned(FImageList) and (FButtonCancelImageIndex > -1) then
+    begin
       Images := FImageList;
       ImageIndex := FButtonCancelImageIndex;
     end;
   end;
 
-  StatusBarRezise(FStatusBar);
+  StatusBarResize(FStatusBar);
 
   FTimerRepaint := TTimer.Create(FStatusBar);
-  FTimerRepaint.Interval := 1000;
+  FTimerRepaint.Interval := 500;
   FTimerRepaint.OnTimer := @TimerRepaintTimer;
   FTimerRepaint.Enabled := True;
   FNeedRepaint := True;
+  FLoading := False;
 end;
 
 procedure TStatusBarDownload.SyncDestroy;
@@ -143,11 +153,13 @@ procedure TStatusBarDownload.StatusBarPaint(Sender: TObject);
 var
   txtWidth, txtHeight: integer;
 begin
-  with FStatusBar.Canvas do begin
+  with FStatusBar.Canvas do
+  begin
     Pen.Color := clActiveBorder;
     Line(0,0,FStatusBar.ClientRect.Right,0);
 
-    if FResized then begin
+    if FResized then
+    begin
       FProgressBarRect := FStatusBar.ClientRect;
       FProgressBarRect.Inflate(-FControlMargin, -(FControlMargin * 2));
       FStatusTextRect := FStatusBar.ClientRect;
@@ -164,10 +176,25 @@ begin
     Brush.Color := CL_ProgressBarBase;
     Rectangle(FProgressBarRect);
 
-    if FPercents > 0 then begin
+    if FLoading then
+    begin
+      FPercents := 1;
+      FNeedRepaint := True;
+    end;
+
+    if FPercents > 0 then
+    begin
       FProgressBarPercentsRect := FProgressBarRect;
-      FProgressBarPercentsRect.Right :=
-        Round((FProgressBarPercentsRect.Right - FProgressBarPercentsRect.Left) * FPercents) + FProgressBarPercentsRect.Left;
+
+      if FLoading then
+      begin
+        LoadingProgressBarMarquee;
+      end
+      else
+      begin
+        FProgressBarPercentsRect.Right :=
+          Round((FProgressBarPercentsRect.Right - FProgressBarPercentsRect.Left) * FPercents) + FProgressBarPercentsRect.Left;
+      end;
 
       Pen.Color   := CL_ProgressBarLine;
       Brush.Color := CL_ProgressBar;
@@ -176,12 +203,12 @@ begin
       FProgressBarPercentsRect.Inflate(-2, -2);
       GradientFill(FProgressBarPercentsRect, BlendColor(Brush.Color, CL_ProgressBarBase, 128), Brush.Color, gdHorizontal);
 
-      Brush.Style := bsClear;
-
-      GetTextSize(FProgressText, txtWidth, txtHeight);
-      TextRect(FProgressBarRect, FProgressBarRect.Left + ((FProgressBarRect.Right - FProgressBarRect.Left - txtWidth) div 2),
-        FProgressBarRect.Top + ((FProgressBarRect.Bottom - FProgressBarRect.Top - txtHeight) div 2), FProgressText);
     end;
+    Brush.Style := bsClear;
+    GetTextSize(FProgressText, txtWidth, txtHeight);
+    TextRect(FProgressBarRect, FProgressBarRect.Left + ((FProgressBarRect.Right - FProgressBarRect.Left - txtWidth) div 2),
+      FProgressBarRect.Top + ((FProgressBarRect.Bottom - FProgressBarRect.Top - txtHeight) div 2), FProgressText);
+
     Font.Color := clWindowText;
     Brush.Style := bsClear;
     txtHeight := GetTextHeight(FStatusText);
@@ -189,7 +216,7 @@ begin
   end;
 end;
 
-procedure TStatusBarDownload.StatusBarRezise(Sender: TObject);
+procedure TStatusBarDownload.StatusBarResize(Sender: TObject);
 begin
   FResized := True;
 end;
@@ -203,10 +230,14 @@ procedure TStatusBarDownload.HTTPSockOnStatus(Sender: TObject;
   Reason: THookSocketReason; const Value: String);
 begin
   if Terminated then
+  begin
     Exit;
+  end;
+
   if Reason = HR_ReadCount then
   begin
     FNeedRepaint := True;
+    FLoading := False;
     if FTotalSize = 0 then
     begin
       FTotalSize := StrToIntDef(Trim(FHTTP.Headers.Values['Content-Length']), 0);
@@ -217,18 +248,24 @@ begin
     if (FCurrentSize <> 0) then
     begin
       if FTotalSize < FCurrentSize then
-        FPercents := 0
+      begin
+        FPercents := 1;
+      end
       else
+      begin
         FPercents := FCurrentSize / FTotalSize;
+      end;
     end;
     FProgressText := FormatByteSize(FCurrentSize);
     if FTotalSize <> 0 then
+    begin
      FProgressText := FProgressText + '/' + FormatByteSize(FTotalSize);
+    end;
   end
-  else
-  if Reason = HR_Connect then
+  else if Reason = HR_Connect then
   begin
     FNeedRepaint := True;
+    FLoading := False;
     FCurrentSize := 0;
     FTotalSize := 0;
   end;
@@ -240,6 +277,58 @@ begin
   begin
     FStatusText := AStatusText;
     FNeedRepaint := True;
+  end;
+end;  
+
+procedure TStatusBarDownload.UpdateProgressBar(AIndex, ACount: Integer);
+begin
+  if (AIndex <> FCurrentSize) or (ACount <> FTotalSize) then
+  begin
+    FCurrentSize := AIndex;
+    FTotalSize := Max(1, ACount);
+
+    FPercents := Min(1, FCurrentSize / FTotalSize);
+    FProgressText := IntToStr(FCurrentSize) + '/' + IntToStr(FTotalSize);
+
+    FNeedRepaint := True;
+    FLoading := False;
+  end;
+end;
+
+procedure TStatusBarDownload.LoadingProgressBar;
+begin
+  FProgressText := '';
+  FLoading := True;
+  FLoadingStep := 0;
+  FLoadingReverse := False;
+  FNeedRepaint := True;
+end;
+
+procedure TStatusBarDownload.LoadingProgressBarMarquee;
+var
+  marqueeWidth: Integer = 60;
+  stepSize: Integer = 3;
+  borderRect: Integer = 2;
+begin
+  FProgressBarPercentsRect.Left := Max(borderRect, FLoadingStep);
+  FProgressBarPercentsRect.Right := Min((FProgressBarRect.Width + borderRect), (FProgressBarPercentsRect.Left + marqueeWidth));
+
+  if FProgressBarPercentsRect.Right >= (FProgressBarRect.Width + borderRect) then
+  begin
+    FLoadingReverse := True;
+  end
+  else if FLoadingStep <= borderRect then
+  begin
+    FLoadingReverse := False;
+  end;
+
+  if FLoadingReverse then
+  begin                
+    Dec(FLoadingStep, stepSize);
+  end
+  else
+  begin 
+    Inc(FLoadingStep, stepSize);
   end;
 end;
 
@@ -257,7 +346,7 @@ begin
   FHTTP := THTTPSendThread.Create(Self);
   FHTTP.UserAgent := UserAgentCURL;
   FHTTP.Sock.OnStatus := @HTTPSockOnStatus;
-  FTotalSize := 0;
+  FCurrentSize := 0;
   FTotalSize := 0;
   FPercents := 0;
 

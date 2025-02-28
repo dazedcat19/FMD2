@@ -35,6 +35,7 @@ msgstr "Abort"
 
 #: dbupdater.rs_downloading
 #, object-pascal-format
+msgctxt "dbupdater.rs_downloading"
 msgid "Downloading %s"
 msgstr "Downloading %s"
 
@@ -106,6 +107,31 @@ msgstr "OK"
 msgid "Username or password can't be empty!"
 msgstr "Username or password can't be empty!"
 
+#: frmcustommessagedlg.rs_dialogconfirmation
+msgctxt "frmcustommessagedlg.rs_dialogconfirmation"
+msgid "Confirmation"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogcustom
+msgctxt "frmcustommessagedlg.rs_dialogcustom"
+msgid "Message"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogerror
+msgctxt "frmcustommessagedlg.rs_dialogerror"
+msgid "Error"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialoginformation
+msgctxt "frmcustommessagedlg.rs_dialoginformation"
+msgid "Information"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogwarning
+msgctxt "frmcustommessagedlg.rs_dialogwarning"
+msgid "Warning"
+msgstr ""
+
 #: frmimportfavorites.rs_importcompleted
 msgid "Import completed."
 msgstr "Import completed."
@@ -122,15 +148,33 @@ msgstr "Importing..."
 msgid "List of unimported manga"
 msgstr "List of unimported manga"
 
+#: frmluamodulesupdater.rs_awaitingproceed
+msgid "Awaiting permission to proceed..."
+msgstr ""
+
 #: frmluamodulesupdater.rs_checking
 msgctxt "frmluamodulesupdater.rs_checking"
 msgid "Checking..."
 msgstr "Checking..."
 
+#: frmluamodulesupdater.rs_checklocalmodules
+msgid "Checking local modules..."
+msgstr ""
+
 #: frmluamodulesupdater.rs_checkupdate
 msgctxt "frmluamodulesupdater.rs_checkupdate"
 msgid "Check update"
 msgstr "Check update"
+
+#: frmluamodulesupdater.rs_deletingflaggedmodules
+msgid "Deleting flagged modules..."
+msgstr ""
+
+#: frmluamodulesupdater.rs_downloadingmodule
+#, object-pascal-format, fuzzy
+msgctxt "frmluamodulesupdater.rs_downloadingmodule"
+msgid "Downloading %s"
+msgstr "Downloading %s"
 
 #: frmluamodulesupdater.rs_finishchecking
 msgid "Finish checking"
@@ -139,6 +183,21 @@ msgstr "Finish checking"
 #: frmluamodulesupdater.rs_finishdownload
 msgid "Finish download"
 msgstr "Finish download"
+
+#: frmluamodulesupdater.rs_githubconnectfail
+msgid ""
+"Failed to connect to GitHub API for latest module updates.\n"
+"Please try again later."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubconnecting
+msgid "Connecting to GitHub..."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubratestats
+#, object-pascal-format
+msgid "GitHub API core rate - call limit: %d, remaining calls: %d, used calls: %d, limit refresh: %s"
+msgstr ""
 
 #: frmluamodulesupdater.rs_modulesupdatedrestart
 msgid "Modules updated, restart now?"
@@ -723,6 +782,11 @@ msgstr "Manga list"
 #: tcustomcolorform.tsmodulelist.caption
 msgid "Module list"
 msgstr "Module list"
+
+#: tcustommessagedlg.caption
+msgctxt "tcustommessagedlg.caption"
+msgid "Custom Message Dialog Form"
+msgstr ""
 
 #: tformdroptarget.miaddtofavorites.caption
 msgctxt "TFORMDROPTARGET.MIADDTOFAVORITES.CAPTION"
@@ -1472,7 +1536,9 @@ msgid "Search title..."
 msgstr "Search title..."
 
 #: tmainform.edoptionchangeunicodecharacterstr.texthint
-msgid "Unicode Char"
+#, fuzzy
+#| msgid "Unicode Char"
+msgid "Character"
 msgstr "Unicode Char"
 
 #: tmainform.edoptionchaptercustomrename.texthint
@@ -2711,6 +2777,10 @@ msgstr "Loading: %d/%d"
 #, object-pascal-format
 msgid "%s has %d new manga(s)"
 msgstr "%s has %d new manga(s)"
+
+#: uupdatethread.rs_dlgupdatelistcheckisrunning
+msgid "Update list(s) is running!"
+msgstr ""
 
 #: uupdatethread.rs_gettingdirectory
 msgid "Getting directory"

@@ -125,11 +125,7 @@ begin
     try
       for i := 0 to FFileList.Count - 1 do
       begin
-        if MainForm.cbOptionEnableLongNamePaths.Checked then
-        begin
-          if Pos('\\?\', FFileList[i]) = 0 then
-            FFileList[i] := '\\?\' + FFileList[i];
-        end;
+        FFileList[i] := MainForm.CheckLongNamePaths(FFileList[i]);
         Add(FFileList[i]);
       end;
 
