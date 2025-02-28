@@ -184,6 +184,12 @@ msgstr "检查完成"
 msgid "Finish download"
 msgstr "下载完成"
 
+#: frmluamodulesupdater.rs_githubconnectfail
+msgid ""
+"Failed to connect to GitHub API for latest module updates.\n"
+"Please try again later."
+msgstr ""
+
 #: frmluamodulesupdater.rs_githubconnecting
 msgid "Connecting to GitHub..."
 msgstr ""
