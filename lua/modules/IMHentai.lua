@@ -4,15 +4,14 @@
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                       = '58a2dec76ebf43a5a9e7dc9b453e52e9'
-	m.Name                     = 'HentaiFox'
-	m.RootURL                  = 'https://hentaifox.com'
+	m.ID                       = '67e22e0c766c4c9c990e179350262b3c'
+	m.Name                     = 'IMHentai'
+	m.RootURL                  = 'https://imhentai.xxx'
 	m.Category                 = 'H-Sites'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnGetImageURL            = 'GetImageURL'
 	m.SortedList               = true
 end
 
@@ -20,7 +19,19 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-DirectoryPagination = '/page/'
+DirectoryPagination = '/?page='
+
+----------------------------------------------------------------------------------------------------
+-- Auxiliary Functions
+----------------------------------------------------------------------------------------------------
+
+local ext = {
+	['p'] = '.png',
+	['b'] = '.bmp',
+	['g'] = '.gif',
+	['w'] = '.webp',
+	['j'] = '.jpg'
+}
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -43,7 +54,7 @@ function GetNameAndLink()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	CreateTXQuery(HTTP.Document).XPathHREFAll('//h2[@class="g_title"]/a', LINKS, NAMES)
+	CreateTXQuery(HTTP.Document).XPathHREFAll('//h2[@class="gallery_title"]/a', LINKS, NAMES)
 
 	return no_error
 end
@@ -52,16 +63,16 @@ end
 function GetInfo()
 	local pages, x = nil
 	local p = 1
-	local u = MaybeFillHost(MODULE.RootURL, URL:gsub('(.*)pag/.*', '%1'):gsub('(.*)popular/.*', '%1'))
-	if u:find(MODULE.RootURL .. '/page/') then return net_problem end
+	local u = MaybeFillHost(MODULE.RootURL, URL:gsub('(.*)?page.*', '%1'):gsub('(.*)popular/.*', '%1'))
+	if u:find(MODULE.RootURL .. '/?page=') then return net_problem end
 
 	if not HTTP.GET(u) then return net_problem end
 
 	x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//div[@class="info"]/h1|//h1[@class="tag_info"]/span')
-	MANGAINFO.CoverLink = x.XPathString('//div[@class="cover"]/img/@src|(//div[@class="lc_galleries"]/div[@class="thumb"])[1]//img/@data-src')
-	MANGAINFO.Artists   = x.XPathStringAll('//ul[@class="artists"]/li/a/text()')
-	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="info"]/ul[not(@class="artists")]/li/a/text()')
+	MANGAINFO.Title     = x.XPathString('//div[contains(@class, "right_details")]/h1|//h1[@class="sub_title"]/span')
+	MANGAINFO.CoverLink = x.XPathString('//div[contains(@class, "left_cover")]//img/@data-src|(//div[@class="thumbs_container"]/div[@class="thumb"])[1]//img/@data-src')
+	MANGAINFO.Artists   = x.XPathStringAll('//ul[@class="galleries_info"]/li[contains(., "Artists")]/a/text()')
+	MANGAINFO.Genres    = x.XPathStringAll('//ul[@class="galleries_info"]/li[not(contains(., "Artists"))]/a/text()')
 
 	if u:find('/gallery/') then
 		MANGAINFO.ChapterLinks.Add(MANGAINFO.URL)
@@ -69,11 +80,11 @@ function GetInfo()
 	else
 		pages = tonumber(x.XPathString('//ul[@class="pagination"]/li[last()-1]/a')) or 1
 		while true do
-			x.XPathHREFAll('//h2[@class="g_title"]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+			x.XPathHREFAll('//h2[@class="gallery_title"]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 			p = p + 1
 			if p > pages then
 				break
-			elseif HTTP.GET(u .. 'pag/' .. tostring(p)) then
+			elseif HTTP.GET(u .. '?page=' .. tostring(p)) then
 				x.ParseHTML(HTTP.Document)
 			else
 				break
@@ -87,22 +98,21 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
- 	local u = MaybeFillHost(MODULE.RootURL, URL)
- 
- 	if not HTTP.GET(u) then return net_problem end
- 
- 	TASK.PageNumber = tonumber(CreateTXQuery(HTTP.Document).XPathString('(//span[@class="i_text pages"])[1]/substring-after(., ": ")')) or 0
- 
- 	return no_error
- end
+	local dir, i, i1, i2, id, json, pages, server, x = nil
+	local u = MaybeFillHost(MODULE.RootURL, URL)
 
--- Extract/Build/Repair image urls before downloading them.
-function GetImageURL()
- 	local u = MaybeFillHost(MODULE.RootURL, URL:gsub('/gallery/', '/g/')) .. (WORKID + 1) .. '/'
- 
- 	if not HTTP.GET(u) then return net_problem end
- 
- 	TASK.PageLinks[WORKID] = CreateTXQuery(HTTP.Document).XPathString('//img[@id="gimg"]/@data-src')
- 
- 	return true
- end
+	if not HTTP.GET(u) then return net_problem end
+
+	x = CreateTXQuery(HTTP.Document)
+	dir    = x.XPathString('//input[@id="load_dir"]/@value')
+	id     = x.XPathString('//input[@id="load_id"]/@value')
+	server = x.XPathString('//input[@id="load_server"]/@value')
+	json   = GetBetween("parseJSON('{", "');", x.XPathString('//script[contains(., "var g_th")]'))
+	json   = json:gsub('","', ';'):gsub('"}', ';'):gsub(':', ','):gsub('"', '')
+	for i in json:gmatch('(.-);') do
+		i1, i2 = i:match('(.-),(.-),.-,.-')
+		TASK.PageLinks.Add('https://m' .. server .. '.imhentai.xxx/' .. dir .. '/' .. id .. '/' .. i1 .. ext[i2])
+	end
+
+	return no_error
+end
