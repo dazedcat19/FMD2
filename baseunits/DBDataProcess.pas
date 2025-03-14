@@ -101,7 +101,6 @@ type
     procedure Save;
     procedure Backup(const AWebsite: String);
     procedure Refresh(RecheckDataCount: Boolean = False);
-    function CheckDataExists(Link: String): Boolean;
     function AddData(Const Title, AltTitles, Link, Authors, Artists, Genres, Status, Summary: String;
       NumChapter, JDN: Integer): Boolean; overload;
     function AddData(Const Title, AltTitles, Link, Authors, Artists, Genres, Status, Summary: String;
@@ -898,63 +897,21 @@ begin
   end;
 end;
 
-function TDBDataProcess.CheckDataExists(Link: String): Boolean;
-var
-  sql: String;
-begin
-  Result := False;
-
-  if (Link = '') then
-  begin
-    Exit;
-  end;
-
-  try
-    if FQuery.Active then
-    begin
-       FQuery.Close;
-    end;
-    if not FTrans.Active then
-    begin
-       FTrans.Active := True;
-    end;
-
-    sql := 'SELECT * FROM "' + FTableName + '" WHERE link=' + QuotedStr(Link);
-    FQuery.SQL.Text := sql;
-    GetRecordCount;
-    FQuery.Open;
-    FTrans.Active := False;
-
-    if FRecordCount > 0 then
-    begin
-      Result := True;
-    end;
-  except
-    on E: Exception do
-      SendLogException(ClassName + '[' + Website + '].CheckDataExists.Error!' + LineEnding + sql, E);
-  end;
-end;
-
 function TDBDataProcess.AddData(const Title, AltTitles, Link, Authors, Artists, Genres,
   Status, Summary: String; NumChapter, JDN: Integer): Boolean;
 var
   sql: String;
+  SQLChanges: Integer;
 begin
   Result := False;
-
   if (Link = '') or
-     (FConn.Connected = False) then
-  begin
-    Exit;
-  end;
-
-  if CheckDataExists(Link) then
+     (not FConn.Connected) then
   begin
     Exit;
   end;
 
   try
-    sql := 'INSERT INTO "' + FTableName + '" (' + DBDataProcessParam + ') VALUES (' +
+    sql := 'INSERT OR IGNORE INTO "' + FTableName + '" (' + DBDataProcessParam + ') VALUES (' +
            QuotedStr(Link) + ', ' +
            QuotedStr(Title) + ', ' +
            QuotedStr(AltTitles) + ', ' +
@@ -966,7 +923,15 @@ begin
            QuotedStr(IntToStr(NumChapter)) + ', ' +
            QuotedStr(IntToStr(JDN)) + ');';
     FConn.ExecuteDirect(sql);
-    Result := True;
+
+    FQuery.SQL.Text := 'SELECT changes();';
+    FQuery.Open;
+    SQLChanges := FQuery.Fields[0].AsInteger; // Get the result of changes()
+
+    if SQLChanges = 1 then
+    begin
+      Result := True;
+    end;
   except
     on E: Exception do
       SendLogException(ClassName + '[' + Website + '].AddData.Error!' + LineEnding + sql, E);
