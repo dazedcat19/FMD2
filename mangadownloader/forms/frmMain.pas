@@ -772,6 +772,9 @@ type
     procedure AddSilentThread(URL: string; MetaDataType: TMetaDataType); overload;
     procedure AddSilentThread(URL: string); overload;
 
+    // Set TRichMemo About text attributes
+    procedure SetAboutTextAttributes;
+
     // Add text to TRichMemo
     procedure AddTextToInfo(const ATitle, AValue: String);
 
@@ -2418,7 +2421,6 @@ end;
 procedure TMainForm.LoadAbout;
 var
   fs: TFileStream;
-  fp: TFontParams;
   s: String;
   _OpenSSSL_version: function(t: integer): PAnsiChar; cdecl;
 begin
@@ -2432,9 +2434,7 @@ begin
     end;
   end;
 
-  rmAbout.GetTextAttributes(0, fp);
-  fp.Color := ColorToRGB(clWindowText);
-  rmAbout.SetTextAttributes(0, -1, fp);
+  SetAboutTextAttributes;
 
   // load changelog.txt
   if FileExistsUTF8(CHANGELOG_FILE) then mmChangelog.Lines.LoadFromFile(CHANGELOG_FILE);
@@ -5163,7 +5163,11 @@ var
   URls: TStringList;
   m: TModuleContainer;
 begin
-  if Trim(URL) = '' then Exit;
+  if Trim(URL) = '' then
+  begin
+    Exit;
+  end;
+
   URLs := TStringList.Create;
   try
     URls.Text := URL;
@@ -5187,13 +5191,16 @@ begin
             if Assigned(m) then
             begin
               if not ((MetaDataType = MD_AddToFavorites) and not(m.FavoriteAvailable)) then
+              begin
                 SilentThreadManager.Add(MetaDataType, m, '', link);
+              end;
             end;
           end;
         end;
       finally
         Free;
       end;
+
       SilentThreadManager.EndAdd;
     end;
   finally
@@ -5205,12 +5212,21 @@ procedure TMainForm.AddSilentThread(URL: string);
 var
   mt: TMetaDataType;
 begin
-  if Trim(URL)='' then Exit;
-  if rgDropTargetMode.ItemIndex=0 then
-    mt:=MD_DownloadAll
+  if Trim(URL) = '' then
+  begin
+    Exit;
+  end;
+
+  if rgDropTargetMode.ItemIndex = 0 then
+  begin
+    mt := MD_DownloadAll;
+  end
   else
-    mt:=MD_AddToFavorites;
-  AddSilentThread(URL,mt);
+  begin
+    mt := MD_AddToFavorites;
+  end;
+
+  AddSilentThread(URL, mt);
 end;
 
 function TMainForm.CheckLongNamePaths(APath: String): String;
@@ -5218,7 +5234,9 @@ begin
   if cbOptionEnableLongNamePaths.Checked then
   begin
     if Pos('\\?\', APath) = 0 then
+    begin
       APath := '\\?\' + APath;
+    end;
   end;
 
   Result := APath;
@@ -5237,13 +5255,69 @@ begin
 
     // Trim spaces from each folder, except for the root (C:, D:, etc.)
     for i := 1 to PathList.Count - 1 do
+    begin
       PathList[i] := TrimRight(PathList[i]);
+    end;
 
     // Reconstruct the cleaned path
     Result := PathList.DelimitedText.Replace('"', '');  // Remove added quotes
   finally
     PathList.Free;
   end;
+end;
+
+procedure TMainForm.SetAboutTextAttributes;
+var
+  i: Integer;
+  currentColor, textColor, linkColor: TColor;
+  fp: TFontParams;
+  styleRanges: array of record
+    Color: TColor;
+    StartPos, Length: Integer;
+    //Text: String; // For debugging which text is affected
+  end;
+  StyleRangesCount: Integer;
+begin
+  i := 0;
+  textColor := ColorToRGB(clWindowText); // Default text color
+  linkColor := ColorToRGB(clHighlight);  // Color for links
+
+  // Set the array ranges (1st entry is a dud and unused)
+  StyleRangesCount := 0;
+  SetLength(styleRanges, 1);
+
+  while i < rmAbout.GetTextLen do
+  begin
+    rmAbout.GetTextAttributes(i, fp);
+    currentColor := fp.Color;
+
+    if (currentColor = clBlue) then
+    begin
+      if (i = 0) or (i - styleRanges[StyleRangesCount].Length <> styleRanges[StyleRangesCount].StartPos) then
+      begin
+        Inc(StyleRangesCount);
+        SetLength(styleRanges, StyleRangesCount + 1);
+      end;
+
+      styleRanges[StyleRangesCount].Color := linkColor;
+      styleRanges[StyleRangesCount].StartPos := i - styleRanges[StyleRangesCount].Length;
+      Inc(styleRanges[StyleRangesCount].Length);
+      //styleRanges[StyleRangesCount].Text := rmAbout.GetText(styleRanges[StyleRangesCount].StartPos, styleRanges[StyleRangesCount].Length);
+    end;
+
+    Inc(i);
+  end;
+
+  // Set the default color for the entire text
+  rmAbout.SetRangeColor(0, -1, textColor);
+
+  // Apply the colors of stored ranges
+  for i := 1 to StyleRangesCount do
+  begin
+    rmAbout.SetRangeColor(styleRanges[i].StartPos, styleRanges[i].Length, styleRanges[i].Color);
+  end;
+
+  rmAbout.Refresh;
 end;
 
 procedure TMainForm.AddTextToInfo(const ATitle, AValue: String);
@@ -5253,13 +5327,24 @@ var
   s: string;
 begin
   s := Trim(FixWhiteSpace(AValue));
-  if s = '' then Exit;
+
+  if s = '' then
+  begin
+    Exit;
+  end;
+
   if ATitle = RS_InfoSummary then
+  begin
     s := Trim(StringBreaks(s));
+  end;
+
   with rmInformation do
   begin
     if Lines.Count > 0 then
+    begin
       Lines.Add('');
+    end;
+
     p := SelStart;
     GetTextAttributes(p, fp);
     fp.Color := ColorToRGB(clWindowText);
@@ -5298,7 +5383,9 @@ begin
   begin
     s := TModuleContainer(AModule).Settings.OverrideSettings.SaveToPath;
     if s <> '' then
+    begin
       edSaveTo.Text := s;
+    end;
   end;
 end;
 
@@ -5308,15 +5395,20 @@ var
   fav: TFavoriteContainer;
   fp: TFontParams;
 begin
-  if (ALink = '') or (AModule = nil) then Exit;
+  if (ALink = '') or (AModule = nil) then
+  begin
+    Exit;
+  end;
 
   // terminate exisiting getmangainfo thread
   if Assigned(GetInfosThread) then
+  begin
     try
       GetInfosThread.Terminate;
       GetInfosThread.WaitFor;
     except
     end;
+  end;
 
   // set the UI
   edURL.Text := FillHost(TModuleContainer(AModule).RootURL, ALink);
@@ -5335,6 +5427,7 @@ begin
     tmAnimateMangaInfo.Enabled := True;
     pbWait.Visible := True;
   end;
+
   btDownload.Enabled := False;
   btDownloadSplit.Enabled := btDownload.Enabled;
   btReadOnline.Enabled := True;
@@ -5347,7 +5440,6 @@ begin
     FillSaveTo;
     OverrideSaveTo(AModule);
   end;
-
 
   DisableAddToFavorites(AModule);
   //check if manga already in FavoriteManager list
@@ -5365,9 +5457,14 @@ begin
   // start the thread
   GetInfosThread := TGetMangaInfosThread.Create(AModule, ALink, AMangaListNode);
   if (ASender = miDownloadViewMangaInfo) or (ASender = miFavoritesViewInfos) then
-    GetInfosThread.Title := ''      // retrieve the original title so custom rename can remove them
+  begin
+    GetInfosThread.Title := ''; // retrieve the original title so custom rename can remove them
+  end
   else
+  begin
     GetInfosThread.Title := ATitle;
+  end;
+
   GetInfosThread.Start;
 end;
 
@@ -5390,6 +5487,7 @@ begin
       AddTextToInfo(RS_InfoArtists, mangaInfo.Artists);
       AddTextToInfo(RS_InfoGenres, mangaInfo.Genres);
       i := StrToIntDef(mangaInfo.Status, -1);
+
       if (i > -1) and (i < cbFilterStatus.Items.Count) then
       begin
         AddTextToInfo(RS_InfoStatus, cbFilterStatus.Items[i]);
@@ -5398,6 +5496,7 @@ begin
       begin
         AddTextToInfo(RS_InfoStatus, mangaInfo.Status);
       end;
+
       AddTextToInfo(RS_InfoSummary, mangaInfo.Summary);
       CaretPos := Point(0, 0);
     finally
@@ -5408,19 +5507,29 @@ begin
   if Length(ChapterList) <> 0 then
   begin
     if miChapterListAscending.Checked then
-      j := 0
+    begin
+      j := 0;
+    end
     else
+    begin
       j := High(ChapterList);
+    end;
+
     for i := low(ChapterList) to High(ChapterList) do
     begin
       ChapterList[i].Index := j + 1;
       ChapterList[i].Title := mangaInfo.ChapterNames[j];
       ChapterList[i].Link := mangaInfo.ChapterLinks[j];
       ChapterList[i].Downloaded := False;
+
       if miChapterListAscending.Checked then
-        Inc(j)
+      begin
+        Inc(j);
+      end
       else
+      begin
         Dec(j);
+      end;
     end;
   end;
 
@@ -5429,7 +5538,9 @@ begin
   miChapterListHideDownloadedClick(nil);
   edFilterMangaInfoChaptersChange(nil);
   if (clbChapterList.RootNodeCount <> 0) and miChapterListAscending.Checked then
+  begin
     clbChapterList.FocusedNode := clbChapterList.GetLast();
+  end;
 
   btDownload.Enabled := (clbChapterList.RootNodeCount > 0);
   btDownloadSplit.Enabled := btDownload.Enabled;
@@ -5438,7 +5549,8 @@ end;
 
 procedure TMainForm.LoadOptions;
 begin
-  with settingsfile do begin
+  with settingsfile do
+  begin
     // general
     cbDarkmode.ItemIndex := ReadInteger('darkmode', 'mode', 0);
     cbOptionOneInstanceOnly.Checked := ReadBool('general', 'OneInstanceOnly', True);
@@ -5478,12 +5590,9 @@ begin
     // favorites
     OptionDefaultAction := ReadInteger('favorites', 'DefaultAction', OptionDefaultAction);
     case OptionDefaultAction of
-      1:
-        miFavoritesDefaultActionShowInfo.Checked := True;
-      2:
-        miFavoritesDefaultActionRename.Checked := True;
-      3:
-        miFavoritesDefaultActionCheckNewChapters.Checked := True;
+      1: miFavoritesDefaultActionShowInfo.Checked := True;
+      2: miFavoritesDefaultActionRename.Checked := True;
+      3: miFavoritesDefaultActionCheckNewChapters.Checked := True;
       else
         miFavoritesDefaultActionOpenFolder.Checked := True;
     end;
@@ -5504,7 +5613,10 @@ begin
     seOptionConnectionTimeout.Value := ReadInteger('connections', 'ConnectionTimeout', OptionConnectionTimeout);
     edOptionDefaultUserAgent.Text := ReadString('connections', 'DefaultUserAgent', DefaultUserAgent);
     if edOptionDefaultUserAgent.Text = '' then
+    begin
       edOptionDefaultUserAgent.Text := DefaultUserAgent;
+    end;
+
     // proxy
     cbOptionUseProxy.Checked := ReadBool('connections', 'UseProxy', False);
     cbOptionProxyType.Text := ReadString('connections', 'ProxyType', 'HTTP');
@@ -5516,7 +5628,10 @@ begin
     // saveto
     edOptionDefaultPath.Text := ReadString('saveto', 'SaveTo', DEFAULT_PATH);
     if Trim(edOptionDefaultPath.Text) = '' then
+    begin
       edOptionDefaultPath.Text := DEFAULT_PATH;
+    end;
+
     seOptionPDFQuality.Value := ReadInteger('saveto', 'PDFQuality', 100);
     rgOptionCompress.ItemIndex := ReadInteger('saveto', 'Compress', 0);
     cbOptionChangeUnicodeCharacter.Checked := ReadBool('saveto', 'ChangeUnicodeCharacter', False);
@@ -5525,11 +5640,17 @@ begin
     cbOptionGenerateMangaFolder.Checked := ReadBool('saveto', 'GenerateMangaFolder', True);
     edOptionMangaCustomRename.Text := ReadString('saveto', 'MangaCustomRename', DEFAULT_MANGA_CUSTOMRENAME);
     if Trim(edOptionMangaCustomRename.Text) = '' then
+    begin
       edOptionMangaCustomRename.Text := DEFAULT_MANGA_CUSTOMRENAME;
+    end;
+
     cbOptionGenerateChapterFolder.Checked := ReadBool('saveto', 'GenerateChapterFolder', True);
     edOptionChapterCustomRename.Text := ReadString('saveto', 'ChapterCustomRename', DEFAULT_CHAPTER_CUSTOMRENAME);
     if Trim(edOptionChapterCustomRename.Text) = '' then
+    begin
       edOptionChapterCustomRename.Text := DEFAULT_CHAPTER_CUSTOMRENAME;
+    end;
+
     cbOptionDigitVolume.Checked := ReadBool('saveto', 'ConvertDigitVolume', True);
     seOptionDigitVolume.Value := ReadInteger('saveto', 'DigitVolumeLength', 2);
     seOptionDigitVolume.Enabled := cbOptionDigitVolume.Checked;
@@ -5538,7 +5659,10 @@ begin
     seOptionDigitChapter.Enabled := cbOptionDigitChapter.Checked;
     edOptionFilenameCustomRename.Text := ReadString('saveto', 'FilenameCustomRename', DEFAULT_FILENAME_CUSTOMRENAME);
     if Trim(edOptionFilenameCustomRename.Text) = '' then
+    begin
       edOptionFilenameCustomRename.Text := DEFAULT_FILENAME_CUSTOMRENAME;
+    end;
+
     ckPNGSaveAsJPEG.Checked := ReadBool('saveto', 'PNGSaveAsJPEG', OptionPNGSaveAsJPEG);
     cbWebPSaveAs.ItemIndex := ReadInteger('saveto', 'ConvertWebP', OptionWebPSaveAs);
     cbPNGCompressionLevel.ItemIndex := ReadInteger('saveto', 'PNGCompressionLevel', OptionPNGCompressionLevel);
@@ -5573,7 +5697,9 @@ begin
     ckEnableLogging.Checked := ReadBool('logger', 'Enabled', False);
     edLogFileName.Text := ReadString('logger', 'LogFileName', '');
     if edLogFileName.Text = '' then
+    begin
       edLogFileName.Text := DEFAULT_LOG_FILE;
+    end;
   end;
 end;
 
