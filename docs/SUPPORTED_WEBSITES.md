@@ -315,7 +315,7 @@
 | MangaKakalotFun | [![https://mangakakalot.fun](https://img.shields.io/website?url=https://mangakakalot.fun%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangakakalot.fun)](https://mangakakalot.fun) | - | - | - |
 | MangaKakalots | [![https://mangakakalots.com](https://img.shields.io/website?url=https://mangakakalots.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangakakalots.com)](https://mangakakalots.com) | - | - | - |
 | MangaKane | [![https://mangakane.com](https://img.shields.io/website?url=https://mangakane.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangakane.com)](https://mangakane.com) | - | - | - |
-| MangaKatana | [![https://mangakatana.com](https://img.shields.io/website?url=https://mangakatana.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangakatana.com)](https://mangakatana.com) | - | - | - |
+| MangaKatana | [![https://mangakatana.com](https://img.shields.io/website?url=https://mangakatana.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangakatana.com)](https://mangakatana.com) | OK | 15.03.2025 | - |
 | MangaKid | [![https://mangakid.site](https://img.shields.io/website?url=https://mangakid.site%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangakid.site)](https://mangakid.site) | - | - | - |
 | MangaKik | [![https://mangakik.biz](https://img.shields.io/website?url=https://mangakik.biz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangakik.biz)](https://mangakik.biz) | - | - | - |
 | MangaKing | [![https://mangaking.net](https://img.shields.io/website?url=https://mangaking.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangaking.net)](https://mangaking.net) | - | - | - |
