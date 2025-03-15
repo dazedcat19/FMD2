@@ -901,12 +901,17 @@ function TDBDataProcess.AddData(const Title, AltTitles, Link, Authors, Artists, 
   Status, Summary: String; NumChapter, JDN: Integer): Boolean;
 var
   sql: String;
+  SQLChanges: Integer;
 begin
   Result := False;
-  if Link = '' then Exit;
-  if FConn.Connected = False then Exit;
+  if (Link = '') or
+     (not FConn.Connected) then
+  begin
+    Exit;
+  end;
+
   try
-    sql := 'INSERT INTO "' + FTableName + '" (' + DBDataProcessParam + ') VALUES (' +
+    sql := 'INSERT OR IGNORE INTO "' + FTableName + '" (' + DBDataProcessParam + ') VALUES (' +
            QuotedStr(Link) + ', ' +
            QuotedStr(Title) + ', ' +
            QuotedStr(AltTitles) + ', ' +
@@ -918,7 +923,15 @@ begin
            QuotedStr(IntToStr(NumChapter)) + ', ' +
            QuotedStr(IntToStr(JDN)) + ');';
     FConn.ExecuteDirect(sql);
-    Result := True;
+
+    FQuery.SQL.Text := 'SELECT changes();';
+    FQuery.Open;
+    SQLChanges := FQuery.Fields[0].AsInteger; // Get the result of changes()
+
+    if SQLChanges = 1 then
+    begin
+      Result := True;
+    end;
   except
     on E: Exception do
       SendLogException(ClassName + '[' + Website + '].AddData.Error!' + LineEnding + sql, E);
