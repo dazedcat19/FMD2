@@ -5,7 +5,7 @@ unit frmDropTarget;
 interface
 
 uses
-  Classes, Windows, SysUtils, ActiveX, comobj, Forms, Controls,
+  Classes, Windows, SysUtils, ActiveX, comobj, Forms, Controls, uDarkStyleParams,
   ExtCtrls, Menus, LCLType, DefaultTranslator, uBaseUnit, XQueryEngineHTML;
 
 type
@@ -109,7 +109,9 @@ begin
     end;
   end
   else
+  begin
     Result := '';
+  end;
 end;
 
 function GetWideTextFromObj(const DataObj: IDataObject;
@@ -133,7 +135,9 @@ begin
     end;
   end
   else
+  begin
     Result := '';
+  end;
 end;
 
 function GetURLsFromHTML(const S: String): String;
@@ -141,7 +145,11 @@ var
   URls: TStringList;
 begin
   Result := S;
-  if S = '' then Exit;
+  if S = '' then
+  begin
+    Exit;
+  end;
+
   URLs := TStringList.Create;
   try
     XPathStringAll('//a[not(starts-with(@href,"javascript:"))]/@href', S, URls);
@@ -156,15 +164,22 @@ function ParseDataObj(const DataObj: IDataObject;
   const Fmt: TClipboardFormat): String;
 begin
   if Fmt = CF_HTML then
-    Result := GetURLsFromHTML(GetTextFromObj(DataObj, Fmt))
+  begin
+    Result := GetURLsFromHTML(GetTextFromObj(DataObj, Fmt));
+  end
+  else if Fmt = CF_UNICODETEXT then
+  begin
+    Result := GetWideTextFromObj(DataObj, Fmt);
+  end
+  else if Fmt = CF_TEXT then
+  begin
+    Result := GetTextFromObj(DataObj, Fmt);
+  end
   else
-  if Fmt = CF_UNICODETEXT then
-    Result := GetWideTextFromObj(DataObj, Fmt)
-  else
-  if Fmt = CF_TEXT then
-    Result := GetTextFromObj(DataObj, Fmt)
-  else
+  begin
     Result := '';
+  end;
+
   Result := Trim(Result);
 end;
 
@@ -176,43 +191,61 @@ var
 
   function GetDataObjectFormat(Fmt: TCLIPFORMAT): Boolean;
   begin
-    Result:=False;
+    Result := False;
     Enum.Reset;
-    while Enum.Next(1,FmtEtc,nil)=S_OK do
-      if FmtEtc.CfFormat=Fmt then
+
+    while Enum.Next(1, FmtEtc, nil) = S_OK do
+    begin
+      if FmtEtc.CfFormat = Fmt then
       begin
-        url:=ParseDataObj(DataObject,Fmt);
-        if url<>'' then
-          Result:=True;
+        url := ParseDataObj(DataObject, Fmt);
+        if url <> '' then
+        begin
+          Result := True;
+        end;
+
         Break;
       end;
+    end;
   end;
 
   function GetDataObjectFormats(Fmts: array of TCLIPFORMAT): Boolean;
   var
     i: Integer;
   begin
-    Result:=False;
-    if Length(Fmts)=0 then Exit;
-    for i:=Low(Fmts) to High(Fmts) do
+    Result := False;
+    if Length(Fmts) = 0 then
+    begin
+      Exit;
+    end;
+
+    for i := Low(Fmts) to High(Fmts) do
+    begin
       if GetDataObjectFormat(Fmts[i]) then
       begin
-        Result:=True;
+        Result := True;
         Break;
       end;
+    end;
   end;
 
 begin
-  Result:='';
-  if DataObject=nil then Exit;
-  url:=Result;
-  OleCheck(DataObject.EnumFormatEtc(DATADIR_GET,Enum));
+  Result := '';
+  if DataObject = nil then
+  begin
+    Exit;
+  end;
+
+  url := Result;
+  OleCheck(DataObject.EnumFormatEtc(DATADIR_GET, Enum));
   if GetDataObjectFormats([
       CF_HTML,
       CF_UNICODETEXT,
       CF_TEXT
       ]) then
-      Result:=url;
+  begin
+    Result := url;
+  end;
 end;
 
 { TFormDropTarget }
@@ -282,9 +315,15 @@ begin
   Width := FWidth;
   Height := FHeight;
   if FLeft = -1 then
+  begin
     FLeft := Screen.WorkAreaWidth - Width - 15;
+  end;
+
   if FTop = -1 then
+  begin
     FTop := Screen.WorkAreaHeight - Height - 15;
+  end;
+
   Left := FLeft;
   Top := FTop;
 end;
@@ -333,11 +372,14 @@ begin
   Result := DROPEFFECT_NONE;
   if FCanDrop then
   begin
-    if (KeyState and MK_SHIFT = MK_SHIFT) and
-      (DROPEFFECT_MOVE and AllowedEffects = DROPEFFECT_MOVE) then
-      Result := DROPEFFECT_MOVE
+    if (KeyState and MK_SHIFT = MK_SHIFT) and (DROPEFFECT_MOVE and AllowedEffects = DROPEFFECT_MOVE) then
+    begin
+      Result := DROPEFFECT_MOVE;
+    end
     else if (DROPEFFECT_COPY and AllowedEffects = DROPEFFECT_COPY) then
+    begin
       Result := DROPEFFECT_COPY;
+    end;
   end;
 end;
 
@@ -345,9 +387,14 @@ function TFormDropTarget.CanDrop(const DataObj: IDataObject): Boolean;
 begin
   Result := DataObj.QueryGetData(MakeFormatEtc(CF_HTML)) = S_OK;
   if not Result then
+  begin
     Result := DataObj.QueryGetData(MakeFormatEtc(CF_UNICODETEXT)) = S_OK;
+  end;
+
   if not Result then
+  begin
     Result := DataObj.QueryGetData(MakeFormatEtc(CF_TEXT)) = S_OK;
+  end;
 end;
 
 function TFormDropTarget.DragEnter(const dataObj: IDataObject; grfKeyState: DWORD;
@@ -355,7 +402,10 @@ function TFormDropTarget.DragEnter(const dataObj: IDataObject; grfKeyState: DWOR
 begin
   FCanDrop := CanDrop(dataObj);
   if FCanDrop then
-    dwEffect:=DROPEFFECT_LINK;
+  begin
+    dwEffect := DROPEFFECT_LINK;
+  end;
+
   Result := S_OK;
 end;
 
@@ -363,7 +413,10 @@ function TFormDropTarget.DragOver(grfKeyState: DWORD; pt: TPoint;
   var dwEffect: DWORD): HResult; stdcall;
 begin
   if FCanDrop then
-    dwEffect:=DROPEFFECT_LINK;
+  begin
+    dwEffect := DROPEFFECT_LINK;
+  end;
+
   Result := S_OK;
 end;
 
@@ -376,7 +429,10 @@ function TFormDropTarget.Drop(const dataObj: IDataObject; grfKeyState: DWORD;
   pt: TPoint; var dwEffect: DWORD): HResult; stdcall;
 begin
   if Assigned(OnDropChekout) then
+  begin
       OnDropChekout(GetDropURLs(dataObj));
+  end;
+
   Result := S_OK;
 end;
 
