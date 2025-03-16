@@ -25,7 +25,7 @@ object FormDropTarget: TFormDropTarget
     Width = 135
     Align = alClient
     Brush.Color = clWindow
-    Pen.Color = clBtnFace
+    Pen.Color = clWindowText
     Pen.JoinStyle = pjsMiter
   end
   object ImDropIcon: TImage
@@ -2867,7 +2867,7 @@ object FormDropTarget: TFormDropTarget
   end
   object pmDropTarget: TPopupMenu
     OnPopup = pmDropTargetPopup
-    Left = 40
+    Left = 8
     Top = 8
     object miDownloadAll: TMenuItem
       Caption = 'Download all'

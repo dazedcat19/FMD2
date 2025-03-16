@@ -1342,8 +1342,8 @@ begin
 
   // hint
   ShowHint := True;
-  Application.HintPause := 500;
-  Application.HintHidePause := 3000;
+  Application.HintPause := 250;
+  Application.HintHidePause := 5000;
 
   // transfer rate graph
   TransferRateGraphList.DataPoints.NameValueSeparator := '|';
