@@ -4725,7 +4725,7 @@ begin
 
     if Brush.Color <> clNone then
     begin
-      FillRect(CellRect)
+      FillRect(CellRect);
     end
     else
     begin
@@ -4738,27 +4738,32 @@ procedure TMainForm.vtFavoritesChange(Sender: TBaseVirtualTree;
   Node: PVirtualNode);
 begin
   if vtFavorites.SelectedCount > 0 then
-    sbMain.Panels[0].Text := Format(RS_Selected, [vtFavorites.SelectedCount])
+  begin
+    sbMain.Panels[0].Text := Format(RS_Selected, [vtFavorites.SelectedCount]);
+  end
   else
+  begin
     sbMain.Panels[0].Text := '';
+  end;
 end;
 
 procedure TMainForm.vtFavoritesColumnDblClick(Sender: TBaseVirtualTree;
   Column: TColumnIndex; Shift: TShiftState);
 begin
   if Column = 4 then
+  begin
     miFavoritesOpenFolderClick(Sender)
+  end
   else
+  begin
     case OptionDefaultAction of
-      1:
-        miFavoritesViewInfosClick(Sender);
-      2:
-        miFavoritesRenameClick(Sender);
-      3:
-        miFavoritesCheckNewChapterClick(Sender);
+      1: miFavoritesViewInfosClick(Sender);
+      2: miFavoritesRenameClick(Sender);
+      3: miFavoritesCheckNewChapterClick(Sender);
       else
         miFavoritesOpenWithClick(Sender);
     end;
+  end;
 end;
 
 procedure TMainForm.vtFavoritesDragDrop(Sender: TBaseVirtualTree;
@@ -4772,16 +4777,21 @@ procedure TMainForm.vtFavoritesDragOver(Sender: TBaseVirtualTree;
   Source: TObject; Shift: TShiftState; State: TDragState; const Pt: TPoint;
   Mode: TDropMode; var Effect: LongWord; var Accept: Boolean);
 begin
-  Accept:=True;
-  Effect:=DROPEFFECT_LINK;
+  Accept := True;
+  Effect := DROPEFFECT_LINK;
 end;
 
 procedure TMainForm.vtFavoritesGetHint(Sender: TBaseVirtualTree;
   Node: PVirtualNode; Column: TColumnIndex;
   var LineBreakStyle: TVTTooltipLineBreakStyle; var HintText: String);
 begin
-  if Node^.Index>=FavoriteManager.Count then Exit;
+  if Node^.Index >= FavoriteManager.Count then
+  begin
+    Exit;
+  end;
+
   with FavoriteManager.Items[Node^.Index].FavoriteInfo do
+  begin
     case Column of
       1: if Trim(Link) = '' then
          begin
@@ -4799,36 +4809,48 @@ begin
       7: HintText := DateTimeToStr(DateLastChecked);
       8: HintText := DateTimeToStr(DateLastUpdated);
     end;
+  end;
 end;
 
 procedure TMainForm.vtFavoritesGetImageIndex(Sender: TBaseVirtualTree;
   Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
   var Ghosted: Boolean; var ImageIndex: Integer);
 begin
-  if vtFavorites.Header.Columns[Column].Position<>1 then Exit;
+  if vtFavorites.Header.Columns[Column].Position <> 1 then
+  begin
+    Exit;
+  end;
+
   with FavoriteManager.Items[Node^.Index] do
   begin
-    if Trim(FavoriteInfo.Link)='' then
-      ImageIndex:=16
+    if Trim(FavoriteInfo.Link) = '' then
+    begin
+      ImageIndex := 16;
+    end
     else
+    begin
       case FavoriteManager.Items[Node^.Index].Status of
-        STATUS_CHECK    : ImageIndex:=19;
-        STATUS_CHECKING : ImageIndex:=12;
-        STATUS_CHECKED  :
+        STATUS_CHECK : ImageIndex := 19;
+        STATUS_CHECKING : ImageIndex := 12;
+        STATUS_CHECKED :
           begin
-            ImageIndex:=20;
+            ImageIndex := 20;
             if Assigned(NewMangaInfo) then
             begin
-              if NewMangaInfoChaptersPos.Count>0 then
-                ImageIndex:=21
-              else
-              if NewMangaInfo.Status=MangaInfo_StatusCompleted then
-                ImageIndex:=5
+              if NewMangaInfoChaptersPos.Count > 0 then
+              begin
+                ImageIndex := 21;
+              end
+              else if NewMangaInfo.Status = MangaInfo_StatusCompleted then
+              begin
+                ImageIndex := 5;
+              end;
             end;
           end;
         else
-          ImageIndex:=-1;
+          ImageIndex := -1;
       end;
+    end;
   end;
 end;
 
@@ -4838,35 +4860,49 @@ procedure TMainForm.vtFavoritesGetText(Sender: TBaseVirtualTree;
   Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
   var CellText: String);
 begin
-  if Node^.Index>=FavoriteManager.Count then Exit;
+  if Node^.Index >= FavoriteManager.Count then
+  begin
+    Exit;
+  end;
+
   with FavoriteManager.Items[Node^.Index].FavoriteInfo do
     case Column of
-      0: CellText:=IntToStr(Node^.Index+1);
-      1: CellText:=Title;
-      2: CellText:=currentChapter;
-      3: CellText:=Website;
-      4: CellText:=cbFilterStatus.Items[StrToIntDef(Status, cbFilterStatus.Items.Count - 1)];
-      5: CellText:=saveTo;
-      6: CellText:=DateTimeToStr(DateAdded);
-      7: CellText:=DateTimeToStr(DateLastChecked);
-      8: CellText:=DateTimeToStr(DateLastUpdated);
+      0: CellText := IntToStr(Node^.Index + 1);
+      1: CellText := Title;
+      2: CellText := currentChapter;
+      3: CellText := Website;
+      4: CellText := cbFilterStatus.Items[StrToIntDef(Status, cbFilterStatus.Items.Count - 1)];
+      5: CellText := saveTo;
+      6: CellText := DateTimeToStr(DateAdded);
+      7: CellText := DateTimeToStr(DateLastChecked);
+      8: CellText := DateTimeToStr(DateLastUpdated);
     end;
 end;
 
 procedure TMainForm.vtFavoritesHeaderClick(Sender: TVTHeader; HitInfo: TVTHeaderHitInfo);
 begin
-  if HitInfo.Button <> mbLeft then Exit;
-  if FavoriteManager.isRunning then Exit;
-  if HitInfo.Column = 0 then Exit;
+  if (HitInfo.Button <> mbLeft) or (FavoriteManager.isRunning) or (HitInfo.Column = 0) then
+  begin
+    Exit;
+  end;
+
   FavoriteManager.isRunning := True;
   if FavoriteManager.SortColumn = HitInfo.Column then
-    FavoriteManager.sortDirection := not FavoriteManager.sortDirection
+  begin
+    FavoriteManager.sortDirection := not FavoriteManager.sortDirection;
+  end
   else
+  begin
     FavoriteManager.SortColumn := HitInfo.Column;
+  end;
+
   vtFavorites.Header.SortColumn := HitInfo.Column;
   vtFavorites.Header.SortDirection := TSortDirection(FavoriteManager.sortDirection);
   if FavoriteManager.Count > 1 then
+  begin
     FavoriteManager.Sort(HitInfo.Column);
+  end;
+
   UpdateVtFavorites;
   FavoriteManager.isRunning := False;
 end;
@@ -4881,13 +4917,14 @@ end;
 
 procedure TMainForm.vtMangaListChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
 begin
-  //if (NOT isUpdating) then
-  //begin
   if vtMangaList.SelectedCount > 0 then
-    sbMain.Panels[0].Text := Format(RS_Selected, [vtMangaList.SelectedCount])
+  begin
+    sbMain.Panels[0].Text := Format(RS_Selected, [vtMangaList.SelectedCount]);
+  end
   else
+  begin
     sbMain.Panels[0].Text := '';
-  //end;
+  end;
 end;
 
 procedure TMainForm.vtMangaListColumnDblClick(Sender: TBaseVirtualTree;
@@ -4905,9 +4942,16 @@ begin
   SaveOptions(True);
   oldOptionMaxParallel := OptionMaxParallel;
   ApplyOptions;
+
   if OptionMaxParallel > oldOptionMaxParallel then
+  begin
     DLManager.CheckAndActiveTask();
-  if not Self.Focused then Self.SetFocus;
+  end;
+
+  if not Self.Focused then
+  begin
+    Self.SetFocus;
+  end;
 end;
 
 // vtMangaList

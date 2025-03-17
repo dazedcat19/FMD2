@@ -523,6 +523,7 @@ begin
      begin
        TargetCanvas.Font.Color := CL_BSUnfocesedSelectionText;
      end;
+  end
   else
   begin
      TargetCanvas.Font.Color := CL_BSNormalText;
@@ -666,7 +667,7 @@ var
 
       if LineStyle = lsDotted then
       begin
-        TargetCanvas.Pen.Style := psDot
+        TargetCanvas.Pen.Style := psDot;
       end
       else
       begin
