@@ -25,7 +25,7 @@ object FormDropTarget: TFormDropTarget
     Width = 135
     Align = alClient
     Brush.Color = clWindow
-    Pen.Color = clWindowText
+    Pen.Color = clGrayText
     Pen.JoinStyle = pjsMiter
   end
   object ImDropIcon: TImage

@@ -4932,42 +4932,59 @@ begin
   with data^ do
   begin
     if dataProcess.FilterAllSites then
+    begin
       HintText += RS_InfoWebsite + LineEnding + TModuleContainer(Module).Name + LineEnding2;
+    end;
+
     HintText += RS_InfoTitle + LineEnding + Title;
+
     if AltTitles <> '' then
+    begin
       HintText += LineEnding2 + RS_InfoAltTitles + LineEnding + AltTitles;
+    end;
     if Authors <> '' then
+    begin
       HintText += LineEnding2 + RS_InfoAuthors + LineEnding + Authors;
+    end;
     if Artists <> '' then
+    begin
       HintText += LineEnding2 + RS_InfoArtists + LineEnding + Artists;
+    end;
     if Genres <> '' then
+    begin
       HintText += LineEnding2 + RS_InfoGenres + LineEnding + Genres;
+    end;
+
     if Status <> '' then
     begin
       HintText += LineEnding2 + RS_InfoStatus + LineEnding;
+
       if Status = '0' then
       begin
-        HintText += cbFilterStatus.Items[0]
+        HintText += cbFilterStatus.Items[0];
       end
       else if Status = '1' then
       begin
-        HintText += cbFilterStatus.Items[1]
+        HintText += cbFilterStatus.Items[1];
       end
       else if Status = '2' then
       begin
-        HintText += cbFilterStatus.Items[2]
+        HintText += cbFilterStatus.Items[2];
       end
       else if Status = '3' then
       begin
-        HintText += cbFilterStatus.Items[3]
+        HintText += cbFilterStatus.Items[3];
       end
       else
       begin
         HintText += Status;
       end;
     end;
+
     if Summary <> '' then
+    begin
       HintText += LineEnding2 + RS_InfoSummary + LineEnding + Summary;
+    end;
   end;
 end;
 
