@@ -55,9 +55,10 @@ function _M.GetInfo()
 
 	x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Title     = x.XPathString('json(*).title')
+	MANGAINFO.AltTitles = x.XPathString('json(*).alternative_names')
 	MANGAINFO.Authors   = x.XPathString('json(*).author')
 	MANGAINFO.Genres    = x.XPathStringAll('json(*).tags().name')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('json(*).status'), 'Hiatus|Ongoing', 'Completed|Dropped')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('json(*).status'), 'Ongoing', 'Completed', 'Hiatus', 'Dropped')
 	MANGAINFO.Summary   = x.XPathString('json(*).description')
 
 	thumbnail = x.XPathString('json(*).thumbnail')
