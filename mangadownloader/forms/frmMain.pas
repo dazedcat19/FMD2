@@ -4974,21 +4974,14 @@ begin
     Brush.Color := clNone;
     data := Sender.GetNodeData(Node);
 
+    if miHighlightNewManga.Checked and (data^.JDN > OptionJDNNewMangaTime) then
+    begin
+      Brush.Color := CL_MNNewManga;
+    end;
+
     if data^.Status = MangaInfo_StatusCompleted then
     begin
       Brush.Color := CL_MNCompletedManga;
-    end;
-
-    if miHighlightNewManga.Checked and (data^.JDN > OptionJDNNewMangaTime) then
-    begin
-      if Brush.Color <> clNone then
-      begin
-        Brush.Color := Brush.Color + CL_MNNewManga;
-      end
-      else
-      begin
-        Brush.Color := CL_MNNewManga;
-      end;
     end;
 
     if Brush.Color <> clNone then
