@@ -1342,7 +1342,7 @@ begin
 
   // hint
   ShowHint := True;
-  Application.HintPause := 250;
+  Application.HintPause := 500;
   Application.HintHidePause := 5000;
 
   // transfer rate graph
@@ -4680,34 +4680,57 @@ procedure TMainForm.vtFavoritesBeforeCellPaint(Sender: TBaseVirtualTree;
 var
   C: TColor;
 begin
-  if CellPaintMode <> cpmPaint then Exit;
+  if CellPaintMode <> cpmPaint then
+  begin
+    Exit;
+  end;
+
   with TargetCanvas, FavoriteManager.Items[Node^.Index] do
   begin
-    if not Enabled then Exit;
+    if not Enabled then
+    begin
+      Exit;
+    end;
+
     C := Brush.Color;
     Brush.Color := clNone;
     if Trim(FavoriteInfo.Link) = '' then
-      Brush.Color := CL_FVBrokenFavorite
+    begin
+      Brush.Color := CL_FVBrokenFavorite;
+    end
     else
     begin
       if FavoriteInfo.Status = MangaInfo_StatusCompleted then
+      begin
         Brush.Color := CL_FVCompletedManga;
+      end;
+
       if FavoriteInfo.CurrentChapter = '0' then
+      begin
         Brush.Color := CL_FVEmptyChapters;
+      end;
+
       if Status = STATUS_CHECKING then
-        Brush.Color := CL_FVChecking
-      else
-      if (Status = STATUS_CHECKED) and
-        Assigned(NewMangaInfo) then
+      begin
+        Brush.Color := CL_FVChecking;
+      end
+      else if (Status = STATUS_CHECKED) and Assigned(NewMangaInfo) then
       begin
         if NewMangaInfoChaptersPos.Count > 0 then
+        begin
           Brush.Color := CL_FVNewChapterFound;
+        end;
       end;
     end;
+
     if Brush.Color <> clNone then
+    begin
       FillRect(CellRect)
+    end
     else
+    begin
       Brush.Color := C;
+    end;
   end;
 end;
 
@@ -4893,24 +4916,45 @@ procedure TMainForm.vtMangaListBeforeCellPaint(Sender: TBaseVirtualTree;
   TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
   CellPaintMode: TVTCellPaintMode; CellRect: TRect; var ContentRect: TRect);
 var
-  data: PMangaInfoData;
+  data: PMangaInfoData; 
+  C: TColor;
 begin
-  if CellPaintMode <> cpmPaint then Exit;
+  if CellPaintMode <> cpmPaint then
+  begin
+    Exit;
+  end;
+
   with TargetCanvas do
   begin
+    C := Brush.Color;
     Brush.Color := clNone;
     data := Sender.GetNodeData(Node);
+
     if data^.Status = MangaInfo_StatusCompleted then
+    begin
       Brush.Color := CL_MNCompletedManga;
+    end;
+
     if miHighlightNewManga.Checked and (data^.JDN > OptionJDNNewMangaTime) then
     begin
       if Brush.Color <> clNone then
-        Brush.Color := Brush.Color + CL_MNNewManga
+      begin
+        Brush.Color := Brush.Color + CL_MNNewManga;
+      end
       else
+      begin
         Brush.Color := CL_MNNewManga;
+      end;
     end;
+
     if Brush.Color <> clNone then
+    begin
       FillRect(CellRect);
+    end
+    else
+    begin
+      Brush.Color := C;
+    end;
   end;
 end;
 
