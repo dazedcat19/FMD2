@@ -76,57 +76,60 @@ function GetNameAndLink()
 		[3] = 'erotica',
 		[4] = 'pornographic'
 	}
-
-	-- Delay this task if configured:
-	Delay()
+	local haschapter = {
+		[1] = 'true',
+		[2] = 'false'
+	}
 
 	for _, dg in ipairs(demographics) do
 		for _, ms in ipairs(mangastatus) do
 			for _, cr in ipairs(contentrating) do
-				local total = 1
-				local offset = 0
-				local offmaxlimit = 0
-				local order = 'asc'
+				for _, hc in ipairs(haschapter) do
+					local total = 1
+					local offset = 0
+					local offmaxlimit = 0
+					local order = 'asc'
 
-				while total > offset do
-					sleep(4000)
-					if total > 10000 and offset >= 10000 and order == 'asc' then
-						offset = 0
-						order = 'desc'
-					end
-
-					if offset < 10000 and HTTP.GET(API_URL .. '/manga?limit=100&offset=' .. offset ..'&order[createdAt]=' .. order ..'&publicationDemographic[]=' .. dg .. '&status[]=' .. ms .. '&contentRating[]=' .. cr) then
-						UPDATELIST.UpdateStatusText('Loading page ' .. string.gsub(offset, '00', '') .. ' of ' .. dg .. '/' .. ms .. '/' .. cr .. ' (' .. order .. ')' or '')
-						local x = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString()))
-
-						local ninfo    = x.XPath('json(*)')
-						local nstatus  = x.XPathString('result', ninfo)
-						local nmessage = x.XPathString('json(*).errors().detail')
-
-						if nstatus == 'error' then
-							print(nstatus .. ': ' .. nmessage)
-						else
-							if order == 'asc' then
-								total = tonumber(x.XPathString('json(*).total'))
-							else
-								total = tonumber(x.XPathString('json(*).total')) - 10000
-							end
-							offset = offset + tonumber(x.XPathString('json(*).limit'))
-							if total > 10000 then
-								offmaxlimit = total - 10000
-								print('Total Over Max Limit: ' .. offmaxlimit .. ' are over the max limit!')
-							end
-
-							local data for data in x.XPath('json(*).data()').Get() do
-								LINKS.Add('title/' .. x.XPathString('id', data))
-								NAMES.Add(x.XPathString('attributes/title/*', data))
-							end
+					while total > offset do
+						sleep(4000)
+						if total > 10000 and offset >= 10000 and order == 'asc' then
+							offset = 0
+							order = 'desc'
 						end
-					elseif offset >= 10000 then
-						print('Offset for fetching manga list is over the max limit: ' .. offset .. ' (Total: ' .. total .. ')')
-					else
-						print('List could not be fetched. Please check if you can access the Manga page and read the chapter in your browser.')
-						return net_problem
+
+						if offset < 10000 and HTTP.GET(API_URL .. '/manga?limit=100&offset=' .. offset ..'&order[createdAt]=' .. order ..'&publicationDemographic[]=' .. dg .. '&status[]=' .. ms .. '&contentRating[]=' .. cr .. '&hasAvailableChapters=' .. hc) then
+							UPDATELIST.UpdateStatusText('Loading page ' .. string.gsub(offset + 100, '00$', '') .. ' of ' .. dg:gsub("^%l", string.upper) .. '/' .. ms:gsub("^%l", string.upper) .. '/' .. cr:gsub("^%l", string.upper) .. '/Chapter: ' .. hc:gsub('true', 'Yes'):gsub('false', 'No') .. ' (' .. order:gsub("^%l", string.upper) .. ')' or '')
+							local x = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString()))
+
+							local ninfo    = x.XPath('json(*)')
+							local nstatus  = x.XPathString('result', ninfo)
+							local nmessage = x.XPathString('json(*).errors().detail')
+
+							if nstatus == 'error' then
+								print(nstatus .. ': ' .. nmessage)
+							else
+								if order == 'asc' then
+									total = tonumber(x.XPathString('json(*).total'))
+								else
+									total = tonumber(x.XPathString('json(*).total')) - 10000
+								end
+								offset = offset + tonumber(x.XPathString('json(*).limit'))
+								if total > 10000 then
+									offmaxlimit = total - 10000
+									print('Total Over Max Limit: ' .. offmaxlimit .. ' are over the max limit!')
+								end
+
+								local data for data in x.XPath('json(*).data()').Get() do
+									LINKS.Add('title/' .. x.XPathString('id', data))
+									NAMES.Add(x.XPathString('attributes/title/*', data))
+								end
+							end
+						elseif offset >= 10000 then
+							print('Offset for fetching manga list is over the max limit: ' .. offset .. ' (Total: ' .. total .. ')')
+						else
+							print('List could not be fetched. Please check if you can access the Manga page and read the chapter in your browser.')
+							return net_problem
+						end
 					end
 				end
 			end
@@ -217,9 +220,21 @@ function GetInfo()
 			-- Fetch genre, demographic, and rating:
 			MANGAINFO.Genres = x.XPathStringAll('json(*).data.attributes.tags().attributes.name.en')
 			local demographic = x.XPathString('data/attributes/publicationDemographic', minfo):gsub("^%l", string.upper)
-			if demographic ~= 'Null' then MANGAINFO.Genres = MANGAINFO.Genres .. ', ' .. demographic end
+			if demographic ~= 'Null' then
+				if MANGAINFO.Genres ~= '' then
+					MANGAINFO.Genres = MANGAINFO.Genres .. ', ' .. demographic
+				else
+					MANGAINFO.Genres = demographic
+				end
+			end
 			local rating = x.XPathString('data/attributes/contentRating', minfo):gsub("^%l", string.upper)
-			if rating ~= 'Null' then MANGAINFO.Genres = MANGAINFO.Genres .. ', ' .. rating end
+			if rating ~= 'Null' then
+				if MANGAINFO.Genres ~= '' then
+					MANGAINFO.Genres = MANGAINFO.Genres .. ', ' .. rating
+				else
+					MANGAINFO.Genres = rating
+				end
+			end
 
 			-- Get user defined options for fetching all chapters respecting these options:
 			local optgroup   = MODULE.GetOption('luashowscangroup')

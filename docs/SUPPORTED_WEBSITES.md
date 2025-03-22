@@ -279,7 +279,7 @@
 | MangaDao | [![https://mangadao.com](https://img.shields.io/website?url=https://mangadao.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangadao.com)](https://mangadao.com) | - | - | - |
 | MangaDemon | [![https://demonicscans.org](https://img.shields.io/website?url=https://demonicscans.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://demonicscans.org)](https://demonicscans.org) | OK | 22.02.2025 | - |
 | MangaDenizi | [![https://www.mangadenizi.com](https://img.shields.io/website?url=https://www.mangadenizi.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangadenizi.com)](https://www.mangadenizi.com) | - | - | - |
-| MangaDex | [![https://mangadex.org](https://img.shields.io/website?url=https://mangadex.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangadex.org)](https://mangadex.org) | OK | 12.12.2024 | - |
+| MangaDex | [![https://mangadex.org](https://img.shields.io/website?url=https://mangadex.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangadex.org)](https://mangadex.org) | OK | 23.03.2025 | - |
 | MangaDods | [![https://www.mangadods.com](https://img.shields.io/website?url=https://www.mangadods.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangadods.com)](https://www.mangadods.com) | - | - | - |
 | MangaDoom | [![http://www.mngdoom.com](https://img.shields.io/website?url=http://www.mngdoom.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.mngdoom.com)](http://www.mngdoom.com) | - | - | - |
 | MangaDoor | [![http://mangadoor.com](https://img.shields.io/website?url=http://mangadoor.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://mangadoor.com)](http://mangadoor.com) | - | - | - |
