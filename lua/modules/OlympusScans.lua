@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '760d177b1f6d4763a08971c0c1b5572b'
 	m.Name                     = 'Olympus Scanlation'
-	m.RootURL                  = 'https://olympuslectura.com'
+	m.RootURL                  = 'https://olympusbiblioteca.com'
 	m.Category                 = 'Spanish-Scanlation'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
@@ -18,7 +18,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-API_URL = 'https://dashboard.olympuslectura.com/api'
+API_URL = 'https://dashboard.olympusbiblioteca.com/api'
 DirectoryPagination = '/series?type=comic&direction=desc&page='
 
 ----------------------------------------------------------------------------------------------------
@@ -64,7 +64,7 @@ function GetInfo()
 	MANGAINFO.Title     = x.XPathString('json(*).data.name')
 	MANGAINFO.CoverLink = x.XPathString('json(*).data.cover')
 	MANGAINFO.Genres    = x.XPathStringAll('json(*).data.genres().name')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('json(*).data.status.id'), '1|3', '4|5|7')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('json(*).data.status.id'), '1', '4', '3', '5|7')
 	MANGAINFO.Summary   = x.XPathString('json(*).data.summary')
 
 	pages = tonumber(math.ceil(x.XPathString('json(*).data.chapter_count') / 40)) or 1
