@@ -2,7 +2,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                         = '9185eb6c49324a849c7d7925a41ef3a3'
 	m.Name                       = 'TuMangaOnline'
-	m.RootURL                    = 'https://lectortmo.com'
+	m.RootURL                    = 'https://zonatmo.com'
 	m.Category                   = 'Spanish'
 	m.MaxTaskLimit               = 1
 	m.MaxConnectionLimit         = 1
