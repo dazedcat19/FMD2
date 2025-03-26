@@ -10,6 +10,7 @@ function Init()
 	m.OnGetInfo                  = 'GetInfo'
 	m.OnGetPageNumber            = 'GetPageNumber'
 	m.OnGetImageURL              = 'GetImageURL'
+	m.OnBeforeDownloadImage      = 'BeforeDownloadImage'
 
 	local fmd = require 'fmd.env'
 	local slang = fmd.SelectedLanguage
@@ -144,4 +145,11 @@ function Delay()
 		end
 	end
 	MODULE.Storage['lastDelay'] = os.time()
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+
+	return true
 end
