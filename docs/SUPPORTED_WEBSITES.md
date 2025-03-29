@@ -167,7 +167,6 @@
 | IlluminatiManga | [![http://reader.manga-download.org](https://img.shields.io/website?url=http://reader.manga-download.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://reader.manga-download.org)](http://reader.manga-download.org) | - | - | - |
 | Imgur | [![https://imgur.com](https://img.shields.io/website?url=https://imgur.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://imgur.com)](https://imgur.com) | - | - | - |
 | IMHentai | [![https://imhentai.xxx](https://img.shields.io/website?url=https://imhentai.xxx%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://imhentai.xxx)](https://imhentai.xxx) | OK | 12.03.2025 | - |
-| ImmortalUpdates | [![https://mortalsgroove.com](https://img.shields.io/website?url=https://mortalsgroove.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mortalsgroove.com)](https://mortalsgroove.com) | - | - | - |
 | Inari Manga | [![https://inarimanga.visahelper.online](https://img.shields.io/website?url=https://inarimanga.visahelper.online%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://inarimanga.visahelper.online)](https://inarimanga.visahelper.online) | OK | 18.01.2025 | - |
 | InfamousScanlation | [![https://infamous-scans.com](https://img.shields.io/website?url=https://infamous-scans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://infamous-scans.com)](https://infamous-scans.com) | - | - | - |
 | InManga | [![https://inmanga.com](https://img.shields.io/website?url=https://inmanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://inmanga.com)](https://inmanga.com) | - | - | - |
@@ -735,6 +734,7 @@
 | ~EcchiScan~ | ~https://ecchiscan.com~ | Removed | 07.02.2025 | - |
 | ~HanaScan~ | ~https://hanascan.com~ | Removed | 07.02.2025 | - |
 | ~HeroScan~ | ~https://heroscan.com~ | Removed | 07.02.2025 | - |
+| ~ImmortalUpdates~ | ~https://mortalsgroove.com~ | Removed | 30.03.2025 | - |
 | ~LHTranslationArchive~ | ~https://archive.lhtranslation.net~ | Removed | 07.02.2025 | - |
 | ~Manga99~ | ~http://www.manga99.com~ | Removed | 11.02.2025 | - |
 | ~MangaDeep~ | ~http://www.mangadeep.com~ | Removed | 11.02.2025 | - |
