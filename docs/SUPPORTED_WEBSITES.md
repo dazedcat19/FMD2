@@ -202,7 +202,7 @@
 | KomikGO | [![https://komikgo.xyz](https://img.shields.io/website?url=https://komikgo.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikgo.xyz)](https://komikgo.xyz) | - | - | - |
 | KomikGue | [![http://www.komikgue.com](https://img.shields.io/website?url=http://www.komikgue.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.komikgue.com)](http://www.komikgue.com) | - | - | - |
 | Komikid | [![https://www.komikid.com](https://img.shields.io/website?url=https://www.komikid.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.komikid.com)](https://www.komikid.com) | - | - | - |
-| KomikIndo | [![https://komikindo.pw](https://img.shields.io/website?url=https://komikindo.pw%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikindo.pw)](https://komikindo.pw) | OK | 23.12.2024 | - |
+| KomikIndo | [![https://komikindo2.com](https://img.shields.io/website?url=https://komikindo2.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikindo2.com)](https://komikindo2.com) | OK | 30.03.2025 | - |
 | KomikMama | [![https://komikmama.org](https://img.shields.io/website?url=https://komikmama.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikmama.org)](https://komikmama.org) | - | - | - |
 | KomikManga | [![https://komikmanga.com](https://img.shields.io/website?url=https://komikmanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikmanga.com)](https://komikmanga.com) | - | - | - |
 | KomikNesia | [![https://komiknesia.com](https://img.shields.io/website?url=https://komiknesia.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komiknesia.com)](https://komiknesia.com) | - | - | - |
