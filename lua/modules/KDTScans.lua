@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '94caa4da3f334418b27bc1ba7e127b57'
 	m.Name                     = 'KDT Scans'
-	m.RootURL                  = 'https://kdtscans.com'
+	m.RootURL                  = 'https://kdt.akan01.com'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -18,10 +18,6 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.Madara'
--- XPathTokenAuthors = 'Author(s)'
--- XPathTokenArtists = 'Artist(s)'
--- XPathTokenGenres  = 'Genre(s)'
--- XPathTokenStatus  = 'Status'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -45,5 +41,5 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
 end
