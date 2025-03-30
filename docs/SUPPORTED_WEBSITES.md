@@ -448,6 +448,7 @@
 | ManhwasNet | [![https://manhwas.net](https://img.shields.io/website?url=https://manhwas.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwas.net)](https://manhwas.net) | - | - | - |
 | ManhwaTaro | [![https://manhwataro.xyz](https://img.shields.io/website?url=https://manhwataro.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwataro.xyz)](https://manhwataro.xyz) | - | - | - |
 | ManhwaWeb | [![https://manhwaweb.com](https://img.shields.io/website?url=https://manhwaweb.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwaweb.com)](https://manhwaweb.com) | - | - | - |
+| ManhwaZ | [![https://manhwaz.com](https://img.shields.io/website?url=https://manhwaz.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwaz.com)](https://manhwaz.com) | OK | 30.03.2025 | - |
 | ManwhasOnline | [![https://manwhasonline.com](https://img.shields.io/website?url=https://manwhasonline.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manwhasonline.com)](https://manwhasonline.com) | - | - | - |
 | ManyToon | [![https://manytoon.me](https://img.shields.io/website?url=https://manytoon.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manytoon.me)](https://manytoon.me) | - | - | - |
 | ManyToonCom | [![https://manytoon.com](https://img.shields.io/website?url=https://manytoon.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manytoon.com)](https://manytoon.com) | - | - | - |
