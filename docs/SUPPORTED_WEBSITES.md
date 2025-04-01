@@ -68,7 +68,6 @@
 | Comic-days | [![https://comic-days.com](https://img.shields.io/website?url=https://comic-days.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comic-days.com)](https://comic-days.com) | - | - | - |
 | ComicDom | [![https://comicdom.org](https://img.shields.io/website?url=https://comicdom.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comicdom.org)](https://comicdom.org) | - | - | - |
 | ComicExtra | [![https://www.comicextra.me](https://img.shields.io/website?url=https://www.comicextra.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.comicextra.me)](https://www.comicextra.me) | - | - | - |
-| ComicFx | [![https://comicfx.net](https://img.shields.io/website?url=https://comicfx.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comicfx.net)](https://comicfx.net) | - | - | - |
 | ComicK | [![https://comick.io](https://img.shields.io/website?url=https://comick.io%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comick.io)](https://comick.io) | OK | 01.03.2025 | - |
 | ComicKiba | [![https://comickiba.com](https://img.shields.io/website?url=https://comickiba.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comickiba.com)](https://comickiba.com) | - | - | - |
 | ComickTop | [![https://comick.top](https://img.shields.io/website?url=https://comick.top%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comick.top)](https://comick.top) | - | - | - |
@@ -734,6 +733,7 @@
 | ZManga | [![https://zmanga.org](https://img.shields.io/website?url=https://zmanga.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://zmanga.org)](https://zmanga.org) | - | - | - |
 | Đọc Truyện 5s | [![https://dongmoe.com](https://img.shields.io/website?url=https://dongmoe.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://dongmoe.com)](https://dongmoe.com) | OK | 20.01.2025 | - |
 | 古风漫画网 | [![https://www.gufengmh.com](https://img.shields.io/website?url=https://www.gufengmh.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.gufengmh.com)](https://www.gufengmh.com) | OK | 06.01.2025 | - |
+| ~ComicFx~ | ~https://comicfx.net~ | Removed | 01.04.2025 | - |
 | ~EcchiScan~ | ~https://ecchiscan.com~ | Removed | 07.02.2025 | - |
 | ~HanaScan~ | ~https://hanascan.com~ | Removed | 07.02.2025 | - |
 | ~HeroScan~ | ~https://heroscan.com~ | Removed | 07.02.2025 | - |
