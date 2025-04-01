@@ -126,7 +126,6 @@
 | Goldragon | [![https://swatscans.com](https://img.shields.io/website?url=https://swatscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://swatscans.com)](https://swatscans.com) | - | - | - |
 | Gourmet Scans | [![https://gourmetsupremacy.com](https://img.shields.io/website?url=https://gourmetsupremacy.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://gourmetsupremacy.com)](https://gourmetsupremacy.com) | - | - | - |
 | GrafiManga | [![https://grafimanga.com](https://img.shields.io/website?url=https://grafimanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://grafimanga.com)](https://grafimanga.com) | - | - | - |
-| GrazeScans | [![https://grazescans.com](https://img.shields.io/website?url=https://grazescans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://grazescans.com)](https://grazescans.com) | - | - | - |
 | GuruKomik | [![https://gurukomik.com](https://img.shields.io/website?url=https://gurukomik.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://gurukomik.com)](https://gurukomik.com) | - | - | - |
 | GuyaMoe | [![https://guya.cubari.moe](https://img.shields.io/website?url=https://guya.cubari.moe%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://guya.cubari.moe)](https://guya.cubari.moe) | - | - | - |
 | HadesNoFansub | [![https://mangareaderpro.com/es](https://img.shields.io/website?url=https://mangareaderpro.com/es%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangareaderpro.com/es)](https://mangareaderpro.com/es) | - | - | - |
@@ -736,6 +735,7 @@
 | 古风漫画网 | [![https://www.gufengmh.com](https://img.shields.io/website?url=https://www.gufengmh.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.gufengmh.com)](https://www.gufengmh.com) | OK | 06.01.2025 | - |
 | ~ComicFx~ | ~https://comicfx.net~ | Removed | 01.04.2025 | - |
 | ~EcchiScan~ | ~https://ecchiscan.com~ | Removed | 07.02.2025 | - |
+| ~GrazeScans~ | ~https://grazescans.comgrazescans.com~ | Removed | 01.04.2025 | - |
 | ~HanaScan~ | ~https://hanascan.com~ | Removed | 07.02.2025 | - |
 | ~HeroScan~ | ~https://heroscan.com~ | Removed | 07.02.2025 | - |
 | ~ImmortalUpdates~ | ~https://mortalsgroove.com~ | Removed | 30.03.2025 | - |
