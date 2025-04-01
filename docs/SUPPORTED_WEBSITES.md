@@ -343,6 +343,7 @@
 | MangaOnlineBiz | [![https://manga-online.biz](https://img.shields.io/website?url=https://manga-online.biz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga-online.biz)](https://manga-online.biz) | - | - | - |
 | MangaOnlineBR | [![http://mangaonline.com.br](https://img.shields.io/website?url=http://mangaonline.com.br%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://mangaonline.com.br)](http://mangaonline.com.br) | - | - | - |
 | MangaOnlineFun | [![https://mangaonline.fun](https://img.shields.io/website?url=https://mangaonline.fun%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangaonline.fun)](https://mangaonline.fun) | - | - | - |
+| MangaOwl | [![https://mangaowl.io](https://img.shields.io/website?url=https://mangaowl.io%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangaowl.io)](https://mangaowl.io) | OK | 01.04.2025 | - |
 | MangaPanda | [![http://www.mangapanda.com](https://img.shields.io/website?url=http://www.mangapanda.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.mangapanda.com)](http://www.mangapanda.com) | - | - | - |
 | MangaPandaOnl | [![https://mangapanda.onl](https://img.shields.io/website?url=https://mangapanda.onl%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangapanda.onl)](https://mangapanda.onl) | - | - | - |
 | MangaPark | [![https://comicpark.org](https://img.shields.io/website?url=https://comicpark.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comicpark.org)](https://comicpark.org) | OK | 19.02.2025 | - |
