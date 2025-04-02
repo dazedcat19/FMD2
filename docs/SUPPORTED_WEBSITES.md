@@ -174,7 +174,6 @@
 | InManga | [![https://inmanga.com](https://img.shields.io/website?url=https://inmanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://inmanga.com)](https://inmanga.com) | - | - | - |
 | InmortalScan | [![https://manga.mundodrama.site](https://img.shields.io/website?url=https://manga.mundodrama.site%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga.mundodrama.site)](https://manga.mundodrama.site) | - | - | - |
 | InstaManhwa | [![https://www.instamanhwa.com](https://img.shields.io/website?url=https://www.instamanhwa.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.instamanhwa.com)](https://www.instamanhwa.com) | - | - | - |
-| IsekaiScan | [![https://isekaiscan.com](https://img.shields.io/website?url=https://isekaiscan.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://isekaiscan.com)](https://isekaiscan.com) | - | - | - |
 | ItsYourRightManhua | [![https://itsyourightmanhua.com](https://img.shields.io/website?url=https://itsyourightmanhua.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://itsyourightmanhua.com)](https://itsyourightmanhua.com) | - | - | - |
 | J8jp | [![https://j8jp.com](https://img.shields.io/website?url=https://j8jp.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://j8jp.com)](https://j8jp.com) | - | - | - |
 | Jaiminisbox | [![https://jaiminisbox.com](https://img.shields.io/website?url=https://jaiminisbox.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://jaiminisbox.com)](https://jaiminisbox.com) | - | - | - |
@@ -742,6 +741,7 @@
 | ~HanaScan~ | ~https://hanascan.com~ | Removed | 07.02.2025 | - |
 | ~HeroScan~ | ~https://heroscan.com~ | Removed | 07.02.2025 | - |
 | ~ImmortalUpdates~ | ~https://mortalsgroove.com~ | Removed | 30.03.2025 | - |
+| ~IsekaiScan~ | ~https://isekaiscan.com~ | Removed | 02.04.2025 | - |
 | ~LHTranslationArchive~ | ~https://archive.lhtranslation.net~ | Removed | 07.02.2025 | - |
 | ~Manga99~ | ~http://www.manga99.com~ | Removed | 11.02.2025 | - |
 | ~MangaDeep~ | ~http://www.mangadeep.com~ | Removed | 11.02.2025 | - |
