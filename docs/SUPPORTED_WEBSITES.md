@@ -29,6 +29,7 @@
 | AntisenseScans | [![http://antisensescans.com](https://img.shields.io/website?url=http://antisensescans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://antisensescans.com)](http://antisensescans.com) | - | - | - |
 | ApollComics | [![https://apollcomics.xyz](https://img.shields.io/website?url=https://apollcomics.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://apollcomics.xyz)](https://apollcomics.xyz) | - | - | - |
 | Apolltoons | [![https://apolltoons.xyz](https://img.shields.io/website?url=https://apolltoons.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://apolltoons.xyz)](https://apolltoons.xyz) | - | - | - |
+| Aqua Manga | [![https://aquareader.net](https://img.shields.io/website?url=https://aquareader.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://aquareader.net)](https://aquareader.net) | OK | 02.04.2025 | - |
 | ArangScans | [![https://arangscans.com](https://img.shields.io/website?url=https://arangscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://arangscans.com)](https://arangscans.com) | - | - | - |
 | Arcane Scans | [![https://arcanescans.com](https://img.shields.io/website?url=https://arcanescans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://arcanescans.com)](https://arcanescans.com) | OK | 11.02.2025 | - |
 | ArtemisNF | [![https://artemisnf.com](https://img.shields.io/website?url=https://artemisnf.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://artemisnf.com)](https://artemisnf.com) | - | - | - |
