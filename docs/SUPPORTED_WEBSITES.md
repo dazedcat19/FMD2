@@ -469,7 +469,6 @@
 | Milftoon | [![https://milftoon.xxx](https://img.shields.io/website?url=https://milftoon.xxx%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://milftoon.xxx)](https://milftoon.xxx) | - | - | - |
 | MiracleScans | [![https://miraclescans.com](https://img.shields.io/website?url=https://miraclescans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://miraclescans.com)](https://miraclescans.com) | - | - | - |
 | MixedManga | [![https://mixedmanga.com](https://img.shields.io/website?url=https://mixedmanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mixedmanga.com)](https://mixedmanga.com) | - | - | - |
-| MMScans | [![https://mm-scans.org](https://img.shields.io/website?url=https://mm-scans.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mm-scans.org)](https://mm-scans.org) | - | - | - |
 | ModeScanlator | [![https://site.modescanlator.net](https://img.shields.io/website?url=https://site.modescanlator.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://site.modescanlator.net)](https://site.modescanlator.net) | - | - | - |
 | Mto | [![https://mto.to](https://img.shields.io/website?url=https://mto.to%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mto.to)](https://mto.to) | - | - | - |
 | MundoWuxia | [![https://mundowuxia.com](https://img.shields.io/website?url=https://mundowuxia.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mundowuxia.com)](https://mundowuxia.com) | - | - | - |
@@ -756,4 +755,5 @@
 | ~MangaWeek~ | ~https://mangaweek.com~ | Removed | 07.02.2025 | - |
 | ~Manhwaid~ | ~https://manhwaid.club~ | Removed | 23.02.2025 | - |
 | ~ManhwaSmut~ | ~https://manhwasmut.com~ | Removed | 07.02.2025 | - |
+| ~MMScans~ | ~https://mm-scans.org~ | Removed | 02.04.2025 | - |
 | ~Ney5~ | ~https://ney5.xyz~ | Removed | 07.02.2025 | - |
