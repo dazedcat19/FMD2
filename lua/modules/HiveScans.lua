@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'f01040ee781d4ae1929031419b97d2e0'
 	m.Name                     = 'Hive Scans'
-	m.RootURL                  = 'https://hivetoon.com'
+	m.RootURL                  = 'https://hivecomic.com'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -68,5 +68,5 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
 end
