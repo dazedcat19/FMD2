@@ -328,7 +328,6 @@
 | MangaLib | [![https://mangalib.me](https://img.shields.io/website?url=https://mangalib.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangalib.me)](https://mangalib.me) | OK | 14.01.2025 | Authorization code is required to view locked chapters. See [here](https://github.com/dazedcat19/FMD2/issues/1834#issuecomment-2590512862) |
 | MangaLivre | [![https://mangalivre.tv](https://img.shields.io/website?url=https://mangalivre.tv%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangalivre.tv)](https://mangalivre.tv) | OK | 01.04.2025 | - |
 | MangaLord | [![https://www.mangalord.com](https://img.shields.io/website?url=https://www.mangalord.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangalord.com)](https://www.mangalord.com) | - | - | - |
-| MangaMonarca | [![https://mangamonarca.xyz](https://img.shields.io/website?url=https://mangamonarca.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangamonarca.xyz)](https://mangamonarca.xyz) | - | - | - |
 | MangaNato | [![https://www.natomanga.com](https://img.shields.io/website?url=https://www.natomanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.natomanga.com)](https://www.natomanga.com) | OK | 24.02.2025 | - |
 | MangaNelMe | [![https://manganel.me](https://img.shields.io/website?url=https://manganel.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manganel.me)](https://manganel.me) | - | - | - |
 | Manganelo | [![https://chapmanganelo.com](https://img.shields.io/website?url=https://chapmanganelo.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://chapmanganelo.com)](https://chapmanganelo.com) | - | - | - |
@@ -747,6 +746,7 @@
 | ~MangaFenix~ | ~https://manga-fenix.com~ | Removed | 23.02.2025 | - |
 | ~MangaGalaxy~ | ~https://mangagalaxy.net~ | Removed | 15.12.2024 | Merged to Vortex Scans |
 | ~MangaLife~ | ~https://manga4life.com~ | Removed | 07.02.2025 | Moved to Weeb Central |
+| ~MangaMonarca~ | ~https://mangamonarca.xyzca.xyz~ | Removed | 02.04.2025 | - |
 | ~MangaSee~ | ~https://mangasee123.com~ | Removed | 07.02.2025 | Moved to Weeb Central |
 | ~MangaWeek~ | ~https://mangaweek.com~ | Removed | 07.02.2025 | - |
 | ~Manhwaid~ | ~https://manhwaid.club~ | Removed | 23.02.2025 | - |
