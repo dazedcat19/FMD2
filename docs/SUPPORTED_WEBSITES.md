@@ -597,7 +597,6 @@
 | SchaleNetwork | [![https://niyaniya.moe](https://img.shields.io/website?url=https://niyaniya.moe%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://niyaniya.moe)](https://niyaniya.moe) | Broken | 26.03.2025 | - |
 | Scylla Comics | [![https://scyllacomics.xyz](https://img.shields.io/website?url=https://scyllacomics.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://scyllacomics.xyz)](https://scyllacomics.xyz) | - | - | - |
 | SDLGFansub | [![https://www.sdlg-fansub.tk](https://img.shields.io/website?url=https://www.sdlg-fansub.tk%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.sdlg-fansub.tk)](https://www.sdlg-fansub.tk) | - | - | - |
-| SDLScans | [![https://sdlscans.com](https://img.shields.io/website?url=https://sdlscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://sdlscans.com)](https://sdlscans.com) | - | - | - |
 | SeaOtterScans | [![https://reader.seaotterscans.com](https://img.shields.io/website?url=https://reader.seaotterscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://reader.seaotterscans.com)](https://reader.seaotterscans.com) | - | - | - |
 | SeiManga | [![https://1.seimanga.me](https://img.shields.io/website?url=https://1.seimanga.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://1.seimanga.me)](https://1.seimanga.me) | OK | 29.12.2024 | - |
 | SeinagiAdultoFansub | [![https://adulto.seinagi.org.es](https://img.shields.io/website?url=https://adulto.seinagi.org.es%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://adulto.seinagi.org.es)](https://adulto.seinagi.org.es) | - | - | - |
@@ -765,3 +764,4 @@
 | ~MMScans~ | ~https://mm-scans.org~ | Removed | 02.04.2025 | - |
 | ~Ney5~ | ~https://ney5.xyz~ | Removed | 07.02.2025 | - |
 | ~ReadM~ | ~https://readm.org~ | Removed | 03.04.2025 | - |
+| ~SDLScans~ | ~https://sdlscans.com~ | Removed | 03.04.2025 | - |
