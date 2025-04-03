@@ -7,7 +7,7 @@ function Init()
 	m.ID                       = '1256a3ce5097432d8f7dcc43881d3ca1'
 	m.Name                     = 'Cerberus Series'
 	m.RootURL                  = 'https://legionscans.com'
-	m.Category                 = 'Spanish'
+	m.Category                 = 'Spanish-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
