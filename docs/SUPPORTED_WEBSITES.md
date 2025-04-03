@@ -738,6 +738,7 @@
 | ZManga | [![https://zmanga.org](https://img.shields.io/website?url=https://zmanga.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://zmanga.org)](https://zmanga.org) | - | - | - |
 | Đọc Truyện 5s | [![https://dongmoe.com](https://img.shields.io/website?url=https://dongmoe.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://dongmoe.com)](https://dongmoe.com) | OK | 20.01.2025 | - |
 | 古风漫画网 | [![https://www.gufengmh.com](https://img.shields.io/website?url=https://www.gufengmh.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.gufengmh.com)](https://www.gufengmh.com) | OK | 06.01.2025 | - |
+| 漫画RAW (mangajp) | [![https://mangajp.top](https://img.shields.io/website?url=https://mangajp.top%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangajp.top)](https://mangajp.top) | OK | 03.04.2025 | - |
 | ~ComicFx~ | ~https://comicfx.net~ | Removed | 01.04.2025 | - |
 | ~EcchiScan~ | ~https://ecchiscan.com~ | Removed | 07.02.2025 | - |
 | ~GrazeScans~ | ~https://grazescans.comgrazescans.com~ | Removed | 01.04.2025 | - |
