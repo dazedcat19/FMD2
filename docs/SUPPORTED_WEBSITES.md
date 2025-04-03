@@ -576,7 +576,6 @@
 | ReadHentai | [![https://readhent.ai](https://img.shields.io/website?url=https://readhent.ai%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://readhent.ai)](https://readhent.ai) | - | - | - |
 | ReadHentaiManga | [![http://readhentaimanga.com](https://img.shields.io/website?url=http://readhentaimanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://readhentaimanga.com)](http://readhentaimanga.com) | - | - | - |
 | ReadKomik | [![https://www.readkomik.com](https://img.shields.io/website?url=https://www.readkomik.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.readkomik.com)](https://www.readkomik.com) | - | - | - |
-| ReadM | [![https://readm.org](https://img.shields.io/website?url=https://readm.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://readm.org)](https://readm.org) | - | - | - |
 | ReadMangaBat | [![https://readmangabat.com](https://img.shields.io/website?url=https://readmangabat.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://readmangabat.com)](https://readmangabat.com) | - | - | - |
 | ReadMangaEU | [![http://www.readmanga.eu](https://img.shields.io/website?url=http://www.readmanga.eu%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.readmanga.eu)](http://www.readmanga.eu) | - | - | - |
 | ReadMangaToday | [![https://www.readmng.com](https://img.shields.io/website?url=https://www.readmng.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.readmng.com)](https://www.readmng.com) | - | - | - |
@@ -765,3 +764,4 @@
 | ~ManhwaSmut~ | ~https://manhwasmut.com~ | Removed | 07.02.2025 | - |
 | ~MMScans~ | ~https://mm-scans.org~ | Removed | 02.04.2025 | - |
 | ~Ney5~ | ~https://ney5.xyz~ | Removed | 07.02.2025 | - |
+| ~ReadM~ | ~https://readm.org~ | Removed | 03.04.2025 | - |
