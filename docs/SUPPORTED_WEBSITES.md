@@ -462,7 +462,6 @@
 | MartialScans | [![https://martialscans.com](https://img.shields.io/website?url=https://martialscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://martialscans.com)](https://martialscans.com) | - | - | - |
 | Masterkomik | [![https://masterkomik.com](https://img.shields.io/website?url=https://masterkomik.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://masterkomik.com)](https://masterkomik.com) | - | - | - |
 | MenudoFansub | [![http://www.menudo-fansub.com](https://img.shields.io/website?url=http://www.menudo-fansub.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.menudo-fansub.com)](http://www.menudo-fansub.com) | - | - | - |
-| MerakiScans | [![https://merakiscans.com](https://img.shields.io/website?url=https://merakiscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://merakiscans.com)](https://merakiscans.com) | - | - | - |
 | MethodScans | [![https://methodscans.com](https://img.shields.io/website?url=https://methodscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://methodscans.com)](https://methodscans.com) | - | - | - |
 | Mexat | [![http://manga.mexat.com](https://img.shields.io/website?url=http://manga.mexat.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://manga.mexat.com)](http://manga.mexat.com) | - | - | - |
 | MGJinx | [![https://mgjinx.com](https://img.shields.io/website?url=https://mgjinx.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mgjinx.com)](https://mgjinx.com) | OK | 07.02.2025 | - |
@@ -762,6 +761,7 @@
 | ~MangaWeek~ | ~https://mangaweek.com~ | Removed | 07.02.2025 | - |
 | ~Manhwaid~ | ~https://manhwaid.club~ | Removed | 23.02.2025 | - |
 | ~ManhwaSmut~ | ~https://manhwasmut.com~ | Removed | 07.02.2025 | - |
+| ~MerakiScans~ | ~https://merakiscans.com~ | Removed | 03.04.2025 | - |
 | ~MMScans~ | ~https://mm-scans.org~ | Removed | 02.04.2025 | - |
 | ~Ney5~ | ~https://ney5.xyz~ | Removed | 07.02.2025 | - |
 | ~ReadM~ | ~https://readm.org~ | Removed | 03.04.2025 | - |
