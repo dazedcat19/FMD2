@@ -245,7 +245,6 @@
 | LunarScans | [![https://lunarscan.org](https://img.shields.io/website?url=https://lunarscan.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lunarscan.org)](https://lunarscan.org) | - | - | - |
 | Luscious | [![https://www.luscious.net](https://img.shields.io/website?url=https://www.luscious.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.luscious.net)](https://www.luscious.net) | - | - | - |
 | LxHentai | [![https://lxmanga.info](https://img.shields.io/website?url=https://lxmanga.info%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lxmanga.info)](https://lxmanga.info) | OK | 18.01.2025 | - |
-| LynxScans | [![https://lynxscans.com](https://img.shields.io/website?url=https://lynxscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lynxscans.com)](https://lynxscans.com) | - | - | - |
 | MadaraDex | [![https://madaradex.org](https://img.shields.io/website?url=https://madaradex.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://madaradex.org)](https://madaradex.org) | - | - | - |
 | Madokami | [![https://manga.madokami.al](https://img.shields.io/website?url=https://manga.madokami.al%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga.madokami.al)](https://manga.madokami.al) | - | - | - |
 | Magus Manga | [![https://magustoon.com](https://img.shields.io/website?url=https://magustoon.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://magustoon.com)](https://magustoon.com) | OK | 09.01.2025 | Sometimes cloudflare workaround is required and paid chapters are hidden by default |
@@ -751,6 +750,7 @@
 | ~IsekaiScan~ | ~https://isekaiscan.com~ | Removed | 02.04.2025 | - |
 | ~KireiCake~ | ~https://reader.kireicake.com~ | Removed | 03.04.2025 | Read on MangaDex |
 | ~LHTranslationArchive~ | ~https://archive.lhtranslation.net~ | Removed | 07.02.2025 | - |
+| ~LynxScans~ | ~https://lynxscans.com~ | Removed | 03.04.2025 | - |
 | ~Manga99~ | ~http://www.manga99.com~ | Removed | 11.02.2025 | - |
 | ~MangaDeep~ | ~http://www.mangadeep.com~ | Removed | 11.02.2025 | - |
 | ~MangaEffect~ | ~https://mangaeffect.com~ | Removed | 30.01.2025 | Merged to MangaRead |
