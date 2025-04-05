@@ -216,6 +216,7 @@
 | Komiktap | [![https://komiktap.info](https://img.shields.io/website?url=https://komiktap.info%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komiktap.info)](https://komiktap.info) | OK | 23.02.2025 | - |
 | Komiku | [![https://komiku.id](https://img.shields.io/website?url=https://komiku.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komiku.id)](https://komiku.id) | - | - | - |
 | KomikuOne | [![https://komiku.one](https://img.shields.io/website?url=https://komiku.one%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komiku.one)](https://komiku.one) | OK | 03.04.2025 | Sometimes cloudflare workaround is required |
+| KomikUp | [![https://komikup.com](https://img.shields.io/website?url=https://komikup.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikup.com)](https://komikup.com) | OK | 05.04.2025 | - |
 | KooManga | [![https://ww7.koomanga.com](https://img.shields.io/website?url=https://ww7.koomanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://ww7.koomanga.com)](https://ww7.koomanga.com) | - | - | - |
 | Kraw | [![https://kraw.org](https://img.shields.io/website?url=https://kraw.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kraw.org)](https://kraw.org) | - | - | - |
 | KS Scans | [![https://ksgroupscans.com](https://img.shields.io/website?url=https://ksgroupscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://ksgroupscans.com)](https://ksgroupscans.com) | OK | 20.01.2025 | - |
