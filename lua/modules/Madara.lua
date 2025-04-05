@@ -362,7 +362,6 @@ function Init()
 	cat = 'Indonesian'
 	AddWebsiteModule('6c3cb7a05d8243d8817a81d3875ff1a1', 'MangaYosh', 'https://mangayosh.xyz')
 	AddWebsiteModule('fce276573cab499fad96374d1df22121', 'Mangceh', 'https://mangceh.me')
-	AddWebsiteModule('545acbf017814caab2b6bb28e48779fa', 'MGKomik', 'https://mgkomik.com')
 
 	cat = 'H-Sites'
 	AddWebsiteModule('c0214763110b4d14b6e359ecef6df2e4', 'DoujinYosh', 'https://doujinyosh.fun')
