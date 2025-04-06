@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'edf6b037808442508a3aaeb1413699bf'
 	m.Name                     = 'KomikIndo'
-	m.RootURL                  = 'https://komikindo2.com'
+	m.RootURL                  = 'https://komikindo3.com'
 	m.Category                 = 'Indonesian'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -34,7 +34,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	local x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
@@ -60,9 +60,9 @@ end
 function GetPageNumber()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
-	if not HTTP.GET(u) then return net_problem end
+	if not HTTP.GET(u) then return false end
 
 	CreateTXQuery(HTTP.Document).XPathStringAll('//div[@id="chimg-auh"]//img/@src', TASK.PageLinks)
 
-	return no_error
+	return true
 end
