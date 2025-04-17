@@ -184,18 +184,22 @@ begin
     sqlite3_result_int64(context, 0);
     Exit;
   end;
+
   if argc <> 2 then
   begin
     sqlite3_result_int64(context, 0);
     Exit;
   end;
+
   regexp := sqlite3_value_text(argv[0]);
   Text := sqlite3_value_text(argv[1]);
+
   if (regexp = nil) or (Text = nil) then
   begin
     sqlite3_result_int64(context, 0);
     Exit;
   end;
+
   try
     regex := TRegExpr(sqlite3_user_data(context));
     regex.Expression := regexp;
@@ -207,7 +211,7 @@ end;
 
 function QuotedLike(const S: String): String;
 begin
-  Result := QuotedStr('%'+S+'%');
+  Result := QuotedStr('%' + S + '%');
 end;
 
 function DBDataFilePath(const AModuleID: String): String;
@@ -223,7 +227,10 @@ end;
 procedure CopyDBDataProcess(const AWebsite, NWebsite: String);
 begin
   if NWebsite = '' then
+  begin
     Exit;
+  end;
+
   if DBDataFileExist(AWebsite) then
   begin
     try
@@ -242,16 +249,21 @@ var
   tryc: Integer;
 begin
   Result := not FileExists(DATA_FOLDER + AWebsite + DBDATA_EXT);
+
   if Result = False then
   begin
     tryc := 0;
     while not DeleteFile(DATA_FOLDER + AWebsite + DBDATA_EXT) do
     begin
       if tryc > 3 then
+      begin
         Break;
+      end;
+
       Inc(tryc);
       Sleep(250);
     end;
+
     Result := not FileExists(DATA_FOLDER + AWebsite + DBDATA_EXT);
   end;
 end;
@@ -261,8 +273,10 @@ begin
   if FileExists(DATA_FOLDER + NWebsite + DBDATA_EXT) then
   begin
     if DeleteDBDataProcess(AWebsite) then
+    begin
       RenameFile(DATA_FOLDER + NWebsite + DBDATA_EXT,
         DATA_FOLDER + AWebsite + DBDATA_EXT);
+    end;
   end;
 end;
 
@@ -271,9 +285,13 @@ end;
 function TDBDataProcess.GetLinkCount: Integer;
 begin
   if Assigned(FLinks) then
-    Result := FLinks.Count
+  begin
+    Result := FLinks.Count;
+  end
   else
+  begin
     Result := 0;
+  end;
 end;
 
 procedure TDBDataProcess.ResetRecNo(Dataset: TDataSet);
@@ -283,13 +301,21 @@ end;
 
 function TDBDataProcess.GoToRecNo(const ARecIndex: Integer): Boolean;
 begin
-  if FQuery.RecNo=ARecIndex+1 then Exit(True);
-  Result:=False;
-  if ARecIndex > RecordCount then Exit;
+  if FQuery.RecNo = ARecIndex + 1 then
+  begin
+    Exit(True);
+  end;
+
+  Result := False;
+  if ARecIndex > RecordCount then
+  begin
+    Exit;
+  end;
+
   try
-    FRecNo:=ARecIndex;
-    FQuery.RecNo:=ARecIndex+1;
-    Result:=True;
+    FRecNo := ARecIndex;
+    FQuery.RecNo := ARecIndex + 1;
+    Result := True;
   except
   end;
 end;
@@ -318,10 +344,18 @@ procedure TDBDataProcess.ConvertNewTable(const TableParams: String);
 var
   qactive: Boolean;
 begin
-  if not FConn.Connected then Exit;
+  if not FConn.Connected then
+  begin
+    Exit;
+  end;
+
   try
     qactive := FQuery.Active;
-    if FQuery.Active then FQuery.Close;
+    if FQuery.Active then
+    begin
+      FQuery.Close;
+    end;
+
     with FConn do
     begin
       try
@@ -332,12 +366,15 @@ begin
         VacuumTable;
       except
         on E: Exception do
-          SendLogException(Self.ClassName+'['+Website+'].Convert.Error!', E);
+          SendLogException(Self.ClassName + '[' + Website + '].Convert.Error!', E);
       end;
     end;
     FTrans.Commit;
+
     if qactive <> FQuery.Active then
+    begin
       FQuery.Active := qactive;
+    end;
   except
     FTrans.Rollback;
   end;
@@ -351,6 +388,7 @@ begin
   begin
     queryactive := FQuery.Active;
     FQuery.Close;
+
     with FConn do
     begin
       try
@@ -360,8 +398,11 @@ begin
       end;
       ExecuteDirect('BEGIN TRANSACTION');
     end;
+
     if FQuery.Active <> queryactive then
+    begin
       FQuery.Active := queryactive;
+    end;
   end;
 end;
 
@@ -369,10 +410,13 @@ procedure TDBDataProcess.GetRecordCount;
 var
   bsql: String;
 begin
-  FRecordCount:=0;
-  bsql:=Trim(FQuery.SQL.Text);
-  if UpperCase(LeftStr(bsql,8))='SELECT *' then
-    FRecordCount:=StrToIntDef(FConn.ExecuteQuery('SELECT COUNT("link") '+copy(bsql,9,length(bsql))),0);
+  FRecordCount := 0;
+  bsql := Trim(FQuery.SQL.Text);
+
+  if UpperCase(LeftStr(bsql, 8)) = 'SELECT *' then
+  begin
+    FRecordCount := StrToIntDef(FConn.ExecuteQuery('SELECT COUNT("link") ' + copy(bsql, 9, length(bsql))), 0);
+  end;
 end;
 
 procedure TDBDataProcess.AddSQLCond(const sqltext: String; useOR: Boolean);
@@ -380,14 +424,21 @@ begin
   with FQuery.SQL do
   begin
     if Count > 0 then
+    begin
       if (Strings[Count - 1] <> '(') and
         (UpCase(Trim(Strings[Count - 1])) <> 'WHERE') then
       begin
         if useOR then
-          Add('OR')
+        begin
+          Add('OR');
+        end
         else
+        begin
           Add('AND');
+        end;
       end;
+    end;
+
     Add(sqltext);
   end;
 end;
@@ -399,16 +450,29 @@ var
   scond: String;
 begin
   svalue := LowerCase(Trim(Value));
+
   if (fieldname = '') or (svalue = '') then
+  begin
     Exit;
+  end;
+
   if useNOT then
-    scond := ' NOT'
+  begin
+    scond := ' NOT';
+  end
   else
+  begin
     scond := '';
+  end;
+
   if useRegexp then
-    AddSQLCond('LOWER("' + fieldname + '")' + scond + ' REGEXP ' + QuotedStr(svalue), useOR)
+  begin
+    AddSQLCond('LOWER("' + fieldname + '")' + scond + ' REGEXP ' + QuotedStr(svalue), useOR);
+  end
   else
+  begin
     AddSQLCond('LOWER("' + fieldname + '")' + scond + ' LIKE ' + QuotedLike(svalue), useOR);
+  end;
 end;
 
 procedure TDBDataProcess.AddSQLPairedFilter(const Pairs: array of TFieldValuePair;
@@ -466,10 +530,17 @@ end;
 function TDBDataProcess.InternalOpen(const FilePath: String): Boolean;
 begin
   Result := False;
+
   if FilePath <> '' then
+  begin
     FConn.DatabaseName := FilePath;
+  end;
+
   if FConn.DatabaseName = '' then
+  begin
     Exit;
+  end;
+
   try
     FConn.CharSet := 'UTF8';
     FConn.Connected := True;
@@ -481,10 +552,11 @@ begin
   except
     on E: Exception do
     begin
-      SendLogException(Self.ClassName+'['+Website+'].InternalOpen.Error!', E);
+      SendLogException(Self.ClassName + '[' + Website + '].InternalOpen.Error!', E);
       Result := False;
     end;
   end;
+
   Result := FConn.Connected;
 end;
 
@@ -493,37 +565,60 @@ begin
   if FAllSitesAttached then
   begin
     try
-      FQuery.RecNo:=RecIndex+1;
-      Result:=FQuery.Fields[DBTempFieldWebsiteIndex].AsString;
+      FQuery.RecNo := RecIndex + 1;
+      Result := FQuery.Fields[DBTempFieldWebsiteIndex].AsString;
     except
       on E: Exception do
-        SendLogException(Self.ClassName+'['+Website+'].GetWebsiteName Error!'+
-        'RecIndex: '+IntToStr(RecIndex), E);
+        SendLogException(Self.ClassName + '[' + Website + '].GetWebsiteName Error!' +
+        'RecIndex: ' + IntToStr(RecIndex), E);
     end;
   end
   else
+  begin
     Result := FWebsite;
+  end;
 end;
 
 function TDBDataProcess.GetValue(const RecIndex, FieldIndex: Integer): String;
 begin
   if FieldIndex in [DATA_PARAM_NUMCHAPTER,DATA_PARAM_JDN] then
-    Result:='0'
+  begin
+    Result := '0';
+  end
   else
-    Result:='';
-  if FQuery.Active=False then Exit;
+  begin
+    Result := '';
+  end;
+
+  if FQuery.Active = False then
+  begin
+    Exit;
+  end;
+
   if GoToRecNo(RecIndex) then
-    Result:=FQuery.Fields[FieldIndex].AsString;
+  begin
+    Result := FQuery.Fields[FieldIndex].AsString;
+  end;
 end;
 
 function TDBDataProcess.GetValueInt(const RecIndex, FieldIndex: Integer
   ): Integer;
 begin
-  Result:=0;
-  if FQuery.Active=False then Exit;
-  if not (FieldIndex in [DATA_PARAM_NUMCHAPTER,DATA_PARAM_JDN]) then Exit;
+  Result := 0;
+  if FQuery.Active = False then
+  begin
+    Exit;
+  end;
+
+  if not (FieldIndex in [DATA_PARAM_NUMCHAPTER,DATA_PARAM_JDN]) then
+  begin
+    Exit;
+  end;
+
   if GoToRecNo(RecIndex) then
-    Result:=FQuery.Fields[FieldIndex].AsInteger;
+  begin
+    Result := FQuery.Fields[FieldIndex].AsInteger;
+  end;
 end;
 
 procedure TDBDataProcess.AttachAllSites;
@@ -533,12 +628,16 @@ procedure TDBDataProcess.AttachAllSites;
     j: Integer;
   begin
     if SitesList.Count > 0 then
+    begin
       for j := 0 to SitesList.Count - 1 do
+      begin
         if Pointer(SitesList.Objects[j]) = FModule then
         begin
           SitesList.Delete(j);
           Break;
         end;
+      end;
+    end;
   end;
 
 var
@@ -547,7 +646,11 @@ var
   tempDataProcess: TDBDataProcess;
 begin
   RemoveCurrentSite;
-  if (not FConn.Connected) or (SitesList.Count = 0) then Exit;
+  if (not FConn.Connected) or (SitesList.Count = 0) then
+  begin
+    Exit;
+  end;
+
   DetachAllSites;
   FConn.ExecuteDirect('END TRANSACTION');
   attachedMax := 125;
@@ -579,6 +682,7 @@ begin
       SendLogException(ClassName + '[' + Website + '].AttachAllSites.Error!' +
         ' try to attach ' + QuotedStr(SitesList[i]), E)
   end;
+
   tempDataProcess.Close;
   tempDataProcess.Free;
   FConn.ExecuteDirect('BEGIN TRANSACTION');
@@ -590,43 +694,64 @@ var
   i: Integer;
   queryactive: Boolean;
 begin
-  if (not FConn.Connected) or (FAttachedSites.Count = 0) then Exit;
+  if (not FConn.Connected) or (FAttachedSites.Count = 0) then
+  begin
+    Exit;
+  end;
+
   queryactive := FQuery.Active;
-  if FQuery.Active then FQuery.Close;
+  if FQuery.Active then
+  begin
+    FQuery.Close;
+  end;
+
   FTrans.CommitRetaining;
   FConn.ExecuteDirect('END TRANSACTION');
-  for i := FAttachedSites.Count - 1 downto 0 do begin
+  for i := FAttachedSites.Count - 1 downto 0 do
+  begin
     try
       FConn.ExecuteDirect('DETACH "' + FAttachedSites[i] + '"');
       FAttachedSites.Delete(i);
     except
       on E: Exception do
-        SendLogException(Self.ClassName+'['+Website+'].DetachAllSites.Error!', E);
+        SendLogException(Self.ClassName + '[' + Website + '].DetachAllSites.Error!', E);
     end;
   end;
+
   FConn.ExecuteDirect('BEGIN TRANSACTION');
   FAllSitesAttached := FAttachedSites.Count > 0;
-  if FQuery.Active <> queryactive then FQuery.Active := queryactive;
+
+  if FQuery.Active <> queryactive then
+  begin
+    FQuery.Active := queryactive;
+  end;
 end;
 
 function TDBDataProcess.ExecuteDirect(SQL: String): Boolean;
 begin
   Result := False;
+
   if FConn.Connected then
+  begin
     try
       FConn.ExecuteDirect(SQL);
       Result := True;
     except
       on E: Exception do
-        SendLogException(Self.ClassName+'['+Website+'].ExecuteDirect.Error!'#13#10 +
+        SendLogException(Self.ClassName + '[' + Website + '].ExecuteDirect.Error!'#13#10 +
           'SQL: ' + SQL, E);
     end;
+  end;
 end;
 
 function TDBDataProcess.CheckWebsiteAndFilePath(const AWebsite: String;
   var AFilePath: String): Boolean;
 begin
-  if FWebsite <> AWebsite then FWebsite := AWebsite;
+  if FWebsite <> AWebsite then
+  begin
+    FWebsite := AWebsite;
+  end;
+
   if FWebsite <> '' then
   begin
     FModule := Modules.LocateModule(AWebsite);
@@ -686,6 +811,7 @@ begin
     on E: Exception do
       SendLogException(Self.ClassName+'['+Website+'].Destroy.Error!', E);
   end;
+
   DoneLocateLink;
   FAttachedSites.Free;
   FSitesList.Free;
@@ -712,9 +838,13 @@ var
   filepath: String = '';
 begin
   if CheckWebsiteAndFilePath(AWebsite, filepath) then
-    Result := InternalOpen(filepath)
+  begin
+    Result := InternalOpen(filepath);
+  end
   else
+  begin
     Result := False;
+  end;
 end;
 
 function TDBDataProcess.ConnectFile(const AFile: String): Boolean;
@@ -730,17 +860,21 @@ function TDBDataProcess.Open(const AWebsite: String): Boolean;
 begin
   Close;
   Result := False;
+
   if Connect(AWebsite) then
   begin
     try
       if not TableExist(FTableName) then
+      begin
         CreateTable;
+      end;
+
       OpenTable(FTableName, True);
       CheckFieldsExist(FTableName);
       Result := FQuery.Active;
     except
       on E: Exception do
-        SendLogException(Self.ClassName+'.Open.Error!', E);
+        SendLogException(Self.ClassName + '.Open.Error!', E);
     end;
   end;
 end;
@@ -749,22 +883,40 @@ function TDBDataProcess.OpenTable(const ATableName: String;
   CheckRecordCount: Boolean): Boolean;
 begin
   Result := False;
+
   if FConn.Connected then
   begin
     try
       if ATableName <> '' then
+      begin
         FTableName := ATableName;
+      end;
+
       if FTableName = '' then
+      begin
         Exit;
+      end;
+
       if TableExist(FTableName) then
       begin
         if FQuery.Active then
+        begin
           FQuery.Close;
-        if FTrans.Active=False then FTrans.Active:=True;
-        FSQLSelect := 'SELECT * FROM "' + FTableName +'"';
+        end;
+
+        if FTrans.Active=False then
+        begin
+          FTrans.Active := True;
+        end;
+
+        FSQLSelect := 'SELECT * FROM "' + FTableName + '"';
         FQuery.SQL.Text := FSQLSelect;
+
         if CheckRecordCount then
+        begin
           GetRecordCount;
+        end;
+
         FQuery.Open;
       end;
     except
@@ -772,6 +924,7 @@ begin
         SendLogException(Self.ClassName+'['+Website+'].OpenTable.Error!', E);
     end;
   end;
+
   Result := FQuery.Active;
 end;
 
@@ -781,6 +934,7 @@ var
   i: Integer;
 begin
   Result := False;
+
   if FConn.Connected then
   begin
     ts := TStringList.Create;
@@ -803,6 +957,7 @@ var
 begin
   FoundMissing := False;
   TableParams := '';
+
   if FConn.Connected then
   begin
     ts := TStringList.Create;
@@ -812,10 +967,14 @@ begin
       for j := Low(DBDataProcessParams) to High(DBDataProcessParams) do
       begin
         FieldName := DBDataProcessParams[j];
+
         if ts.Find(FieldName, i) then
         begin
           if j > 0 then
+          begin
             TableParams := TableParams + ',';
+          end;
+
           TableParams := TableParams + '"' + FieldName + '"';
         end
         else
@@ -837,7 +996,9 @@ end;
 procedure TDBDataProcess.Close;
 begin
   FRecordCount := 0;
+
   if FConn.Connected then
+  begin
     try
       FQuery.Close;
       RemoveFilter;
@@ -845,8 +1006,9 @@ begin
       FConn.DatabaseName := '';
     except
       on E: Exception do
-        SendLogException(Self.ClassName+'['+Website+'].Close.Error!', E);
+        SendLogException(Self.ClassName + '[' + Website + '].Close.Error!', E);
     end;
+  end;
 end;
 
 procedure TDBDataProcess.CloseTable;
@@ -867,15 +1029,20 @@ end;
 procedure TDBDataProcess.Backup(const AWebsite: String);
 begin
   if AWebsite = '' then
+  begin
     Exit;
+  end;
+
   if FConn.Connected then
   begin
     with TSQLite3Backup.Create do
+    begin
       try
         Backup(FConn, DATA_FOLDER + AWebsite + DBDATA_EXT);
       finally
         Free;
       end;
+    end;
   end;
 end;
 
@@ -883,16 +1050,23 @@ procedure TDBDataProcess.Refresh(RecheckDataCount: Boolean);
 begin
   if FConn.Connected then
   begin
-    if FQuery.Active then begin
+    if FQuery.Active then
+    begin
       if RecheckDataCount then
+      begin
         GetRecordCount;
+      end;
+
       FQuery.Refresh;
     end
     else
     if Trim(FQuery.SQL.Text) <> '' then
     begin
       if RecheckDataCount then
+      begin
         GetRecordCount;
+      end;
+
       FQuery.Open;
     end;
   end;
@@ -964,8 +1138,12 @@ var
   sql: String;
 begin
   Result := False;
-  if Link = '' then Exit;
-  if FConn.Connected = False then Exit;
+  if (Link = '') or
+     (not FConn.Connected) then
+  begin
+    Exit;
+  end;
+
   try
     sql := 'UPDATE ';
     if (AWebsite <> '') and (AWebsite <> FWebsite) and FAllSitesAttached then
@@ -976,6 +1154,7 @@ begin
     begin
       sql += '"' + FTableName + '"';
     end;
+
     sql += ' SET "title"=' + QuotedStr(Title) +
            ', "alttitles"=' + QuotedStr(AltTitles) +
            ', "authors"=' + QuotedStr(Authors) +
@@ -1005,7 +1184,7 @@ begin
     end;
   except
     on E: Exception do
-      SendLogException(ClassName+'['+Website+'].DeleteData.Error!',E);
+      SendLogException(ClassName + '[' + Website + '].DeleteData.Error!',E);
   end;
 end;
 
@@ -1014,27 +1193,37 @@ var
   queryactive: Boolean;
 begin
   if FConn.Connected then
+  begin
     try
       queryactive := FQuery.Active;
-      if FQuery.Active then FQuery.Close;
+      if FQuery.Active then
+      begin
+        FQuery.Close;
+      end;
+
       FTrans.CommitRetaining;
       if FQuery.Active <> queryactive then
+      begin
         FQuery.Active := queryactive;
+      end;
     except
       on E: Exception do
-        SendLogException(Self.ClassName+'['+Website+'].Commit.Error!',E);
+        SendLogException(Self.ClassName + '[' + Website + '].Commit.Error!',E);
     end;
+  end;
 end;
 
 procedure TDBDataProcess.Rollback;
 begin
   if FConn.Connected then
+  begin
     try
       FTrans.Rollback;
     except
       on E: Exception do
-        SendLogException(Self.ClassName+'['+Website+'].Rollback.Error!',E);
+        SendLogException(Self.ClassName + '[' + Website + '].Rollback.Error!',E);
     end;
+  end;
 end;
 
 function TDBDataProcess.RegexEscapeInput(const Input: String): String;
@@ -1047,7 +1236,10 @@ begin
   for i := 1 to Length(Input) do
   begin
     if CharInSet(Input[i], RegexSpecialChars) then
+    begin
       Result := Result + '\'; // Add escape character
+    end;
+
     Result := Result + Input[i];
   end;
 end;
@@ -1073,13 +1265,21 @@ begin
       begin
         SQL.Clear;
         if FFilterApplied then
-          SQL.AddText(FFilterSQL)
+        begin
+          SQL.AddText(FFilterSQL);
+        end
         else
+        begin
           SQL.Add(FSQLSelect);
+        end;
+
         if ATitle <> '' then
         begin
           if not FFilterApplied then
+          begin
             SQL.Add('WHERE');
+          end;
+
           if FAllSitesAttached then
           begin
             if SQL.Count > 0 then
@@ -1096,7 +1296,9 @@ begin
                   Inc(i, 5);
                 end
                 else
+                begin
                   Inc(i);
+                end;
               end;
             end;
           end
@@ -1109,10 +1311,13 @@ begin
 
             AddSQLPairedFilter(Titles);
           end;
+
           FFiltered := True;
         end
         else
+        begin
           FFiltered := FFilterApplied;
+        end;
       end;
       GetRecordCount;
       FQuery.Open;
@@ -1123,6 +1328,7 @@ begin
     end;
   end;
   Result := FQuery.Active;
+
   if not Result then
   begin
     FFiltered := False;
@@ -1136,7 +1342,10 @@ function TDBDataProcess.CanFilter(const checkedGenres, uncheckedGenres: TStringL
 begin
   Result := False;
   if not FQuery.Active then
+  begin
     Exit;
+  end;
+
   if ((stTitle = '') and
     (stAuthors = '') and
     (stArtists = '') and
@@ -1146,9 +1355,13 @@ begin
     (uncheckedGenres.Count = 0)) and
     (not searchNewManga) and
     haveAllChecked then
-    Result := False
+  begin
+    Result := False;
+  end
   else
+  begin
     Result := True;
+  end;
 end;
 
 function TDBDataProcess.Filter(const checkedGenres,
@@ -1167,7 +1380,9 @@ var
   begin
     // filter new manga based on date
     if searchNewManga then
-      AddSQLCond('"jdn" > "' + IntToStr(DateToJDN(Now)-minusDay) + '"');
+    begin
+      AddSQLCond('"jdn" > "' + IntToStr(DateToJDN(Now) - minusDay) + '"');
+    end;
 
     // filter title
     Titles[0].Field := 'title';
@@ -1188,15 +1403,20 @@ var
 
     // filter status
     if stStatus <> '4' then
+    begin
       AddSQLCond('"status"="' + stStatus + '"');
+    end;
 
     //filter checked genres
     if checkedGenres.Count > 0 then
     begin
       AddSQLCond('(');
       for j := 0 to checkedGenres.Count - 1 do
+      begin
         AddSQLSimpleFilter('genres', checkedGenres[j], False,
           (not haveAllChecked), useRegExpr);
+      end;
+
       FQuery.SQL.Add(')');
     end;
 
@@ -1205,8 +1425,11 @@ var
     begin
       AddSQLCond('(');
       for j := 0 to uncheckedGenres.Count - 1 do
+      begin
         AddSQLSimpleFilter('genres', uncheckedGenres[j], True,
           (not haveAllChecked), useRegExpr);
+      end;
+
       FQuery.SQL.Add(')');
     end;
   end;
@@ -1214,10 +1437,16 @@ var
 begin
   Result := False;
   if FQuery.Active = False then
+  begin
     Exit;
+  end;
+
   if not CanFilter(checkedGenres, uncheckedGenres, stTitle, stAuthors,
     stArtists, stStatus, stSummary, minusDay, haveAllChecked, searchNewManga) then
+  begin
     Exit;
+  end;
+
   with FQuery do
   begin
     FQuery.Close;
@@ -1237,6 +1466,7 @@ begin
           SQL.Add('SELECT *, "-1" AS "website" FROM "' + FTableName + '"');
           SQL.Add('WHERE');
           GenerateSQLFilter;
+
           for i := 0 to FAttachedSites.Count - 1 do
           begin
             SQL.Add('UNION ALL');
@@ -1244,6 +1474,7 @@ begin
             SQL.Add('WHERE');
             GenerateSQLFilter;
           end;
+
           SQL.Add(')');
           SQL.Add('ORDER BY "title" COLLATE NATCMP');
           filtersingle := False;
@@ -1261,14 +1492,19 @@ begin
       FQuery.Open;
       FFiltered := Active;
       FFilterApplied := FFiltered;
+
       if FFilterApplied then
-        FFilterSQL := SQL.Text
+      begin
+        FFilterSQL := SQL.Text;
+      end
       else
+      begin
         FFilterSQL := '';
+      end;
     except
       on E: Exception do
       begin
-        SendLogException(Self.ClassName+'['+Website+'].Filter.Error!'#13#10 +
+        SendLogException(Self.ClassName + '[' + Website + '].Filter.Error!'#13#10 +
           'SQL:'#13#10 + FQuery.SQL.Text, E);
         FQuery.Close;
         SQL.Text := tsql;
@@ -1290,7 +1526,10 @@ var
 begin
   Close;
   if CheckWebsiteAndFilePath(AWebsite, filepath) then
+  begin
     DeleteFile(filepath);
+  end;
+
   if ForceDirectories(DATA_FOLDER) then
   begin
     InternalOpen(filepath);
@@ -1301,7 +1540,9 @@ end;
 procedure TDBDataProcess.GetFieldNames(const List: TStringList);
 begin
   if (List <> nil) and (FQuery.Active) then
+  begin
     FQuery.GetFieldNames(List);
+  end;
 end;
 
 procedure TDBDataProcess.RemoveFilter;
@@ -1315,8 +1556,11 @@ begin
     FQuery.SQL.Text := FSQLSelect;
     FRecordCount := 0;
     DetachAllSites;
+
     if FQuery.Active then
+    begin
       OpenTable(FTableName, True);
+    end;
   end;
 end;
 
@@ -1329,20 +1573,25 @@ begin
     queryactive := FQuery.Active;
     FQuery.Close;
     with FConn do
+    begin
       try
         ExecuteDirect('DROP TABLE IF EXISTS "' + FTableName + '_ordered"');
-        ExecuteDirect('CREATE TABLE "' + FTableName + '_ordered" (' + DBDataProccesCreateParam +')');
-        ExecuteDirect('INSERT INTO "'+ FTableName + '_ordered" (' + DBDataProcessParam + ') SELECT '+ DBDataProcessParam +' FROM "' + FTableName + '" ORDER BY "title" COLLATE NATCMP');
+        ExecuteDirect('CREATE TABLE "' + FTableName + '_ordered" (' + DBDataProccesCreateParam + ')');
+        ExecuteDirect('INSERT INTO "' + FTableName + '_ordered" (' + DBDataProcessParam + ') SELECT ' + DBDataProcessParam + ' FROM "' + FTableName + '" ORDER BY "title" COLLATE NATCMP');
         ExecuteDirect('DROP TABLE "' + FTableName + '"');
         ExecuteDirect('ALTER TABLE "' + FTableName + '_ordered" RENAME TO "' + FTableName + '"');
         FTrans.Commit;
         VacuumTable;
       except
         on E: Exception do
-          SendLogException(Self.ClassName+'['+Website+'].Sort.Error!', E);
+          SendLogException(Self.ClassName + '[' + Website + '].Sort.Error!', E);
       end;
+    end;
+
     if FQuery.Active <> queryactive then
+    begin
       FQuery.Active := queryactive;
+    end;
   end;
 end;
 
@@ -1352,15 +1601,22 @@ var
 begin
   if FAllSitesAttached then
   begin
-    FQuery.RecNo := RecIndex+1;
+    FQuery.RecNo := RecIndex + 1;
     i := FQuery.Fields[DBTempFieldWebsiteIndex].AsInteger;
+
     if i = -1 then
-      Result := FModule
+    begin
+      Result := FModule;
+    end
     else
+    begin
       Result := Pointer(FAttachedSites.Objects[i]);
+    end;
   end
   else
+  begin
     Result := FModule;
+  end;
 end;
 
 function TDBDataProcess.WebsiteLoaded(const AWebsite: String): Boolean;
@@ -1369,14 +1625,21 @@ var
 begin
   Result := False;
   if FWebsite = AWebsite then
+  begin
     Exit(True);
+  end;
+
   if FAllSitesAttached then
+  begin
     for i := 0 to FAttachedSites.Count - 1 do
+    begin
       if FAttachedSites[i] = AWebsite then
       begin
         Result := True;
         Break;
       end;
+    end;
+  end;
 end;
 
 function TDBDataProcess.LinkExist(const ALink: String): Boolean;
@@ -1384,17 +1647,26 @@ var
   i: Integer;
 begin
   if Assigned(FLinks) then
-    Result := FLinks.Find(ALink, i)
+  begin
+    Result := FLinks.Find(ALink, i);
+  end
   else
+  begin
     Result := False;
+  end;
 end;
 
 procedure TDBDataProcess.InitLocateLink;
 begin
   if Assigned(FLinks) then
-    FLinks.Clear
+  begin
+    FLinks.Clear;
+  end
   else
+  begin
     FLinks := TStringList.Create;
+  end;
+
   FLinks.Sorted := False;
   if FQuery.Active then
   begin
@@ -1403,15 +1675,20 @@ begin
       FLinks.Add(FQuery.Fields[1].AsString);
       FQuery.Next;
     until FQuery.EOF;
+
     if FLinks.Count > 0 then
+    begin
       FLinks.Sorted := True;
+    end;
   end;
 end;
 
 procedure TDBDataProcess.DoneLocateLink;
 begin
   if Assigned(FLinks) then
+  begin
     FreeAndNil(FLinks);
+  end;
 end;
 
 end.
