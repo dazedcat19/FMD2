@@ -135,6 +135,7 @@ type
 
 const
   DBDataProcessParam = '"link","title","alttitles","authors","artists","genres","status","summary","numchapter","jdn"';
+  DBDataProcessParamInsert = ':link,:title,:alttitles,:authors,:artists,:genres,:status,:summary,:numchapter,:jdn';
   DBDataProcessParams: array [0..9] of ShortString =
     ('link', 'title', 'alttitles', 'authors', 'artists', 'genres', 'status',
     'summary', 'numchapter', 'jdn');
@@ -901,7 +902,7 @@ function TDBDataProcess.AddData(const Title, AltTitles, Link, Authors, Artists, 
   Status, Summary: String; NumChapter, JDN: Integer): Boolean;
 var
   sql: String;
-  SQLChanges: Integer;
+  i: Integer;
 begin
   Result := False;
   if (Link = '') or
@@ -911,27 +912,39 @@ begin
   end;
 
   try
-    sql := 'INSERT OR IGNORE INTO "' + FTableName + '" (' + DBDataProcessParam + ') VALUES (' +
-           QuotedStr(Link) + ', ' +
-           QuotedStr(Title) + ', ' +
-           QuotedStr(AltTitles) + ', ' +
-           QuotedStr(Authors) + ', ' +
-           QuotedStr(Artists) + ', ' +
-           QuotedStr(Genres) + ', ' +
-           QuotedStr(Status) + ', ' +
-           QuotedStr(Summary) + ', ' +
-           QuotedStr(IntToStr(NumChapter)) + ', ' +
-           QuotedStr(IntToStr(JDN)) + ');';
-    FConn.ExecuteDirect(sql);
+    FQuery.SQL.Text := 'INSERT OR IGNORE INTO "' + FTableName + '" (' + DBDataProcessParam + ') VALUES (' + DBDataProcessParamInsert + ');';
 
-    FQuery.SQL.Text := 'SELECT changes();';
-    FQuery.Open;
-    SQLChanges := FQuery.Fields[0].AsInteger; // Get the result of changes()
+    // Set parameters - the parameter binding handles escaping
+    FQuery.Params.ParamByName('link').AsString := Link;
+    FQuery.Params.ParamByName('title').AsString := Title;
+    FQuery.Params.ParamByName('alttitles').AsString := AltTitles;
+    FQuery.Params.ParamByName('authors').AsString := Authors;
+    FQuery.Params.ParamByName('artists').AsString := Artists;
+    FQuery.Params.ParamByName('genres').AsString := Genres;
+    FQuery.Params.ParamByName('status').AsString := Status;
+    FQuery.Params.ParamByName('summary').AsString := Summary;
+    FQuery.Params.ParamByName('numchapter').AsInteger := NumChapter;
+    FQuery.Params.ParamByName('jdn').AsInteger := JDN;
 
-    if SQLChanges = 1 then
+    if FQuery.Active then
     begin
-      Result := True;
+      FQuery.Close;
     end;
+
+    FQuery.ExecSQL;
+
+    sql := FQuery.SQL.Text;
+    for i := 0 to FQuery.Params.Count - 1 do
+    begin
+      sql := StringReplace(sql, ':' + FQuery.Params[i].Name, QuotedStr(FQuery.Params[i].AsString), [rfReplaceAll, rfIgnoreCase]);
+    end;
+
+    // Check changes - close previous operation first
+    FQuery.Close;
+    FQuery.SQL.Text := 'SELECT changes()';
+    FQuery.Open;
+    Result := FQuery.Fields[0].AsInteger > 0;
+    FQuery.Close;
   except
     on E: Exception do
       SendLogException(ClassName + '[' + Website + '].AddData.Error!' + LineEnding + sql, E);
