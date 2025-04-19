@@ -419,6 +419,7 @@
 | MangaZukiSite | [![https://www.mangazuki.site](https://img.shields.io/website?url=https://www.mangazuki.site%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangazuki.site)](https://www.mangazuki.site) | - | - | - |
 | MangaZukiWhatStatus | [![https://whatstatus.co](https://img.shields.io/website?url=https://whatstatus.co%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://whatstatus.co)](https://whatstatus.co) | - | - | - |
 | Mangceh | [![https://mangceh.me](https://img.shields.io/website?url=https://mangceh.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangceh.me)](https://mangceh.me) | - | - | - |
+| Manhastro | [![https://manhastro.net](https://img.shields.io/website?url=https://manhastro.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhastro.net)](https://manhastro.net) | OK | 19.04.2025 | - |
 | ManhuaAZ | [![https://manhuaaz.com](https://img.shields.io/website?url=https://manhuaaz.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuaaz.com)](https://manhuaaz.com) | - | - | - |
 | ManhuaBox | [![https://manhuabox.net](https://img.shields.io/website?url=https://manhuabox.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuabox.net)](https://manhuabox.net) | - | - | - |
 | Manhuafast | [![https://manhuafast.com](https://img.shields.io/website?url=https://manhuafast.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuafast.com)](https://manhuafast.com) | OK | 30.03.2025 | - |

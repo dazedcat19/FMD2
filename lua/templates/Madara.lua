@@ -50,7 +50,7 @@ function _M.GetInfo()
 	MANGAINFO.Authors   = x.XPathStringAll('//div[@class="author-content"]/a')
 	MANGAINFO.Artists   = x.XPathStringAll('//div[@class="artist-content"]/a')
 	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="genres-content"]/a')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@class="summary-heading" and contains(., "' .. XPathTokenStatus .. '")]/following-sibling::div'), 'Berjalan|Ongoing|مستمرة', 'Tamat|Completed|مكتملة', 'Hiatus|On Hold|متوقفة', 'Diberhentikan|Canceled|مُلغَاة')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@class="summary-heading" and contains(., "' .. XPathTokenStatus .. '")]/following-sibling::div'), 'Berjalan|Ongoing|مستمرة|Em Andamento', 'Tamat|Completed|مكتملة|Concluído', 'Hiatus|On Hold|متوقفة|Em espera', 'Diberhentikan|Canceled|مُلغَاة|Cancelado')
 	MANGAINFO.Summary   = x.XPathString('string-join(//div[contains(@class, "summary__content") or @class="manga-summary"]|//div[@class="manga-excerpt"]|//div[@class="post-content_item" and contains(h5, "Summary") or contains(h5, "Sinopsis")]//p, "\r\n")')
 
 	if MANGAINFO.CoverLink == '' then MANGAINFO.CoverLink = x.XPathString('//div[@class="summary_image"]//img/@src') end
@@ -93,7 +93,7 @@ function _M.GetPageNumber()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 	if string.find(u, 'style=list', 1, true) == nil then u = string.gsub(u, '?style=paged', '') .. '?style=list' end
 
-	if not HTTP.GET(u) then return net_problem end
+	if not HTTP.GET(u) then return false end
 
 	x = CreateTXQuery(HTTP.Document)
 	x.XPathStringAll('//div[contains(@class, "page-break")]/img/@data-src', TASK.PageLinks)
@@ -129,11 +129,11 @@ function _M.GetPageNumber()
 		end
 	end
 	for i = 0, TASK.PageLinks.Count - 1 do
-		TASK.PageLinks[i] = TASK.PageLinks[i]:gsub("i%d.wp.com/", "")
+		TASK.PageLinks[i] = TASK.PageLinks[i]:gsub('i%d.wp.com/', ''):gsub('cdn.statically.io/img/', '')
 		i = i + 1
 	end
 
-	return no_error
+	return true
 end
 
 ----------------------------------------------------------------------------------------------------
