@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '4bb36f93b168480a90fd12ea6844247d'
 	m.Name                     = 'Manhwa Toon'
-	m.RootURL                  = 'https://www.manhwatoon.com'
+	m.RootURL                  = 'https://www.manhwatoon.me'
 	m.Category                 = 'Webcomics'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -42,7 +42,7 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
 end
 
 -- Prepare the URL, http header and/or http cookies before downloading an image.
