@@ -450,6 +450,7 @@
 | ManhwaHentai | [![https://manhwahentai.me](https://img.shields.io/website?url=https://manhwahentai.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwahentai.me)](https://manhwahentai.me) | OK | 15.12.2024 | - |
 | ManhwaHentaiIo | [![https://manhwahentai.io](https://img.shields.io/website?url=https://manhwahentai.io%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwahentai.io)](https://manhwahentai.io) | - | - | - |
 | ManhwaHentaiTo | [![https://manhwahentai.to](https://img.shields.io/website?url=https://manhwahentai.to%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwahentai.to)](https://manhwahentai.to) | - | - | - |
+| ManhwaID | [![https://manhwaid.id](https://img.shields.io/website?url=https://manhwaid.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwaid.id)](https://manhwaid.id) | OK | 19.04.2025 | - |
 | ManhwaIndo | [![https://manhwaindo.id](https://img.shields.io/website?url=https://manhwaindo.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwaindo.id)](https://manhwaindo.id) | - | - | - |
 | ManhwaLand | [![https://62.182.80.253](https://img.shields.io/website?url=https://62.182.80.253%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://62.182.80.253)](https://62.182.80.253) | - | - | - |
 | ManhwaLatino | [![https://manhwa-latino.com](https://img.shields.io/website?url=https://manhwa-latino.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwa-latino.com)](https://manhwa-latino.com) | - | - | - |
