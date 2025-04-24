@@ -657,7 +657,7 @@
 | Taadd | [![https://www.taadd.com](https://img.shields.io/website?url=https://www.taadd.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.taadd.com)](https://www.taadd.com) | OK | 09.02.2025 | - |
 | Tapas | [![https://tapas.io](https://img.shields.io/website?url=https://tapas.io%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://tapas.io)](https://tapas.io) | - | - | - |
 | TapTrans | [![https://taptaptaptaptap.net](https://img.shields.io/website?url=https://taptaptaptaptap.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://taptaptaptaptap.net)](https://taptaptaptaptap.net) | - | - | - |
-| TCBScans | [![https://tcbscans.me](https://img.shields.io/website?url=https://tcbscans.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://tcbscans.me)](https://tcbscans.me) | - | - | - |
+| TCB Scans | [![https://tcbonepiecechapters.com](https://img.shields.io/website?url=https://tcbonepiecechapters.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://tcbonepiecechapters.com)](https://tcbonepiecechapters.com) | OK | 24.04.2025 | - |
 | TeabeerComics | [![https://teabeercomics.com](https://img.shields.io/website?url=https://teabeercomics.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://teabeercomics.com)](https://teabeercomics.com) | - | - | - |
 | TeamX | [![https://olympustaff.com](https://img.shields.io/website?url=https://olympustaff.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://olympustaff.com)](https://olympustaff.com) | - | - | - |
 | TecnoScan | [![https://tecnoscann.com](https://img.shields.io/website?url=https://tecnoscann.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://tecnoscann.com)](https://tecnoscann.com) | - | - | - |
