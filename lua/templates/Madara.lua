@@ -44,7 +44,7 @@ function _M.GetInfo()
 	if not HTTP.GET(u) then return net_problem end
 
 	x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//div[@class="post-title" or @id="manga-title"]/*[self::h1 or self::h3]/text()')
+	MANGAINFO.Title     = x.XPathString('//div[@class="post-title" or @id="manga-title"]/*[self::h1 or self::h3]/text() | //h1/text()')
 	MANGAINFO.AltTitles = x.XPathString('//div[@class="summary-heading" and ./h5="Alternative" or ./h5="Judul Lain"]/following-sibling::div')
 	MANGAINFO.CoverLink = x.XPathString('//div[@class="summary_image"]//img/@data-src')
 	MANGAINFO.Authors   = x.XPathStringAll('//div[@class="author-content"]/a')
@@ -82,6 +82,12 @@ function _M.GetInfo()
 			CreateTXQuery(HTTP.Document).XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 		end
 	end
+	if MANGAINFO.ChapterLinks.Count == 0 then
+		local v for v in x.XPath('//li[contains(@class, "has-thumb")]').Get() do
+			MANGAINFO.ChapterLinks.Add(x.XPathString('a/@href', v))
+			MANGAINFO.ChapterNames.Add(x.XPathString('a//span/text()[normalize-space()]', v))
+		end	
+	end	
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
