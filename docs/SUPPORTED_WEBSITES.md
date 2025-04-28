@@ -66,7 +66,7 @@
 | BunnysScans | [![http://bns.shounen-ai.net](https://img.shields.io/website?url=http://bns.shounen-ai.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://bns.shounen-ai.net)](http://bns.shounen-ai.net) | - | - | - |
 | CanisMajorScans | [![http://cm-scans.shounen-ai.net](https://img.shields.io/website?url=http://cm-scans.shounen-ai.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://cm-scans.shounen-ai.net)](http://cm-scans.shounen-ai.net) | - | - | - |
 | CartelDeManhwas | [![https://carteldemanhwas.com](https://img.shields.io/website?url=https://carteldemanhwas.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://carteldemanhwas.com)](https://carteldemanhwas.com) | - | - | - |
-| CartoonPorn | [![https://cartoonporn.to](https://img.shields.io/website?url=https://cartoonporn.to%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://cartoonporn.to)](https://cartoonporn.to) | - | - | - |
+| CartoonPorn | [![https://cartoonporn.to](https://img.shields.io/website?url=https://cartoonporn.to%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://cartoonporn.to)](https://cartoonporn.to) | OK | 28.04.2025 | - |
 | CatManga | [![https://catmanga.org](https://img.shields.io/website?url=https://catmanga.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://catmanga.org)](https://catmanga.org) | - | - | - |
 | CentralDeMangas | [![http://centraldemangas.online](https://img.shields.io/website?url=http://centraldemangas.online%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://centraldemangas.online)](http://centraldemangas.online) | - | - | - |
 | Cerberus Series | [![https://legionscans.com](https://img.shields.io/website?url=https://legionscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://legionscans.com)](https://legionscans.com) | OK | 03.04.2025 | - |
@@ -449,7 +449,6 @@
 | ManhwaFreak | [![https://freakcomic.com](https://img.shields.io/website?url=https://freakcomic.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://freakcomic.com)](https://freakcomic.com) | - | - | - |
 | ManhwaHentai | [![https://manhwahentai.me](https://img.shields.io/website?url=https://manhwahentai.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwahentai.me)](https://manhwahentai.me) | OK | 15.12.2024 | - |
 | ManhwaHentaiIo | [![https://manhwahentai.io](https://img.shields.io/website?url=https://manhwahentai.io%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwahentai.io)](https://manhwahentai.io) | - | - | - |
-| ManhwaHentaiTo | [![https://manhwahentai.to](https://img.shields.io/website?url=https://manhwahentai.to%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwahentai.to)](https://manhwahentai.to) | - | - | - |
 | ManhwaID | [![https://manhwaid.id](https://img.shields.io/website?url=https://manhwaid.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwaid.id)](https://manhwaid.id) | OK | 19.04.2025 | - |
 | ManhwaIndo | [![https://manhwaindo.id](https://img.shields.io/website?url=https://manhwaindo.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwaindo.id)](https://manhwaindo.id) | - | - | - |
 | ManhwaLand | [![https://62.182.80.253](https://img.shields.io/website?url=https://62.182.80.253%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://62.182.80.253)](https://62.182.80.253) | - | - | - |
@@ -765,6 +764,7 @@
 | ~MangaMonarca~ | ~https://mangamonarca.xyzca.xyz~ | Removed | 02.04.2025 | - |
 | ~MangaSee~ | ~https://mangasee123.com~ | Removed | 07.02.2025 | Moved to Weeb Central |
 | ~MangaWeek~ | ~https://mangaweek.com~ | Removed | 07.02.2025 | - |
+| ~ManhwaHentaiTo~ | ~https://manhwahentai.to~ | Removed | 28.04.2025 | Redirected to CartoonPorn |
 | ~Manhwaid~ | ~https://manhwaid.club~ | Removed | 23.02.2025 | - |
 | ~ManhwaSmut~ | ~https://manhwasmut.com~ | Removed | 07.02.2025 | - |
 | ~MartialManga~ | ~https://martialmanga.com~ | Removed | 03.04.2025 | - |
