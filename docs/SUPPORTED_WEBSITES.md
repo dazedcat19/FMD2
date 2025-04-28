@@ -728,7 +728,7 @@
 | WuxiaWorld | [![https://wuxiaworld.site](https://img.shields.io/website?url=https://wuxiaworld.site%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://wuxiaworld.site)](https://wuxiaworld.site) | - | - | - |
 | XAnimeSeduccion | [![http://xanime-seduccion.com](https://img.shields.io/website?url=http://xanime-seduccion.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://xanime-seduccion.com)](http://xanime-seduccion.com) | - | - | - |
 | xCaliBRScans | [![https://xcalibrscans.com](https://img.shields.io/website?url=https://xcalibrscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://xcalibrscans.com)](https://xcalibrscans.com) | - | - | - |
-| XlecX | [![https://xlecx.org](https://img.shields.io/website?url=https://xlecx.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://xlecx.org)](https://xlecx.org) | - | - | - |
+| XlecX | [![https://xlecx.one](https://img.shields.io/website?url=https://xlecx.one%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://xlecx.one)](https://xlecx.one) | OK | 28.04.2025 | - |
 | Xmanhwa | [![https://www.xmanhwa.me](https://img.shields.io/website?url=https://www.xmanhwa.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.xmanhwa.me)](https://www.xmanhwa.me) | - | - | - |
 | XoxoComics | [![https://xoxocomic.com](https://img.shields.io/website?url=https://xoxocomic.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://xoxocomic.com)](https://xoxocomic.com) | - | - | - |
 | XuNScans | [![https://xunscans.xyz](https://img.shields.io/website?url=https://xunscans.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://xunscans.xyz)](https://xunscans.xyz) | - | - | - |
