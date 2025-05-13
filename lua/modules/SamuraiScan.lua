@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '5ad6ebfe79f04b3b954829180052cb9e'
 	m.Name                     = 'Samurai Scan'
-	m.RootURL                  = 'https://samuraiscan.cookni.net'
+	m.RootURL                  = 'https://samurai.wordoco.com'
 	m.Category                 = 'Spanish-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
