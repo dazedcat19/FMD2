@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'uy8tter98y97k9er008971c0c1b557tr'
 	m.Name                     = 'TresDaos'
-	m.RootURL                  = 'https://tresdaos.com'
+	m.RootURL                  = 'https://3daos.mewingzone.com'
 	m.Category                 = 'Spanish-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -19,8 +19,6 @@ end
 
 local Template = require 'templates.MangaThemesia'
 DirectoryPagination = '/mangas/'
--- XPathTokenAuthors   = 'Author'
--- XPathTokenArtists   = 'Artist'
 XPathTokenStatus    = 'Estado'
 
 ----------------------------------------------------------------------------------------------------
@@ -50,7 +48,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
 
@@ -61,5 +59,5 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
 end
