@@ -39,13 +39,8 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	local i = nil
-	local u = MaybeFillHost(MODULE.RootURL, URL)
-	if not u:find('style=list') then u = u:gsub('?style=paged', '') .. '?style=list' end
+	Template.GetPageNumber()
 
-	if not HTTP.GET(u) then return false end
-
-	CreateTXQuery(HTTP.Document).XPathStringAll('//div[contains(@class, "page-break")]/img/@src', TASK.PageLinks)
 	for i = 0, TASK.PageLinks.Count - 1 do
 		TASK.PageLinks[i] = TASK.PageLinks[i]:gsub('http://', 'https://')
 		i = i + 1
