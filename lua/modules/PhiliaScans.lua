@@ -8,55 +8,79 @@ function Init()
 	m.Name                     = 'Philia Scans'
 	m.RootURL                  = 'https://philiascans.org'
 	m.Category                 = 'English-Scanlation'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.SortedList               = true
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.Madara'
+DirectoryPagination = '/page/'
+DirectoryParameters = '/?post_type=wp-manga&sort=recently_added'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
+-- Get the page count of the manga list of the current website.
+function GetDirectoryPageNumber()
+	local u = MODULE.RootURL .. DirectoryParameters
+
+	if not HTTP.GET(u) then return net_problem end
+
+	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//ul[@class="pagination"]/li[last()]/a/@href'):match('paged=(%d+)$')) or 1
+
+	return no_error
+end
+
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local x = nil
-	local s = 'action=madara_load_more&template=madara-core/content/content-archive&page=' .. URL .. '&vars[paged]=0&vars[post_type]=wp-manga&vars[posts_per_page]=250'
-	local u = MODULE.RootURL .. '/wp-admin/admin-ajax.php'
-	HTTP.Headers.Values['Referer'] = u
-	HTTP.MimeType = 'application/x-www-form-urlencoded'
+	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1) .. DirectoryParameters
 
-	if not HTTP.POST(u, s) then return net_problem end
+	if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
-	if x.XPath('//div[contains(@class, "post-title")]/h2/a').Count == 0 then return no_error end
-	x.XPathHREFAll('//div[contains(@class, "post-title")]/h2/a', LINKS, NAMES)
-	UPDATELIST.CurrentDirectoryPageNumber = UPDATELIST.CurrentDirectoryPageNumber + 1
+	CreateTXQuery(HTTP.Document).XPathHREFAll('//div[@class="info"]/a', LINKS, NAMES)
 
 	return no_error
 end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	Template.GetInfo()
-
+	local x, v = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	MANGAINFO.Title = CreateTXQuery(HTTP.Document).XPathString('//h1[@class="post-title"]')
+	x = CreateTXQuery(HTTP.Document)
+	MANGAINFO.Title     = x.XPathString('//div[@class="serie-info"]/h1')
+	MANGAINFO.AltTitles = x.XPathString('//div[@class="serie-info"]/h6')
+	MANGAINFO.CoverLink = x.XPathString('//div[@class="main-cover"]/img/@src')
+	MANGAINFO.Authors   = x.XPathString('//div[@class="stat-details" and ./span="Author"]/span[2]')
+	MANGAINFO.Artists   = x.XPathString('//div[@class="stat-details" and ./span="Artist"]/span[2]')
+	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="genre-list"]//a')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@class="stat-details" and ./span="Status"]/span[2]'), 'Releasing')
+	MANGAINFO.Summary   = x.XPathString('//div[@class="modal-content p-4"]/p')
+
+	for v in x.XPath('//div[@id="free-list"]//a').Get() do
+		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
+		MANGAINFO.ChapterNames.Add(x.XPathString('.//zebi/normalize-space(.)', v))
+	end
+	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
 end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	Template.GetPageNumber()
+	local u = MaybeFillHost(MODULE.RootURL, URL)
 
-	return no_error
+	if not HTTP.GET(u) then return false end
+
+	CreateTXQuery(HTTP.Document).XPathStringAll('//div[@id="ch-images"]//img/@src', TASK.PageLinks)
+
+	return true
 end
