@@ -240,7 +240,7 @@
 | LeviatanScans | [![https://es.leviatanscans.com](https://img.shields.io/website?url=https://es.leviatanscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://es.leviatanscans.com)](https://es.leviatanscans.com) | - | - | - |
 | LewdManhwa | [![https://lewdmanhwa.com](https://img.shields.io/website?url=https://lewdmanhwa.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lewdmanhwa.com)](https://lewdmanhwa.com) | - | - | - |
 | LHTranslation | [![https://lhtranslation.net](https://img.shields.io/website?url=https://lhtranslation.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lhtranslation.net)](https://lhtranslation.net) | - | - | - |
-| LikeManga | [![https://likemanga.ink](https://img.shields.io/website?url=https://likemanga.ink%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://likemanga.ink)](https://likemanga.ink) | - | - | - |
+| Like Manga | [![https://likemanga.ink](https://img.shields.io/website?url=https://likemanga.ink%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://likemanga.ink)](https://likemanga.ink) | OK | 28.05.2025 | - |
 | LilyManga | [![https://lilymanga.com](https://img.shields.io/website?url=https://lilymanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lilymanga.com)](https://lilymanga.com) | - | - | - |
 | LoliVault | [![https://lolivault.net](https://img.shields.io/website?url=https://lolivault.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lolivault.net)](https://lolivault.net) | - | - | - |
 | LSComic | [![https://lscomic.com](https://img.shields.io/website?url=https://lscomic.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lscomic.com)](https://lscomic.com) | - | - | - |

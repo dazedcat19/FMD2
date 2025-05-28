@@ -5,13 +5,14 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'c7aebe73845f43149bd5a8cbe84fd926'
-	m.Name                     = 'LikeManga'
+	m.Name                     = 'Like Manga'
 	m.RootURL                  = 'https://likemanga.ink'
 	m.Category                 = 'English'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -26,7 +27,7 @@ DirectoryPagination = '/?act=search&f[status]=all&f[sortby]=lastest-manga&&pageN
 
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
-	local u = MODULE.RootURL .. DirectoryPagination .. "1"
+	local u = MODULE.RootURL .. DirectoryPagination .. 1
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -46,7 +47,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	local id, pages, v, x = nil
 	local page = 1
@@ -88,9 +89,16 @@ end
 function GetPageNumber()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
-	if not HTTP.GET(u) then return net_problem end
+	if not HTTP.GET(u) then return false end
 
 	CreateTXQuery(HTTP.Document).XPathStringAll('//div[contains(@class, "page-chapter")]/img/@src', TASK.PageLinks)
 
-	return no_error
+	return true
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+
+	return true
 end
