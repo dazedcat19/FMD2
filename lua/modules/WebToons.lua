@@ -7,32 +7,23 @@ local langs = {
 
 function getinfo()
 	MANGAINFO.URL = MANGAINFO.URL:gsub('(.*)&page=.*', '%1')
+	HTTP.Headers.Values['sec-ch-ua-platform'] = '"Android"'
+	HTTP.Headers.Values['sec-ch-ua-platform-version'] = '"6.0"'
 	if HTTP.GET(MANGAINFO.URL) then
 		x=CreateTXQuery(HTTP.Document)
 		MANGAINFO.Title = x.XPathString('//meta[@property="og:title"]/@content')
 		MANGAINFO.CoverLink=x.XPathString('//meta[@name="twitter:image"]/@content')
-		MANGAINFO.Authors=x.XPathString('//div[@class="info"]//span[@class="author"]')
+		MANGAINFO.Authors=x.XPathString('//div[contains(@class, "detail_info")]/p[@class="author"]/text()'):gsub("[^%a%d ,]", '')
 		MANGAINFO.Genres=x.XPathString('//div[@class="info"]/h2')
 		if MANGAINFO.Genres == '' then
-			MANGAINFO.Genres=x.XPathString('//div[@class="info challenge"]/p')
+			MANGAINFO.Genres=x.XPathString('//div[contains(@class, "detail_info")]/p[@class="genre"]')
 		end
 		MANGAINFO.Summary=x.XPathString('//p[@class="summary"]')
-
-		local v, p
-		while true do
-			for v in x.XPath('//div[@class="detail_lst"]/ul/li/a').Get() do
-				MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
-				MANGAINFO.ChapterNames.Add(x.XPathString('.//span[@class="subj"]/span', v))
-			end
-			p = x.XPathString('//div[@class="paginate"]/a[@href="#"]/following-sibling::a[1]/@href')
-			if p == '' then	break end
-			if HTTP.GET(MaybeFillHost(MODULE.RootURL, p)) then
-				x.ParseHTML(HTTP.Document)
-			else
-				break
-			end
+		local v
+		for v in x.XPath('//ul[@id="_episodeList"]/li[@class="_episodeItem"]/a').Get() do
+			MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
+			MANGAINFO.ChapterNames.Add(x.XPathString('.//p/span[@class="ellipsis"]', v))
 		end
-
 		MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 		return no_error
 	else
