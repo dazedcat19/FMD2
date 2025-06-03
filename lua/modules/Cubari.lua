@@ -34,7 +34,7 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local chapters, group, group_id, json, id, title, url, w, x = nil
+	local chapters, group, group_id, id, json, title, url, vol, w, x = nil
 	local chapter, v = {}
 	local source, slug = URL:match('read/([%a-]+)/([%w-]+)/')
 	local optgroup = MODULE.GetOption('showgroup')
@@ -56,21 +56,25 @@ function GetInfo()
 	]]
 
 	for v in x.XPath(chapters, json).Get() do
-		id = x.XPathString('chapter_id', v)
 		for w in x.XPath('jn:keys(groups)', v).Get() do
-			group_id = w.ToString()
-			group = '[' .. x.XPathString('(groups)(' .. group_id .. ')', json) .. ']'
-			if not optgroup then group = '' end
-
+			vol   = x.XPathString('volume', v)
+			id    = x.XPathString('chapter_id', v)
 			title = x.XPathString('title', v)
+
+			vol = vol ~= 'null' and string.format('Vol. %s ', vol) or ''
+			id = id ~= 'null' and string.format('Ch. %s ', id) or ''
 			title = title ~= 'null' and title ~= '' and string.format('- %s', title) or ''
 
-			url = string.format('/read/%s/%s/%s/#%s', source, slug, id, group_id):gsub('%.', '-')
-			title = string.format('%s %s %s', id, title, group)
+			group_id = w.ToString()
+			group = ' [' .. x.XPathString('(groups)(' .. group_id .. ')', json) .. ']'
+			if not optgroup then group = '' end
+
+			url = 'read/' .. source .. '/' .. slug .. '/' .. x.XPathString('chapter_id', v):gsub('%.', '-') .. '/#' .. group_id
+			title = vol .. id .. title .. group
 			table.insert(chapter, {url=url,title=title})
 		end
 	end
-	table.sort(chapter, function (a,b) return (tonumber(a.title:match('^%d+')) or 0) < (tonumber(b.title:match('^%d+')) or 0) end)
+	table.sort(chapter, function (a,b) return (tonumber(a.title:match('Ch. (%d+)')) or 0) < (tonumber(b.title:match('Ch. (%d+)')) or 0) end)
 	for _, v in ipairs(chapter) do
 		MANGAINFO.ChapterLinks.Add(v.url)
 		MANGAINFO.ChapterNames.Add(v.title)
@@ -95,12 +99,11 @@ function GetPageNumber()
 		for v in x.XPath('jn:members((groups)(' .. group_id .. '))', json).Get() do
 			TASK.PageLinks.Add(v.ToString())
 		end
-	else
+	elseif group_content:match('^/read/api/') then
 		u = MODULE.RootURL .. group_content
 		if not HTTP.GET(u) then return false end
 		CreateTXQuery(HTTP.Document).XPathStringAll('json(*)()', TASK.PageLinks)
-	end
-	if TASK.PageLinks.Count == 0 then
+    else
 		for v in x.XPath('jn:members((groups)(' .. group_id .. '))', json).Get() do
 			TASK.PageLinks.Add(v.GetProperty('src').ToString())
 		end
