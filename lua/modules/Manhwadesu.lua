@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'ee60f64cc450424bb906af3f699fd7e4'
 	m.Name                     = 'Manhwadesu'
-	m.RootURL                  = 'https://manhwadesu.asia'
+	m.RootURL                  = 'https://manhwadesu.host'
 	m.Category                 = 'H-Sites'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -19,8 +19,6 @@ end
 
 local Template = require 'templates.MangaThemesia'
 DirectoryPagination = '/komik/list-mode/'
--- XPathTokenAuthors   = 'Author'
--- XPathTokenArtists   = 'Artist'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -33,7 +31,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
 
@@ -44,5 +42,5 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
 end
