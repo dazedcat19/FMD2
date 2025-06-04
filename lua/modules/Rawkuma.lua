@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '21b0dfcb262d4ae28520679165282666'
 	m.Name                     = 'Rawkuma'
-	m.RootURL                  = 'https://rawkuma.com'
+	m.RootURL                  = 'https://rawkuma.net'
 	m.Category                 = 'Raw'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -18,9 +18,6 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.MangaThemesia'
--- DirectoryPagination = '/manga/list-mode/'
--- XPathTokenAuthors   = 'Author'
--- XPathTokenArtists   = 'Artist'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -33,7 +30,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
 
@@ -44,5 +41,5 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
 end
