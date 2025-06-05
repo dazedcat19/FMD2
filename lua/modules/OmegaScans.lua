@@ -5,9 +5,9 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '752cda75b5e24f6ab4256079c564eba2'
-	m.Name                     = 'OmegaScans'
+	m.Name                     = 'Omega Scans'
 	m.RootURL                  = 'https://omegascans.org'
-	m.Category                 = 'English-Scanlation'
+	m.Category                 = 'H-Sites'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -21,7 +21,6 @@ end
 
 local Template = require 'templates.HeanCms'
 API_URL = 'https://api.omegascans.org'
-CDN_URL = 'https://media.omegascans.org/file/zFSsXt'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -41,7 +40,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
 
@@ -50,7 +49,18 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	Template.GetPageNumber()
+	local i, image = nil
+	local u = API_URL .. URL
 
-	return no_error
+	if not HTTP.GET(u) then return false end
+
+	for i in CreateTXQuery(HTTP.Document).XPath('json(*).chapter.chapter_data.images()').Get() do
+		image = i.ToString()
+		if not image:match('^https?://') then
+			image = API_URL .. '/' .. image
+		end
+		TASK.PageLinks.Add(image)
+	end
+
+	return true
 end
