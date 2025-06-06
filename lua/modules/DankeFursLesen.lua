@@ -4,13 +4,14 @@
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                       = '7d12ff8d54d44137adbdf8fbe6f49bee'
-	m.Name                     = 'Guya'
-	m.RootURL                  = 'https://guya.cubari.moe'
+	m.ID                       = 'ad819bac2a95485591ab7b7b434b987f'
+	m.Name                     = 'Danke fürs Lesen'
+	m.RootURL                  = 'https://danke.moe'
 	m.Category                 = 'English'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 
 	local fmd = require 'fmd.env'
 	local slang = fmd.SelectedLanguage
@@ -58,6 +59,13 @@ end
 -- Get the page count for the current chapter.
 function GetPageNumber()
 	Template.GetPageNumber()
+
+	return true
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	Template.BeforeDownloadImage()
 
 	return true
 end
