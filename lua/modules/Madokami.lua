@@ -1,5 +1,16 @@
 local madokamilist = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ_'
 
+function stand_status(status)
+    status = string.lower(status)
+	status_com = {'yes','completed','complete'}
+	status_can = {'cancelled'}
+	status_hia = {'hiatus'}
+	for i=1, #status_com do if status == status_com[i] then return 'Completed' end end
+	for i=1, #status_can do if status == status_can[i] then return 'Cancelled' end end
+	for i=1, #status_hia do if status == status_hia[i] then return 'Hiatus' end end
+	return 'Ongoing'
+end
+
 function GetInfo()
     Delay()
     HTTP.GET(MODULE.RootURL .. URL)
@@ -16,7 +27,9 @@ function GetInfo()
 	if MANGAINFO.Title == '' then MANGAINFO.Title = x.XPathString('(//h1//span[@itemprop="title"])[last()]') end
 	MANGAINFO.Authors   = x.XPathString('//*[@itemprop="author"]')
 	MANGAINFO.Genres = x.XPathStringAll('//div[@class="genres"]/a')
-	MANGAINFO.Status = x.XPathString('//span[@class="scanstatus"]')
+	MANGAINFO.Status = ''
+	status = x.XPathString('//span[@class="scanstatus"]')
+	MANGAINFO.Status = MangaInfoStatusIfPos(stand_status(status))
 	local chapters = x.XPath('//table[@id="index-table"]/tbody/tr')
 	for ic = 1, chapters.Count do
 		MANGAINFO.ChapterLinks.Add(x.XPathString('td/a[contains(text(),"Read")]/@href', chapters.Get(ic)))
