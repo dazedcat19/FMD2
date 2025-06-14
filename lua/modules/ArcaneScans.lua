@@ -17,7 +17,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.Madara'
+local Template = require 'templates.MangaThemesia'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -39,7 +39,14 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	Template.GetPageNumber()
+	local x = nil
+	local u = MaybeFillHost(MODULE.RootURL, URL)
 
-	return no_error
+	if not HTTP.GET(u) then return false end
+
+	x = CreateTXQuery(HTTP.Document)
+	x.ParseHTML(GetBetween('run(', ')', x.XPathString('//script[contains(., "ts_reader")]')):gsub('!1', 'false'))
+	x.XPathStringAll('json(*).sources()[1].images()', TASK.PageLinks)
+
+	return true
 end
