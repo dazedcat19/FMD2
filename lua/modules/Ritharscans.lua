@@ -13,6 +13,7 @@ function Init()
 	m.OnGetPageNumber          = 'GetPageNumber'
 end
 
+
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
@@ -36,7 +37,7 @@ function GetInfo()
 
 	local x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.CoverLink = x.XPathString('//div[@class="flex lg:block"]//@style'):match('background%-image:url%((.-)%)')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//a[@alt="Status"]/span'))
+	MANGAINFO.Status = MangaInfoStatusIfPos(x.XPathString('//a[@title="Status"]/span'))
 
 	return no_error
 end

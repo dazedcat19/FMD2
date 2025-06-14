@@ -15,6 +15,7 @@ function getinfo()
 		MANGAINFO.CoverLink=x.XPathString('//meta[@name="twitter:image"]/@content')
 		MANGAINFO.Authors=x.XPathString('//div[contains(@class, "detail_info")]/p[@class="author"]/text()'):gsub("[^%a%d ,]", '')
 		MANGAINFO.Genres=x.XPathString('//div[@class="info"]/h2')
+		MANGAINFO.Status = MangaInfoStatusIfPos(x.XPathString('//div[@class="info_update"]/text()[1]'), 'every')
 		if MANGAINFO.Genres == '' then
 			MANGAINFO.Genres=x.XPathString('//div[contains(@class, "detail_info")]/p[@class="genre"]')
 		end
