@@ -5,17 +5,6 @@ local langs = {
 	["th"] = "Thai"
 }
 
-function stand_status(status)
-    status = string.lower(status)
-	status_com = {'yes','completed','complete'}
-	status_can = {'cancelled'}
-	status_hia = {'hiatus'}
-	for i=1, #status_com do if status == status_com[i] then return 'Completed' end end
-	for i=1, #status_can do if status == status_can[i] then return 'Cancelled' end end
-	for i=1, #status_hia do if status == status_hia[i] then return 'Hiatus' end end
-	return 'Ongoing'
-end
-
 function getinfo()
 	MANGAINFO.URL = MANGAINFO.URL:gsub('(.*)&page=.*', '%1')
 	HTTP.Headers.Values['sec-ch-ua-platform'] = '"Android"'
@@ -26,8 +15,7 @@ function getinfo()
 		MANGAINFO.CoverLink=x.XPathString('//meta[@name="twitter:image"]/@content')
 		MANGAINFO.Authors=x.XPathString('//div[contains(@class, "detail_info")]/p[@class="author"]/text()'):gsub("[^%a%d ,]", '')
 		MANGAINFO.Genres=x.XPathString('//div[@class="info"]/h2')
-		status = x.XPathString('//div[@class="info_update"]/text()[1]')
-		MANGAINFO.Status = MangaInfoStatusIfPos(stand_status(status))
+		MANGAINFO.Status = MangaInfoStatusIfPos(x.XPathString('//div[@class="info_update"]/text()[1]'), 'every')
 		if MANGAINFO.Genres == '' then
 			MANGAINFO.Genres=x.XPathString('//div[contains(@class, "detail_info")]/p[@class="genre"]')
 		end

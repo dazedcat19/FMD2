@@ -1,16 +1,6 @@
 ----------------------------------------------------------------------------------------------------
 -- Module Initialization
 ----------------------------------------------------------------------------------------------------
-function stand_status(status)
-    status = string.lower(status)
-	status_com = {'yes','completed','complete'}
-	status_can = {'cancelled'}
-	status_hia = {'hiatus'}
-	for i=1, #status_com do if status == status_com[i] then return 'Completed' end end
-	for i=1, #status_can do if status == status_can[i] then return 'Cancelled' end end
-	for i=1, #status_hia do if status == status_hia[i] then return 'Hiatus' end end
-	return 'Ongoing'
-end
 
 function Init()
 	local m = NewWebsiteModule()
@@ -111,8 +101,7 @@ function GetInfo()
 	MANGAINFO.CoverLink = x.XPathString('titleImageUrl', json)
 	MANGAINFO.Authors   = x.XPathString('title/author', json)
 	MANGAINFO.Summary   = x.XPathString('overview', json)
-	status = x.XPathString('titleLabels/releaseSchedule', json)
-	MANGAINFO.Status = MangaInfoStatusIfPos(stand_status(status))
+	MANGAINFO.Status = MangaInfoStatusIfPos(x.XPathString('titleLabels/releaseSchedule', json), 'monthly|weekly') -- just 'ly' also works
 
 	local function addChapter(chapterlist)
 		name = chapterlist.GetProperty('subTitle').ToString()

@@ -23,16 +23,6 @@ local Template = require 'templates.KeyoApp'
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
-function stand_status(status)
-    status = string.lower(status)
-	status_com = {'yes','completed','complete'}
-	status_can = {'cancelled'}
-	status_hia = {'hiatus'}
-	for i=1, #status_com do if status == status_com[i] then return 'Completed' end end
-	for i=1, #status_can do if status == status_can[i] then return 'Cancelled' end end
-	for i=1, #status_hia do if status == status_hia[i] then return 'Hiatus' end end
-	return 'Ongoing'
-end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
@@ -47,8 +37,7 @@ function GetInfo()
 
 	local x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.CoverLink = x.XPathString('//div[@class="flex lg:block"]//@style'):match('background%-image:url%((.-)%)')
-	status = x.XPathString('//a[@title="Status"]/span')
-	MANGAINFO.Status = MangaInfoStatusIfPos(stand_status(status))
+	MANGAINFO.Status = MangaInfoStatusIfPos(x.XPathString('//a[@title="Status"]/span'))
 
 	return no_error
 end
