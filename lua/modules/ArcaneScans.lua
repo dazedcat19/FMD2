@@ -39,13 +39,15 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	local x = nil
+	local s, x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return false end
 
 	x = CreateTXQuery(HTTP.Document)
-	x.ParseHTML(GetBetween('run(', ')', x.XPathString('//script[contains(., "ts_reader")]')):gsub('!1', 'false'))
+	s = require 'fmd.crypto'.DecodeBase64(x.XPathString('//script[contains(@src, "dHNfcmVhZGVyLnJ1bih7")]/@src/substring-after(., ",")'))
+	if s == '' then s = x.XPathString('//script[contains(., "ts_reader")]') end
+	x.ParseHTML(GetBetween('run(', ')', s):gsub('!1', 'false'))
 	x.XPathStringAll('json(*).sources()[1].images()', TASK.PageLinks)
 
 	return true
