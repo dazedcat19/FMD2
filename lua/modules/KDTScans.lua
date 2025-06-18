@@ -5,8 +5,8 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '94caa4da3f334418b27bc1ba7e127b57'
-	m.Name                     = 'KDT Scans'
-	m.RootURL                  = 'https://kdtscans.com'
+	m.Name                     = 'Armageddon'
+	m.RootURL                  = 'https://www.silentquill.net'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -18,7 +18,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.Madara'
+local Template = require 'templates.MangaThemesia'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -31,12 +31,9 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
-
-	HTTP.Reset()
-	HTTP.Headers.Values['Referer'] = MANGAINFO.URL
 
 	return no_error
 end
