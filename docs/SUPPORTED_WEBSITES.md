@@ -87,7 +87,7 @@
 | CopyPasteScanlation | [![https://www.cpscan.xyz](https://img.shields.io/website?url=https://www.cpscan.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.cpscan.xyz)](https://www.cpscan.xyz) | - | - | - |
 | CoYuHi | [![http://www.universoyuri.com](https://img.shields.io/website?url=http://www.universoyuri.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.universoyuri.com)](http://www.universoyuri.com) | - | - | - |
 | CrotPedia | [![https://crotpedia.net](https://img.shields.io/website?url=https://crotpedia.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://crotpedia.net)](https://crotpedia.net) | - | - | - |
-| Cubari | [![https://cubari.moe](https://img.shields.io/website?url=https://cubari.moe%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://cubari.moe)](https://cubari.moe) | OK | 03.06.2025 | - |
+| Cubari | [![https://cubari.moe](https://img.shields.io/website?url=https://cubari.moe%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://cubari.moe)](https://cubari.moe) | OK | 19.06.2025 | - |
 | Danke fürs Lesen | [![https://danke.moe](https://img.shields.io/website?url=https://danke.moe%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://danke.moe)](https://danke.moe) | OK | 06.06.2025 | - |
 | DarkScans | [![https://darkscans.net](https://img.shields.io/website?url=https://darkscans.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://darkscans.net)](https://darkscans.net) | - | - | - |
 | DarkskyProjects | [![https://darkskyprojects.org](https://img.shields.io/website?url=https://darkskyprojects.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://darkskyprojects.org)](https://darkskyprojects.org) | - | - | - |

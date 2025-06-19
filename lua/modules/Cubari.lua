@@ -74,7 +74,7 @@ function GetInfo()
 			table.insert(chapter, {url=url,title=title})
 		end
 	end
-	table.sort(chapter, function (a,b) return (tonumber(a.title:match('Ch. (%d+)')) or 0) < (tonumber(b.title:match('Ch. (%d+)')) or 0) end)
+	table.sort(chapter, function (a,b) return (tonumber(a.title:match('Ch. (%d+%.?%d*)')) or 0) < (tonumber(b.title:match('Ch. (%d+%.?%d*)')) or 0) end)
 	for _, v in ipairs(chapter) do
 		MANGAINFO.ChapterLinks.Add(v.url)
 		MANGAINFO.ChapterNames.Add(v.title)
@@ -99,7 +99,7 @@ function GetPageNumber()
 		for v in x.XPath('jn:members((groups)(' .. group_id .. '))', json).Get() do
 			TASK.PageLinks.Add(v.ToString())
 		end
-	elseif group_content:match('^/read/api/') then
+	elseif group_content:match('^/.-/api/') then
 		u = MODULE.RootURL .. group_content
 		if not HTTP.GET(u) then return false end
 		CreateTXQuery(HTTP.Document).XPathStringAll('json(*)()', TASK.PageLinks)
