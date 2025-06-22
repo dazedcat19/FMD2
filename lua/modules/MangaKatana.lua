@@ -13,13 +13,33 @@ function Init()
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
 	m.SortedList               = true
+
+	local fmd = require 'fmd.env'
+	local slang = fmd.SelectedLanguage
+	local lang = {
+		['en'] = {
+			['svrpref'] = 'Server preference:',
+			['server'] = 'Server 1\nServer 2\nServer 3'
+		},
+		['id_ID'] = {
+			['svrpref'] = 'Peladen pilihan:',
+			['server'] = 'Peladen 1\Peladen 2\Peladen 3'
+		},
+		get =
+			function(self, key)
+				local sel = self[slang]
+				if sel == nil then sel = self['en'] end
+				return sel[key]
+			end
+	}
+	m.AddOptionComboBox('svrpref', lang:get('svrpref'), lang:get('server'), 0)
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-DirectoryPagination = '/manga/page/%s?filter=1&order=new'
+local DirectoryPagination = '/manga/page/%s?filter=1&order=new'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -72,13 +92,15 @@ end
 -- Get the page count for the current chapter.
 function GetPageNumber()
 	local x = nil
-	local u = MaybeFillHost(MODULE.RootURL, URL)
+	local svrpref = {'', '?sv=mk', '?sv=3'}
+	local sel_svrpref = (MODULE.GetOption('svrpref') or 0) + 1
+	local u = MaybeFillHost(MODULE.RootURL, URL) .. svrpref[sel_svrpref]
 
-	if not HTTP.GET(u) then return net_problem end
+	if not HTTP.GET(u) then return false end
 
 	x = CreateTXQuery(HTTP.Document)
 	x.ParseHTML(GetBetween('var thzq=', ';function', x.XPathString('//script[contains(., "thzq")]')))
 	x.XPathStringAll('json(*)()', TASK.PageLinks)
 
-	return no_error
+	return true
 end
