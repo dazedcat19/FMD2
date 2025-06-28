@@ -8,7 +8,7 @@ local _M = {}
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-API_URL = 'https://api.imglib.info/api'
+API_URL = 'https://api.cdnlibs.org/api'
 DirectoryPagination = '/manga?site_id[]=%s&sort_by=created_at&page='
 SITE_ID = ''
 
@@ -39,22 +39,34 @@ end
 
 -- Get info and chapter list for the current manga.
 function _M.GetInfo()
-	local bid, branches, bteam, chapter, chapters, j, name, optgroup, scanlators, tags, team, teams, v, volume, w, x = nil
+	local bid, branches, bteam, chapter, chapters, j, name, optgroup, scanlators, tags, team, teams, tename, tname, trname, v, volume, w, x = nil
 	local s = '?fields[]=tags&fields[]=authors&fields[]=artists&fields[]=genres&fields[]=status_id&fields[]=summary'
 	local slug = '/' .. URL:match('/manga/(.-)$'):gsub('(.*)?.*', '%1')
 	local u = API_URL .. '/manga' .. slug
+	HTTP.Headers.Values['Authorization'] = MODULE.GetOption('auth')
 
 	if not HTTP.GET(u .. s) then return net_problem end
 
 	x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
-	MANGAINFO.Title     = x.XPathString('json(*).data.rus_name')
-	if MANGAINFO.Title == '' then MANGAINFO.Title = x.XPathString('json(*).data.name') end
 	MANGAINFO.CoverLink = x.XPathString('json(*).data.cover.thumbnail')
 	MANGAINFO.Authors   = x.XPathStringAll('json(*).data.authors().name')
 	MANGAINFO.Artists   = x.XPathStringAll('json(*).data.artists().name')
 	MANGAINFO.Genres    = x.XPathStringAll('json(*).data.genres().name')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('json(*).data.scanlateStatus.label'), 'Продолжается|Заморожен', 'Завершён|Заброшен')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('json(*).data.scanlateStatus.label'), 'Продолжается', 'Завершён', 'Заморожен', 'Заброшен')
 	MANGAINFO.Summary   = x.XPathString('json(*).data.summary')
+
+	tname = x.XPathString('json(*).data.name')
+	trname = x.XPathString('json(*).data.rus_name')
+	tename = x.XPathString('json(*).data.eng_name')
+	MANGAINFO.Title = trname
+	if trname == '' then MANGAINFO.Title = tname end
+	MANGAINFO.AltTitles = ''
+	if trname ~= '' and tname ~= tename then MANGAINFO.AltTitles = tname end
+	if tename ~= '' and MANGAINFO.AltTitles ~= '' then
+		MANGAINFO.AltTitles = MANGAINFO.AltTitles .. ', ' .. tename
+	else
+		MANGAINFO.AltTitles = tename
+	end
 
 	tags = x.XPathStringAll('json(*).data.tags().name')
 	if tags ~= '' then MANGAINFO.Genres = MANGAINFO.Genres .. ', ' .. tags end
@@ -108,21 +120,21 @@ function _M.GetPageNumber()
 	local s = '/constants?fields[]=imageServers'
 	local u = API_URL .. URL
 
-	if HTTP.GET(API_URL .. s) then
-		svr = {'main', 'secondary', 'compress'}
-		sel_svr = (MODULE.GetOption('svr') or 0) + 1
-		server = CreateTXQuery(HTTP.Document).XPathString('json(*).data.imageServers()[id="' .. svr[sel_svr] .. '" and site_ids="' .. SITE_ID .. '"].url') .. '/'
-	end
+	if not HTTP.GET(API_URL .. s) then return false end
+
+	svr = {'main', 'secondary', 'compress'}
+	sel_svr = (MODULE.GetOption('svr') or 0) + 1
+	server = CreateTXQuery(HTTP.Document).XPathString('json(*).data.imageServers()[id="' .. svr[sel_svr] .. '" and site_ids="' .. SITE_ID .. '"].url') .. '/'
 
 	HTTP.Reset()
 	HTTP.Headers.Values['Authorization'] = MODULE.GetOption('auth')
-	if not HTTP.GET(u) then return net_problem end
+	if not HTTP.GET(u) then return false end
 
 	for i in CreateTXQuery(HTTP.Document).XPath('json(*).data.pages()').Get() do
 		TASK.PageLinks.Add(server .. i.GetProperty('url').ToString())
 	end
 
-	return no_error
+	return true
 end
 
 ----------------------------------------------------------------------------------------------------
