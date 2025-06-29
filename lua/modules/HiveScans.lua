@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'f01040ee781d4ae1929031419b97d2e0'
 	m.Name                     = 'Hive Scans'
-	m.RootURL                  = 'https://hivecomic.com'
+	m.RootURL                  = 'https://hivetoons.org'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -38,12 +38,13 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.Iken'
+API_URL = 'https://api.hivetoons.org'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
--- Login account to the current website.
+-- Sign in to the current website.
 function Login()
 	Template.Login()
 

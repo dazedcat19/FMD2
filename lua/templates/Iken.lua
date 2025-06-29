@@ -8,6 +8,7 @@ local _M = {}
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
+API_URL = ''
 ChapterName = 'Chapter '
 DirectoryPagination = '/api/query?perPage=9999'
 
@@ -15,7 +16,7 @@ DirectoryPagination = '/api/query?perPage=9999'
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
--- Login account to the current website.
+-- Sign in to the current website.
 function _M.Login()
 	local s, x = nil
 	local login_url = MODULE.RootURL .. '/auth/signin'
@@ -40,14 +41,17 @@ end
 -- Get links and names from the manga list of the current website.
 function _M.GetNameAndLink()
 	local v, x = nil
-	local u = MODULE.RootURL .. DirectoryPagination
+	if API_URL ~= '' then API_URL = API_URL else API_URL = MODULE.RootURL end
+	local u = API_URL .. DirectoryPagination
 
 	if not HTTP.GET(u) then return net_problem end
 
 	x = CreateTXQuery(HTTP.Document)
 	for v in x.XPath('json(*).posts()').Get() do
-		LINKS.Add('series/' .. v.GetProperty('slug').ToString())
-		NAMES.Add(v.GetProperty('postTitle').ToString())
+		if v.GetProperty('isNovel').ToString() ~= 'true' then
+			LINKS.Add('series/' .. v.GetProperty('slug').ToString())
+			NAMES.Add(v.GetProperty('postTitle').ToString())
+		end
 	end
 
 	return no_error
@@ -71,7 +75,10 @@ function _M.GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('seriesStatus', json), 'COMING_SOON|HIATUS|MASS_RELEASED|ONGOING', 'CANCELLED|COMPLETED|DROPPED')
 	MANGAINFO.Summary   = x.XPathString('postContent', json)
 
-	if not HTTP.GET(MODULE.RootURL .. '/api/chapters?postId=' .. x.XPathString('id', json) .. '&skip=0&take=9999&order=asc') then return net_problem end
+	if API_URL ~= '' then API_URL = API_URL else API_URL = MODULE.RootURL end
+	u = API_URL .. '/api/chapters?postId=' .. x.XPathString('id', json) .. '&skip=0&take=999&order=asc'
+
+	if not HTTP.GET(u) then return net_problem end
 
 	for v in CreateTXQuery(HTTP.Document).XPath('json(*).post.chapters()').Get() do
 		title = v.GetProperty('title').ToString()
@@ -96,13 +103,13 @@ function _M.GetPageNumber()
 	local x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
-	if not HTTP.GET(u) then return net_problem end
+	if not HTTP.GET(u) then return false end
 
 	x = CreateTXQuery(HTTP.Document)
 	x.ParseHTML(GetBetween('"images":', '],', x.XPathString('//script[contains(., "chapterId")]'):gsub('\\"', '\"')) .. ']')
 	x.XPathStringAll('json(*)().url', TASK.PageLinks)
 
-	return no_error
+	return true
 end
 
 -- Prepare the URL, http header and/or http cookies before downloading an image.

@@ -38,12 +38,13 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.Iken'
+API_URL = 'https://api.aurorascans.com'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
--- Login account to the current website.
+-- Sign in to the current website.
 function Login()
 	Template.Login()
 
