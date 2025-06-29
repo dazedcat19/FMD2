@@ -59,7 +59,7 @@ end
 
 -- Get info and chapter list for the current manga.
 function _M.GetInfo()
-	local json, title, v, x = nil
+	local demographic, json, title, v, x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
@@ -68,12 +68,20 @@ function _M.GetInfo()
 	x.ParseHTML('{"post"' .. GetBetween('{"post"', '}]]', x.XPathString('//script[contains(., "postId")]'):gsub('\\"', '\"'):gsub('\\\\', '\\')) .. '}')
 	json = x.XPath('json(*).post')
 	MANGAINFO.Title     = x.XPathString('postTitle', json)
+	MANGAINFO.AltTitles = x.XPathString('alternativeTitles', json)
 	MANGAINFO.CoverLink = x.XPathString('featuredImage', json)
 	MANGAINFO.Authors   = x.XPathString('author', json)
 	MANGAINFO.Artists   = x.XPathString('artist', json)
 	MANGAINFO.Genres    = x.XPathStringAll('json(*).post.genres().name')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('seriesStatus', json), 'COMING_SOON|HIATUS|MASS_RELEASED|ONGOING', 'CANCELLED|COMPLETED|DROPPED')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('seriesStatus', json), 'COMING_SOON|MASS_RELEASED|ONGOING', 'COMPLETED', 'HIATUS', 'CANCELLED|DROPPED')
 	MANGAINFO.Summary   = x.XPathString('postContent', json)
+
+	demographic = x.XPathString('seriesType', json):gsub("^(%u)(%u*)", function(first, rest) return first .. rest:lower() end)
+	if MANGAINFO.Genres ~= '' then
+		MANGAINFO.Genres = MANGAINFO.Genres .. ', ' .. demographic
+	else
+		MANGAINFO.Genres = demographic
+	end
 
 	if API_URL ~= '' then API_URL = API_URL else API_URL = MODULE.RootURL end
 	u = API_URL .. '/api/chapters?postId=' .. x.XPathString('id', json) .. '&skip=0&take=999&order=asc'
