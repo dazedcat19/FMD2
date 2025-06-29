@@ -195,6 +195,7 @@
 | KaliScanMe | [![https://kaliscan.me](https://img.shields.io/website?url=https://kaliscan.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kaliscan.me)](https://kaliscan.me) | OK | 07.02.2025 | - |
 | Kanzenin | [![https://kanzenin.info](https://img.shields.io/website?url=https://kanzenin.info%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kanzenin.info)](https://kanzenin.info) | - | - | - |
 | KappaBeast | [![https://kappabeast.com](https://img.shields.io/website?url=https://kappabeast.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kappabeast.com)](https://kappabeast.com) | - | - | - |
+| Ken Scans | [![https://kenscans.org](https://img.shields.io/website?url=https://kenscans.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kenscans.org)](https://kenscans.org) | OK | 29.06.2025 | - |
 | Kewn Scans | [![https://kewnscans.org](https://img.shields.io/website?url=https://kewnscans.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kewnscans.org)](https://kewnscans.org) | OK | 09.01.2025 | - |
 | Kiryuu | [![https://kiryuu.id](https://img.shields.io/website?url=https://kiryuu.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kiryuu.id)](https://kiryuu.id) | - | - | - |
 | KissManga | [![https://kissmanga.org](https://img.shields.io/website?url=https://kissmanga.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kissmanga.org)](https://kissmanga.org) | - | - | - |
