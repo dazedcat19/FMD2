@@ -259,7 +259,7 @@
 | Manamoa | [![https://manamoa.net](https://img.shields.io/website?url=https://manamoa.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manamoa.net)](https://manamoa.net) | - | - | - |
 | Manga District | [![https://mangadistrict.com](https://img.shields.io/website?url=https://mangadistrict.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangadistrict.com)](https://mangadistrict.com) | OK | 21.05.2025 | - |
 | Manga Koma | [![https://mangakoma01.com](https://img.shields.io/website?url=https://mangakoma01.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangakoma01.com)](https://mangakoma01.com) | OK | 21.01.2025 | - |
-| Manga Pro | [![https://promanga.pro](https://img.shields.io/website?url=https://promanga.pro%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://promanga.pro)](https://promanga.pro) | OK | 08.01.2025 | - |
+| Manga Pro | [![https://promanga.net](https://img.shields.io/website?url=https://promanga.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://promanga.net)](https://promanga.net) | OK | 29.06.2025 | - |
 | Manga Sect | [![https://mangasect.net](https://img.shields.io/website?url=https://mangasect.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangasect.net)](https://mangasect.net) | OK | 20.01.2025 | - |
 | Manga-1001 | [![https://doki1001.com](https://img.shields.io/website?url=https://doki1001.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://doki1001.com)](https://doki1001.com) | - | - | - |
 | Manga-Tr | [![https://manga-tr.com](https://img.shields.io/website?url=https://manga-tr.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga-tr.com)](https://manga-tr.com) | - | - | - |
