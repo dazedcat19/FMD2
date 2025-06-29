@@ -6,11 +6,13 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'd81d220334924982b4bf32f0fa92164c'
 	m.Name                     = 'Magus Manga'
-	m.RootURL                  = 'https://magustoon.net'
+	m.RootURL                  = 'https://magustoon.org'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnLogin                  = 'Login'
+	m.AccountSupport           = true
 
 	local fmd = require 'fmd.env'
 	local slang = fmd.SelectedLanguage
@@ -35,11 +37,19 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.KeyoApp'
+local Template = require 'templates.Iken'
+API_URL = 'https://api.magustoon.org'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
+
+-- Sign in to the current website.
+function Login()
+	Template.Login()
+
+	return no_error
+end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
