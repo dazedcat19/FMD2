@@ -114,7 +114,7 @@ function _M.GetPageNumber()
 	if not HTTP.GET(u) then return false end
 
 	x = CreateTXQuery(HTTP.Document)
-	x.ParseHTML(GetBetween('"images":', '],', x.XPathString('//script[contains(., "chapterId")]'):gsub('\\"', '\"')) .. ']')
+	x.ParseHTML(GetBetween('"images":', '],', x.XPathString('//script[contains(., "images")]'):gsub('\\"', '\"')) .. ']')
 	x.XPathStringAll('json(*)().url', TASK.PageLinks)
 
 	return true
