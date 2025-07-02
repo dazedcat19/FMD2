@@ -6,11 +6,13 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '4858ca8d788c4d229a1f996933aa8329'
 	m.Name                     = 'Rezo Scans'
-	m.RootURL                  = 'https://rezoscans.com'
+	m.RootURL                  = 'https://rezoscan.org'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnLogin                  = 'Login'
+	m.AccountSupport           = true
 
 	local fmd = require 'fmd.env'
 	local slang = fmd.SelectedLanguage
@@ -35,11 +37,19 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.KeyoApp'
+local Template = require 'templates.Iken'
+API_URL = 'https://api.rezoscan.org'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
+
+-- Sign in to the current website.
+function Login()
+	Template.Login()
+
+	return no_error
+end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
@@ -48,7 +58,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
 
@@ -59,5 +69,5 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
 end
