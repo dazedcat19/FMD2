@@ -12,6 +12,7 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.SortedList               = true
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -19,10 +20,7 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local API_URL = 'https://westmanga.me/api'
-local DirectoryPagination = '/contents?page=%s&per_page=40&orderBy=Added&type=Comic'
-local AccessKey = 'WM_WEB_FRONT_END'
-local SecretKey = 'xxxoidj'
-local sha256 = require('utils.sha256')
+local DirectoryPagination = '/contents?orderBy=Added&type=Comic&page='
 
 ----------------------------------------------------------------------------------------------------
 -- Auxiliary Functions
@@ -30,11 +28,13 @@ local sha256 = require('utils.sha256')
 
 -- Sets the required HTTP headers for making an API request.
 function SetApiHeaders(RequestPath)
+	local AccessKey = 'WM_WEB_FRONT_END'
+	local SecretKey = 'xxxoidj'
 	local timestamp = os.time()
-	local key = timestamp .. 'GET' .. RequestPath .. AccessKey .. SecretKey
+	local key = timestamp .. 'GET' .. RequestPath:match('([^?]+)') .. AccessKey .. SecretKey
 	HTTP.Headers.Values['x-wm-accses-key'] = AccessKey
 	HTTP.Headers.Values['x-wm-request-time'] = timestamp
-	HTTP.Headers.Values['x-wm-request-signature'] = sha256.hmac_sha256(key, 'wm-api-request')
+	HTTP.Headers.Values['x-wm-request-signature'] = require('utils.sha256').hmac_sha256(key, 'wm-api-request')
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -43,8 +43,8 @@ end
 
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
-	local u = API_URL .. DirectoryPagination:format(1)
-	SetApiHeaders('/api' .. DirectoryPagination:format(1))
+	local u = API_URL .. DirectoryPagination .. 1
+	SetApiHeaders('/api' .. DirectoryPagination)
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -56,8 +56,8 @@ end
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
 	local v, x = nil
-	local u = API_URL .. DirectoryPagination:format(URL + 1)
-	SetApiHeaders('/api' .. DirectoryPagination:format(URL + 1))
+	local u = API_URL .. DirectoryPagination .. (URL + 1)
+	SetApiHeaders('/api' .. DirectoryPagination)
 
 	if not HTTP.GET(u) then return net_problem end
 
