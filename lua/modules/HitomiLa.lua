@@ -77,7 +77,7 @@ function GetNameAndLink()
 	-- The .nozomi file contains gallery IDs as 32-bit big-endian integers.
 	for i = 1, s:len(), 4 do
 		local id = (s:byte(i) * 16777216) + (s:byte(i+1) * 65536) + (s:byte(i+2) * 256) + s:byte(i+3)
-		LINKS.Add('-' .. id .. '.html')
+		LINKS.Add('galleries/' .. id .. '.html')
 		NAMES.Add(id)
 	end
 
@@ -90,7 +90,7 @@ function GetInfo()
 
 	if not gg then return net_problem end
 
-	if not HTTP.GET('https://ltn.' .. CDN_URL .. '/galleries/' .. URL:match('-(%d+)%.html') .. '.js') then return net_problem end
+	if not HTTP.GET('https://ltn.' .. CDN_URL .. '/galleries/' .. URL:match('(%d+)%.html') .. '.js') then return net_problem end
 
 	local x = CreateTXQuery()
 	x.ParseHTML(HTTP.Document.ToString():match('^var galleryinfo = (.*)'))
@@ -154,7 +154,7 @@ function GetPageNumber()
 
 	if not gg then return false end
 
-	if not HTTP.GET('https://ltn.' .. CDN_URL .. '/galleries/' .. URL:match('-(%d+)%.html') .. '.js') then return false end
+	if not HTTP.GET('https://ltn.' .. CDN_URL .. '/galleries/' .. URL:match('(%d+)%.html') .. '.js') then return false end
 
 	local x = CreateTXQuery()
 	x.ParseHTML(HTTP.Document.ToString():match('^var galleryinfo = (.*)'))
