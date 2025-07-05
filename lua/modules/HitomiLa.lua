@@ -26,6 +26,7 @@ function GetGgData()
 	if gg_data then return gg_data end
 
 	if not HTTP.GET('https://ltn.' .. CDN_URL .. '/gg.js') then return nil end
+
 	local gg_script = HTTP.Document.ToString()
 
 	-- Store parsed data in the module-level cache
@@ -93,7 +94,7 @@ function GetInfo()
 	if not HTTP.GET('https://ltn.' .. CDN_URL .. '/galleries/' .. URL:match('(%d+)%.html') .. '.js') then return net_problem end
 
 	local x = CreateTXQuery()
-	x.ParseHTML(HTTP.Document.ToString():match('^var galleryinfo = (.*)'))
+	x.ParseHTML(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()):match('^var galleryinfo = (.*)'))
 
 	local first_file_hash = x.XPathString('json(*).files(1).hash')
 	local image_id = GetImageIdFromHash(first_file_hash)
@@ -120,23 +121,25 @@ function GetInfo()
 	if #parodies > 0 then table.insert(desc, 'Series: ' .. table.concat(parodies, ', ')) end
 	if #characters > 0 then table.insert(desc, 'Characters: ' .. table.concat(characters, ', ')) end
 	if page_count > 0 then table.insert(desc, 'Pages: ' .. page_count) end
-	if language ~= 'null' then table.insert(desc, 'Language: ' .. language) end
+	if #language > 0 and language ~= 'null' then table.insert(desc, 'Language: ' .. language) end
 
-	MANGAINFO.Title     = x.XPathString('json(*).title')
+	local Title = x.XPathString('json(*).title')
+	local AltTitles = x.XPathString('json(*).japanese_title')
+	if Title:lower() == 'null' and AltTitles ~= 'null' then Title = AltTitles end
+	if AltTitles == 'null' or AltTitles == Title then AltTitles = '' end
+
+	MANGAINFO.Title     = Title
+	MANGAINFO.AltTitles = AltTitles
 	MANGAINFO.CoverLink = string.format('https://%s.%s/webpbigtn/%s/%s.webp',
 		thumb_subdomain, CDN_URL, ThumbPathFromHash(first_file_hash), first_file_hash)
 	MANGAINFO.Genres    = x.XPathStringAll('json(*).tags().tag') .. ', ' .. x.XPathString('json(*).type')
 	MANGAINFO.Summary   = table.concat(desc, '\r\n')
 
-	local AltTitles = x.XPathString('json(*).japanese_title')
-	if AltTitles == 'null' then AltTitles = '' end
-	MANGAINFO.AltTitles = AltTitles
-
 	local groups = x.XPathStringAll('json(*).groups().group')
-	if #groups > 0 then
-		MANGAINFO.Authors = groups
+	if #groups > 0 and groups ~= 'null' then
+		MANGAINFO.Artitst = groups
 	else
-		MANGAINFO.Authors = x.XPathStringAll('json(*).artists().artist')
+		MANGAINFO.Artists = x.XPathStringAll('json(*).artists().artist')
 	end
 
 	MANGAINFO.ChapterLinks.Add(x.XPathString('json(*).galleryurl'))
