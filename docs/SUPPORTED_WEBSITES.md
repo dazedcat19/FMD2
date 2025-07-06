@@ -283,6 +283,7 @@
 | MangaBin | [![https://mangabin.com](https://img.shields.io/website?url=https://mangabin.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangabin.com)](https://mangabin.com) | - | - | - |
 | MangaBob | [![https://mangabob.com](https://img.shields.io/website?url=https://mangabob.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangabob.com)](https://mangabob.com) | - | - | - |
 | MangaBoruto | [![https://mangaboruto.xyz](https://img.shields.io/website?url=https://mangaboruto.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangaboruto.xyz)](https://mangaboruto.xyz) | - | - | - |
+| MangaBuddy | [![https://mangabuddy.com](https://img.shields.io/website?url=https://mangabuddy.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangabuddy.com)](https://mangabuddy.com) | OK | 06.07.2025 | - |
 | Mangacan | [![https://mangacanblog.com](https://img.shields.io/website?url=https://mangacanblog.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangacanblog.com)](https://mangacanblog.com) | - | - | - |
 | MangaChanRU | [![http://manga-chan.me](https://img.shields.io/website?url=http://manga-chan.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://manga-chan.me)](http://manga-chan.me) | - | - | - |
 | MangaClash | [![https://toonclash.com](https://img.shields.io/website?url=https://toonclash.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://toonclash.com)](https://toonclash.com) | - | - | - |
