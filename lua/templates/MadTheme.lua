@@ -9,6 +9,8 @@ local _M = {}
 ----------------------------------------------------------------------------------------------------
 
 DirectoryPagination = '/newest?page='
+UseLegacyApi  = false
+UseSlugSearch = false
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -38,7 +40,7 @@ end
 
 -- Get info and chapter list for the current manga.
 function _M.GetInfo()
-	local v, x = nil
+	local id, s, slug, v, x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
@@ -52,6 +54,16 @@ function _M.GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//p[./strong[contains(., "Status")]]/a'))
 	MANGAINFO.Summary   = x.XPathString('//p[@class="content"]')
 
+	id = x.XPathString('//script[contains(., "bookId")]/substring-before(substring-after(., "var bookId = "), ";")')
+	slug = x.XPathString('//script[contains(., "bookId")]/substring-before(substring-after(., "var bookSlug = """), """;")')
+
+	s = UseSlugSearch and slug or id
+	u = MODULE.RootURL .. (UseLegacyApi and '/service/backend/chaplist/?manga_id=' .. id .. '&manga_name=' .. MANGAINFO.Title
+		or '/api/manga/' .. s .. '/chapters?source=detail')
+
+	if not HTTP.GET(u) then return net_problem end
+
+	x = CreateTXQuery(HTTP.Document)
 	for v in x.XPath('//ul[@class="chapter-list"]//a').Get() do
 		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
 		MANGAINFO.ChapterNames.Add(x.XPathString('div/strong', v))
@@ -69,8 +81,8 @@ function _M.GetPageNumber()
 	if not HTTP.GET(u) then return false end
 
 	body = HTTP.Document.ToString()
-	pages = body:match('var chapImages = (.-);')
-	for i in pages:gmatch('([^",]+)') do
+	pages = body:match("var chapImages%s*=%s*['\"]([^'\"]+)['\"]")
+	for i in pages:gmatch('[^,]+') do
 		TASK.PageLinks.Add(i)
 	end
 

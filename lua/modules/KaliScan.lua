@@ -25,6 +25,7 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.MadTheme'
+UseLegacyApi = true
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -55,5 +56,5 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
 end
