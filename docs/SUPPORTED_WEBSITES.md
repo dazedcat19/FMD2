@@ -344,6 +344,7 @@
 | MangaLivre | [![https://mangalivre.tv](https://img.shields.io/website?url=https://mangalivre.tv%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangalivre.tv)](https://mangalivre.tv) | OK | 01.04.2025 | - |
 | MangaLord | [![https://www.mangalord.com](https://img.shields.io/website?url=https://www.mangalord.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangalord.com)](https://www.mangalord.com) | - | - | - |
 | MangaMammy | [![https://mangamammy.ru](https://img.shields.io/website?url=https://mangamammy.ru%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangamammy.ru)](https://mangamammy.ru) | OK | 04.04.2025 | - |
+| MangaMonk | [![https://mangamonk.com](https://img.shields.io/website?url=https://mangamonk.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangamonk.com)](https://mangamonk.com) | OK | 08.07.2025 | - |
 | MangaNato | [![https://www.natomanga.com](https://img.shields.io/website?url=https://www.natomanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.natomanga.com)](https://www.natomanga.com) | OK | 24.02.2025 | - |
 | MangaNelMe | [![https://manganel.me](https://img.shields.io/website?url=https://manganel.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manganel.me)](https://manganel.me) | - | - | - |
 | Manganelo | [![https://chapmanganelo.com](https://img.shields.io/website?url=https://chapmanganelo.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://chapmanganelo.com)](https://chapmanganelo.com) | - | - | - |
