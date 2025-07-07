@@ -438,7 +438,7 @@
 | ManhuaID | [![https://manhuaid.com](https://img.shields.io/website?url=https://manhuaid.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuaid.com)](https://manhuaid.com) | - | - | - |
 | ManhuaManhwa | [![https://manhuamanhwa.com](https://img.shields.io/website?url=https://manhuamanhwa.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuamanhwa.com)](https://manhuamanhwa.com) | - | - | - |
 | ManhuaPlanet | [![https://manhuaplanet.com](https://img.shields.io/website?url=https://manhuaplanet.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuaplanet.com)](https://manhuaplanet.com) | - | - | - |
-| ManhuaPlus | [![https://manhuaplus.com](https://img.shields.io/website?url=https://manhuaplus.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuaplus.com)](https://manhuaplus.com) | - | - | - |
+| ManhuaPlus | [![https://manhuaplus.com](https://img.shields.io/website?url=https://manhuaplus.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuaplus.com)](https://manhuaplus.com) | OK | 08.07.2025 | - |
 | ManhuaPlusOnline | [![https://manhuaplus.online](https://img.shields.io/website?url=https://manhuaplus.online%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuaplus.online)](https://manhuaplus.online) | - | - | - |
 | ManhuaPlusOrg | [![https://manhuaplus.org](https://img.shields.io/website?url=https://manhuaplus.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuaplus.org)](https://manhuaplus.org) | OK | 21.01.2025 | - |
 | Manhuas | [![https://manhuas.net](https://img.shields.io/website?url=https://manhuas.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhuas.net)](https://manhuas.net) | - | - | - |
