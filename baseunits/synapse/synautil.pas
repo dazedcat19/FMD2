@@ -1,9 +1,9 @@
 {==============================================================================|
-| Project : Ararat Synapse                                       | 004.015.007 |
+| Project : Ararat Synapse                                       | 004.016.002 |
 |==============================================================================|
 | Content: support procedures and functions                                    |
 |==============================================================================|
-| Copyright (c)1999-2017, Lukas Gebauer                                        |
+| Copyright (c)1999-2024, Lukas Gebauer                                        |
 | All rights reserved.                                                         |
 |                                                                              |
 | Redistribution and use in source and binary forms, with or without           |
@@ -33,7 +33,7 @@
 | DAMAGE.                                                                      |
 |==============================================================================|
 | The Initial Developer of the Original Code is Lukas Gebauer (Czech Republic).|
-| Portions created by Lukas Gebauer are Copyright (c) 1999-2017.               |
+| Portions created by Lukas Gebauer are Copyright (c) 1999-2024.               |
 | Portions created by Hernan Sanchez are Copyright (c) 2000.                   |
 | Portions created by Petr Fejfar are Copyright (c)2011-2012.                  |
 | All Rights Reserved.                                                         |
@@ -59,6 +59,11 @@
   {$WARN IMPLICIT_STRING_CAST OFF}
   {$WARN IMPLICIT_STRING_CAST_LOSS OFF}
   {$WARN SUSPICIOUS_TYPECAST OFF}
+  {$WARN SYMBOL_DEPRECATED OFF}
+{$ENDIF}
+
+{$IFDEF NEXTGEN}
+  {$ZEROBASEDSTRINGS OFF}
 {$ENDIF}
 
 unit synautil;
@@ -77,7 +82,7 @@ uses
     {$ENDIF OS2}
   {$ELSE FPC}
     {$IFDEF POSIX}
-      Posix.Base, Posix.Time, Posix.SysTypes, Posix.SysTime, Posix.Stdio,
+      Posix.Base, Posix.Time, Posix.SysTypes, Posix.SysTime, Posix.Stdio, Posix.Unistd,
     {$ELSE}
       Libc,
     {$ENDIF}
@@ -85,6 +90,11 @@ uses
 {$ENDIF}
 {$IFDEF CIL}
   System.IO,
+{$ENDIF}
+{$IFDEF DELPHIX_SEATTLE_UP}
+  {$IFNDEF NEXTGEN}
+    AnsiStrings,
+  {$ENDIF}
 {$ENDIF}
   SysUtils, Classes, SynaFpc;
 
@@ -115,6 +125,12 @@ function TimeZone: string;
  specification. Four digit year is used to break any Y2K concerns. (Example
  'Fri, 15 Oct 1999 21:14:56 +0200')}
 function Rfc822DateTime(t: TDateTime): string;
+
+{:Same as @link(Rfc822DateTime), but GMT timezone is used.}
+function Rfc822DateTimeGMT(t: TDateTime): string;
+
+{:Returns date and time in format defined in RFC-3339 in format "yyyy-mm-ddThh:nn:ss.zzz"}
+function Rfc3339DateTime(t: TDateTime): string;
 
 {:Returns date and time in format defined in C compilers in format "mmm dd hh:nn:ss"}
 function CDateTime(t: TDateTime): string;
@@ -395,16 +411,16 @@ var
      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'),
     ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',  //English
      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'),
-    ('jan', 'fév', 'mar', 'avr', 'mai', 'jun', //French
-     'jul', 'aoû', 'sep', 'oct', 'nov', 'déc'),
+    ('jan', 'fÃ©v', 'mar', 'avr', 'mai', 'jun', //French
+     'jul', 'aoÃ»', 'sep', 'oct', 'nov', 'dÃ©c'),
     ('jan', 'fev', 'mar', 'avr', 'mai', 'jun',  //French#2
      'jul', 'aou', 'sep', 'oct', 'nov', 'dec'),
     ('Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun',  //German
      'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'),
-    ('Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun',  //German#2
+    ('Jan', 'Feb', 'MÃ¤r', 'Apr', 'Mai', 'Jun',  //German#2
      'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'),
-    ('Led', 'Úno', 'Bøe', 'Dub', 'Kvì', 'Èen',  //Czech
-     'Èec', 'Srp', 'Záø', 'Øíj', 'Lis', 'Pro')
+    ('Led', 'Ãšno', 'BÃ¸e', 'Dub', 'KvÃ¬', 'Ãˆen',  //Czech
+     'Ãˆec', 'Srp', 'ZÃ¡Ã¸', 'Ã˜Ã­j', 'Lis', 'Pro')
      );
 
 
@@ -479,6 +495,25 @@ begin
   DecodeDate(t, wYear, wMonth, wDay);
   Result := Format('%s, %d %s %s %s', [MyDayNames[DayOfWeek(t)], wDay,
     MyMonthNames[1, wMonth], FormatDateTime('yyyy hh":"nn":"ss', t), TimeZone]);
+end;
+
+{==============================================================================}
+
+function Rfc822DateTimeGMT(t: TDateTime): string;
+var
+  wYear, wMonth, wDay: word;
+begin
+  t := t - (TimeZoneBias/(24*60));
+  DecodeDate(t, wYear, wMonth, wDay);
+  Result := Format('%s, %d %s %s GMT', [MyDayNames[DayOfWeek(t)], wDay,
+    MyMonthNames[1, wMonth], FormatDateTime('yyyy hh":"nn":"ss', t)]);
+end;
+
+{==============================================================================}
+
+function Rfc3339DateTime(t: TDateTime): string;
+begin
+  Result := FormatDateTime('yyyy"-"mm"-"dd"T"hh":"nn":"ss"."zzz', t) + Timezone;
 end;
 
 {==============================================================================}
@@ -1843,7 +1878,7 @@ begin
   if Dir = '' then
   begin
     Path := StringOfChar(#0, MAX_PATH);
-	  x := GetTempPath(Length(Path), PChar(Path));
+	  {x :=} GetTempPath(Length(Path), PChar(Path));
     Path := PChar(Path);
   end
   else
@@ -1917,7 +1952,7 @@ end;
 procedure SearchForLineBreak(var APtr:PANSIChar; AEtx:PANSIChar; out ABol:PANSIChar; out ALength:integer);
 begin
   ABol := APtr;
-  while (APtr<AEtx) and not (APtr^ in [#0,#10,#13]) do
+  while (APtr<AEtx) and not (Byte(APtr^) in [0, 10, 13]) do
     inc(APtr);
   ALength := APtr-ABol;
 end;
@@ -2021,12 +2056,12 @@ begin
   // Moving Aptr position forward until boundary will be reached
   while (APtr<AEtx) do
     begin
-      if strlcomp(APtr,#13#10'--',4)=0 then
+      if SynaFpc.strlcomp(APtr,#13#10'--',4)=0 then
         begin
           eob  := MatchBoundary(APtr,AEtx,ABoundary);
           Step := 4;
         end
-      else if strlcomp(APtr,'--',2)=0 then
+      else if SynaFpc.strlcomp(APtr,'--',2)=0 then
         begin
           eob  := MatchBoundary(APtr,AEtx,ABoundary);
           Step := 2;
@@ -2059,17 +2094,17 @@ begin
   Lng := length(ABoundary);
   if (MatchPos+2+Lng)>AETX then
     exit;
-  if strlcomp(MatchPos,#13#10,2)=0 then
+  if SynaFpc.strlcomp(MatchPos,#13#10,2)=0 then
     inc(MatchPos,2);
   if (MatchPos+2+Lng)>AETX then
     exit;
-  if strlcomp(MatchPos,'--',2)<>0 then
+  if SynaFpc.strlcomp(MatchPos,'--',2)<>0 then
     exit;
   inc(MatchPos,2);
-  if strlcomp(MatchPos,PANSIChar(ABoundary),Lng)<>0 then
+  if SynaFpc.strlcomp(MatchPos,PANSIChar(ABoundary),Lng)<>0 then
     exit;
   inc(MatchPos,Lng);
-  if ((MatchPos+2)<=AEtx) and (strlcomp(MatchPos,#13#10,2)=0) then
+  if ((MatchPos+2)<=AEtx) and (SynaFpc.strlcomp(MatchPos,#13#10,2)=0) then
     inc(MatchPos,2);
   Result := MatchPos;
 end;
@@ -2084,10 +2119,10 @@ begin
   MatchPos := MatchBoundary(ABOL,AETX,ABoundary);
   if not Assigned(MatchPos) then
     exit;
-  if strlcomp(MatchPos,'--',2)<>0 then
+  if SynaFpc.strlcomp(MatchPos,'--',2)<>0 then
     exit;
   inc(MatchPos,2);
-  if (MatchPos+2<=AEtx) and (strlcomp(MatchPos,#13#10,2)=0) then
+  if (MatchPos+2<=AEtx) and (SynaFpc.strlcomp(MatchPos,#13#10,2)=0) then
     inc(MatchPos,2);
   Result := MatchPos;
 end;

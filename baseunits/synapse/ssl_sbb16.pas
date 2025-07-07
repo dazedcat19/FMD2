@@ -1,7 +1,7 @@
 {==============================================================================|
 | Project : Ararat Synapse                                       | 001.000.006 |
 |==============================================================================|
-| Content: SSL support for SecureBlackBox 10+                                  |
+| Content: SSL support for SecureBlackBox 16+                                  |
 |==============================================================================|
 | Copyright (c)1999-2005, Lukas Gebauer                                        |
 | All rights reserved.                                                         |
@@ -59,14 +59,12 @@ of keys and certificates refer to SecureBlackBox documentation.
 {$ENDIF}
 {$H+}
 
-unit ssl_sbb;
+unit ssl_sbb16;
 
 interface
 
 uses
-  SysUtils, Classes, Windows, blcksock, synsock, synautil, synacode,
-  SBSSLClient, SBSSLServer, SBSSLConstants, SBX509, SBWinCertStorage,
-  SBCustomCertStorage, SBTypes, SBUtils, SBConstants, SBSessionPool;
+  SysUtils, Classes, blcksock, synsock, SBSSLClient, SBSSLServer, SBX509, SBCustomCertStorage;
 
 type
   {:@abstract(class implementing SecureBlackbox SSL plugin.)
@@ -94,13 +92,13 @@ type
     procedure Reset;
 
     procedure OnCertificateValidate(Sender: TObject; X509Certificate: TElX509Certificate;
-      var Validate: TSBBoolean);
-    procedure OnData(Sender: TObject; Buffer: Pointer; Size: LongInt);
+      var Validate: TSBCertificateValidity; var Reason: TSBCertificateValidityReason);
+    procedure OnData(Sender: TObject; Buffer: Pointer; Size: Int32);
     procedure OnError(Sender: TObject; ErrorCode: Integer; Fatal: Boolean;
       Remote: Boolean);
-    procedure OnReceive(Sender: TObject; Buffer: Pointer; MaxSize: LongInt;
-      out Written: LongInt);
-    procedure OnSend(Sender: TObject; Buffer: Pointer; Size: LongInt);
+    procedure OnReceive(Sender: TObject; Buffer: Pointer; MaxSize: Int32;
+      var Written: Int32);
+    procedure OnSend(Sender: TObject; Buffer: Pointer; Size: Int32);
   public
     constructor Create(const Value: TTCPBlockSocket); override;
     destructor Destroy; override;
@@ -142,6 +140,12 @@ type
   end;
 
 implementation
+
+uses
+{$IFDEF MSWINDOWS}
+  Windows,
+{$ENDIF}
+  synautil, SBSSLConstants, SBUtils;
 
 const
   DEFAULT_RECV_BUFFER = 32768;
@@ -377,14 +381,15 @@ begin
 end;
 
 // on certificate validate
-procedure TSSLSBB.OnCertificateValidate(Sender: TObject;
-  X509Certificate: TElX509Certificate; var Validate: TSBBoolean);
+procedure TSSLSBB.OnCertificateValidate(Sender: TObject; X509Certificate: TElX509Certificate;
+  var Validate: TSBCertificateValidity; var Reason: TSBCertificateValidityReason);
 begin
-  Validate := True;
+  Reason := [];
+  Validate := cvOk;
 end;
 
 // on data
-procedure TSSLSBB.OnData(Sender: TObject; Buffer: Pointer; Size: LongInt);
+procedure TSSLSBB.OnData(Sender: TObject; Buffer: Pointer; Size: Int32);
 var
   lString: AnsiString;
 begin
@@ -402,8 +407,8 @@ begin
 end;
 
 // on receive
-procedure TSSLSBB.OnReceive(Sender: TObject; Buffer: Pointer; MaxSize: LongInt;
-  out Written: LongInt);
+procedure TSSLSBB.OnReceive(Sender: TObject; Buffer: Pointer; MaxSize: Int32;
+  var Written: Int32);
 var
   lLength: Integer;
 begin
@@ -417,7 +422,7 @@ begin
 end;
 
 // on send
-procedure TSSLSBB.OnSend(Sender: TObject; Buffer: Pointer; Size: LongInt);
+procedure TSSLSBB.OnSend(Sender: TObject; Buffer: Pointer; Size: Int32);
 var
   lResult: Integer;
 begin
@@ -519,7 +524,7 @@ begin
       // init, ciphers
       for loop1 := SB_SUITE_FIRST to SB_SUITE_LAST do
         FElSecureServer.CipherSuites[loop1] := FCipherSuites[loop1];
-      FElSecureServer.Versions := [sbSSL2, sbSSL3, sbTLS1];
+      FElSecureServer.Versions := [sbTLS1, sbTLS11, sbTLS12];
       FElSecureServer.ClientAuthentication := False;
       FElSecureServer.OnError := OnError;
       FElSecureServer.OnSend := OnSend;
@@ -538,7 +543,8 @@ begin
       // init, ciphers
       for loop1 := SB_SUITE_FIRST to SB_SUITE_LAST do
         FElSecureClient.CipherSuites[loop1] := FCipherSuites[loop1];
-      FElSecureClient.Versions := [sbSSL3, sbTLS1];
+      FElSecureClient.AutoValidateCertificates := False;
+      FElSecureClient.Versions := [sbTLS1, sbTLS11, sbTLS12];
       FElSecureClient.OnError := OnError;
       FElSecureClient.OnSend := OnSend;
       FElSecureClient.OnReceive := OnReceive;

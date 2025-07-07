@@ -54,13 +54,20 @@ Used RFC: RFC-1305, RFC-2030
 {$Q-}
 {$H+}
 
+{$IFDEF NEXTGEN}
+  {$ZEROBASEDSTRINGS OFF}
+{$ENDIF}
+
 unit sntpsend;
 
 interface
 
 uses
   SysUtils,
-  synsock, blcksock, synautil;
+  synsock, blcksock, synautil
+  {$IFDEF NEXTGEN}
+   ,synafpc
+  {$ENDIF};
 
 const
   cNtpProtocol = '123';

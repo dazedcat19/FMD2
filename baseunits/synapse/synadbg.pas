@@ -1,9 +1,9 @@
 {==============================================================================|
-| Project : Ararat Synapse                                       | 001.001.002 |
+| Project : Ararat Synapse                                       | 001.001.003 |
 |==============================================================================|
 | Content: Socket debug tools                                                  |
 |==============================================================================|
-| Copyright (c)2008-2011, Lukas Gebauer                                        |
+| Copyright (c)2008-2021, Lukas Gebauer                                        |
 | All rights reserved.                                                         |
 |                                                                              |
 | Redistribution and use in source and binary forms, with or without           |
@@ -33,7 +33,7 @@
 | DAMAGE.                                                                      |
 |==============================================================================|
 | The Initial Developer of the Original Code is Lukas Gebauer (Czech Republic).|
-| Portions created by Lukas Gebauer are Copyright (c)2008-2011.                |
+| Portions created by Lukas Gebauer are Copyright (c)2008-2021.                |
 | All Rights Reserved.                                                         |
 |==============================================================================|
 | Contributor(s):                                                              |
@@ -130,7 +130,7 @@ begin
   else
     s := '-unknown-';
   end;
-  s := inttohex(PtrInt(Sender), 8) + s + ': ' + value + CRLF;
+  s := inttohex(PtrInt(Sender), 2 * SizeOf(PtrInt)) + s + ': ' + value + CRLF;
   AppendToLog(s);
 end;
 
@@ -144,7 +144,7 @@ begin
     d := '-> '
   else
     d := '<- ';
-  s :=inttohex(PtrInt(Sender), 8) + d + s + CRLF;
+  s :=inttohex(PtrInt(Sender), 2 * SizeOf(PtrInt)) + d + s + CRLF;
   AppendToLog(s);
 end;
 
