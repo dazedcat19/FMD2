@@ -33,7 +33,7 @@ function _M.GetNameAndLink()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	CreateTXQuery(HTTP.Document).XPathHREFAll('//div[@class="title"]//a', LINKS, NAMES)
+	CreateTXQuery(HTTP.Document).XPathHREFAll('//div[@class="book-item"]//div[@class="title"]//a', LINKS, NAMES)
 
 	return no_error
 end
@@ -82,8 +82,12 @@ function _M.GetPageNumber()
 
 	body = HTTP.Document.ToString()
 	pages = body:match("var chapImages%s*=%s*['\"]([^'\"]+)['\"]")
-	for i in pages:gmatch('[^,]+') do
-		TASK.PageLinks.Add(i)
+	if pages then
+		for i in pages:gmatch('[^,]+') do
+			TASK.PageLinks.Add(i)
+		end
+	else
+		CreateTXQuery(HTTP.Document).XPathStringAll('//div[@id="chapter-images"]//img/@data-src', TASK.PageLinks)
 	end
 
 	return true
