@@ -5,7 +5,7 @@ unit httpsendthread;
 interface
 
 uses
-  Classes, SysUtils, httpsend, synautil, synacode, ssl_openssl, blcksock,
+  Classes, SysUtils, httpsend, synautil, synacode, ssl_openssl3, blcksock,
   BaseThread, httpcookiemanager, dateutils, strutils,
   GZIPUtils, BrotliDec;
 

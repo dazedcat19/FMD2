@@ -1012,7 +1012,7 @@ uses
   {$endif}
   frmImportFavorites, frmShutdownCounter, frmSelectDirectory,
   frmWebsiteSettings, WebsiteModules, uUpdateThread, FMDVars, RegExpr, sqlite3dyn, Clipbrd,
-  ssl_openssl_lib, LazFileUtils, LazUTF8, webp, DBUpdater, pcre2, pcre2lib, dynlibs,
+  ssl_openssl3_lib, LazFileUtils, LazUTF8, webp, DBUpdater, pcre2, pcre2lib, dynlibs,
   LuaWebsiteModules, LuaBase, uBackupSettings, frmCustomMessageDlg;
 
 var
@@ -2450,7 +2450,7 @@ begin
 
   if IsSSLloaded then
   begin
-    s := SSLeayversion(0);
+    s := OpenSSLversion(0);
     if s = '' then
     begin
       Pointer(_OpenSSSL_version) := GetProcAddress(SSLUtilHandle, 'OpenSSL_version');
