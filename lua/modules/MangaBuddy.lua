@@ -43,9 +43,6 @@ end
 function GetInfo()
 	Template.GetInfo()
 
-	HTTP.Reset()
-	HTTP.Headers.Values['Referer'] = MANGAINFO.URL
-
 	return no_error
 end
 
@@ -58,7 +55,7 @@ end
 
 -- Prepare the URL, http header and/or http cookies before downloading an image.
 function BeforeDownloadImage()
-	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+	Template.BeforeDownloadImage()
 
 	return true
 end

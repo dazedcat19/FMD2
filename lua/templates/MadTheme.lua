@@ -70,6 +70,9 @@ function _M.GetInfo()
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
+	HTTP.Reset()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+
 	return no_error
 end
 
@@ -89,6 +92,13 @@ function _M.GetPageNumber()
 	else
 		CreateTXQuery(HTTP.Document).XPathStringAll('//div[@id="chapter-images"]//img/@data-src', TASK.PageLinks)
 	end
+
+	return true
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function _M.BeforeDownloadImage()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
 
 	return true
 end
