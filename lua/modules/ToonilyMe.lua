@@ -13,6 +13,7 @@ function Init()
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
 	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
+	m.SortedList               = true
 end
 
 ----------------------------------------------------------------------------------------------------

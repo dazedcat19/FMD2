@@ -7,12 +7,13 @@ function Init()
 	m.ID                       = '6a698de44f214b7cb5b2a3e717ab78d1'
 	m.Name                     = 'MangaMonk'
 	m.RootURL                  = 'https://mangamonk.com'
-	m.Category                 = 'Webcomics'
+	m.Category                 = 'English'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
 	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
+	m.SortedList               = true
 end
 
 ----------------------------------------------------------------------------------------------------

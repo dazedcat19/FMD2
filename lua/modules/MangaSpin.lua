@@ -4,9 +4,9 @@
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                       = '85451defbfe64c5a942990c72ed86fed'
-	m.Name                     = 'MangaBuddy'
-	m.RootURL                  = 'https://mangabuddy.com'
+	m.ID                       = '50face2fab434f08b897e9712bfb9b86'
+	m.Name                     = 'MangaSpin'
+	m.RootURL                  = 'https://mangaspin.com'
 	m.Category                 = 'English'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'

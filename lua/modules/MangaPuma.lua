@@ -7,12 +7,13 @@ function Init()
 	m.ID                       = 'f347dd1ae20e401692d1111c5271efac'
 	m.Name                     = 'MangaPuma'
 	m.RootURL                  = 'https://mangapuma.com'
-	m.Category                 = 'Webcomics'
+	m.Category                 = 'English'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
 	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
+	m.SortedList               = true
 end
 
 ----------------------------------------------------------------------------------------------------

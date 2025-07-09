@@ -4,10 +4,10 @@
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                       = '85451defbfe64c5a942990c72ed86fed'
-	m.Name                     = 'MangaBuddy'
-	m.RootURL                  = 'https://mangabuddy.com'
-	m.Category                 = 'English'
+	m.ID                       = 'bea7c221bdb74eefa5a76b43d63140a4'
+	m.Name                     = 'BeeHentai'
+	m.RootURL                  = 'https://beehentai.com'
+	m.Category                 = 'H-Sites'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -21,6 +21,7 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.MadTheme'
+UseSlugSearch = true
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
