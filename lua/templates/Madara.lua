@@ -97,6 +97,7 @@ function _M.GetPageNumber()
 
 	x = CreateTXQuery(HTTP.Document)
 	x.XPathStringAll('//div[contains(@class, "page-break")]/img/@data-src', TASK.PageLinks)
+	if TASK.PageLinks.Count == 0 then x.XPathStringAll('//div[contains(@class, "page-break")]/img/@data-src-base64', TASK.PageLinks) end --mangacrab
 	if TASK.PageLinks.Count == 0 then x.XPathStringAll('//div[contains(@class, "page-break")]/img/@src', TASK.PageLinks) end
 	if TASK.PageLinks.Count == 0 then
 		x.ParseHTML('[' .. GetBetween('[', ']', x.XPathString('//script[@id="chapter_preloaded_images"]')) .. ']')
