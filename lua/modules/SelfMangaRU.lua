@@ -5,8 +5,8 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'e658998df5b9454abe469d181f51e6c8'
-	m.Name                     = 'SelfMangaRU'
-	m.RootURL                  = 'https://selfmanga.live'
+	m.Name                     = 'SelfManga'
+	m.RootURL                  = 'https://1.selfmanga.live'
 	m.Category                 = 'Russian'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
@@ -50,5 +50,5 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
 end

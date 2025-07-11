@@ -11,6 +11,7 @@ local _M = {}
 DirectoryPagination = '/list?sortType=DATE_CREATE'
 DirectoryParameters = '&offset='
 DirectoryOffset     = 50
+KeepParameters      = false
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -29,15 +30,13 @@ end
 
 -- Get links and names from the manga list of the current website.
 function _M.GetNameAndLink()
-	local u = MODULE.RootURL .. DirectoryPagination
-
-	if URL ~= '0' then u = u .. DirectoryParameters .. (DirectoryOffset * tonumber(URL)) end
+	local u = MODULE.RootURL .. DirectoryPagination .. DirectoryParameters .. (DirectoryOffset * URL)
 
 	if not HTTP.GET(u) then return net_problem end
 
 	CreateTXQuery(HTTP.Document).XPathHREFAll('//div[@class="tiles row"]//div[@class="desc"]/h3/a', LINKS, NAMES)
 
-  return no_error
+	return no_error
 end
 
 -- Get info and chapter list for the current manga.
@@ -49,6 +48,7 @@ function _M.GetInfo()
 
 	x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Title     = x.XPathString('//h1[@class="names"]/span[@class="name"]')
+	MANGAINFO.AltTitles = x.XPathStringAll('//h1[@class="names"]//span[@class="eng-name"]|//h1[@class="names"]//span[@class="original-name"]')
 	MANGAINFO.CoverLink = x.XPathString('//div[@class="picture-fotorama"]/img[1]/@src')
 	MANGAINFO.Authors   = x.XPathStringAll('//span[contains(@class, "elem_author")]/a|//span[contains(@class, "elem_screenwriter")]/a')
 	MANGAINFO.Artists   = x.XPathStringAll('//span[contains(@class, "elem_illustrator")]/a')
@@ -64,22 +64,25 @@ end
 
 -- Get the page count for the current chapter.
 function _M.GetPageNumber()
-	local json, x = nil
+	local domain, json, path = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
+	if not URL:find('mtr=1') then u = u .. '?mtr=1' end
 
-	if string.find(URL, 'mtr=1', 1, true) == nil then u = u .. '?mtr=1' end
+	if not HTTP.GET(u) then return false end
 
-	if not HTTP.GET(u) then return net_problem end
-
-	x = CreateTXQuery(HTTP.Document)
-	json = GetBetween('[[', ', 0, ', Trim(GetBetween('rm_h.readerInit(', 'false);', x.XPathString('//script[@type="text/javascript" and contains(., "rm_h.readerInit")]'))))
-	json = json:gsub('%],%[', ';'):gsub('\'', ''):gsub('"', ''):gsub(']]', ';')
-	for i in json:gmatch('(.-);') do
-		i1, i2 = i:match('(.-),.-,(.-),.-,.-')
-		TASK.PageLinks.Add(i1 .. i2)
+	json = CreateTXQuery(HTTP.Document).XPathString('//script[contains(., "rm_h.readerInit")]'):match('rm_h%.readerInit%(%[(%[.-%])%]')
+	for domain, path in json:gmatch("%['([^']+)','[^']*',\"([^\"]+)\"") do
+		TASK.PageLinks.Add(domain .. (KeepParameters and path or path:gsub('%?.*$', '')))
 	end
 
-	return no_error
+	return true
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function _M.BeforeDownloadImage()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+
+	return true
 end
 
 ----------------------------------------------------------------------------------------------------

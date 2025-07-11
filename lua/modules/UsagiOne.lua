@@ -12,6 +12,7 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 	m.SortedList               = true
 end
 
@@ -48,19 +49,14 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	local i, i1, i2, json, x = nil
-	local u = MaybeFillHost(MODULE.RootURL, URL)
-	if not URL:find('mtr=1') then u = u .. '?mtr=1' end
+	Template.GetPageNumber()
 
-	if not HTTP.GET(u) then return false end
+	return true
+end
 
-	x = CreateTXQuery(HTTP.Document)
-	json = GetBetween('[[', ', false, ', Trim(GetBetween('rm_h.readerInit(', 'false);', x.XPathString('//script[@type="text/javascript" and contains(., "rm_h.readerInit")]'))))
-	json = json:gsub('%],%[', ';'):gsub('\'', ''):gsub('"', ''):gsub(']]', ';')
-	for i in json:gmatch('(.-);') do
-		i1, i2 = i:match('(.-),.-,(.-),.-,.-')
-		TASK.PageLinks.Add(i1 .. i2:match("^(.-)?"))
-	end
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	Template.BeforeDownloadImage()
 
 	return true
 end
