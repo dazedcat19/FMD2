@@ -132,7 +132,7 @@ function GetInfo()
 	MANGAINFO.AltTitles = AltTitles
 	MANGAINFO.CoverLink = string.format('https://%s.%s/webpbigtn/%s/%s.webp',
 		thumb_subdomain, CDN_URL, ThumbPathFromHash(first_file_hash), first_file_hash)
-	MANGAINFO.Genres    = x.XPathStringAll('json(*).tags().tag') .. ', ' .. x.XPathString('json(*).type')
+	MANGAINFO.Genres    = x.XPathStringAll('json(*).tags().tag')
 	MANGAINFO.Summary   = table.concat(desc, '\r\n')
 
 	local groups = x.XPathStringAll('json(*).groups().group')
@@ -140,6 +140,13 @@ function GetInfo()
 		MANGAINFO.Artitst = groups
 	else
 		MANGAINFO.Artists = x.XPathStringAll('json(*).artists().artist')
+	end
+
+	local type = x.XPathString('json(*).type')
+	if MANGAINFO.Genres ~= '' then
+		MANGAINFO.Genres = MANGAINFO.Genres .. ', ' .. type
+	else
+		MANGAINFO.Genres = type
 	end
 
 	MANGAINFO.ChapterLinks.Add(x.XPathString('json(*).galleryurl'))
