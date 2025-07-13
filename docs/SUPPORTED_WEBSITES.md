@@ -112,6 +112,7 @@
 | E-Hentai | [![https://e-hentai.org](https://img.shields.io/website?url=https://e-hentai.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://e-hentai.org)](https://e-hentai.org) | - | - | - |
 | EarlyManga | [![https://earlymangarelease.com](https://img.shields.io/website?url=https://earlymangarelease.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://earlymangarelease.com)](https://earlymangarelease.com) | - | - | - |
 | EdelgardeScans | [![https://edelgardescans.com](https://img.shields.io/website?url=https://edelgardescans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://edelgardescans.com)](https://edelgardescans.com) | - | - | - |
+| Ego Toons | [![https://egotoons.com](https://img.shields.io/website?url=https://egotoons.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://egotoons.com)](https://egotoons.com) | OK | 14.07.2025 | - |
 | EGScans | [![http://read.egscans.com](https://img.shields.io/website?url=http://read.egscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://read.egscans.com)](http://read.egscans.com) | - | - | - |
 | ElarcPage | [![https://elarcpage.com](https://img.shields.io/website?url=https://elarcpage.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://elarcpage.com)](https://elarcpage.com) | - | - | - |
 | EroMangacrab | [![https://ero.mangacrab.com](https://img.shields.io/website?url=https://ero.mangacrab.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://ero.mangacrab.com)](https://ero.mangacrab.com) | - | - | - |
