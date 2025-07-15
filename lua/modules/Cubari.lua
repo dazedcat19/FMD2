@@ -36,9 +36,9 @@ end
 function GetInfo()
 	local chapters, group, group_id, id, json, title, url, vol, w, x = nil
 	local chapter, v = {}
-	local source, slug = URL:match('read/([%a-]+)/([%w-]+)/')
+	local source, slug = URL:match('read/(.-)/(.-)/')
 	local optgroup = MODULE.GetOption('showgroup')
-	local u = string.format('%s/read/api/%s/series/%s/', MODULE.RootURL, source, slug)
+	local u = MODULE.RootURL .. '/read/api/' .. source .. '/series/' .. slug .. '/'
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -62,8 +62,8 @@ function GetInfo()
 			title = x.XPathString('title', v)
 
 			vol = type(vol) == 'number' and string.format('Vol. %s ', vol) or ''
-			id = id ~= 'null' and string.format('Ch. %s ', id) or ''
-			title = title ~= 'null' and title ~= '' and string.format('- %s', title) or ''
+			id = id ~= 'null' and string.format('Ch. %s', id) or ''
+			title = title ~= 'null' and title ~= '' and string.format(' - %s', title) or ''
 
 			group_id = w.ToString()
 			group = ' [' .. x.XPathString('(groups)(' .. group_id .. ')', json) .. ']'
@@ -87,8 +87,8 @@ function GetPageNumber()
 	local group_content, json, v, x = nil
 	local ch = URL:match('/([%d%-]+)/#%d-$'):gsub('-', '.')
 	local group_id = URL:match('/#(%d+)$')
-	local source, slug = URL:match('read/([%a-]+)/([%w-]+)/')
-	local u = string.format('%s/read/api/%s/series/%s/', MODULE.RootURL, source, slug)
+	local source, slug = URL:match('read/(.-)/(.-)/')
+	local u = MODULE.RootURL .. '/read/api/' .. source .. '/series/' .. slug .. '/'
 
 	if not HTTP.GET(u) then return false end
 
@@ -102,7 +102,9 @@ function GetPageNumber()
 	elseif group_content:match('^/.-/api/') then
 		u = MODULE.RootURL .. group_content
 		if not HTTP.GET(u) then return false end
-		CreateTXQuery(HTTP.Document).XPathStringAll('json(*)()', TASK.PageLinks)
+		x = CreateTXQuery(HTTP.Document)
+		x.XPathStringAll('json(*)()', TASK.PageLinks)
+		if TASK.PageLinks == 0 then x.XPathStringAll('json(*)().src', TASK.PageLinks) end
 	else
 		for v in x.XPath('jn:members((groups)(' .. group_id .. '))', json).Get() do
 			TASK.PageLinks.Add(v.GetProperty('src').ToString())
