@@ -86,6 +86,7 @@
 | ComicoCoID | [![http://www.comico.co.id](https://img.shields.io/website?url=http://www.comico.co.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.comico.co.id)](http://www.comico.co.id) | - | - | - |
 | ComicOnline | [![https://comiconline.org](https://img.shields.io/website?url=https://comiconline.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comiconline.org)](https://comiconline.org) | - | - | - |
 | ComicVn | [![https://beeng.net](https://img.shields.io/website?url=https://beeng.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://beeng.net)](https://beeng.net) | - | - | - |
+| Com-X | [![https://comx.life](https://img.shields.io/website?url=https://comx.life%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comx.life)](https://comx.life) | OK | 18.07.2025 | - |
 | CopyPasteScanlation | [![https://www.cpscan.xyz](https://img.shields.io/website?url=https://www.cpscan.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.cpscan.xyz)](https://www.cpscan.xyz) | - | - | - |
 | CoYuHi | [![http://www.universoyuri.com](https://img.shields.io/website?url=http://www.universoyuri.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.universoyuri.com)](http://www.universoyuri.com) | - | - | - |
 | CrotPedia | [![https://crotpedia.net](https://img.shields.io/website?url=https://crotpedia.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://crotpedia.net)](https://crotpedia.net) | - | - | - |
