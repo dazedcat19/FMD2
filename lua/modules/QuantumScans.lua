@@ -5,8 +5,8 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '87d921c98d2349ff9859b7ec5f68e4a2'
-	m.Name                     = 'Quantum Scans'
-	m.RootURL                  = 'https://quantumscans.org'
+	m.Name                     = 'Quantum Toon'
+	m.RootURL                  = 'https://quantumtoon.com'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
@@ -38,8 +38,8 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.HeanCms'
-API_URL = 'https://api.quantumscans.org'
-CDN_URL = 'https://media.quantumscans.org/file/13VSBnk1m'
+API_URL = 'https://api.quantumtoon.com'
+CDN_URL = 'https://media.quantumtoon.com/file/13VSBnk1m'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -70,5 +70,5 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
 end
