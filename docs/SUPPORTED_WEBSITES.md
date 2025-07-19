@@ -218,7 +218,6 @@
 | KomikIndo | [![https://komikindo3.com](https://img.shields.io/website?url=https://komikindo3.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikindo3.com)](https://komikindo3.com) | OK | 06.04.2025 | - |
 | KomikMama | [![https://komikmama.org](https://img.shields.io/website?url=https://komikmama.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikmama.org)](https://komikmama.org) | - | - | - |
 | KomikManga | [![https://komikmanga.com](https://img.shields.io/website?url=https://komikmanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikmanga.com)](https://komikmanga.com) | - | - | - |
-| KomikNesia | [![https://komiknesia.com](https://img.shields.io/website?url=https://komiknesia.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komiknesia.com)](https://komiknesia.com) | - | - | - |
 | KomikPix | [![https://komikpix.com](https://img.shields.io/website?url=https://komikpix.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikpix.com)](https://komikpix.com) | - | - | - |
 | KomikSave | [![https://komiksave.me](https://img.shields.io/website?url=https://komiksave.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komiksave.me)](https://komiksave.me) | - | - | - |
 | Komiksin ID | [![https://komiksin.id](https://img.shields.io/website?url=https://komiksin.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komiksin.id)](https://komiksin.id) | OK | 23.12.2024 | - |
@@ -477,6 +476,7 @@
 | ManhwaIndo | [![https://manhwaindo.id](https://img.shields.io/website?url=https://manhwaindo.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwaindo.id)](https://manhwaindo.id) | - | - | - |
 | ManhwaLand | [![https://62.182.80.253](https://img.shields.io/website?url=https://62.182.80.253%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://62.182.80.253)](https://62.182.80.253) | - | - | - |
 | ManhwaLatino | [![https://manhwa-latino.com](https://img.shields.io/website?url=https://manhwa-latino.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwa-latino.com)](https://manhwa-latino.com) | - | - | - |
+| ManhwaList | [![https://manhwalist02.site](https://img.shields.io/website?url=https://manhwalist02.site%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwalist02.site)](https://manhwalist02.site) | OK | 19.07.2025 | - |
 | ManhwaPool | [![https://manhwapool.com](https://img.shields.io/website?url=https://manhwapool.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwapool.com)](https://manhwapool.com) | - | - | - |
 | ManhwaRaw | [![https://manhwaraw.com](https://img.shields.io/website?url=https://manhwaraw.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwaraw.com)](https://manhwaraw.com) | - | - | - |
 | ManhwasMen | [![https://manhwas.men](https://img.shields.io/website?url=https://manhwas.men%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwas.men)](https://manhwas.men) | - | - | - |
