@@ -642,7 +642,7 @@
 | SenseScans | [![https://sensescans.com](https://img.shields.io/website?url=https://sensescans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://sensescans.com)](https://sensescans.com) | - | - | - |
 | SenshimangaCom | [![https://senshimanga.com](https://img.shields.io/website?url=https://senshimanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://senshimanga.com)](https://senshimanga.com) | - | - | - |
 | SetsuScans | [![https://setsuscans.com](https://img.shields.io/website?url=https://setsuscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://setsuscans.com)](https://setsuscans.com) | - | - | - |
-| ShadowMangas | [![https://shadowmangas.com](https://img.shields.io/website?url=https://shadowmangas.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://shadowmangas.com)](https://shadowmangas.com) | - | - | - |
+| ShadowMangas | [![https://shadowmangas.com](https://img.shields.io/website?url=https://shadowmangas.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://shadowmangas.com)](https://shadowmangas.com) | OK | 20.07.2025 | - |
 | Shakai | [![http://shakai.ru](https://img.shields.io/website?url=http://shakai.ru%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://shakai.ru)](http://shakai.ru) | - | - | - |
 | SheaManga | [![https://shea-manga.my.id](https://img.shields.io/website?url=https://shea-manga.my.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://shea-manga.my.id)](https://shea-manga.my.id) | - | - | - |
 | ShieldManga | [![https://shieldmanga.club](https://img.shields.io/website?url=https://shieldmanga.club%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://shieldmanga.club)](https://shieldmanga.club) | - | - | - |

@@ -405,7 +405,6 @@ function Init()
 	AddWebsiteModule('61e0a07a01ea45cf8909a2cfc5442659', 'SenpaiEdiciones', 'https://senpaiediciones.com')
 	AddWebsiteModule('ad851ecfe6824a01a30625b58d105de8', 'Ikifang', 'https://ikimei.com')
 	AddWebsiteModule('529038945bc84174b4be556b922bfb4a', 'OniScans', 'https://www.oniscans.com')
-	AddWebsiteModule('529038924bc84174b4be556b922bfb4a', 'ShadowMangas', 'https://shadowmangas.com')
 	AddWebsiteModule('a08tter98y97k9er008971c0c1b55705', 'RaikiScan', 'https://raikiscan.com')
 
 	cat = 'English'
