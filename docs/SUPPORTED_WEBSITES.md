@@ -76,6 +76,7 @@
 | ChibiManga | [![https://www.cmreader.info](https://img.shields.io/website?url=https://www.cmreader.info%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.cmreader.info)](https://www.cmreader.info) | - | - | - |
 | Cocorip | [![https://cocorip.net](https://img.shields.io/website?url=https://cocorip.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://cocorip.net)](https://cocorip.net) | OK | 03.04.2025 | - |
 | ColoredManga | [![https://coloredmanga.com](https://img.shields.io/website?url=https://coloredmanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://coloredmanga.com)](https://coloredmanga.com) | - | - | - |
+| Com-X | [![https://comx.life](https://img.shields.io/website?url=https://comx.life%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comx.life)](https://comx.life) | OK | 18.07.2025 | - |
 | Comic-days | [![https://comic-days.com](https://img.shields.io/website?url=https://comic-days.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comic-days.com)](https://comic-days.com) | - | - | - |
 | ComicDom | [![https://comicdom.org](https://img.shields.io/website?url=https://comicdom.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comicdom.org)](https://comicdom.org) | - | - | - |
 | ComicExtra | [![https://www.comicextra.me](https://img.shields.io/website?url=https://www.comicextra.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.comicextra.me)](https://www.comicextra.me) | - | - | - |
@@ -86,7 +87,6 @@
 | ComicoCoID | [![http://www.comico.co.id](https://img.shields.io/website?url=http://www.comico.co.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.comico.co.id)](http://www.comico.co.id) | - | - | - |
 | ComicOnline | [![https://comiconline.org](https://img.shields.io/website?url=https://comiconline.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comiconline.org)](https://comiconline.org) | - | - | - |
 | ComicVn | [![https://beeng.net](https://img.shields.io/website?url=https://beeng.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://beeng.net)](https://beeng.net) | - | - | - |
-| Com-X | [![https://comx.life](https://img.shields.io/website?url=https://comx.life%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comx.life)](https://comx.life) | OK | 18.07.2025 | - |
 | CopyPasteScanlation | [![https://www.cpscan.xyz](https://img.shields.io/website?url=https://www.cpscan.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.cpscan.xyz)](https://www.cpscan.xyz) | - | - | - |
 | CoYuHi | [![http://www.universoyuri.com](https://img.shields.io/website?url=http://www.universoyuri.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.universoyuri.com)](http://www.universoyuri.com) | - | - | - |
 | CrotPedia | [![https://crotpedia.net](https://img.shields.io/website?url=https://crotpedia.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://crotpedia.net)](https://crotpedia.net) | - | - | - |
@@ -227,6 +227,7 @@
 | Komiku | [![https://komiku.id](https://img.shields.io/website?url=https://komiku.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komiku.id)](https://komiku.id) | - | - | - |
 | KomikuOne | [![https://komiku.one](https://img.shields.io/website?url=https://komiku.one%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komiku.one)](https://komiku.one) | OK | 03.04.2025 | Sometimes cloudflare workaround is required |
 | KomikUp | [![https://komikup.com](https://img.shields.io/website?url=https://komikup.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikup.com)](https://komikup.com) | OK | 05.04.2025 | - |
+| KomikZoid | [![https://komikzoid.id](https://img.shields.io/website?url=https://komikzoid.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikzoid.id)](https://komikzoid.id) | OK | 19.07.2025 | - |
 | KooManga | [![https://ww7.koomanga.com](https://img.shields.io/website?url=https://ww7.koomanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://ww7.koomanga.com)](https://ww7.koomanga.com) | - | - | - |
 | Kraw | [![https://kraw.org](https://img.shields.io/website?url=https://kraw.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kraw.org)](https://kraw.org) | - | - | - |
 | KS Scans | [![https://ksgroupscans.com](https://img.shields.io/website?url=https://ksgroupscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://ksgroupscans.com)](https://ksgroupscans.com) | OK | 20.01.2025 | - |
