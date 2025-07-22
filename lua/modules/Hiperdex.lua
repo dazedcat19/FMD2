@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '2b5f00cfbb124546b6c11a7e5ec9c403'
 	m.Name                     = 'HiperDEX'
-	m.RootURL                  = 'https://hiperdex.com'
+	m.RootURL                  = 'https://hiperdex.tv'
 	m.Category                 = 'H-Sites'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -41,5 +41,5 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
 end
