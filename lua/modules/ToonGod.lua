@@ -13,6 +13,7 @@ function Init()
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
 	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
+	m.SortedList               = true
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -20,7 +21,6 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.Madara'
-DirectoryPagination = '/webtoons/page/'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -28,22 +28,14 @@ DirectoryPagination = '/webtoons/page/'
 
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
-	local u = MODULE.RootURL .. DirectoryPagination .. 1
-
-	if not HTTP.GET(u) then return net_problem end
-
-	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//div[@class="wp-pagenavi"]/a[last()]/@href'):match('/(%d+)/$')) or 1
+	Template.GetDirectoryPageNumber()
 
 	return no_error
 end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1)
-
-	if not HTTP.GET(u) then return net_problem end
-
-	CreateTXQuery(HTTP.Document).XPathHREFAll('//div[contains(@class, "post-title")]//a', LINKS, NAMES)
+	Template.GetNameAndLinkWithPagination()
 
 	return no_error
 end
@@ -59,7 +51,7 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
 end
 
 -- Prepare the URL, http header and/or http cookies before downloading an image.

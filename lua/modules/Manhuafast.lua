@@ -7,11 +7,12 @@ function Init()
 	m.ID                       = 'ea0da11a1ec34dfeb65102d7768c897d'
 	m.Name                     = 'Manhuafast'
 	m.RootURL                  = 'https://manhuafast.com'
-	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.Category                 = 'Webcomics'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.SortedList               = true
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -19,7 +20,6 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.Madara'
-DirectoryPagination = '/page/'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -27,22 +27,14 @@ DirectoryPagination = '/page/'
 
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
-	local u = MODULE.RootURL .. DirectoryPagination .. 1
-
-	if not HTTP.GET(u) then return net_problem end
-
-	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//div[@class="wp-pagenavi"]/a[last()]/@href'):match('/(%d+)/?')) or 1
+	Template.GetDirectoryPageNumber()
 
 	return no_error
 end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1)
-
-	if not HTTP.GET(u) then return net_problem end
-
-	CreateTXQuery(HTTP.Document).XPathHREFAll('//div[contains(@class, "post-title")]//a', LINKS, NAMES)
+	Template.GetNameAndLinkWithPagination()
 
 	return no_error
 end

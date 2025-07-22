@@ -8,15 +8,39 @@ local _M = {}
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-XPathTokenAuthors = 'Author(s)'
-XPathTokenArtists = 'Artist(s)'
-XPathTokenGenres  = 'Genre(s)'
-XPathTokenStatus  = 'Status'
-ChapterParameters = 'action=manga_get_chapters&manga='
+ChapterParameters   = 'action=manga_get_chapters&manga='
+DirectoryPagination = '/page/'
+DirectoryParameters = '/?s&post_type=wp-manga&m_orderby=new-manga'
+XPathTokenAuthors   = 'Author(s)'
+XPathTokenArtists   = 'Artist(s)'
+XPathTokenGenres    = 'Genre(s)'
+XPathTokenStatus    = 'Status'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
+
+-- Get the page count of the manga list of the current website.
+function _M.GetDirectoryPageNumber()
+	local u = MODULE.RootURL .. DirectoryPagination .. 1 .. DirectoryParameters
+
+	if not HTTP.GET(u) then return net_problem end
+
+	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//div[@class="wp-pagenavi"]/(a[@class="last" or @class="page-numbers"])[last()]/@href'):match('/(%d+)/')) or 1
+
+	return no_error
+end
+
+-- Get links and names from the manga list of the current website.
+function _M.GetNameAndLinkWithPagination()
+	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1) .. DirectoryParameters
+
+	if not HTTP.GET(u) then return net_problem end
+
+	CreateTXQuery(HTTP.Document).XPathHREFAll('//div[contains(@class, "post-title")]/*[self::h3 or self::h2]/a', LINKS, NAMES)
+
+	return no_error
+end
 
 -- Get links and names from the manga list of the current website.
 function _M.GetNameAndLink()
@@ -45,7 +69,7 @@ function _M.GetInfo()
 
 	x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Title     = x.XPathString('//div[@class="post-title" or @id="manga-title"]/*[self::h1 or self::h3]/text()')
-	MANGAINFO.AltTitles = x.XPathString('//div[@class="summary-heading" and ./h5="Alternative" or ./h5="Judul Lain"]/following-sibling::div')
+	MANGAINFO.AltTitles = x.XPathString('//div[@class="summary-heading" and contains(./h5, "Alternative") or contains(./h5, "Judul Lain")]/following-sibling::div')
 	MANGAINFO.CoverLink = x.XPathString('//div[@class="summary_image"]//img/@data-src')
 	MANGAINFO.Authors   = x.XPathStringAll('//div[@class="author-content"]/a')
 	MANGAINFO.Artists   = x.XPathStringAll('//div[@class="artist-content"]/a')
@@ -91,7 +115,7 @@ end
 function _M.GetPageNumber()
 	local i, img, script, x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
-	if string.find(u, 'style=list', 1, true) == nil then u = string.gsub(u, '?style=paged', '') .. '?style=list' end
+	if not u:find('style=list', 1, true) then u = u:gsub('?style=paged', '') .. '?style=list' end
 
 	if not HTTP.GET(u) then return false end
 
