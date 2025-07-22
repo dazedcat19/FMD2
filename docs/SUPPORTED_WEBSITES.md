@@ -471,7 +471,7 @@
 | ManhwaZ | [![https://manhwaz.com](https://img.shields.io/website?url=https://manhwaz.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwaz.com)](https://manhwaz.com) | OK | 30.03.2025 | - |
 | ManwhasOnline | [![https://manwhasonline.com](https://img.shields.io/website?url=https://manwhasonline.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manwhasonline.com)](https://manwhasonline.com) | - | - | - |
 | ManyToon | [![https://manytoon.me](https://img.shields.io/website?url=https://manytoon.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manytoon.me)](https://manytoon.me) | - | - | - |
-| ManyToonCom | [![https://manytoon.com](https://img.shields.io/website?url=https://manytoon.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manytoon.com)](https://manytoon.com) | - | - | - |
+| ManyToonCom | [![https://manytoon.com](https://img.shields.io/website?url=https://manytoon.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manytoon.com)](https://manytoon.com) | OK | 22.07.2025 | - |
 | ManyToonOrg | [![https://manytoon.org](https://img.shields.io/website?url=https://manytoon.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manytoon.org)](https://manytoon.org) | - | - | - |
 | MartialScans | [![https://martialscans.com](https://img.shields.io/website?url=https://martialscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://martialscans.com)](https://martialscans.com) | - | - | - |
 | MenudoFansub | [![http://www.menudo-fansub.com](https://img.shields.io/website?url=http://www.menudo-fansub.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.menudo-fansub.com)](http://www.menudo-fansub.com) | - | - | - |
