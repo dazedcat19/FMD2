@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'uy8tter98y97k9er008971c0c1b557tr'
 	m.Name                     = 'TresDaos'
-	m.RootURL                  = 'https://3daos.mewingzone.com'
+	m.RootURL                  = 'https://threedaos.zdrz.xyz'
 	m.Category                 = 'Spanish-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -18,8 +18,7 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.MangaThemesia'
-DirectoryPagination = '/mangas/'
-XPathTokenStatus    = 'Estado'
+XPathTokenStatus = 'Estado'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -27,23 +26,7 @@ XPathTokenStatus    = 'Estado'
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local next_url, x = nil
-	local u = MODULE.RootURL .. DirectoryPagination
-
-	if not HTTP.GET(u) then return net_problem end
-
-	x = CreateTXQuery(HTTP.Document)
-	while true do
-		x.XPathHREFTitleAll('//div[@class="bsx"]/a', LINKS, NAMES)
-		next_url = x.XPathString('//div[@class="pagination"]/a[contains(@class, "next")]/@href')
-		if next_url == '' then break end
-		UPDATELIST.UpdateStatusText('Loading page ' .. (next_url:match('(%d+)') or ''))
-		if HTTP.GET(next_url) then
-			x.ParseHTML(HTTP.Document)
-		else
-			break
-		end
-	end
+	Template.GetNameAndLink()
 
 	return no_error
 end
