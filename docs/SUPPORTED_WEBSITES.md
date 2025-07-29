@@ -465,6 +465,7 @@
 | ManhwaList | [![https://manhwalist02.site](https://img.shields.io/website?url=https://manhwalist02.site%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwalist02.site)](https://manhwalist02.site) | OK | 19.07.2025 | - |
 | ManhwaPool | [![https://manhwapool.com](https://img.shields.io/website?url=https://manhwapool.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwapool.com)](https://manhwapool.com) | - | - | - |
 | ManhwaRaw | [![https://manhwaraw.com](https://img.shields.io/website?url=https://manhwaraw.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwaraw.com)](https://manhwaraw.com) | OK | 23.07.2025 | - |
+| ManhwaRead | [![https://manhwaread.com](https://img.shields.io/website?url=https://manhwaread.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwaread.com)](https://manhwaread.com) | OK | 29.07.2025 | - |
 | ManhwasMen | [![https://manhwas.men](https://img.shields.io/website?url=https://manhwas.men%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwas.men)](https://manhwas.men) | OK | 20.07.2025 | - |
 | ManhwasNet | [![https://manhwas.net](https://img.shields.io/website?url=https://manhwas.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwas.net)](https://manhwas.net) | OK | 20.07.2025 | - |
 | ManhwaWeb | [![https://manhwaweb.com](https://img.shields.io/website?url=https://manhwaweb.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manhwaweb.com)](https://manhwaweb.com) | - | - | - |
