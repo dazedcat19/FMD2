@@ -413,7 +413,7 @@
 | MangaTX | [![https://mangatx.to](https://img.shields.io/website?url=https://mangatx.to%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangatx.to)](https://mangatx.to) | - | - | - |
 | MangaVadisi | [![http://manga-v2.mangavadisi.org](https://img.shields.io/website?url=http://manga-v2.mangavadisi.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://manga-v2.mangavadisi.org)](http://manga-v2.mangavadisi.org) | - | - | - |
 | MangaVisa | [![https://mangavisa.com](https://img.shields.io/website?url=https://mangavisa.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangavisa.com)](https://mangavisa.com) | - | - | - |
-| MangaWorld | [![https://www.mangaworld.ac](https://img.shields.io/website?url=https://www.mangaworld.ac%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangaworld.ac)](https://www.mangaworld.ac) | - | - | - |
+| MangaWorld | [![https://www.mangaworld.nz](https://img.shields.io/website?url=https://www.mangaworld.nz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangaworld.nz)](https://www.mangaworld.nz) | OK | 30.07.2025 | - |
 | Mangax18 | [![https://mangax18.com](https://img.shields.io/website?url=https://mangax18.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangax18.com)](https://mangax18.com) | - | - | - |
 | MangaXYZ | [![https://mangaxyz.com](https://img.shields.io/website?url=https://mangaxyz.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangaxyz.com)](https://mangaxyz.com) | OK | 09.07.2025 | - |
 | MangaYosh | [![https://mangayosh.xyz](https://img.shields.io/website?url=https://mangayosh.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangayosh.xyz)](https://mangayosh.xyz) | - | - | - |
