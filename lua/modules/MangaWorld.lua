@@ -3,16 +3,20 @@
 ----------------------------------------------------------------------------------------------------
 
 function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = '86c14ab2b8774fa8a8461e07c3688a27'
-	m.Name                     = 'MangaWorld'
-	m.RootURL                  = 'https://www.mangaworld.cx'
-	m.Category                 = 'Italian'
-	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-	m.SortedList               = true
+	local function AddWebsiteModule(id, name, url)
+		local m = NewWebsiteModule()
+		m.ID                       = id
+		m.Name                     = name
+		m.RootURL                  = url
+		m.Category                 = 'Italian'
+		m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+		m.OnGetNameAndLink         = 'GetNameAndLink'
+		m.OnGetInfo                = 'GetInfo'
+		m.OnGetPageNumber          = 'GetPageNumber'
+		m.SortedList               = true
+	end
+	AddWebsiteModule('86c14ab2b8774fa8a8461e07c3688a27', 'MangaWorld', 'https://www.mangaworld.cx')
+	AddWebsiteModule('11da8e024adc483896d76c1ebd964473', 'MangaWorldAdult', 'https://www.mangaworldadult.net')
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -54,13 +58,13 @@ function GetInfo()
 	if not HTTP.GET(u) then return net_problem end
 
 	local x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//h1')
-	MANGAINFO.AltTitles = x.XPathString('//div[./span="Titoli alternativi:"]/text()')
+	MANGAINFO.Title     = x.XPathString('//div[@class="info"]/h1')
+	MANGAINFO.AltTitles = x.XPathString('//div[@class="info"]//div[./span="Titoli alternativi:"]/text()')
 	MANGAINFO.CoverLink = x.XPathString('//div[contains(@class, "thumb")]/img/@src')
-	MANGAINFO.Authors   = x.XPathStringAll('//div[./span[contains(., "Autor")]]/a')
-	MANGAINFO.Artists   = x.XPathStringAll('//div[./span[contains(., "Artist")]]/a')
-	MANGAINFO.Genres    = x.XPathStringAll('//div[./span="Generi:"]/a')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[./span="Stato:"]/a'), 'In corso', 'Finito', 'In pausa', 'Cancellato')
+	MANGAINFO.Authors   = x.XPathStringAll('//div[@class="info"]//div[./span[contains(., "Autor")]]/a')
+	MANGAINFO.Artists   = x.XPathStringAll('//div[@class="info"]//div[./span[contains(., "Artist")]]/a')
+	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="info"]//div[./span="Generi:"]/a')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@class="info"]//div[./span="Stato:"]/a'), 'In corso', 'Finito', 'In pausa', 'Cancellato')
 	MANGAINFO.Summary   = x.XPathString('//div[@id="noidungm"]')
 
 	for v in x.XPath('//div[contains(@class, "volume-element")]').Get() do
