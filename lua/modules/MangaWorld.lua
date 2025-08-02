@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '86c14ab2b8774fa8a8461e07c3688a27'
 	m.Name                     = 'MangaWorld'
-	m.RootURL                  = 'https://www.mangaworld.nz'
+	m.RootURL                  = 'https://www.mangaworld.cx'
 	m.Category                 = 'Italian'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
