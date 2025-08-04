@@ -614,6 +614,18 @@ msgctxt "frmtransferfavorites.rs_valid"
 msgid "Valid"
 msgstr "Valid"
 
+#: imagemagickmanager.rs_imagemagicknotfoundhint
+msgid ""
+"Failed to detect an install of ImageMagick!\n"
+"The following settings have been disabled because an install of ImageMagick was not detected."
+msgstr ""
+
+#: imagemagickmanager.rs_imagemagickpreference
+msgid ""
+"ImageMagick has been enabled!\n"
+"The following settings have been disabled because ImageMagick has taken preference."
+msgstr ""
+
 #: selfupdater.rs_buttoncancel
 msgctxt "selfupdater.rs_buttoncancel"
 msgid "Abort"
@@ -1476,6 +1488,10 @@ msgstr "Yuri"
 msgid "This work usually involves intimate relationships between women."
 msgstr "This work usually involves intimate relationships between women."
 
+#: tmainform.ckimagemagick.caption
+msgid "Enable ImageMagick Conversion"
+msgstr ""
+
 #: tmainform.ckoptionsalwaysstarttaskfromfailedchapters.caption
 msgctxt "tmainform.ckoptionsalwaysstarttaskfromfailedchapters.caption"
 msgid "Always start task from failed chapters"
@@ -1604,6 +1620,10 @@ msgstr "Drop Box"
 msgid "Image Conversion"
 msgstr "Image Conversion"
 
+#: tmainform.gbimagemagick.caption
+msgid "Image Magick"
+msgstr ""
+
 #: tmainform.gboptionexternal.caption
 msgid "External program"
 msgstr "External program"
@@ -1726,6 +1746,18 @@ msgstr "Title"
 #: tmainform.lbjpegquality.caption
 msgid "JPEG quality"
 msgstr "JPEG quality"
+
+#: tmainform.lblimagemagickcompression.caption
+msgid "Image Compression type"
+msgstr ""
+
+#: tmainform.lblimagemagickquality.caption
+msgid "Image quality"
+msgstr ""
+
+#: tmainform.lblimagemagicksaveas.caption
+msgid "Save Image as"
+msgstr ""
 
 #: tmainform.lblogfilename.caption
 msgid "Log file:"
@@ -2667,6 +2699,10 @@ msgstr "Setting name"
 #: udownloadsmanager.rs_compressing
 msgid "Compressing..."
 msgstr "Compressing..."
+
+#: udownloadsmanager.rs_converting
+msgid "Converting..."
+msgstr ""
 
 #: udownloadsmanager.rs_disabled
 msgctxt "udownloadsmanager.rs_disabled"

@@ -447,8 +447,6 @@ begin
 end;
  
 procedure TSilentThread.SyncImportToFavorite;
-var
-  s: String;
 begin
   try
     with MainForm do
@@ -481,7 +479,6 @@ begin
 end;
 
 procedure TSilentThread.Execute;
-
 begin
   while FManager.GetMetaData(Self) do
   begin

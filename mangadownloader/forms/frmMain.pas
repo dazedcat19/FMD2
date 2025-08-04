@@ -26,7 +26,7 @@ uses
   frmAccountSet, frmWebsiteOptionCustom, frmCustomColor, frmLogger, frmTransferFavorites,
   frmLuaModulesUpdater, CheckUpdate, DBDataProcess, uDarkStyleParams, uWin32WidgetSetDark,
   SimpleTranslator, httpsendthread, DateUtils, SimpleException, uCustomControls,
-  uCustomControlsMultiLog;
+  uCustomControlsMultiLog, ImageMagickManager;
 
 type
 
@@ -78,11 +78,14 @@ type
     cbUseRegExpr: TCheckBox;
     cbOptionProxyType: TComboBox;
     cbOptionOneInstanceOnly: TCheckBox;
+    ckImageMagick: TCheckBox;
     ckPNGSaveAsJPEG: TCheckBox;
     ckOptionsAlwaysStartTaskFromFailedChapters: TCheckBox;
     ckEnableLogging: TCheckBox;
     cbWebPSaveAs: TComboBox;
     cbPNGCompressionLevel: TComboBox;
+    cbImageMagickSaveAs: TComboBox;
+    cbImageMagickCompression: TComboBox;
     deDownloadFilterCustomDateFrom: TDateEdit;
     deDownloadFilterCustomDateTo: TDateEdit;
     edCustomGenres: TCustomEdit;
@@ -113,10 +116,14 @@ type
     gbOptionsConnectionsDownloads: TGroupBox;
     gbOptionsConnectiosMiscellaneous: TGroupBox;
     gbOptionsConnectionsGeneral: TGroupBox;
+    gbImageMagick: TGroupBox;
     IconDLLeft: TImageList;
+    lblImageMagickSaveAs: TLabel;
     lbDarkmodeHint: TLabel;
     lbDownloadFilterCustomDateFrom: TLabel;
     lbDownloadFilterCustomDateTo: TLabel;
+    lblImageMagickCompression: TLabel;
+    lblImageMagickQuality: TLabel;
     lbOptionMaxFavoriteThreads: TLabel;
     lbOptionDefaultUserAgent: TLabel;
     lbOptionMaxUpdateListThreads: TLabel;
@@ -196,6 +203,7 @@ type
     sbWebsiteOptions: TScrollBox;
     btDownloadSplit: TSpeedButton;
     sbGeneralSettings: TScrollBox;
+    seImageMagickQuality: TSpinEdit;
     seOptionMaxFavoriteThreads: TSpinEdit;
     seOptionMaxUpdateListThreads: TSpinEdit;
     seOptionMaxBackgroundLoadThreads: TSpinEdit;
@@ -485,6 +493,7 @@ type
       Shift: TShiftState);
     procedure cbSelectMangaMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure ckImageMagickChange(Sender: TObject);
     procedure clbChapterListBeforeCellPaint(Sender: TBaseVirtualTree;
       TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
       CellPaintMode: TVTCellPaintMode; CellRect: TRect; var ContentRect: TRect);
@@ -1220,8 +1229,8 @@ begin
   isStartup := True;
   isRunDownloadFilter := False;
   isUpdating := False;
-  isPendingExitCounter:=False;
-  isNormalExit:=False;
+  isPendingExitCounter := False;
+  isNormalExit := False;
   DoAfterFMD := DO_NOTHING;
   Application.HintHidePause := 10000;
 
@@ -1241,9 +1250,13 @@ begin
   if FileExistsUTF8(OLD_CURRENT_UPDATER_EXE) then
   begin
     if FileExistsUTF8(CURRENT_UPDATER_EXE) then
-      DeleteFileUTF8(OLD_CURRENT_UPDATER_EXE)
+    begin
+      DeleteFileUTF8(OLD_CURRENT_UPDATER_EXE);
+    end
     else
+    begin
       RenameFileUTF8(OLD_CURRENT_UPDATER_EXE, CURRENT_UPDATER_EXE);
+    end;
   end;
 
   // TrayIcon
@@ -1276,7 +1289,9 @@ begin
   seOptionMaxThread.MaxValue := MAX_CONNECTIONPERHOSTLIMIT;
 
   if cbFilterStatus.Items.Count > 4 then
+  begin
     cbFilterStatus.ItemIndex := 4;
+  end;
 
   InitCheckboxes;
 
@@ -1335,7 +1350,10 @@ begin
   AddVT(Self.vtOptionMangaSiteSelection);
 
   // logger
-  FormLogger := TFormLogger.Create(Self); 
+  FormLogger := TFormLogger.Create(Self);
+
+  // initialize ImageMagick check
+  TImageMagickManager.Initialize;
 
   // Custom Message Dialog
   CustomMessageDlg := TCustomMessageDlg.Create(Self);
@@ -1351,13 +1369,15 @@ begin
 
   // minimize on start
   if settingsfile.ReadBool('general', 'MinimizeOnStart', False) then
+  begin
     Application.ShowMainForm := False;
+  end;
 
   LoadFormInformation;
   CollectLanguagesFromFiles;
   ApplyLanguage;
 
-  tmStartup:=TTimer.Create(self);
+  tmStartup := TTimer.Create(self);
   with tmStartup do
   begin
     OnTimer := @tmStartupTimer;
@@ -1365,29 +1385,32 @@ begin
     Enabled := True;
   end;
 
-  Timer1Hour:=TTimer.Create(Self);
+  Timer1Hour := TTimer.Create(Self);
   with Timer1Hour do
   begin
-    OnTimer:=@OnTimer1Hour;
-    Interval:=1000*60*60;
-    Enabled:=True;
+    OnTimer := @OnTimer1Hour;
+    Interval := 1000 * 60 * 60;
+    Enabled := True;
   end;
 
-  TimerBackup:=TTimer.Create(Self);
+  TimerBackup := TTimer.Create(Self);
   with Timer1Hour do
   begin
-    OnTimer:=@OnTimerBackup;
-    Interval:=1000*60*TimerBackupInterval;
-    Enabled:=True;
+    OnTimer := @OnTimerBackup;
+    Interval := 1000 * 60 * TimerBackupInterval;
+    Enabled := True;
   end;
 
   AddToAboutStatus(RS_Version, FMD_VERSION_STRING, pnAboutVersion);
   if REVISION_NUMBER <> '' then
+  begin
     AddToAboutStatus(RS_Revision, REVISION_NUMBER+' ('+REVISION_SHA+')', pnAboutVersion);
+  end;
 
   if AlwaysLoadLuaFromFile then
+  begin
     Caption := Caption + ' --lua-dofile';
-
+  end;
 end;
 
 procedure TMainForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -2976,6 +2999,28 @@ procedure TMainForm.cbSelectMangaMouseDown(Sender: TObject;
 begin
   if Button = mbMiddle then
     cbSelectMangaEditingDone(Sender);
+end;
+
+procedure TMainForm.ckImageMagickChange(Sender: TObject);
+begin
+  if ckImageMagick.Checked then
+  begin
+    gbImageConversion.Hint := RS_ImageMagickPreference;
+    gbImageConversion.Enabled := False;
+    ckPNGSaveAsJPEG.Enabled := False;
+    cbWebPSaveAs.Enabled := False;
+    cbPNGCompressionLevel.Enabled := False;
+    seJPEGQuality.Enabled := False;
+  end
+  else
+  begin
+    gbImageConversion.Hint := '';
+    gbImageConversion.Enabled := True;
+    ckPNGSaveAsJPEG.Enabled := True;
+    cbWebPSaveAs.Enabled := True;
+    cbPNGCompressionLevel.Enabled := True;
+    seJPEGQuality.Enabled := True;
+  end;
 end;
 
 procedure TMainForm.btReadOnlineClick(Sender: TObject);
@@ -5766,6 +5811,26 @@ begin
     cbPNGCompressionLevel.ItemIndex := ReadInteger('saveto', 'PNGCompressionLevel', OptionPNGCompressionLevel);
     seJPEGQuality.Value := ReadInteger('saveto', 'JPEGQuality', OptionJPEGQuality);
 
+    // imagemagick
+    if TImageMagickManager.Instance.PathFound then
+    begin
+      ckImageMagick.Checked := ReadBool('imagemagick', 'ImageMagickEnabled', False);
+    end;
+
+    cbImageMagickSaveAs.ItemIndex := cbImageMagickSaveAs.Items.IndexOf(ReadString('imagemagick', 'ImageMagickSaveAs', 'JPEG'));
+    if cbImageMagickSaveAs.ItemIndex = -1 then
+    begin
+      cbImageMagickSaveAs.ItemIndex := 0;
+    end;
+
+    cbImageMagickCompression.ItemIndex := cbImageMagickCompression.Items.IndexOf(ReadString('imagemagick', 'ImageMagickCompression', 'None'));
+    if cbImageMagickCompression.ItemIndex = -1 then
+    begin
+      cbImageMagickCompression.ItemIndex := 0;
+    end;
+
+    seImageMagickQuality.Value := ReadInteger('imagemagick', 'ImageMagickQuality', 75);
+
     // update
     cbOptionAutoCheckLatestVersion.Checked := ReadBool('update', 'AutoCheckLatestVersion', True);
     cbOptionAutoCheckFavStartup.Checked := ReadBool('update', 'AutoCheckFavStartup', True);
@@ -5813,21 +5878,32 @@ begin
       if cbSelectManga.Items.Count <> 0 then
       begin
         s := '';
+
         for i := 0 to cbSelectManga.Items.Count-1 do
         begin
           m := TModuleContainer(cbSelectManga.Items.Objects[i]);
           if m <> nil then
+          begin
             s += m.ID + ',';
+          end;
         end;
+
         s := s.TrimRight([',']);
         WriteString('general', 'MangaListSelect', s);
       end;
+
       if cbDarkmode.ItemIndex > -1 then
+      begin
         WriteInteger('darkmode', 'mode', cbDarkmode.ItemIndex);
+      end;
+
       WriteBool('general', 'LiveSearch', cbOptionLiveSearch.Checked);
       WriteBool('general', 'OneInstanceOnly', cbOptionOneInstanceOnly.Checked);
       if cbLanguages.ItemIndex > -1 then
+      begin
         WriteString('languages', 'Selected', AvailableLanguages.Names[cbLanguages.ItemIndex]);
+      end;
+
       WriteBool('general', 'MinimizeOnStart', cbOptionMinimizeOnStart.Checked);
       WriteBool('general', 'MinimizeToTray', cbOptionMinimizeToTray.Checked);
       WriteBool('general', 'DeleteCompletedTasksOnClose', cbOptionDeleteCompletedTasksOnClose.Checked);
@@ -5851,7 +5927,9 @@ begin
       WriteBool('view', 'LoadMangaCover', cbOptionEnableLoadCover.Checked);
       WriteBool('view', 'ShowBalloonHint', cbOptionShowBalloonHint.Checked);
       if not (isExiting and Assigned(FormDropTarget)) then
+      begin
         SaveDropTargetFormInformation;
+      end;
 
       // connections downloads
       WriteInteger('connections', 'NumberOfTasks', seOptionMaxParallel.Value);
@@ -5868,9 +5946,13 @@ begin
       // connections general
       WriteInteger('connections', 'ConnectionTimeout', seOptionConnectionTimeout.Value);
       if DefaultUserAgent <> UserAgentDefault then
-	      WriteString('connections', 'DefaultUserAgent', DefaultUserAgent)
+      begin
+	WriteString('connections', 'DefaultUserAgent', DefaultUserAgent);
+      end
       else
-	      WriteString('connections', 'DefaultUserAgent', '');
+      begin
+	WriteString('connections', 'DefaultUserAgent', '');
+      end;
 
       // proxy
       WriteBool('connections', 'UseProxy', cbOptionUseProxy.Checked);
@@ -5882,32 +5964,57 @@ begin
 
       // saveto
       if Trim(edOptionDefaultPath.Text) = '' then
+      begin
         edOptionDefaultPath.Text := DEFAULT_PATH;
+      end;
+
       WriteString('saveto', 'SaveTo', edOptionDefaultPath.Text);
       WriteBool('saveto', 'ChangeUnicodeCharacter', cbOptionChangeUnicodeCharacter.Checked);
       WriteString('saveto', 'ChangeUnicodeCharacterStr', edOptionChangeUnicodeCharacterStr.Text);
       WriteBool('saveto', 'GenerateMangaFolder', cbOptionGenerateMangaFolder.Checked);
       if Trim(edOptionMangaCustomRename.Text) = '' then
+      begin
         edOptionMangaCustomRename.Text := DEFAULT_MANGA_CUSTOMRENAME;
+      end;
+
       WriteString('saveto', 'MangaCustomRename', edOptionMangaCustomRename.Text);
       WriteInteger('saveto', 'Compress', rgOptionCompress.ItemIndex);
       WriteInteger('saveto', 'PDFQuality', seOptionPDFQuality.Value);
       WriteBool('saveto', 'RemoveMangaNameFromChapter', cbOptionRemoveMangaNameFromChapter.Checked);
       WriteBool('saveto', 'GenerateChapterFolder', cbOptionGenerateChapterFolder.Checked);
       if Trim(edOptionChapterCustomRename.Text) = '' then
+      begin
         edOptionChapterCustomRename.Text := DEFAULT_CHAPTER_CUSTOMRENAME;
+      end;
+
       WriteString('saveto', 'ChapterCustomRename', edOptionChapterCustomRename.Text);
       WriteBool('saveto', 'ConvertDigitVolume', cbOptionDigitVolume.Checked);
       WriteBool('saveto', 'ConvertDigitChapter', cbOptionDigitChapter.Checked);
       WriteInteger('saveto', 'DigitVolumeLength', seOptionDigitVolume.Value);
       WriteInteger('saveto', 'DigitChapterLength', seOptionDigitChapter.Value);
       if Trim(edOptionFilenameCustomRename.Text) = '' then
+      begin
         edOptionFilenameCustomRename.Text := DEFAULT_FILENAME_CUSTOMRENAME;
+      end;
+
       WriteString('saveto', 'FilenameCustomRename', edOptionFilenameCustomRename.Text);
       WriteBool('saveto', 'PNGSaveAsJPEG', ckPNGSaveAsJPEG.Checked);
       WriteInteger('saveto', 'ConvertWebP', cbWebPSaveAs.ItemIndex);
       WriteInteger('saveto', 'PNGCompressionLevel', cbPNGCompressionLevel.ItemIndex);
       WriteInteger('saveto', 'JPEGQuality', seJPEGQuality.Value);
+
+      // imagemagick
+      WriteBool('imagemagick', 'ImageMagickEnabled', ckImageMagick.Checked);
+      if cbImageMagickSaveAs.ItemIndex > -1 then
+      begin
+        WriteString('imagemagick', 'ImageMagickSaveAs', cbImageMagickSaveAs.Items.ValueFromIndex[cbImageMagickSaveAs.ItemIndex]);
+      end;
+
+      if cbImageMagickCompression.ItemIndex > -1 then
+      begin
+        WriteString('imagemagick', 'ImageMagickCompression', cbImageMagickCompression.Items.ValueFromIndex[cbImageMagickCompression.ItemIndex]);
+      end;
+      WriteInteger('imagemagick', 'ImageMagickQuality', seImageMagickQuality.Value);
 
       // update
       WriteBool('update', 'AutoCheckLatestVersion', cbOptionAutoCheckLatestVersion.Checked);
@@ -5933,8 +6040,11 @@ begin
       // misc
       frmCustomColor.SaveToIniFile(settingsfile);
       WriteBool('logger', 'Enabled', ckEnableLogging.Checked);
+
       if edLogFileName.Text = '' then
+      begin
         edLogFileName.Text := DEFAULT_LOG_FILE;
+      end;
       WriteString('logger', 'LogFileName', edLogFileName.Text);
     finally
       UpdateFile;
@@ -5954,8 +6064,9 @@ begin
     // general
     // selected websites
     cbSelectManga.Clear;
+
     node := vtOptionMangaSiteSelection.GetFirstChecked();
-    while node<>nil do
+    while node <> nil do
     begin
       m := PNamePointerItem(vtOptionMangaSiteSelection.GetNodeData(node))^;
       cbSelectManga.Items.AddObject(m.Name, TModuleContainer(m.P));
@@ -5972,17 +6083,20 @@ begin
         Break;
       end;
     end;
+
     if not isStillHaveCurrentWebsite then
     begin
       if cbSelectManga.Items.Count > 0 then
       begin
         cbSelectManga.ItemIndex := 0;
+
         // Disable download manga list dialog when applying options:
-  	    b := cbOptionShowDownloadMangalistDialog.Checked;
-	      cbOptionShowDownloadMangalistDialog.Checked := False;
+  	b := cbOptionShowDownloadMangalistDialog.Checked;
+	cbOptionShowDownloadMangalistDialog.Checked := False;
         cbSelectMangaEditingDone(cbSelectManga);
-	      // Revert state back to like it was before:
-	      cbOptionShowDownloadMangalistDialog.Checked := b;
+
+	// Revert state back to like it was before:
+	cbOptionShowDownloadMangalistDialog.Checked := b;
       end
       else
       begin
@@ -5992,6 +6106,7 @@ begin
         lbMode.Caption := Format(RS_ModeAll, [0]);
       end;
     end;
+
     //FMDInstace
     if cbOptionOneInstanceOnly.Checked then
     begin
@@ -6012,6 +6127,7 @@ begin
         FreeAndNil(FMDInstance);
       end;
     end;
+
     OptionLetFMDDo := TFMDDo(cbOptionLetFMDDo.ItemIndex);
     OptionEnableLoadCover := cbOptionEnableLoadCover.Checked;
     OptionDeleteCompletedTasksOnClose := cbOptionDeleteCompletedTasksOnClose.Checked;
@@ -6019,7 +6135,7 @@ begin
     DLManager.DB.AutoVacuum:=cbOptionVacuumDatabasesOnExit.Checked;
     FavoriteManager.DB.AutoVacuum:=cbOptionVacuumDatabasesOnExit.Checked;
 
-    //view
+    // view
     ToolBarDownload.Visible := cbOptionShowDownloadToolbar.Checked;
     ToolBarDownloadLeft.Visible := cbOptionShowDownloadToolbarLeft.Checked;
     tbDownloadDeleteCompleted.Visible := cbOptionShowDownloadToolbarDeleteAll.Checked;
@@ -6029,7 +6145,7 @@ begin
     OptionShowFavoritesTabOnNewManga := cbOptionShowFavoritesTabOnNewManga.Checked;
     OptionShowDownloadsTabOnNewTasks := cbOptionShowDownloadsTabOnNewTasks.Checked;
 
-    //connection downloads
+    // connection downloads
     OptionMaxParallel := seOptionMaxParallel.Value;
     OptionMaxThreads := seOptionMaxThread.Value;
     OptionMaxRetry := seOptionMaxRetry.Value;
@@ -6047,17 +6163,25 @@ begin
     // connections general
     OptionConnectionTimeout := seOptionConnectionTimeout.Value;
     edOptionDefaultUserAgent.Text := Trim(edOptionDefaultUserAgent.Text);
+
     if edOptionDefaultUserAgent.Text = '' then
+    begin
       edOptionDefaultUserAgent.Text := UserAgentDefault;
+    end;
     DefaultUserAgent := edOptionDefaultUserAgent.Text;
+
     // proxy
     if cbOptionUseProxy.Checked then
+    begin
       SetDefaultProxyAndApply(cbOptionProxyType.Text, edOptionHost.Text,
-        edOptionPort.Text, edOptionUser.Text, edOptionPass.Text)
+        edOptionPort.Text, edOptionUser.Text, edOptionPass.Text);
+    end
     else
+    begin
       SetDefaultProxyAndApply('', '', '' ,'', '');
+    end;
 
-    //saveto
+    // saveto
     OptionPDFQuality := seOptionPDFQuality.Value;
     DLManager.CompressType := rgOptionCompress.ItemIndex;
     OptionChangeUnicodeCharacter := cbOptionChangeUnicodeCharacter.Checked;
@@ -6077,7 +6201,13 @@ begin
     OptionPNGCompressionLevel := cbPNGCompressionLevel.ItemIndex;
     OptionJPEGQuality := seJPEGQuality.Value;
 
-    //update
+    // imagemagick
+    TImageMagickManager.Instance.Enabled := ckImageMagick.Checked;
+    TImageMagickManager.Instance.SaveAs := cbImageMagickSaveAs.Items.ValueFromIndex[cbImageMagickSaveAs.ItemIndex];
+    TImageMagickManager.Instance.Compression := cbImageMagickCompression.Items.ValueFromIndex[cbImageMagickCompression.ItemIndex];
+    TImageMagickManager.Instance.Quality := seImageMagickQuality.Value;
+
+    // update
     OptionAutoCheckLatestVersion := cbOptionAutoCheckLatestVersion.Checked;
     OptionAutoCheckFavStartup := cbOptionAutoCheckFavStartup.Checked;
     OptionAutoCheckFavInterval := cbOptionAutoCheckFavInterval.Checked;
@@ -6102,24 +6232,28 @@ begin
     if ckEnableLogging.Checked and (not Logger.Enabled) then
     begin
       Logger.Enabled := True;
+
       if MainExceptionHandler.LogFileOK then
       begin
         FileLogger := TFileChannel.Create(edLogFileName.Text, [fcoShowHeader, fcoShowPrefix, fcoShowTime]);
         Logger.Channels.Add(FileLogger);
       end
       else
+      begin
         Logger.SendError('Log file error ' + MainExceptionHandler.LogFileStatus + '"' + edLogFileName.Text + '"');
-      Logger.Send(QuotedStrd(Application.Title)+' started [PID:'+IntToStr(GetProcessID)+']');
+      end;
+
+      Logger.Send(QuotedStrd(Application.Title) + ' started [PID:' + IntToStr(GetProcessID) + ']');
       Logger.SendStrings('Application info', SimpleException.GetApplicationInfo);
     end
-    else
-    if (not ckEnableLogging.Checked) and (Logger.Enabled) then
+    else if (not ckEnableLogging.Checked) and (Logger.Enabled) then
     begin
       if Assigned(FileLogger) then
       begin
         Logger.Channels.Remove(FileLogger);
         FreeAndNil(FileLogger);
       end;
+
       Logger.Enabled := False;
     end;
 

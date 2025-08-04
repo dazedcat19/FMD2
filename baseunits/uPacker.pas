@@ -123,8 +123,7 @@ function TPacker.Do7Zip: Boolean;
 var
   p: TProcess;
   exit_status, i: Integer;
-  s, sout, serr, fFileName,
-  fUniqueTimestampName: string;
+  s, sout, serr, fFileName: String;
 begin
   Result := False;
   p := TProcess.Create(nil);
@@ -138,36 +137,7 @@ begin
       end;
     end;
 
-    fUniqueTimestampName := StringReplace(ExtractFileName(FSavedFileName), ExtractFileExt(FSavedFileName), '', [rfReplaceAll])+ '_' + FormatDateTime('yyyy-mm-dd_hh-nn-ss', Now);
-    fFileName := 'FQDNList_' + fUniqueTimestampName + '.txt';
-    with TStringList.Create do
-    try
-      for i := 0 to FFileList.Count - 1 do
-      begin
-        FFileList[i] := MainForm.CheckLongNamePaths(FFileList[i]);
-        Add(FFileList[i]);
-      end;
-
-      try
-        SaveToFile(fFileName);
-      except
-        on E: EFCreateError do
-        begin
-          // If first attempt fails, try the second path
-          try
-            fFileName := AppendPathDelim(ExtractFilePath(FSavedFileName)) + fFileName;
-            SaveToFile(fFileName);
-          except
-            on E2: Exception do
-            begin
-              MainForm.ExceptionHandler(Self, E2);
-            end;
-          end;
-        end;
-      end;
-    finally
-      Free;
-    end;
+    fFileName := CreateFQDNList(Self, FSavedFileName, FFileList);
 
     p.Executable := CURRENT_ZIP_EXE;
     with p.Parameters do begin

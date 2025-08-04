@@ -12,8 +12,8 @@ interface
 
 uses
   LazFileUtils, Classes, SysUtils, ExtCtrls, typinfo, fgl,
-  blcksock, MultiLog, uBaseUnit, uPacker, uMisc, DownloadedChaptersDB, FMDOptions,
-  httpsendthread, DownloadsDB, BaseThread, SQLiteData, dateutils, strutils;
+  blcksock, MultiLog, uBaseUnit, uPacker, uMisc, DownloadedChaptersDB, FMDOptions, ImgInfos,
+  httpsendthread, DownloadsDB, BaseThread, SQLiteData, dateutils, strutils, ImageMagickManager;
 
 type
   TDownloadStatusType = (
@@ -22,6 +22,7 @@ type
     STATUS_PREPARE,
     STATUS_DOWNLOAD,
     STATUS_FINISH,
+    STATUS_CONVERT,
     STATUS_COMPRESS,
     STATUS_PROBLEM,
     STATUS_FAILED,
@@ -84,6 +85,7 @@ type
     procedure CheckOut; inline;
     procedure Execute; override;
     function Compress: Boolean;
+    function Convert: Boolean;
     procedure SyncStop;
     procedure StatusFailedToCreateDir;
     function FirstFailedChapters: Integer;
@@ -282,6 +284,7 @@ resourcestring
   RS_Finish = 'Completed';
   RS_Waiting = 'Waiting...';
   RS_Compressing = 'Compressing...';
+  RS_Converting = 'Converting...';
   RS_Failed = 'Failed';
   RS_Disabled = 'Disabled';
 
@@ -551,7 +554,7 @@ function TTaskThread.Compress: Boolean;
 var
   uPacker: TPacker;
   i: Integer;
-  s: String;
+  FilePath, FileExt: String;
 begin
   Result := True;
   if (Container.Manager.CompressType >= 1) then
@@ -559,6 +562,7 @@ begin
     Container.DownloadInfo.Status :=
       Format('[%d/%d] %s', [Container.CurrentDownloadChapterPtr + 1,
       Container.ChapterLinks.Count, RS_Compressing]);
+
     uPacker := TPacker.Create;
     try
       case Container.Manager.CompressType of
@@ -567,19 +571,33 @@ begin
         3: uPacker.Format := pfPDF;
         4: uPacker.Format := pfEPUB;
       end;
+
       uPacker.CompressionQuality := OptionPDFQuality;
       uPacker.Path := CurrentWorkingDir;
       uPacker.FileName := RemovePathDelim(CorrectPathSys(CorrectPathSys(Container.DownloadInfo.SaveTo) +
         Container.ChapterNames[Container.CurrentDownloadChapterPtr]));
+
       for i := 0 to Container.PageLinks.Count - 1 do
       begin
-        s := FindImageFile(uPacker.Path + GetFileName(i));
-        if s <> '' then
-          uPacker.FileList.Add(s);
+        FileExt := '';
+        if (TImageMagickManager.Instance.Enabled) then
+        begin
+          FileExt := LowerCase(TImageMagickManager.Instance.SaveAs);
+        end;
+
+        FilePath := FindImageFile(uPacker.Path + GetFileName(i), FileExt);
+
+        if FilePath <> '' then
+        begin
+          uPacker.FileList.Add(FilePath);
+        end;
       end;
+
       Result := uPacker.Execute;
       if not Result then
-        Logger.SendWarning(Self.ClassName+', failed to compress. ' + uPacker.SavedFileName);
+      begin
+        Logger.SendWarning(Self.ClassName + ', failed to compress. ' + uPacker.SavedFileName);
+      end;
     except
       on E: Exception do
       begin
@@ -588,6 +606,73 @@ begin
       end;
     end;
     uPacker.Free;
+  end;
+end;   
+
+function TTaskThread.Convert: Boolean;
+var
+  ImageMagick: TImageMagickManager;
+  FilePath, FileExt: String;
+  FileConvertList: TStringList;
+  i: Integer;
+begin
+  Result := True;
+              
+  ImageMagick := TImageMagickManager.Instance;
+  if not (ImageMagick.Enabled) then
+  begin
+    Exit;
+  end;
+
+  Container.DownloadInfo.Status :=
+    Format('[%d/%d] %s', [Container.CurrentDownloadChapterPtr + 1,
+    Container.ChapterLinks.Count, RS_Converting]);
+
+  FileConvertList := TStringList.Create;
+  try
+    for i := 0 to Container.PageLinks.Count - 1 do
+    begin
+      FilePath := FindImageFile(CurrentWorkingDir + GetFileName(i));
+      if FilePath = '' then
+      begin
+        Continue;
+      end;
+
+      FileExt := ExtractFileExt(FilePath);
+      if LowerCase(FileExt) <> LowerCase(ImageMagick.SaveAs) then
+      begin
+        FileConvertList.Add(FilePath);
+      end;
+    end;
+
+    if FileConvertList.Count = 0 then
+    begin
+      Exit;
+    end;
+
+    FilePath := CreateFQDNList(Self, TrimAndExpandFilename(CurrentWorkingDir), FileConvertList);
+    Result := ImageMagick.ConvertImage('@' + FilePath, CurrentWorkingDir);
+    DeleteFile(FilePath);
+
+    if not Result then
+    begin
+      Logger.SendWarning(Self.ClassName + ', failed to convert image with ImageMagick. ' + ImageMagick.LastError);
+      Exit;
+    end;
+
+    for i := 0 to FileConvertList.Count - 1 do
+    begin
+      if FileExists(ChangeFilEExt(FileConvertList[i], '.' + ImageMagick.SaveAs)) then
+      begin
+        DeleteFile(FileConvertList[i]);
+      end;
+    end;
+  except
+    on E: Exception do
+    begin
+      E.Message := E.Message + LineEnding + '  In TTaskThread.Convert' + LineEnding + GetExceptionInfo;
+      MainForm.ExceptionHandler(Self, E);
+    end;
   end;
 end;
 
@@ -1105,10 +1190,20 @@ begin
         if CheckForFinish then
         begin
           Container.DownloadInfo.Progress := '';
-          Container.Status := STATUS_COMPRESS;
-          if not Compress then
+          Container.Status := STATUS_CONVERT;
+          if not Convert then
           begin
             Container.Status := STATUS_FAILED;
+          end;
+
+          if Container.Status <> STATUS_FAILED then
+          begin
+            Container.DownloadInfo.Progress := '';
+            Container.Status := STATUS_COMPRESS;
+            if not Compress then
+            begin
+              Container.Status := STATUS_FAILED;
+            end;
           end;
         end
         else
@@ -1127,7 +1222,7 @@ begin
         Container.Status := STATUS_FAILED;
       end;
 
-      if Container.Status = STATUS_FAILED  then
+      if Container.Status = STATUS_FAILED then
       begin
         Container.ChaptersStatus[Container.CurrentDownloadChapterPtr] := 'F';
       end

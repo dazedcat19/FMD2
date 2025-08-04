@@ -612,6 +612,18 @@ msgctxt "frmtransferfavorites.rs_valid"
 msgid "Valid"
 msgstr "有效"
 
+#: imagemagickmanager.rs_imagemagicknotfoundhint
+msgid ""
+"Failed to detect an install of ImageMagick!\n"
+"The following settings have been disabled because an install of ImageMagick was not detected."
+msgstr ""
+
+#: imagemagickmanager.rs_imagemagickpreference
+msgid ""
+"ImageMagick has been enabled!\n"
+"The following settings have been disabled because ImageMagick has taken preference."
+msgstr ""
+
 #: selfupdater.rs_buttoncancel
 msgctxt "selfupdater.rs_buttoncancel"
 msgid "Abort"
@@ -1476,6 +1488,10 @@ msgstr "百合"
 msgid "This work usually involves intimate relationships between women."
 msgstr "这种作品通常涉及女性之间的亲密关系。"
 
+#: tmainform.ckimagemagick.caption
+msgid "Enable ImageMagick Conversion"
+msgstr ""
+
 #: tmainform.ckoptionsalwaysstarttaskfromfailedchapters.caption
 msgctxt "tmainform.ckoptionsalwaysstarttaskfromfailedchapters.caption"
 msgid "Always start task from failed chapters"
@@ -1604,6 +1620,10 @@ msgstr "拖放框"
 msgid "Image Conversion"
 msgstr "图像转换"
 
+#: tmainform.gbimagemagick.caption
+msgid "Image Magick"
+msgstr ""
+
 #: tmainform.gboptionexternal.caption
 msgid "External program"
 msgstr "外部程序"
@@ -1724,6 +1744,18 @@ msgstr "标题"
 #: tmainform.lbjpegquality.caption
 msgid "JPEG quality"
 msgstr "JPEG 图像质量"
+
+#: tmainform.lblimagemagickcompression.caption
+msgid "Image Compression type"
+msgstr ""
+
+#: tmainform.lblimagemagickquality.caption
+msgid "Image quality"
+msgstr ""
+
+#: tmainform.lblimagemagicksaveas.caption
+msgid "Save Image as"
+msgstr ""
 
 #: tmainform.lblogfilename.caption
 msgid "Log file:"
@@ -2665,6 +2697,10 @@ msgstr "设置名称"
 #: udownloadsmanager.rs_compressing
 msgid "Compressing..."
 msgstr "正在压缩..."
+
+#: udownloadsmanager.rs_converting
+msgid "Converting..."
+msgstr ""
 
 #: udownloadsmanager.rs_disabled
 msgctxt "udownloadsmanager.rs_disabled"

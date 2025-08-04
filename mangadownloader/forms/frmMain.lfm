@@ -3943,7 +3943,7 @@ object MainForm: TMainForm
               ClientWidth = 808
               ParentBackground = False
               ParentFont = False
-              TabOrder = 5
+              TabOrder = 6
               object cbOptionChangeUnicodeCharacter: TCheckBox
                 Left = 4
                 Height = 19
@@ -4243,6 +4243,7 @@ object MainForm: TMainForm
               Width = 50
               BorderSpacing.Top = 4
               Enabled = False
+              MaxValue = 100
               MinValue = 5
               ParentFont = False
               ParentShowHint = False
@@ -4323,13 +4324,11 @@ object MainForm: TMainForm
               AnchorSideLeft.Control = lbDefaultDownloadPath
               AnchorSideTop.Control = seOptionPDFQuality
               AnchorSideTop.Side = asrBottom
-              AnchorSideRight.Control = sbSaveTo
-              AnchorSideRight.Side = asrBottom
               Left = 4
               Height = 122
               Top = 145
               Width = 812
-              Anchors = [akTop, akLeft, akRight]
+              Anchors = [akTop, akLeft]
               AutoSize = True
               Caption = 'Image Conversion'
               ChildSizing.LeftRightSpacing = 4
@@ -4425,6 +4424,7 @@ object MainForm: TMainForm
                 Height = 23
                 Top = 75
                 Width = 47
+                MaxValue = 100
                 MinValue = 1
                 TabOrder = 3
                 Value = 80
@@ -4438,6 +4438,123 @@ object MainForm: TMainForm
                 Width = 111
                 Caption = 'Save PNG as JPEG'
                 TabOrder = 0
+              end
+            end
+            object gbImageMagick: TGroupBox
+              AnchorSideLeft.Control = gbImageConversion
+              AnchorSideLeft.Side = asrBottom
+              AnchorSideTop.Control = seOptionPDFQuality
+              AnchorSideTop.Side = asrBottom
+              AnchorSideRight.Control = sbSaveTo
+              AnchorSideRight.Side = asrBottom
+              Left = 250
+              Height = 122
+              Top = 145
+              Width = 979
+              Anchors = [akTop, akLeft, akRight] 
+              AutoSize = True
+              Caption = 'Image Magick'
+              ChildSizing.LeftRightSpacing = 4
+              ChildSizing.TopBottomSpacing = 4
+              ChildSizing.HorizontalSpacing = 6
+              ChildSizing.VerticalSpacing = 6
+              ClientHeight = 102
+              ClientWidth = 975
+              Enabled = False
+              ParentBackground = False
+              TabOrder = 5
+              object ckImageMagick: TCheckBox
+                AnchorSideLeft.Control = gbImageMagick
+                AnchorSideTop.Control = gbImageMagick
+                Left = 4
+                Height = 19
+                Top = 4
+                Width = 191
+                Caption = 'Enable ImageMagick Conversion'
+                Enabled = False
+                TabOrder = 0
+                OnChange = ckImageMagickChange
+              end
+              object lblImageMagickSaveAs: TLabel
+                AnchorSideLeft.Control = gbImageMagick
+                AnchorSideTop.Control = ckImageMagick
+                AnchorSideTop.Side = asrBottom
+                Left = 4
+                Height = 15
+                Top = 29
+                Width = 74
+                Caption = 'Save Image as'
+              end
+              object cbImageMagickSaveAs: TComboBox
+                AnchorSideLeft.Control = lblImageMagickSaveAs
+                AnchorSideLeft.Side = asrBottom  
+                AnchorSideTop.Control = lblImageMagickSaveAs
+                AnchorSideTop.Side = asrCenter
+                Left = 84
+                Height = 23
+                Top = 25
+                Width = 100
+                Enabled = False
+                ItemHeight = 15
+                ItemIndex = 0
+                Items.Strings = (
+                  'JPEG'
+                )
+                TabOrder = 1
+              end
+              object lblImageMagickCompression: TLabel
+                AnchorSideLeft.Control = lblImageMagickSaveAs
+                AnchorSideTop.Control = cbImageMagickSaveAs
+                AnchorSideTop.Side = asrBottom
+                Left = 4
+                Height = 15
+                Top = 54
+                Width = 132
+                Caption = 'Image Compression type'
+              end
+              object cbImageMagickCompression: TComboBox
+                AnchorSideLeft.Control = lblImageMagickCompression
+                AnchorSideLeft.Side = asrBottom
+                AnchorSideTop.Control = lblImageMagickCompression
+                AnchorSideTop.Side = asrCenter
+                AnchorSideRight.Side = asrBottom
+                Left = 142
+                Height = 23
+                Top = 50
+                Width = 100
+                Enabled = False
+                ItemHeight = 15
+                ItemIndex = 0
+                Items.Strings = (
+                  'None'
+                )
+                TabOrder = 2
+              end
+              object lblImageMagickQuality: TLabel
+                AnchorSideLeft.Control = lblImageMagickSaveAs
+                AnchorSideTop.Control = cbImageMagickCompression
+                AnchorSideTop.Side = asrBottom
+                Left = 4
+                Height = 15
+                Top = 79
+                Width = 72
+                Caption = 'Image quality'
+              end
+              object seImageMagickQuality: TSpinEdit
+                AnchorSideLeft.Control = lblImageMagickQuality
+                AnchorSideLeft.Side = asrBottom
+                AnchorSideTop.Control = lblImageMagickQuality
+                AnchorSideTop.Side = asrCenter
+                AnchorSideRight.Side = asrBottom
+                Left = 82
+                Height = 23
+                Top = 75
+                Width = 47
+                Enabled = False
+                MaxValue = 100
+                MinValue = 1
+                TabOrder = 3
+                Value = 75
               end
             end
           end
