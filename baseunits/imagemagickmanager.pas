@@ -276,8 +276,11 @@ begin
        Reg.OpenKey('SOFTWARE\WOW6432Node\ImageMagick\Current', False) then
     begin
       FMagickPath := IncludeTrailingPathDelimiter(Reg.ReadString('BinPath'));
+
       if FileExists(FMagickPath + 'magick.exe') then
+      begin
         Exit(True);
+      end;
     end;
   finally
     Reg.Free;
@@ -500,9 +503,13 @@ begin
     try
       // Configure process
       if FMagickPath <> '' then
-        Process.Executable := FMagickPath + 'magick'
+      begin
+        Process.Executable := FMagickPath + 'magick';
+      end
       else
+      begin
         Process.Executable := 'magick';
+      end;
 
       Process.Options := [poUsePipes, poStderrToOutPut, poNoConsole];
       Process.ShowWindow := swoHIDE;
@@ -529,6 +536,7 @@ begin
         begin
           // Check for output
           BytesRead := Process.Output.Read(Buffer, SizeOf(Buffer));
+
           if BytesRead > 0 then
           begin
             ErrorStream.Write(Buffer, BytesRead);
@@ -546,6 +554,7 @@ begin
                 'Command: %s',
                 [TimeoutMS, CommandLine]
               );
+
               Exit(False);
             end;
             Sleep(100); // Prevent CPU overload
@@ -555,6 +564,7 @@ begin
         // Capture any remaining output after process exits
         repeat
           BytesRead := Process.Output.Read(Buffer, SizeOf(Buffer));
+
           if BytesRead > 0 then
           begin
             ErrorStream.Write(Buffer, BytesRead);
@@ -569,6 +579,7 @@ begin
         begin
           ErrorStream.Position := 0;
           ErrorStreamOutput := 'No output from process';
+
           if HasOutput then
           begin
              ErrorStreamOutput := StreamToString(ErrorStream);
@@ -593,6 +604,7 @@ begin
             'Exception: %s',
             [CommandLine, E.Message]
           );
+
           Result := False;
         end;
       end;
