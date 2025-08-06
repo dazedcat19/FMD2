@@ -72,7 +72,7 @@ function _M.GetInfo()
 	MANGAINFO.Authors   = x.XPathStringAll('//div[@class="author-content"]/a')
 	MANGAINFO.Artists   = x.XPathStringAll('//div[@class="artist-content"]/a')
 	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="genres-content"]/a')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@class="summary-heading" and contains(., "' .. XPathTokenStatus .. '")]/following-sibling::div'), 'Berjalan|Ongoing|مستمرة|Em Andamento', 'Tamat|Completed|مكتملة|Concluído', 'Hiatus|On Hold|متوقفة|Em espera', 'Diberhentikan|Canceled|مُلغَاة|Cancelado')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@class="summary-heading" and contains(., "' .. XPathTokenStatus .. '")]/following-sibling::div'), 'Berjalan|Ongoing|مستمرة|Em Andamento|En curso', 'Tamat|Completed|مكتملة|Concluído|Terminado', 'Hiatus|On Hold|متوقفة|Em espera|En espera', 'Diberhentikan|Canceled|مُلغَاة|Cancelado')
 	MANGAINFO.Summary   = x.XPathString('string-join(//div[contains(@class, "summary__content") or @class="manga-summary"]|//div[@class="manga-excerpt"]|//div[@class="post-content_item" and contains(h5, "Summary") or contains(h5, "Sinopsis")]//p, "\r\n")')
 
 	if MANGAINFO.CoverLink == '' then MANGAINFO.CoverLink = x.XPathString('//div[@class="summary_image"]//img/@src') end
