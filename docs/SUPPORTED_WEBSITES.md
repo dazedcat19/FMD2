@@ -432,7 +432,7 @@
 | Ngomik | [![https://ngomik.net](https://img.shields.io/website?url=https://ngomik.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://ngomik.net)](https://ngomik.net) | - | - | - |
 | NhatTruyen | [![https://nhattruyenvn.com](https://img.shields.io/website?url=https://nhattruyenvn.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://nhattruyenvn.com)](https://nhattruyenvn.com) | - | - | - |
 | NhatTruyenS | [![https://www.nhattruyensss.com](https://img.shields.io/website?url=https://www.nhattruyensss.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.nhattruyensss.com)](https://www.nhattruyensss.com) | - | - | - |
-| NHentai | [![https://nhentai.net](https://img.shields.io/website?url=https://nhentai.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://nhentai.net)](https://nhentai.net) | OK | 12.12.2024 | - |
+| NHentai | [![https://nhentai.net](https://img.shields.io/website?url=https://nhentai.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://nhentai.net)](https://nhentai.net) | OK | 06.08.2025 | - |
 | NHentaiCom | [![https://nhentai.com](https://img.shields.io/website?url=https://nhentai.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://nhentai.com)](https://nhentai.com) | - | - | - |
 | NiAddBR | [![https://br.niadd.com](https://img.shields.io/website?url=https://br.niadd.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://br.niadd.com)](https://br.niadd.com) | OK | 14.02.2025 | - |
 | NiAddDE | [![https://de.niadd.com](https://img.shields.io/website?url=https://de.niadd.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://de.niadd.com)](https://de.niadd.com) | OK | 14.02.2025 | - |
