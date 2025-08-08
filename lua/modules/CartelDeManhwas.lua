@@ -5,8 +5,8 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '9a0a1298ca044dd9886a3446092f285e'
-	m.Name                     = 'CartelDeManhwas'
-	m.RootURL                  = 'https://carteldemanhwas.com'
+	m.Name                     = 'Cartel De Manhwas'
+	m.RootURL                  = 'https://carteldemanhwas.net'
 	m.Category                 = 'Spanish'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -19,8 +19,6 @@ end
 
 local Template = require 'templates.MangaThemesia'
 DirectoryPagination = '/series/list-mode/'
--- XPathTokenAuthors   = 'Author'
--- XPathTokenArtists   = 'Artist'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -33,7 +31,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
 
@@ -46,5 +44,5 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
 end
