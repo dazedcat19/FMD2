@@ -26,13 +26,13 @@ local DirectoryPagination = '/contents?orderBy=Added&type=Comic&page='
 -- Auxiliary Functions
 ----------------------------------------------------------------------------------------------------
 
--- Sets the required HTTP headers for making an API request.
-function SetApiHeaders(RequestPath)
-	local AccessKey = 'WM_WEB_FRONT_END'
-	local SecretKey = 'xxxoidj'
+-- Set the required http headers for making a request.
+local function SetRequestHeaders(RequestPath)
+	local access_key = 'WM_WEB_FRONT_END'
+	local secret_key = 'xxxoidj'
 	local timestamp = os.time()
-	local key = timestamp .. 'GET' .. RequestPath:match('([^?]+)') .. AccessKey .. SecretKey
-	HTTP.Headers.Values['x-wm-accses-key'] = AccessKey
+	local key = timestamp .. 'GET' .. RequestPath:match('([^?]+)') .. access_key .. secret_key
+	HTTP.Headers.Values['x-wm-accses-key'] = access_key
 	HTTP.Headers.Values['x-wm-request-time'] = timestamp
 	HTTP.Headers.Values['x-wm-request-signature'] = require('utils.sha256').hmac_sha256(key, 'wm-api-request')
 end
@@ -44,7 +44,7 @@ end
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
 	local u = API_URL .. DirectoryPagination .. 1
-	SetApiHeaders('/api' .. DirectoryPagination)
+	SetRequestHeaders('/api' .. DirectoryPagination)
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -55,14 +55,12 @@ end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local v, x = nil
 	local u = API_URL .. DirectoryPagination .. (URL + 1)
-	SetApiHeaders('/api' .. DirectoryPagination)
+	SetRequestHeaders('/api' .. DirectoryPagination)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
-	for v in x.XPath('json(*).data()').Get() do
+	for v in CreateTXQuery(HTTP.Document).XPath('json(*).data()').Get() do
 		LINKS.Add('comic/' .. v.GetProperty('slug').ToString())
 		NAMES.Add(v.GetProperty('title').ToString())
 	end
@@ -72,14 +70,13 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local json, v, x = nil
 	local u = API_URL .. URL
-	SetApiHeaders('/api' .. URL)
+	SetRequestHeaders('/api' .. URL)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
-	json = x.XPath('json(*).data')
+	local x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
+	local json = x.XPath('json(*).data')
 	MANGAINFO.Title     = x.XPathString('title', json)
 	MANGAINFO.AltTitles = x.XPathString('alternative_name', json)
 	MANGAINFO.CoverLink = x.XPathString('cover', json)
@@ -100,7 +97,7 @@ end
 -- Get the page count for the current chapter.
 function GetPageNumber()
 	local u = API_URL .. '/v' .. URL
-	SetApiHeaders('/api/v' .. URL)
+	SetRequestHeaders('/api/v' .. URL)
 
 	if not HTTP.GET(u) then return false end
 
