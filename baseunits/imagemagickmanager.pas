@@ -71,8 +71,8 @@ type
   end;
 
 resourcestring
-  RS_ImageMagickPreference = 'ImageMagick has been enabled!'#13#10'The following settings have been disabled because ImageMagick has taken preference.';
-  RS_ImageMagickNotFoundHint = 'Failed to detect an install of ImageMagick!'#13#10'The following settings have been disabled because an install of ImageMagick was not detected.';
+  RS_ImageMagickPreferenceHint = 'ImageMagick has been enabled!'#13#10'The following settings have been disabled because ImageMagick has taken preference.';
+  RS_ImageMagickNotFoundHint = 'Failed to detect an install of ImageMagick!'#13#10'Please install ImageMagick from www.imagemagick.org if you haven''''t already.';
 
 implementation
 
@@ -156,7 +156,8 @@ begin
   CacheCompressionTypes;
 
   with MainForm do
-  begin
+  begin 
+    lbImageMagickHint.Visible := False;
     gbImageMagick.Enabled := True;
     ckImageMagick.Enabled := True;
     cbImageMagickSaveAs.Enabled := True;

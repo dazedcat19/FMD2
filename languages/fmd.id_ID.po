@@ -619,12 +619,14 @@ msgid "Valid"
 msgstr "Valid"
 
 #: imagemagickmanager.rs_imagemagicknotfoundhint
+msgctxt "imagemagickmanager.rs_imagemagicknotfoundhint"
 msgid ""
 "Failed to detect an install of ImageMagick!\n"
-"The following settings have been disabled because an install of ImageMagick was not detected."
+"Please install ImageMagick from www.imagemagick.org if you haven''t already."
 msgstr ""
 
-#: imagemagickmanager.rs_imagemagickpreference
+#: imagemagickmanager.rs_imagemagickpreferencehint
+msgctxt "imagemagickmanager.rs_imagemagickpreferencehint"
 msgid ""
 "ImageMagick has been enabled!\n"
 "The following settings have been disabled because ImageMagick has taken preference."
@@ -993,6 +995,14 @@ msgstr "Tambahkan ke daftar unduhan tanpa dimulai"
 #: tmainform.cbfilterstatus.text
 msgid "<none>"
 msgstr "<tidak ada>"
+
+#: tmainform.cbimagemagickcompression.text
+msgid "None"
+msgstr ""
+
+#: tmainform.cbimagemagicksaveas.text
+msgid "JPEG"
+msgstr ""
 
 #: tmainform.cbonlynew.caption
 msgid "Search only new manga"
@@ -1747,21 +1757,36 @@ msgctxt "tmainform.lbfiltertitle.caption"
 msgid "Title"
 msgstr "Judul"
 
-#: tmainform.lbjpegquality.caption
-msgid "JPEG quality"
-msgstr "Kualitas JPEG"
+#: tmainform.lbimageconversionhint.caption
+#, fuzzy
+msgctxt "tmainform.lbimageconversionhint.caption"
+msgid "[?]"
+msgstr "[?]"
 
-#: tmainform.lblimagemagickcompression.caption
+#: tmainform.lbimagemagickcompression.caption
+msgctxt "tmainform.lbimagemagickcompression.caption"
 msgid "Image Compression type"
 msgstr ""
 
-#: tmainform.lblimagemagickquality.caption
+#: tmainform.lbimagemagickhint.caption
+#, fuzzy
+msgctxt "tmainform.lbimagemagickhint.caption"
+msgid "[?]"
+msgstr "[?]"
+
+#: tmainform.lbimagemagickquality.caption
+msgctxt "tmainform.lbimagemagickquality.caption"
 msgid "Image quality"
 msgstr ""
 
-#: tmainform.lblimagemagicksaveas.caption
+#: tmainform.lbimagemagicksaveas.caption
+msgctxt "tmainform.lbimagemagicksaveas.caption"
 msgid "Save Image as"
 msgstr ""
+
+#: tmainform.lbjpegquality.caption
+msgid "JPEG quality"
+msgstr "Kualitas JPEG"
 
 #: tmainform.lblogfilename.caption
 msgid "Log file:"

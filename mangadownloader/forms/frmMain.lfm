@@ -4005,7 +4005,6 @@ object MainForm: TMainForm
                 Top = 73
                 Width = 13
                 Caption = '[?]'
-                Enabled = False
                 Font.Color = clHighlight
                 ParentColor = False
                 ParentFont = False
@@ -4314,11 +4313,11 @@ object MainForm: TMainForm
               }
               MaxLength = 0
               NumGlyphs = 1
-              OnButtonClick = edOptionDefaultPathButtonClick
               ParentFont = False
               PasswordChar = #0
               TabOrder = 1
               TextHint = 'Default download path'
+              OnButtonClick = edOptionDefaultPathButtonClick
             end
             object gbImageConversion: TGroupBox
               AnchorSideLeft.Control = lbDefaultDownloadPath
@@ -4475,7 +4474,7 @@ object MainForm: TMainForm
                 TabOrder = 0
                 OnChange = ckImageMagickChange
               end
-              object lblImageMagickSaveAs: TLabel
+              object lbImageMagickSaveAs: TLabel
                 AnchorSideLeft.Control = gbImageMagick
                 AnchorSideTop.Control = ckImageMagick
                 AnchorSideTop.Side = asrBottom
@@ -4486,9 +4485,9 @@ object MainForm: TMainForm
                 Caption = 'Save Image as'
               end
               object cbImageMagickSaveAs: TComboBox
-                AnchorSideLeft.Control = lblImageMagickSaveAs
-                AnchorSideLeft.Side = asrBottom  
-                AnchorSideTop.Control = lblImageMagickSaveAs
+                AnchorSideLeft.Control = lbImageMagickSaveAs
+                AnchorSideLeft.Side = asrBottom
+                AnchorSideTop.Control = lbImageMagickSaveAs
                 AnchorSideTop.Side = asrCenter
                 Left = 84
                 Height = 23
@@ -4501,9 +4500,10 @@ object MainForm: TMainForm
                   'JPEG'
                 )
                 TabOrder = 1
+                Text = 'JPEG'
               end
-              object lblImageMagickCompression: TLabel
-                AnchorSideLeft.Control = lblImageMagickSaveAs
+              object lbImageMagickCompression: TLabel
+                AnchorSideLeft.Control = lbImageMagickSaveAs
                 AnchorSideTop.Control = cbImageMagickSaveAs
                 AnchorSideTop.Side = asrBottom
                 Left = 4
@@ -4513,9 +4513,9 @@ object MainForm: TMainForm
                 Caption = 'Image Compression type'
               end
               object cbImageMagickCompression: TComboBox
-                AnchorSideLeft.Control = lblImageMagickCompression
+                AnchorSideLeft.Control = lbImageMagickCompression
                 AnchorSideLeft.Side = asrBottom
-                AnchorSideTop.Control = lblImageMagickCompression
+                AnchorSideTop.Control = lbImageMagickCompression
                 AnchorSideTop.Side = asrCenter
                 AnchorSideRight.Side = asrBottom
                 Left = 142
@@ -4529,9 +4529,10 @@ object MainForm: TMainForm
                   'None'
                 )
                 TabOrder = 2
+                Text = 'None'
               end
-              object lblImageMagickQuality: TLabel
-                AnchorSideLeft.Control = lblImageMagickSaveAs
+              object lbImageMagickQuality: TLabel
+                AnchorSideLeft.Control = lbImageMagickSaveAs
                 AnchorSideTop.Control = cbImageMagickCompression
                 AnchorSideTop.Side = asrBottom
                 Left = 4
@@ -4541,9 +4542,9 @@ object MainForm: TMainForm
                 Caption = 'Image quality'
               end
               object seImageMagickQuality: TSpinEdit
-                AnchorSideLeft.Control = lblImageMagickQuality
+                AnchorSideLeft.Control = lbImageMagickQuality
                 AnchorSideLeft.Side = asrBottom
-                AnchorSideTop.Control = lblImageMagickQuality
+                AnchorSideTop.Control = lbImageMagickQuality
                 AnchorSideTop.Side = asrCenter
                 AnchorSideRight.Side = asrBottom
                 Left = 82
@@ -4556,6 +4557,37 @@ object MainForm: TMainForm
                 TabOrder = 3
                 Value = 75
               end
+            end
+            object lbImageMagickHint: TLabel
+              AnchorSideLeft.Control = gbImageMagick
+              AnchorSideTop.Control = gbImageMagick
+              Left = 340
+              Height = 15
+              Top = 145
+              Width = 13
+              BorderSpacing.Left = 90
+              Caption = '[?]'
+              Font.Color = clHighlight
+              ParentColor = False
+              ParentFont = False
+              ParentShowHint = False
+              ShowHint = True
+            end
+            object lbImageConversionHint: TLabel
+              AnchorSideLeft.Control = gbImageConversion
+              AnchorSideTop.Control = gbImageConversion
+              Left = 114
+              Height = 15
+              Top = 145
+              Width = 13
+              BorderSpacing.Left = 110
+              Caption = '[?]'
+              Font.Color = clHighlight
+              ParentColor = False
+              ParentFont = False
+              ParentShowHint = False
+              ShowHint = True
+              Visible = False
             end
           end
         end

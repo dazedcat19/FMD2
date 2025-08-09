@@ -118,12 +118,14 @@ type
     gbOptionsConnectionsGeneral: TGroupBox;
     gbImageMagick: TGroupBox;
     IconDLLeft: TImageList;
-    lblImageMagickSaveAs: TLabel;
+    lbImageConversionHint: TLabel;
+    lbImageMagickSaveAs: TLabel;
     lbDarkmodeHint: TLabel;
     lbDownloadFilterCustomDateFrom: TLabel;
     lbDownloadFilterCustomDateTo: TLabel;
-    lblImageMagickCompression: TLabel;
-    lblImageMagickQuality: TLabel;
+    lbImageMagickCompression: TLabel;
+    lbImageMagickQuality: TLabel;
+    lbImageMagickHint: TLabel;
     lbOptionMaxFavoriteThreads: TLabel;
     lbOptionDefaultUserAgent: TLabel;
     lbOptionMaxUpdateListThreads: TLabel;
@@ -3005,7 +3007,8 @@ procedure TMainForm.ckImageMagickChange(Sender: TObject);
 begin
   if ckImageMagick.Checked then
   begin
-    gbImageConversion.Hint := RS_ImageMagickPreference;
+    gbImageConversion.Hint := RS_ImageMagickPreferenceHint;
+    lbImageConversionHint.Visible := True;
     gbImageConversion.Enabled := False;
     ckPNGSaveAsJPEG.Enabled := False;
     cbWebPSaveAs.Enabled := False;
@@ -3013,8 +3016,9 @@ begin
     seJPEGQuality.Enabled := False;
   end
   else
-  begin
+  begin 
     gbImageConversion.Hint := '';
+    lbImageConversionHint.Visible := False;
     gbImageConversion.Enabled := True;
     ckPNGSaveAsJPEG.Enabled := True;
     cbWebPSaveAs.Enabled := True;
