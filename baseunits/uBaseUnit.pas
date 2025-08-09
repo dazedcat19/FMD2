@@ -551,7 +551,9 @@ function FindStrQuick(const s: String; var AStrings: TStringList): Boolean;
 function GoogleResultURL(const AURL: String): String;
 procedure GoogleResultURLs(const AURLs: TStrings);
 
-// create FQDN file list
+// create FQDN file list       
+function CreateFQDNName(AFileName: String): String;
+function CreateFQDNFolder(Sender: TObject; ACurrentDir, AFileName: String): String;
 function CreateFQDNList(Sender: TObject; AFileName: String; AFileList: TStringList): String;
 
 // convert webp
@@ -567,6 +569,7 @@ function SaveImageStreamToFile(AHTTP: THTTPSend; Path, FileName: String): String
 
 // check file exist with known extensions. AFilename is a filename without extensions
 function ImageFileExists(const AFileName: String): Boolean;
+function ImageFileExtExists(const AFileName, AFileExt: String): Boolean;
 function FindImageFile(const AFileName: String; AFileExt: String = ''): String;
 
 // load iamge from file with UTF8 aware
@@ -2199,13 +2202,50 @@ begin
   end;
 end;
 
-function CreateFQDNList(Sender: TObject; AFileName: String; AFileList: TStringList): String;
+function CreateFQDNName(AFileName: String): String;
 var
-  FQDNListName, UniqueTimestampName: String;
-  i: Integer;
+  UniqueTimestampName: String;
 begin
   UniqueTimestampName := StringReplace(ExtractFileName(AFileName), ExtractFileExt(AFileName), '', [rfReplaceAll])+ '_' + FormatDateTime('yyyy-mm-dd_hh-nn-ss', Now);
-  FQDNListName := StringReplace(('FQDNList_' + UniqueTimestampName + '.txt'), ' ', '_', [rfReplaceAll]);
+  Result := StringReplace(('FQDNList_' + UniqueTimestampName), ' ', '_', [rfReplaceAll]);
+end;
+ 
+function CreateFQDNFolder(Sender: TObject; ACurrentDir, AFileName: String): String;
+var
+  FQDNFolderName: String;
+begin
+  FQDNFolderName := CreateFQDNName(AFileName);
+  Result := FQDNFolderName;
+
+  try
+    ForceDirectories(FQDNFolderName);
+  except
+    on E: EFCreateError do
+    begin
+      // If first attempt fails, try the second path
+      try
+        FQDNFolderName := AppendPathDelim(ACurrentDir) + FQDNFolderName;
+
+        if ForceDirectories(FQDNFolderName) then
+        begin
+          Result := FQDNFolderName;
+        end;
+      except
+        on E2: Exception do
+        begin
+          MainForm.ExceptionHandler(Sender, E2);
+        end;
+      end;
+    end;
+  end;
+end;
+
+function CreateFQDNList(Sender: TObject; AFileName: String; AFileList: TStringList): String;
+var
+  FQDNListName: String;
+  i: Integer;
+begin
+  FQDNListName := CreateFQDNName(AFileName) + '.txt';
   Result := FQDNListName;
 
   with TStringList.Create do
@@ -2225,6 +2265,7 @@ begin
         try
           FQDNListName := AppendPathDelim(ExtractFilePath(AFileName)) + FQDNListName;
           SaveToFile(FQDNListName);
+
           if FileExists(FQDNListName) then
           begin
             Result := FQDNListName;
@@ -2429,6 +2470,11 @@ end;
 function ImageFileExists(const AFileName: String): Boolean;
 begin
   Result := FindImageFile(AFileName) <> '';
+end; 
+
+function ImageFileExtExists(const AFileName, AFileExt: String): Boolean;
+begin
+  Result := FindImageFile(AFileName, AFileExt) <> '';
 end;
 
 function FindImageFile(const AFileName: String; AFileExt: String = ''): String;

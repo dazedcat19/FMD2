@@ -5,7 +5,8 @@ unit ImageMagickManager;
 interface
 
 uses
-  Classes, SysUtils, StdCtrls, Process, Windows, Registry, LazFileUtils, SyncObjs, MultiLog;
+  Classes, SysUtils, synautil, StrUtils, StdCtrls, Process, Windows, Registry,
+  LazFileUtils, SyncObjs, MultiLog;
 
 type
   { TImageMagickManager }
@@ -17,6 +18,7 @@ type
                  
     FPathFound: Boolean;
     FEnabled: Boolean;
+    FMogrify: Boolean;
     FMagickPath: String;
     FSupportedFormats: TStringList;
     FCompressionTypes: TStringList;
@@ -36,6 +38,8 @@ type
     function GetPathFound: Boolean;
     function GetEnabled: Boolean;
     procedure SetEnabled(AEnabled: Boolean);
+    function GetMogrify: Boolean;
+    procedure SetMogrify(AMogrify: Boolean);
     function GetSupportedFormats: TStrings;
     function GetCompressionTypes: TStrings;
     procedure SetComboBoxList(AComboBox: TComboBox; AList: TStringList);
@@ -56,7 +60,8 @@ type
     function ConvertImage(const InputFile, OutputDir: String): Boolean;
 
     property PathFound: Boolean read GetPathFound;
-    property Enabled: Boolean read GetEnabled write SetEnabled;
+    property Enabled: Boolean read GetEnabled write SetEnabled; 
+    property Mogrify: Boolean read GetMogrify write SetMogrify;
     property SupportedFormats: TStrings read GetSupportedFormats;
     property CompressionTypes: TStrings read GetCompressionTypes;
     property SaveAs: String read GetSaveAs write SetSaveAs;
@@ -94,6 +99,7 @@ begin
     FInitialized := True;
     FPathFound := False;
     FEnabled := False;
+    FMogrify := False;
 
     FInstance := TImageMagickManager.CreatePrivate;
   end;
@@ -175,6 +181,16 @@ end;
 procedure TImageMagickManager.SetEnabled(AEnabled: Boolean);
 begin
   FEnabled := AEnabled;
+end;
+
+function TImageMagickManager.GetMogrify: Boolean;
+begin
+  Result := FMogrify;
+end;    
+
+procedure TImageMagickManager.SetMogrify(AMogrify: Boolean);
+begin
+  FMogrify := AMogrify;
 end;
 
 function TImageMagickManager.GetSupportedFormats: TStrings;
@@ -633,21 +649,22 @@ end;
 
 function TImageMagickManager.ConvertImage(const InputFile, OutputDir: String): Boolean;
 var
-  OutputFile: String;
+  OutputFile, QuoteOutputDir: String;
 begin
   FLock.Acquire;
 
   try
-    OutputFile := '"' + OutputDir + '%[filename:name].' + FSaveAs + '"';
+    OutputFile := QuoteStr((OutputDir + '%[filename:name].' + FSaveAs), '"');
+    QuoteOutputDir := QuoteStr(ExcludeTrailingPathDelimiter(OutputDir), '"');
 
     Result := ExecuteMagickCommand([
-      InputFile,
+      IFThen(FMogrify, 'mogrify', InputFile),
       '-quality', GetQualityString,
       '-compress', GetCompression,
       '-format', FSaveAs,
-      '+adjoin',
-      '-set filename:name "%t"',
-      OutputFile
+      IFThen(FMogrify, '-path', '+adjoin'),
+      IFThen(FMogrify, QuoteOutputDir, '-set filename:name "%t"'),
+      IFThen(FMogrify, InputFile, OutputFile)
     ]);
   finally
     FLock.Release;

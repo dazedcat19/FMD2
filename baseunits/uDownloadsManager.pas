@@ -11,7 +11,7 @@ unit uDownloadsManager;
 interface
 
 uses
-  LazFileUtils, Classes, SysUtils, ExtCtrls, typinfo, fgl,
+  LazFileUtils, Classes, SysUtils, ExtCtrls, typinfo, fgl, FileUtil, synautil,
   blcksock, MultiLog, uBaseUnit, uPacker, uMisc, DownloadedChaptersDB, FMDOptions, ImgInfos,
   httpsendthread, DownloadsDB, BaseThread, SQLiteData, dateutils, strutils, ImageMagickManager;
 
@@ -577,14 +577,15 @@ begin
       uPacker.FileName := RemovePathDelim(CorrectPathSys(CorrectPathSys(Container.DownloadInfo.SaveTo) +
         Container.ChapterNames[Container.CurrentDownloadChapterPtr]));
 
+
+      FileExt := '';
+      if (TImageMagickManager.Instance.Enabled) then
+      begin
+        FileExt := LowerCase(TImageMagickManager.Instance.SaveAs);
+      end;
+
       for i := 0 to Container.PageLinks.Count - 1 do
       begin
-        FileExt := '';
-        if (TImageMagickManager.Instance.Enabled) then
-        begin
-          FileExt := LowerCase(TImageMagickManager.Instance.SaveAs);
-        end;
-
         FilePath := FindImageFile(uPacker.Path + GetFileName(i), FileExt);
 
         if FilePath <> '' then
@@ -612,7 +613,8 @@ end;
 function TTaskThread.Convert: Boolean;
 var
   ImageMagick: TImageMagickManager;
-  FilePath, FileExt: String;
+  FilePath, FileExt, TempPath, FileTempPath: String;
+  MogrifyConfig: Boolean;
   FileConvertList: TStringList;
   i: Integer;
 begin
@@ -628,6 +630,13 @@ begin
     Format('[%d/%d] %s', [Container.CurrentDownloadChapterPtr + 1,
     Container.ChapterLinks.Count, RS_Converting]);
 
+  ImageMagick.Mogrify := False;
+  if ImageMagick.SaveAs = 'jxl' then
+  begin
+    ImageMagick.Mogrify := True;
+    TempPath := CreateFQDNFolder(Self, CorrectPathSys(CurrentWorkingDir), TrimAndExpandFilename(CurrentWorkingDir));
+  end;
+
   FileConvertList := TStringList.Create;
   try
     for i := 0 to Container.PageLinks.Count - 1 do
@@ -638,9 +647,15 @@ begin
         Continue;
       end;
 
-      FileExt := ExtractFileExt(FilePath);
+      FileExt := StringReplace(ExtractFileExt(FilePath), '.', '', [rfReplaceAll]);
       if LowerCase(FileExt) <> LowerCase(ImageMagick.SaveAs) then
       begin
+        if ImageMagick.Mogrify then
+        begin
+          FileTempPath := AppendPathDelim(TempPath) + ExtractFileName(FilePath);
+          CopyFile(FilePath, FileTempPath, [cffPreserveTime, cffOverwriteFile]);
+        end;
+
         FileConvertList.Add(FilePath);
       end;
     end;
@@ -650,9 +665,22 @@ begin
       Exit;
     end;
 
-    FilePath := CreateFQDNList(Self, TrimAndExpandFilename(CurrentWorkingDir), FileConvertList);
-    Result := ImageMagick.ConvertImage('@' + FilePath, CurrentWorkingDir);
+    if not ImageMagick.Mogrify then
+    begin
+      FilePath := '@' + QuoteStr(ExpandFileName(CreateFQDNList(Self, TrimAndExpandFilename(CurrentWorkingDir), FileConvertList)), '"');
+    end
+    else
+    begin
+      FilePath := QuoteStr((AppendPathDelim(ExpandFileName(TempPath)) + '*' + ExtractFileExt(FilePath)), '"');
+    end;
+
+    Result := ImageMagick.ConvertImage(FilePath, CurrentWorkingDir);
+
     DeleteFile(FilePath);
+    if DirectoryExists(TempPath) then
+    begin
+      DeleteDirectory(TempPath, False);
+    end;
 
     if not Result then
     begin
@@ -949,41 +977,61 @@ var
     i: Integer;
   begin
     if Container.PageLinks.Count = 0 then
+    begin
       Exit(True);
+    end;
+
     Result := False;
     if Container.PageLinks.Count > 0 then
+    begin
       for i := 0 to Container.PageLinks.Count - 1 do
+      begin
         if (Container.PageLinks[i] = 'W') or
           (Container.PageLinks[i] = '') then
+        begin
           Exit(True);
+        end;
+      end;
+    end;
   end;
 
   function CheckForExists: Integer;
   var
+    FileExists: Boolean;
     i: Integer;
   begin
     Result := 0;
-    if Container.PageLinks.Count > 0 then
-      begin
-        for i := 0 to Container.PageLinks.Count - 1 do
-        begin
-          CurrentWorkingDir := MainForm.CheckLongNamePaths(CurrentWorkingDir);
 
-          if ImageFileExists(CurrentWorkingDir + GetFileName(i)) then
+    if Container.PageLinks.Count > 0 then
+    begin
+      for i := 0 to Container.PageLinks.Count - 1 do
+      begin
+        CurrentWorkingDir := MainForm.CheckLongNamePaths(CurrentWorkingDir);
+
+        FileExists := ImageFileExists(CurrentWorkingDir + GetFileName(i));
+        if not FileExists and TImageMagickManager.Instance.Enabled then
+        begin
+          FileExists := ImageFileExtExists(CurrentWorkingDir + GetFileName(i), TImageMagickManager.Instance.SaveAs);
+        end;
+
+        if FileExists then
+        begin
+          Container.PageLinks[i] := 'D';
+          Inc(Result);
+        end
+        else if Container.PageLinks[i] = 'D' then
+        begin
+          if DynamicPageLink then
           begin
-            Container.PageLinks[i] := 'D';
-            Inc(Result);
+            Container.PageLinks[i] := 'G';
           end
           else
-          if Container.PageLinks[i] = 'D' then
           begin
-            if DynamicPageLink then
-              Container.PageLinks[i] := 'G'
-            else
-              Container.PageLinks[i] := 'W';
+            Container.PageLinks[i] := 'W';
           end;
         end;
       end;
+    end;
   end;
 
   function CheckForFinish: Boolean;
@@ -992,25 +1040,35 @@ var
     s: String;
   begin
     Result := False;
+
     if Container.PageLinks.Count = 0 then
+    begin
       Exit;
+    end;
 
     c := Container.PageLinks.Count - CheckForExists;
 
     Result := c = 0;
-    if Result = False then
+    if not Result then
     begin
-      s:=LineEnding;
-      for i:=0 to Container.PageLinks.Count-1 do
-        if Container.PageLinks[i]<>'D' then
-          s+='['+GetFileName(i)+'] '+Container.PageLinks[i]+LineEnding;
+      s := LineEnding;
+      for i := 0 to Container.PageLinks.Count - 1 do
+      begin
+        if Container.PageLinks[i] <> 'D' then
+        begin
+          s += '[' + GetFileName(i) + '] ' + Container.PageLinks[i] + LineEnding;
+        end;
+      end;
+
       Logger.SendWarning(Format('%s.CheckForFinish failed %d of %d [%s] "%s" > "%s"',
         [Self.ClassName,
         c,
         Container.PageLinks.Count,
         Container.DownloadInfo.Website,
         Container.DownloadInfo.Title,
-        Container.ChapterLinks[Container.CurrentDownloadChapterPtr]])+s);
+        Container.ChapterLinks[Container.CurrentDownloadChapterPtr]
+        ]) + s
+      );
     end;
   end;
 

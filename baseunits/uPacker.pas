@@ -137,7 +137,7 @@ begin
       end;
     end;
 
-    fFileName := CreateFQDNList(Self, FSavedFileName, FFileList);
+    fFileName := '@' + CreateFQDNList(Self, FSavedFileName, FFileList);
 
     p.Executable := CURRENT_ZIP_EXE;
     with p.Parameters do begin
@@ -153,7 +153,7 @@ begin
       Add('-sse');
       Add('-sdel');
       Add(FSavedFileName);
-      Add('@' + fFileName);
+      Add(fFileName);
     end;
 
     sout := '';
