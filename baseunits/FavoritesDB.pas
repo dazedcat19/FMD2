@@ -98,8 +98,6 @@ end;
 procedure TFavoritesDB.Replace(const OldId, Aid: String; const AOrder: Integer; const AEnabled: Boolean;
   const AModuleID, ALink, ATitle, AStatus, ACurrentChapter, ADownloadedChapterList,
   ASaveTo: String; const ADateAdded: TDateTime);
-var
-  SQL: String;
 begin
   if OldId <> Aid then
   begin

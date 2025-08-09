@@ -558,6 +558,20 @@ msgctxt "frmtransferfavorites.rs_valid"
 msgid "Valid"
 msgstr ""
 
+#: imagemagickmanager.rs_imagemagicknotfoundhint
+msgctxt "imagemagickmanager.rs_imagemagicknotfoundhint"
+msgid ""
+"Failed to detect an install of ImageMagick!\n"
+"Please install ImageMagick from www.imagemagick.org if you haven''t already."
+msgstr ""
+
+#: imagemagickmanager.rs_imagemagickpreferencehint
+msgctxt "imagemagickmanager.rs_imagemagickpreferencehint"
+msgid ""
+"ImageMagick has been enabled!\n"
+"The following settings have been disabled because ImageMagick has taken preference."
+msgstr ""
+
 #: selfupdater.rs_buttoncancel
 msgctxt "selfupdater.rs_buttoncancel"
 msgid "Abort"
@@ -914,6 +928,14 @@ msgstr ""
 
 #: tmainform.cbfilterstatus.text
 msgid "<none>"
+msgstr ""
+
+#: tmainform.cbimagemagickcompression.text
+msgid "None"
+msgstr ""
+
+#: tmainform.cbimagemagicksaveas.text
+msgid "JPEG"
 msgstr ""
 
 #: tmainform.cbonlynew.caption
@@ -1402,6 +1424,10 @@ msgstr ""
 msgid "This work usually involves intimate relationships between women."
 msgstr ""
 
+#: tmainform.ckimagemagick.caption
+msgid "Enable ImageMagick Conversion"
+msgstr ""
+
 #: tmainform.ckoptionsalwaysstarttaskfromfailedchapters.caption
 msgid "Always start task from failed chapters"
 msgstr ""
@@ -1523,6 +1549,10 @@ msgstr ""
 msgid "Image Conversion"
 msgstr ""
 
+#: tmainform.gbimagemagick.caption
+msgid "Image Magick"
+msgstr ""
+
 #: tmainform.gboptionexternal.caption
 msgid "External program"
 msgstr ""
@@ -1629,6 +1659,31 @@ msgstr ""
 #: tmainform.lbfiltertitle.caption
 msgctxt "tmainform.lbfiltertitle.caption"
 msgid "Title"
+msgstr ""
+
+#: tmainform.lbimageconversionhint.caption
+msgctxt "tmainform.lbimageconversionhint.caption"
+msgid "[?]"
+msgstr ""
+
+#: tmainform.lbimagemagickcompression.caption
+msgctxt "tmainform.lbimagemagickcompression.caption"
+msgid "Image Compression type"
+msgstr ""
+
+#: tmainform.lbimagemagickhint.caption
+msgctxt "tmainform.lbimagemagickhint.caption"
+msgid "[?]"
+msgstr ""
+
+#: tmainform.lbimagemagickquality.caption
+msgctxt "tmainform.lbimagemagickquality.caption"
+msgid "Image quality"
+msgstr ""
+
+#: tmainform.lbimagemagicksaveas.caption
+msgctxt "tmainform.lbimagemagicksaveas.caption"
+msgid "Save Image as"
 msgstr ""
 
 #: tmainform.lbjpegquality.caption
@@ -2535,6 +2590,10 @@ msgstr ""
 
 #: udownloadsmanager.rs_compressing
 msgid "Compressing..."
+msgstr ""
+
+#: udownloadsmanager.rs_converting
+msgid "Converting..."
 msgstr ""
 
 #: udownloadsmanager.rs_disabled

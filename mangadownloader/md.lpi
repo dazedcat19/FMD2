@@ -353,7 +353,7 @@
         <PackageName Value="metadarkstyledsgn"/>
       </Item15>
     </RequiredPackages>
-    <Units Count="28">
+    <Units Count="29">
       <Unit0>
         <Filename Value="md.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -518,6 +518,11 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="frmCustomMessageDlg"/>
       </Unit27>
+      <Unit28>
+        <Filename Value="..\baseunits\imagemagickmanager.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ImageMagickManager"/>
+      </Unit28>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
