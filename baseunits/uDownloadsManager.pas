@@ -659,21 +659,19 @@ begin
       end;
     end;
 
-    if FileConvertList.Count = 0 then
+    if FileConvertList.Count > 0 then
     begin
-      Exit;
-    end;
+      if not ImageMagick.Mogrify then
+      begin
+        FilePath := ExpandFileName(CreateFQDNList(Self, TrimAndExpandFilename(CurrentWorkingDir), FileConvertList));
+      end
+      else
+      begin
+        FilePath := AppendPathDelim(ExpandFileName(TempPath)) + '*' + ExtractFileExt(FilePath);
+      end;
 
-    if not ImageMagick.Mogrify then
-    begin
-      FilePath := ExpandFileName(CreateFQDNList(Self, TrimAndExpandFilename(CurrentWorkingDir), FileConvertList));
-    end
-    else
-    begin
-      FilePath := AppendPathDelim(ExpandFileName(TempPath)) + '*' + ExtractFileExt(FilePath);
+      Result := ImageMagick.ConvertImage(FilePath, CurrentWorkingDir);
     end;
-
-    Result := ImageMagick.ConvertImage(FilePath, CurrentWorkingDir);
 
     if FileExists(FilePath) then
     begin
@@ -682,6 +680,11 @@ begin
     else if DirectoryExists(TempPath) then
     begin
       DeleteDirectory(TempPath, False);
+    end;
+
+    if FileConvertList.Count = 0 then
+    begin
+      Exit;
     end;
 
     if not Result then
