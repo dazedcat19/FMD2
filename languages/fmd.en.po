@@ -618,7 +618,7 @@ msgstr "Valid"
 msgctxt "imagemagickmanager.rs_imagemagicknotfoundhint"
 msgid ""
 "Failed to detect an install of ImageMagick!\n"
-"Please install ImageMagick from www.imagemagick.org if you haven''t already."
+"Please install ImageMagick from www.imagemagick.org if you haven't already."
 msgstr ""
 
 #: imagemagickmanager.rs_imagemagickpreferencehint

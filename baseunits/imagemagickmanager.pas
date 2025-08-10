@@ -57,7 +57,7 @@ type
     class procedure Finalize;
 
     function IsFormatSupported(const Format: String): Boolean;
-    function ConvertImage(const InputFile, OutputDir: String): Boolean;
+    function ConvertImage(InputFile, OutputDir: String): Boolean;
 
     property PathFound: Boolean read GetPathFound;
     property Enabled: Boolean read GetEnabled write SetEnabled; 
@@ -72,7 +72,7 @@ type
 
 resourcestring
   RS_ImageMagickPreferenceHint = 'ImageMagick has been enabled!'#13#10'The following settings have been disabled because ImageMagick has taken preference.';
-  RS_ImageMagickNotFoundHint = 'Failed to detect an install of ImageMagick!'#13#10'Please install ImageMagick from www.imagemagick.org if you haven''''t already.';
+  RS_ImageMagickNotFoundHint = 'Failed to detect an install of ImageMagick!'#13#10'Please install ImageMagick from www.imagemagick.org if you haven''t already.';
 
 implementation
 
@@ -648,15 +648,24 @@ begin
   end;
 end;
 
-function TImageMagickManager.ConvertImage(const InputFile, OutputDir: String): Boolean;
+function TImageMagickManager.ConvertImage(InputFile, OutputDir: String): Boolean;
 var
-  OutputFile, QuoteOutputDir: String;
+  InputFileExt, OutputFile: String;
 begin
   FLock.Acquire;
 
   try
+    InputFileExt := StringReplace(ExtractFileExt(InputFile), '.', '', [rfReplaceAll]);
+    InputFile := QuoteStr(InputFile, '"');
+
+    if LowerCase(InputFileExt) = 'txt' then
+    begin
+      // tell magick its a list of files with '@'
+      InputFile := '@' + InputFile;
+    end;
+
     OutputFile := QuoteStr((OutputDir + '%[filename:name].' + FSaveAs), '"');
-    QuoteOutputDir := QuoteStr(ExcludeTrailingPathDelimiter(OutputDir), '"');
+    OutputDir := QuoteStr(ExcludeTrailingPathDelimiter(OutputDir), '"');
 
     Result := ExecuteMagickCommand([
       IFThen(FMogrify, 'mogrify', InputFile),
@@ -664,7 +673,7 @@ begin
       '-compress', GetCompression,
       '-format', FSaveAs,
       IFThen(FMogrify, '-path', '+adjoin'),
-      IFThen(FMogrify, QuoteOutputDir, '-set filename:name "%t"'),
+      IFThen(FMogrify, OutputDir, '-set filename:name "%t"'),
       IFThen(FMogrify, InputFile, OutputFile)
     ]);
   finally

@@ -434,6 +434,7 @@ procedure FilterVST(Tree: TVirtualStringTree; Key: String; Column: Integer = 0);
 
 // Remove Unicode
 function ReplaceUnicodeChar(const S, ReplaceStr: String): String;
+
 // Check a directory to see if it's empty (return TRUE) or not
 function IsDirectoryEmpty(const ADir: String): Boolean;
 function CorrectFilePath(const APath: String): String;

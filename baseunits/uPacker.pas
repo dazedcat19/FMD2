@@ -137,7 +137,7 @@ begin
       end;
     end;
 
-    fFileName := '@' + CreateFQDNList(Self, FSavedFileName, FFileList);
+    fFileName := CreateFQDNList(Self, FSavedFileName, FFileList);
 
     p.Executable := CURRENT_ZIP_EXE;
     with p.Parameters do begin
@@ -153,7 +153,7 @@ begin
       Add('-sse');
       Add('-sdel');
       Add(FSavedFileName);
-      Add(fFileName);
+      Add('@' + fFileName);
     end;
 
     sout := '';
@@ -161,7 +161,11 @@ begin
     p.ShowWindow := swoHIDE;
     p.RunCommandLoop(sout, serr, exit_status);
     Result := exit_status = 0;
-    DeleteFile(fFileName);
+
+    if FileExists(fFileName) then
+    begin
+      DeleteFile(fFileName);
+    end;
 
     if not Result then
     begin
@@ -290,11 +294,6 @@ begin
       end;
   end;
 
-  if FFileList.Count = 0 then
-  begin
-    Exit;
-  end;
-
   FFileList.CustomSort(NaturalCustomSort);
   case Format of
     pfZIP: FExt := '.zip';
@@ -310,6 +309,16 @@ begin
   else
   begin
     FSavedFileName := TrimAndExpandFilename(Path) + FExt;
+  end;
+
+  if FFileList.Count = 0 then
+  begin
+    if FileExists(FSavedFileName) then
+    begin
+      Exit(True);
+    end;
+
+    Exit;
   end;
 
   if FileExists(FSavedFileName) then

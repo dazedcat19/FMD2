@@ -614,7 +614,6 @@ function TTaskThread.Convert: Boolean;
 var
   ImageMagick: TImageMagickManager;
   FilePath, FileExt, TempPath, FileTempPath: String;
-  MogrifyConfig: Boolean;
   FileConvertList: TStringList;
   i: Integer;
 begin
@@ -667,17 +666,20 @@ begin
 
     if not ImageMagick.Mogrify then
     begin
-      FilePath := '@' + QuoteStr(ExpandFileName(CreateFQDNList(Self, TrimAndExpandFilename(CurrentWorkingDir), FileConvertList)), '"');
+      FilePath := ExpandFileName(CreateFQDNList(Self, TrimAndExpandFilename(CurrentWorkingDir), FileConvertList));
     end
     else
     begin
-      FilePath := QuoteStr((AppendPathDelim(ExpandFileName(TempPath)) + '*' + ExtractFileExt(FilePath)), '"');
+      FilePath := AppendPathDelim(ExpandFileName(TempPath)) + '*' + ExtractFileExt(FilePath);
     end;
 
     Result := ImageMagick.ConvertImage(FilePath, CurrentWorkingDir);
 
-    DeleteFile(FilePath);
-    if DirectoryExists(TempPath) then
+    if FileExists(FilePath) then
+    begin
+      DeleteFile(FilePath);
+    end
+    else if DirectoryExists(TempPath) then
     begin
       DeleteDirectory(TempPath, False);
     end;
@@ -998,20 +1000,44 @@ var
   function CheckForExists: Integer;
   var
     FileExists: Boolean;
+    FileExt, CurrentWorkingFile: String;
     i: Integer;
   begin
     Result := 0;
+    FileExt := '';
 
     if Container.PageLinks.Count > 0 then
     begin
       for i := 0 to Container.PageLinks.Count - 1 do
       begin
         CurrentWorkingDir := MainForm.CheckLongNamePaths(CurrentWorkingDir);
+        CurrentWorkingFile := CurrentWorkingDir + GetFileName(i);
 
-        FileExists := ImageFileExists(CurrentWorkingDir + GetFileName(i));
-        if not FileExists and TImageMagickManager.Instance.Enabled then
+        FileExists := ImageFileExists(CurrentWorkingFile);
+        if not FileExists then
         begin
-          FileExists := ImageFileExtExists(CurrentWorkingDir + GetFileName(i), TImageMagickManager.Instance.SaveAs);
+          if TImageMagickManager.Instance.Enabled then
+          begin
+            FileExists := ImageFileExtExists(CurrentWorkingFile, TImageMagickManager.Instance.SaveAs);
+          end;
+
+          if not FileExists then
+          begin
+            case Container.Manager.CompressType of
+              1: FileExt := 'zip';
+              2: FileExt := 'cbz';
+              3: FileExt := 'pdf';
+              4: FileExt := 'epub';
+            end;
+
+            CurrentWorkingFile := CurrentWorkingDir;
+            if not OptionGenerateChapterFolder then
+            begin
+              CurrentWorkingFile := CorrectPathSys(CurrentWorkingFile + Container.ChapterNames[Container.CurrentDownloadChapterPtr]);
+            end;
+
+            FileExists := ImageFileExtExists(RemovePathDelim(CurrentWorkingFile), FileExt);
+          end;
         end;
 
         if FileExists then
@@ -1307,6 +1333,11 @@ begin
           Container.CurrentDownloadChapterPtr := Container.ChapterLinks.Count;
         end;
       end;
+
+      if IsDirectoryEmpty(CurrentWorkingDir) then
+      begin
+        RemoveDir(CurrentWorkingDir);
+      end;
     end;
 
     if FailedChaptersExist then
@@ -1322,10 +1353,11 @@ begin
     end
     else
     begin
-      Container.DownloadInfo.Status := Format('[%d/%d] %s',[Container.ChapterLinks.Count,Container.ChapterLinks.Count,RS_Finish]);
+      Container.DownloadInfo.Status := Format('[%d/%d] %s',[Container.ChapterLinks.Count, Container.ChapterLinks.Count, RS_Finish]);
       Container.DownloadInfo.Progress := '';
       Container.Status := STATUS_FINISH;
     end;
+
     ShowBalloonHint;
   except
     on E: Exception do
