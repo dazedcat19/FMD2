@@ -35,8 +35,8 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-API_URL = '/apo/'
-DirectoryPagination = '/search?sortby=field_create&page='
+local API_URL = '/apo/'
+local DirectoryPagination = '/search?sortby=field_create&page='
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -55,12 +55,11 @@ end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local v, x = nil
 	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
+	local x = CreateTXQuery(HTTP.Document)
 	for v in x.XPath('//h3[@class="font-bold space-x-1"]/a').Get() do
 		LINKS.Add(v.GetAttribute('href'))
 		NAMES.Add(x.XPathString('span', v))
@@ -71,38 +70,38 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local v, x = nil
-	local crypto = require 'fmd.crypto'
 	local u = MODULE.RootURL .. API_URL
-	local s = '{"query":"{ get_comicNode( id: ' .. URL:match('(%d+)') .. ' ) { data { name altNames urlCoverOri authors artists genres uploadStatus summary } } }"}' 
+	local s = '{"query":"{ get_comicNode( id: ' .. URL:match('(%d+)') .. ' ) { data { name altNames urlCoverOri authors artists genres originalStatus uploadStatus summary } } }"}' 
 	HTTP.MimeType = 'application/json'
 
 	if not HTTP.POST(u, s) then return net_problem end
 
-	x = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString()))
-	json = x.XPath('json(*).data.get_comicNode.data')
+	local x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
+	local json = x.XPath('json(*).data.get_comicNode.data')
 	MANGAINFO.Title     = x.XPathString('name', json)
 	MANGAINFO.AltTitles = x.XPathString('string-join(altNames?*, ", ")', json)
-	MANGAINFO.CoverLink = x.XPathString('urlCoverOri', json)
+	MANGAINFO.CoverLink = MaybeFillHost(MODULE.RootURL, x.XPathString('urlCoverOri', json))
 	MANGAINFO.Authors   = x.XPathString('string-join(authors?*, ", ")', json)
 	MANGAINFO.Artists   = x.XPathString('string-join(artists?*, ", ")', json)
-	MANGAINFO.Genres    = x.XPathString('string-join(genres?*, ", ")', json):gsub("_", " ")
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('uploadStatus', json))
+	MANGAINFO.Genres    = x.XPathString('string-join(genres?*, ", ")', json):gsub("_", " "):gsub("(%l)(%w*)", function(first, rest) return first:upper() .. rest end)
 	MANGAINFO.Summary   = x.XPathString('summary', json)
 
+	local status = x.XPathString('uploadStatus', json)
+	if status == 'null' then status = x.XPathString('originalStatus', json) end
+	MANGAINFO.Status = MangaInfoStatusIfPos(status)
+
 	HTTP.Reset()
-	s = '{"query":"{ get_comicChapterList( comicId: ' .. URL:match('(%d+)') .. ' ) { data { id dname title } } }"}'
+	local s = '{"query":"{ get_comicChapterList( comicId: ' .. URL:match('(%d+)') .. ' ) { data { id dname title } } }"}'
 	HTTP.MimeType = 'application/json'
 
 	if not HTTP.POST(u, s) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
-	for v in x.XPath('json(*).data.get_comicChapterList()').Get() do
-		chapter = x.XPathString('data/dname', v)
-		title = x.XPathString('data/title', v)
+	for v in CreateTXQuery(HTTP.Document).XPath('json(*).data.get_comicChapterList().data').Get() do
+		local chapter = v.GetProperty('dname').ToString()
+		local title = v.GetProperty('title').ToString()
 		title = title ~= 'null' and title ~= '' and string.format(' - %s', title) or ''
 
-		MANGAINFO.ChapterLinks.Add(x.XPathString('data/id', v))
+		MANGAINFO.ChapterLinks.Add(v.GetProperty('id').ToString())
 		MANGAINFO.ChapterNames.Add(chapter .. title)
 	end
 
