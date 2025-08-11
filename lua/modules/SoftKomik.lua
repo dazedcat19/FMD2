@@ -57,7 +57,7 @@ function GetInfo()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	local x = CreateTXQuery(HTTP.Document)
+	local x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
 	MANGAINFO.Title     = x.XPathString('json(*).title')
 	MANGAINFO.AltTitles = x.XPathString('json(*).title_alt')
 	MANGAINFO.CoverLink = 'https://softkomik.com/_next/image?url=https://cover.softkomik.com/softkomik-cover/' .. x.XPathString('json(*).gambar') .. '&w=256&q=100'
