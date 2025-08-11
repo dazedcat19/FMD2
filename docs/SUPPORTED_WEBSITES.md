@@ -274,7 +274,6 @@
 | MangaKiss | [![https://mangakiss.org](https://img.shields.io/website?url=https://mangakiss.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangakiss.org)](https://mangakiss.org) | - | - | - |
 | MangaKita | [![https://mangakita.id](https://img.shields.io/website?url=https://mangakita.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangakita.id)](https://mangakita.id) | - | - | - |
 | MangaKomi | [![https://mangakomi.io](https://img.shields.io/website?url=https://mangakomi.io%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangakomi.io)](https://mangakomi.io) | - | - | - |
-| MangaKu | [![http://mangaku.in](https://img.shields.io/website?url=http://mangaku.in%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://mangaku.in)](http://mangaku.in) | - | - | - |
 | Mangakyo | [![https://mangakyo.vip](https://img.shields.io/website?url=https://mangakyo.vip%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangakyo.vip)](https://mangakyo.vip) | - | - | - |
 | MangaLib | [![https://mangalib.me](https://img.shields.io/website?url=https://mangalib.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangalib.me)](https://mangalib.me) | OK | 01.08.2025 | Authorization code is required to view locked chapters. See [here](https://github.com/dazedcat19/FMD2/issues/1834#issuecomment-2590512862) |
 | MangaLivre | [![https://mangalivre.tv](https://img.shields.io/website?url=https://mangalivre.tv%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangalivre.tv)](https://mangalivre.tv) | OK | 01.04.2025 | - |
@@ -710,6 +709,7 @@
 | ~MangaKid~ | ~https://mangakid.site~ | Removed | 20.07.2025 | - |
 | ~MangaKik~ | ~https://mangakik.biz~ | Removed | 03.08.2025 | - |
 | ~MangaKing~ | ~https://mangaking.net~ | Removed | 03.08.2025 | - |
+| ~MangaKu~ | ~http://mangaku.in~ | Removed | 11.08.2025 | - |
 | ~MangaLife~ | ~https://manga4life.com~ | Removed | 07.02.2025 | Moved to Weeb Central |
 | ~MangaLord~ | ~https://www.mangalord.com~ | Removed | 03.08.2025 | - |
 | ~MangaMonarca~ | ~https://mangamonarca.xyzca.xyz~ | Removed | 02.04.2025 | - |
