@@ -266,7 +266,6 @@
 | MangaHost | [![https://mangahost4.com](https://img.shields.io/website?url=https://mangahost4.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangahost4.com)](https://mangahost4.com) | - | - | - |
 | MangaHubIo | [![https://mangahub.io](https://img.shields.io/website?url=https://mangahub.io%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangahub.io)](https://mangahub.io) | - | - | - |
 | MangaHubRU | [![https://mangahub.ru](https://img.shields.io/website?url=https://mangahub.ru%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangahub.ru)](https://mangahub.ru) | - | - | - |
-| MangaInn | [![https://www.mangainn.net](https://img.shields.io/website?url=https://www.mangainn.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangainn.net)](https://www.mangainn.net) | - | - | - |
 | MangaKakalot | [![https://www.mangakakalot.gg](https://img.shields.io/website?url=https://www.mangakakalot.gg%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangakakalot.gg)](https://www.mangakakalot.gg) | OK | 24.02.2025 | - |
 | MangaKakalotFun | [![https://mangakakalot.fun](https://img.shields.io/website?url=https://mangakakalot.fun%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangakakalot.fun)](https://mangakakalot.fun) | - | - | - |
 | MangaKakalots | [![https://mangakakalots.com](https://img.shields.io/website?url=https://mangakakalots.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangakakalots.com)](https://mangakakalots.com) | - | - | - |
@@ -706,6 +705,7 @@
 | ~MangaGreat~ | ~https://mangagreat.com~ | Removed | 03.08.2025 | - |
 | ~MangaichiScan~ | ~http://mangaichiscans.mokkori.fr~ | Removed | 06.08.2025 | - |
 | ~MangaIndo~ | ~https://mangaindo.web.id~ | Removed | 20.07.2025 | - |
+| ~MangaInn~ | ~https://www.mangainn.net~ | Removed | 11.08.2025 | - |
 | ~MangaKane~ | ~https://mangakane.com~ | Removed | 20.07.2025 | - |
 | ~MangaKid~ | ~https://mangakid.site~ | Removed | 20.07.2025 | - |
 | ~MangaKik~ | ~https://mangakik.biz~ | Removed | 03.08.2025 | - |
