@@ -5,7 +5,7 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '45fe9b73641b4597a659b308061ee663'
-	m.Name                     = 'Mangalek'
+	m.Name                     = 'مانجا ليك (Lekmanga)'
 	m.RootURL                  = 'https://lekmanga.org'
 	m.Category                 = 'Arabic'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
@@ -18,10 +18,6 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.Madara'
--- XPathTokenAuthors = 'Author(s)'
--- XPathTokenArtists = 'Artist(s)'
--- XPathTokenGenres  = 'Genre(s)'
--- XPathTokenStatus  = 'Status'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -43,11 +39,7 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	local u = MaybeFillHost(MODULE.RootURL, URL)
+	Template.GetPageNumber()
 
-	if not HTTP.GET(u) then return net_problem end
-
-	CreateTXQuery(HTTP.Document).XPathStringAll('//div[contains(@class, "page-break")]/img/@src', TASK.PageLinks)
-
-	return no_error
+	return true
 end

@@ -276,7 +276,6 @@
 | MangaKomi | [![https://mangakomi.io](https://img.shields.io/website?url=https://mangakomi.io%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangakomi.io)](https://mangakomi.io) | - | - | - |
 | MangaKu | [![http://mangaku.in](https://img.shields.io/website?url=http://mangaku.in%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://mangaku.in)](http://mangaku.in) | - | - | - |
 | Mangakyo | [![https://mangakyo.vip](https://img.shields.io/website?url=https://mangakyo.vip%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangakyo.vip)](https://mangakyo.vip) | - | - | - |
-| Mangalek | [![https://lekmanga.org](https://img.shields.io/website?url=https://lekmanga.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lekmanga.org)](https://lekmanga.org) | - | - | - |
 | MangaLib | [![https://mangalib.me](https://img.shields.io/website?url=https://mangalib.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangalib.me)](https://mangalib.me) | OK | 01.08.2025 | Authorization code is required to view locked chapters. See [here](https://github.com/dazedcat19/FMD2/issues/1834#issuecomment-2590512862) |
 | MangaLivre | [![https://mangalivre.tv](https://img.shields.io/website?url=https://mangalivre.tv%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangalivre.tv)](https://mangalivre.tv) | OK | 01.04.2025 | - |
 | MangaMammy | [![https://mangamammy.ru](https://img.shields.io/website?url=https://mangamammy.ru%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangamammy.ru)](https://mangamammy.ru) | OK | 04.04.2025 | - |
@@ -620,6 +619,7 @@
 | ZinManga | [![https://zinmanga.net](https://img.shields.io/website?url=https://zinmanga.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://zinmanga.net)](https://zinmanga.net) | - | - | - |
 | Đọc Truyện 5s | [![https://dongmoe.com](https://img.shields.io/website?url=https://dongmoe.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://dongmoe.com)](https://dongmoe.com) | OK | 20.01.2025 | - |
 | شبكة كونان العربية (detectiveconanar) | [![https://manga.detectiveconanar.com](https://img.shields.io/website?url=https://manga.detectiveconanar.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga.detectiveconanar.com)](https://manga.detectiveconanar.com) | OK | 03.04.2025 | - |
+| مانجا ليك (Lekmanga) | [![https://lekmanga.org](https://img.shields.io/website?url=https://lekmanga.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lekmanga.org)](https://lekmanga.org) | OK | 11.08.2025 | Sometimes cloudflare workaround is required |
 | 古风漫画网 | [![https://www.gufengmh.com](https://img.shields.io/website?url=https://www.gufengmh.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.gufengmh.com)](https://www.gufengmh.com) | OK | 06.01.2025 | - |
 | 漫画RAW (mangajp) | [![https://mangajp.top](https://img.shields.io/website?url=https://mangajp.top%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangajp.top)](https://mangajp.top) | OK | 03.04.2025 | - |
 | ~365Manga~ | ~https://365manga.com~ | Removed | 03.08.2025 | - |
