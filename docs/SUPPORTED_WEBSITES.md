@@ -575,6 +575,7 @@
 | Tsumino | [![https://www.tsumino.com](https://img.shields.io/website?url=https://www.tsumino.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.tsumino.com)](https://www.tsumino.com) | - | - | - |
 | Tsundoku Traduções | [![https://tsundoku.com.br](https://img.shields.io/website?url=https://tsundoku.com.br%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://tsundoku.com.br)](https://tsundoku.com.br) | OK | 14.07.2025 | - |
 | TukangKomik | [![https://tukangkomik.co](https://img.shields.io/website?url=https://tukangkomik.co%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://tukangkomik.co)](https://tukangkomik.co) | OK | 02.04.2025 | - |
+| TuMangaNet | [![https://tumanga.net](https://img.shields.io/website?url=https://tumanga.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://tumanga.net)](https://tumanga.net) | OK | 13.08.2025 | - |
 | TuMangaOnline | [![https://zonatmo.com](https://img.shields.io/website?url=https://zonatmo.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://zonatmo.com)](https://zonatmo.com) | OK | 26.03.2025 | Sometimes cloudflare workaround is required |
 | Turkcraft | [![http://turkcraft.com](https://img.shields.io/website?url=http://turkcraft.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://turkcraft.com)](http://turkcraft.com) | - | - | - |
 | TvYManga | [![https://tvymanga.com](https://img.shields.io/website?url=https://tvymanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://tvymanga.com)](https://tvymanga.com) | - | - | - |
