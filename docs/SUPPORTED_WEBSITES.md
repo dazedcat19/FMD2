@@ -254,7 +254,7 @@
 | MangaFull | [![https://mangafull.org](https://img.shields.io/website?url=https://mangafull.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangafull.org)](https://mangafull.org) | - | - | - |
 | MangaGeko | [![https://www.mgeko.cc](https://img.shields.io/website?url=https://www.mgeko.cc%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mgeko.cc)](https://www.mgeko.cc) | - | - | - |
 | MangaGG | [![https://mangagg.com](https://img.shields.io/website?url=https://mangagg.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangagg.com)](https://mangagg.com) | OK | 29.03.2025 | - |
-| MangaGo | [![http://www.mangago.me](https://img.shields.io/website?url=http://www.mangago.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.mangago.me)](http://www.mangago.me) | - | - | - |
+| MangaGo | [![https://www.mangago.me](https://img.shields.io/website?url=https://www.mangago.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangago.me)](https://www.mangago.me) | OK | 16.08.2025 | - |
 | MangaGun | [![https://mangagun.net](https://img.shields.io/website?url=https://mangagun.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangagun.net)](https://mangagun.net) | OK | 16.03.2025 | - |
 | MangaHasu | [![https://mangahasu.se](https://img.shields.io/website?url=https://mangahasu.se%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangahasu.se)](https://mangahasu.se) | - | - | - |
 | MangaHentai | [![https://mangahentai.me](https://img.shields.io/website?url=https://mangahentai.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangahentai.me)](https://mangahentai.me) | OK | 25.07.2025 | - |
@@ -500,7 +500,6 @@
 | Rezo Scans | [![https://rezoscan.org](https://img.shields.io/website?url=https://rezoscan.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://rezoscan.org)](https://rezoscan.org) | OK | 02.07.2025 | Paid chapters are hidden by default |
 | Ritharscans | [![https://ritharscans.com](https://img.shields.io/website?url=https://ritharscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://ritharscans.com)](https://ritharscans.com) | OK | 16.03.2025 | Manga list is broken |
 | RizzFables | [![https://rizzfables.com](https://img.shields.io/website?url=https://rizzfables.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://rizzfables.com)](https://rizzfables.com) | OK | 19.02.2025 | - |
-| Rocaca | [![http://www.rocaca.com](https://img.shields.io/website?url=http://www.rocaca.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.rocaca.com)](http://www.rocaca.com) | - | - | - |
 | RoliaScan | [![https://roliascan.com](https://img.shields.io/website?url=https://roliascan.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://roliascan.com)](https://roliascan.com) | OK | 13.12.2024 | - |
 | RuMIX | [![https://rumix.me](https://img.shields.io/website?url=https://rumix.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://rumix.me)](https://rumix.me) | OK | 13.07.2025 | - |
 | S2Manga | [![https://s2manga.com](https://img.shields.io/website?url=https://s2manga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://s2manga.com)](https://s2manga.com) | OK | 25.07.2025 | - |
@@ -774,6 +773,7 @@
 | ~ReadM~ | ~https://readm.org~ | Removed | 03.04.2025 | - |
 | ~ReadRawManga~ | ~https://www.readrawmanga.com~ | Removed | 03.08.2025 | - |
 | ~Riceballicious~ | ~http://riceballicious.info~ | Removed | 06.08.2025 | - |
+| ~Rocaca~ | ~http://www.rocaca.com~ | Removed | 16.08.2025 | Redirected to MangaGo |
 | ~RoseliaScanlations~ | ~http://reader.roseliascans.com~ | Removed | 06.08.2025 | - |
 | ~S2Scans~ | ~https://reader.s2smanga.com~ | Removed | 06.08.2025 | - |
 | ~SDLGFansub~ | ~https://www.sdlg-fansub.tk~ | Removed | 03.08.2025 | - |
