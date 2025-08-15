@@ -34,12 +34,11 @@ end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local v, x = nil
 	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
+	local x = CreateTXQuery(HTTP.Document)
 	x.ParseHTML(x.XPathString('//script[contains(., "var mangaData")]/substring-before(substring-after(., "mangaData = "), "];")') .. ']')
 	for v in x.XPath('json(*)()').Get() do
 		LINKS.Add('manga-' .. v.GetProperty('slug').ToString() .. '.html')
@@ -51,17 +50,25 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	Template.GetInfo()
-
-	local v, x = nil
-
-	local u = MODULE.RootURL .. '/app/manga/controllers/cont.Listchapterapi.php?slug=' .. URL:match('-(.-).html')
-	HTTP.Reset()
-	HTTP.Headers.Values['Referer'] = MANGAINFO.URL
+	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
+	local x = CreateTXQuery(HTTP.Document)
+	MANGAINFO.Title     = x.XPathString('//div[@class="mb-8"]/h1')
+	MANGAINFO.AltTitles = x.XPathString('//div[@class="sm:col-span-2"]/text()')
+	MANGAINFO.CoverLink = x.XPathString('//div[contains(@class, "sm:max-w-full")]/img/@src')
+	MANGAINFO.Authors   = x.XPathStringAll('//div[./span="Author(s):"]/a')
+	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="mb-8"]/div[contains(@class, "gap-2 mb-4")]//a')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//span[@class="text-green-400"]/a'), 'On going', 'Completed')
+	MANGAINFO.Summary   = x.XPathString('//div[./h2="Synopsis"]/p')
+
+	HTTP.Reset()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+
+	if not HTTP.GET(MODULE.RootURL .. '/app/manga/controllers/cont.Listchapterapi.php?slug=' .. URL:match('-(.-).html')) then return net_problem end
+
+	local x = CreateTXQuery(HTTP.Document)
 	for v in x.XPath('//a').Get() do
 		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'):gsub('.html', ''))
 		MANGAINFO.ChapterNames.Add(x.XPathString('li/div[1]/span[1]', v))
@@ -72,18 +79,16 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	local id = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL) .. '.html'
 
 	if not HTTP.GET(u) then return net_problem end
 
-	id = CreateTXQuery(HTTP.Document).XPathString('(//input[@id="chapter"])[1]/@value')
+	local cid = CreateTXQuery(HTTP.Document).XPathString('(//input[@id="chapter"])[1]/@value')
 
 	HTTP.Reset()
 	HTTP.Headers.Values['Referer'] = MODULE.RootURL
-	u = MODULE.RootURL .. '/app/manga/controllers/cont.imgsList.php?cid=' .. id
 
-	if not HTTP.GET(u) then return net_problem end
+	if not HTTP.GET(MODULE.RootURL .. '/app/manga/controllers/cont.imgsList.php?cid=' .. cid) then return net_problem end
 
 	CreateTXQuery(HTTP.Document).XPathStringAll('//img/@data-srcset', TASK.PageLinks)
 
