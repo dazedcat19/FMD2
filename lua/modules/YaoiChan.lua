@@ -4,16 +4,15 @@
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                       = 'adb5ad9b022e4b5c82586d10404c253e'
-	m.Name                     = 'MangaChan'
-	m.RootURL                  = 'https://im.manga-chan.me'
+	m.ID                       = 'bbc4794f4ffe4468a28b21a7e009366e'
+	m.Name                     = 'YaoiChan'
+	m.RootURL                  = 'https://v12.yaoi-chan.me'
 	m.Category                 = 'Russian'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
 	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
-	m.SortedList               = true
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -21,7 +20,7 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.MultiChan'
-DirectoryPagination = '/manga/new'
+DirectoryPagination = '/catalog'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions

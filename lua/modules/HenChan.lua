@@ -4,9 +4,9 @@
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                       = 'adb5ad9b022e4b5c82586d10404c253e'
-	m.Name                     = 'MangaChan'
-	m.RootURL                  = 'https://im.manga-chan.me'
+	m.ID                       = '82f401398ab94d04b03c0221e9fe2aa3'
+	m.Name                     = 'HenChan'
+	m.RootURL                  = 'https://x4.h-chan.me'
 	m.Category                 = 'Russian'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
@@ -21,7 +21,7 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.MultiChan'
-DirectoryPagination = '/manga/new'
+DirectoryPagination = '/manga/newest'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
