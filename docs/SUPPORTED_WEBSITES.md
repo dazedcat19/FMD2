@@ -79,7 +79,7 @@
 | DisasterScans | [![https://disasterscans.com](https://img.shields.io/website?url=https://disasterscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://disasterscans.com)](https://disasterscans.com) | - | - | - |
 | DM5 | [![http://www.dm5.com](https://img.shields.io/website?url=http://www.dm5.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.dm5.com)](http://www.dm5.com) | - | - | - |
 | Doujindesu | [![https://doujindesu.tv](https://img.shields.io/website?url=https://doujindesu.tv%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://doujindesu.tv)](https://doujindesu.tv) | - | - | - |
-| DoujinHentaiNet | [![https://doujinhentai.net](https://img.shields.io/website?url=https://doujinhentai.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://doujinhentai.net)](https://doujinhentai.net) | - | - | - |
+| DoujinHentai | [![https://doujinhentai.net](https://img.shields.io/website?url=https://doujinhentai.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://doujinhentai.net)](https://doujinhentai.net) | OK | 20.08.2025 | - |
 | Doujinku | [![https://doujinku.xyz](https://img.shields.io/website?url=https://doujinku.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://doujinku.xyz)](https://doujinku.xyz) | - | - | - |
 | DoujinsCom | [![https://doujins.com](https://img.shields.io/website?url=https://doujins.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://doujins.com)](https://doujins.com) | - | - | - |
 | Dragon Tea | [![https://dragontea.ink](https://img.shields.io/website?url=https://dragontea.ink%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://dragontea.ink)](https://dragontea.ink) | OK | 23.07.2025 | - |
