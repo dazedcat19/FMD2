@@ -188,12 +188,18 @@ msgstr "İndirmeyi durdur"
 
 #: frmluamodulesupdater.rs_githubconnectfail
 msgid ""
-"Failed to connect to GitHub API for latest module updates.\n"
-"Please try again later."
+"Failed to connect to GitHub API.\n"
+"Please check your internet connection or try again later."
 msgstr ""
 
 #: frmluamodulesupdater.rs_githubconnecting
 msgid "Connecting to GitHub..."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubratelimited
+msgid ""
+"Failed to connect to GitHub API for latest module updates.\n"
+"Change the network or try again after 15 minutes"
 msgstr ""
 
 #: frmluamodulesupdater.rs_githubratestats

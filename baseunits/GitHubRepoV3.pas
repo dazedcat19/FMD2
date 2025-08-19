@@ -47,6 +47,7 @@ type
     function GetLastCommitMessage(const FRepoPath: String): String;
     function GetTree: Boolean;
     function GetUpdate: Boolean;
+    function CheckConnection: Boolean;
     function CheckRateLimited: Boolean;
     function GetDownloadURL(const AName: String): String;
   end;
@@ -301,6 +302,18 @@ begin
   end;
 
   FDirty := Result;
+end;
+
+
+function TGitHubRepo.CheckConnection: Boolean;
+begin
+  Result := False; 
+  HTTP.ResetBasic;
+
+  if HTTP.GET(api_url) then
+  begin
+    Result := True;
+  end;
 end;
 
 function TGitHubRepo.CheckRateLimited: Boolean;
