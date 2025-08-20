@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'f3098381220841f8b13928e682de4d7e'
 	m.Name                     = 'LectorMiau'
-	m.RootURL                  = 'https://lectormiau.com'
+	m.RootURL                  = 'https://leemiau.com'
 	m.Category                 = 'Spanish'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -18,9 +18,7 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.MangaThemesia'
--- DirectoryPagination = '/manga/list-mode/'
--- XPathTokenAuthors   = 'Author'
--- XPathTokenArtists   = 'Artist'
+XPathTokenStatus = 'Estado'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -44,5 +42,5 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
 end
