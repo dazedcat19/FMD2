@@ -544,6 +544,7 @@
 | StoneScape | [![https://stonescape.xyz](https://img.shields.io/website?url=https://stonescape.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://stonescape.xyz)](https://stonescape.xyz) | - | - | - |
 | SumManga | [![https://summanga.com](https://img.shields.io/website?url=https://summanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://summanga.com)](https://summanga.com) | OK | 01.06.2025 | - |
 | SundayWebEvery | [![https://www.sunday-webry.com](https://img.shields.io/website?url=https://www.sunday-webry.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.sunday-webry.com)](https://www.sunday-webry.com) | - | - | - |
+| SushiScan | [![https://sushiscan.net](https://img.shields.io/website?url=https://sushiscan.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://sushiscan.net)](https://sushiscan.net) | OK | 21.08.2025 | - |
 | Taadd | [![https://www.taadd.com](https://img.shields.io/website?url=https://www.taadd.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.taadd.com)](https://www.taadd.com) | OK | 09.02.2025 | - |
 | Tapas | [![https://tapas.io](https://img.shields.io/website?url=https://tapas.io%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://tapas.io)](https://tapas.io) | - | - | - |
 | TCB Scans | [![https://tcbonepiecechapters.com](https://img.shields.io/website?url=https://tcbonepiecechapters.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://tcbonepiecechapters.com)](https://tcbonepiecechapters.com) | OK | 24.04.2025 | - |
