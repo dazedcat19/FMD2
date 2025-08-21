@@ -72,7 +72,7 @@ function _M.GetInfo()
 	MANGAINFO.Authors   = x.XPathStringAll('//div[@class="author-content"]/a')
 	MANGAINFO.Artists   = x.XPathStringAll('//div[@class="artist-content"]/a')
 	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="genres-content"]/a')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@class="summary-heading" and contains(., "' .. XPathTokenStatus .. '")]/following-sibling::div'), 'Berjalan|Ongoing|مستمرة|Em Andamento|En curso', 'Tamat|Completed|مكتملة|Concluído|Terminado', 'Hiatus|On Hold|متوقفة|Em espera|En espera', 'Diberhentikan|Canceled|مُلغَاة|Cancelado')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@class="summary-heading" and contains(., "' .. XPathTokenStatus .. '")]/following-sibling::div'), 'Berjalan|Ongoing|Releasing|مستمرة|Em Andamento|En curso', 'Tamat|Completed|مكتملة|Concluído|Terminado', 'Hiatus|On Hold|متوقفة|Em espera|En espera', 'Diberhentikan|Canceled|مُلغَاة|Cancelado')
 	MANGAINFO.Summary   = x.XPathString('string-join((//div[contains(@class, "summary__content") or @class="manga-summary"])[1]|//div[@class="manga-excerpt"]|//div[@class="post-content_item" and contains(h5, "Summary") or contains(h5, "Sinopsis")]//p, "\r\n")')
 
 	if MANGAINFO.CoverLink == '' then MANGAINFO.CoverLink = x.XPathString('//div[@class="summary_image"]//img/@src') end
@@ -80,8 +80,9 @@ function _M.GetInfo()
 	if MANGAINFO.Artists == '' then MANGAINFO.Artists = x.XPathString('//div[@class="summary-heading" and contains(., "' .. XPathTokenArtists .. '")]/following-sibling::div|//div[@class="manga-artists"]/a') end
 	if MANGAINFO.Genres == '' then MANGAINFO.Genres = x.XPathStringAll('//div[@class="summary-heading" and contains(., "' .. XPathTokenGenres .. '")]/following-sibling::div/a') end
 
-	local id = x.XPathString('//div[contains(@id, "manga-chapters-holder")]/@data-id')
 	x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+
+	local id = x.XPathString('//div[contains(@id, "manga-chapters-holder")]/@data-id')
 	if MANGAINFO.ChapterLinks.Count == 0 then
 		HTTP.Reset()
 		HTTP.Headers.Values['Content-Length'] = 0
