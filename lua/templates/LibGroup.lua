@@ -8,9 +8,8 @@ local _M = {}
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-API_URL = 'https://api.cdnlibs.org/api'
-DirectoryPagination = '/manga?site_id[]=%s&sort_by=created_at&page='
-SITE_ID = ''
+local API_URL = 'https://api.cdnlibs.org/api'
+local DirectoryPagination = '/manga?site_id[]=%s&sort_by=created_at&page='
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -41,6 +40,7 @@ function _M.GetInfo()
 	local s = '?fields[]=tags&fields[]=authors&fields[]=artists&fields[]=genres&fields[]=status_id&fields[]=summary'
 	local slug = '/' .. URL:match('/manga/(.-)$'):gsub('(.*)?.*', '%1')
 	local u = API_URL .. '/manga' .. slug
+	HTTP.Headers.Values['Site-Id'] = SITE_ID
 	HTTP.Headers.Values['Authorization'] = MODULE.GetOption('auth')
 
 	if not HTTP.GET(u .. s) then return net_problem end
@@ -71,6 +71,7 @@ function _M.GetInfo()
 
 	local optgroup = MODULE.GetOption('showscangroup')
 	HTTP.Reset()
+	HTTP.Headers.Values['Site-Id'] = SITE_ID
 	HTTP.Headers.Values['Authorization'] = MODULE.GetOption('auth')
 	if HTTP.GET(u .. '/chapters') then
 		local x = CreateTXQuery(HTTP.Document)
@@ -127,6 +128,7 @@ function _M.GetPageNumber()
 	local server = CreateTXQuery(HTTP.Document).XPathString('json(*).data.imageServers()[id="' .. svr[sel_svr] .. '" and site_ids="' .. SITE_ID .. '"].url') .. '/'
 
 	HTTP.Reset()
+	HTTP.Headers.Values['Site-Id'] = SITE_ID
 	HTTP.Headers.Values['Authorization'] = MODULE.GetOption('auth')
 
 	if not HTTP.GET(u) then return false end
