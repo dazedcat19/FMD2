@@ -62,7 +62,7 @@ function _M.GetInfo()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	local s = HTTP.Document.ToString():gsub('\\"', '"'):gsub('\\\\"', '')
+	local s = HTTP.Document.ToString():gsub('\\"', '"'):gsub('\\\\"', ''):gsub('\\\\', '\\')
 	local x = CreateTXQuery(s)
 	x.ParseHTML('{"series"' .. x.XPathString('//script[contains(., "totalChapterCount")]/substring-before(substring-after(., "{""series"""), "],[")'))
 	MANGAINFO.Title     = x.XPathString('json(*).series.postTitle')
