@@ -37,7 +37,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.HeanCms'
+local Template = require 'templates.HeanCMS'
 API_URL = 'https://api.luacomic.org'
 CDN_URL = 'https://media.luacomic.org/file/V4IKlhs'
 
@@ -54,21 +54,21 @@ end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	Template.GetNameAndLink()
+	Template.GetNameAndLinkOld()
 
 	return no_error
 end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	Template.GetInfo()
+	Template.GetInfoOld()
 
 	return no_error
 end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	Template.GetPageNumber()
+	Template.GetPageNumberOld()
 
-	return no_error
+	return true
 end

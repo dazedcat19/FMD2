@@ -19,7 +19,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.HeanCms'
+local Template = require 'templates.HeanCMS'
 API_URL = 'https://api.omegascans.org'
 
 ----------------------------------------------------------------------------------------------------
@@ -35,27 +35,26 @@ end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	Template.GetNameAndLink()
+	Template.GetNameAndLinkOld()
 
 	return no_error
 end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	Template.GetInfo()
+	Template.GetInfoOld()
 
 	return no_error
 end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	local i, image = nil
 	local u = API_URL .. URL
 
 	if not HTTP.GET(u) then return false end
 
-	for i in CreateTXQuery(HTTP.Document).XPath('json(*).chapter.chapter_data.images()').Get() do
-		image = i.ToString()
+	for v in CreateTXQuery(HTTP.Document).XPath('json(*).chapter.chapter_data.images()').Get() do
+		image = v.ToString()
 		if not image:match('^https?://') then
 			image = API_URL .. '/' .. image
 		end

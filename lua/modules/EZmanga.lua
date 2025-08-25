@@ -8,7 +8,6 @@ function Init()
 	m.Name                     = 'EZ Manga'
 	m.RootURL                  = 'https://ezmanga.org'
 	m.Category                 = 'English-Scanlation'
-	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
@@ -37,20 +36,13 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.HeanCms'
-API_URL = 'https://api.ezmanga.org'
+local Template = require 'templates.HeanCMS'
+API_URL = 'https://vapi.ezmanga.org'
 CDN_URL = 'https://media.ezmanga.org/file/13VSBnk1m'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
-
--- Get the page count of the manga list of the current website.
-function GetDirectoryPageNumber()
-	Template.GetDirectoryPageNumber()
-
-	return no_error
-end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
