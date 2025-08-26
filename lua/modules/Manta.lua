@@ -58,7 +58,13 @@ function GetInfo()
 
 	for v in x.XPath('json(*).data.episodes()[lockData/state="100" or lockData/state="110" or lockData/state="130" or lockData/state="140"]').Get() do
 		MANGAINFO.ChapterLinks.Add(v.GetProperty('id').ToString())
-		MANGAINFO.ChapterNames.Add(x.XPathString('data/title', v))
+
+		local episodeTitle = x.XPathString('data/title', v)
+		if episodeTitle == '' then
+			episodeTitle = 'Episode ' .. x.XPathString('ord', v)
+		end
+
+		MANGAINFO.ChapterNames.Add(episodeTitle)
 	end
 
 	return no_error
