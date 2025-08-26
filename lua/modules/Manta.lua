@@ -43,6 +43,7 @@ end
 -- Get info and chapter list for the current manga.
 function GetInfo()
 	local u = MODULE.RootURL .. API_URL .. '/series/' .. URL:match('seriesId=(%d+)$')
+	HTTP.Reset()
 	HTTP.Headers.Values['Authorization'] = MODULE.GetOption('auth')
 
 	if not HTTP.GET(u) then return net_problem end
@@ -57,13 +58,12 @@ function GetInfo()
 	MANGAINFO.Summary   = x.XPathString('json(*).data.data.description.short') .. '\r\n' .. x.XPathString('json(*).data.data.description.long')
 
 	for v in x.XPath('json(*).data.episodes()[lockData/state="100" or lockData/state="110" or lockData/state="130" or lockData/state="140"]').Get() do
-		MANGAINFO.ChapterLinks.Add(v.GetProperty('id').ToString())
-
 		local episodeTitle = x.XPathString('data/title', v)
 		if episodeTitle == '' then
 			episodeTitle = 'Episode ' .. x.XPathString('ord', v)
 		end
 
+		MANGAINFO.ChapterLinks.Add(v.GetProperty('id').ToString())
 		MANGAINFO.ChapterNames.Add(episodeTitle)
 	end
 
@@ -73,6 +73,7 @@ end
 -- Get the page count for the current chapter.
 function GetPageNumber()
 	local u = MODULE.RootURL .. API_URL .. '/episodes' .. URL
+	HTTP.Reset()
 	HTTP.Headers.Values['Authorization'] = MODULE.GetOption('auth')
 
 	if not HTTP.GET(u) then return false end
