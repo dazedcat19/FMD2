@@ -56,7 +56,7 @@ function GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('json(*).data.data.isCompleted') == 'true' and 'Completed' or 'Ongoing')
 	MANGAINFO.Summary   = x.XPathString('json(*).data.data.description.short') .. '\r\n' .. x.XPathString('json(*).data.data.description.long')
 
-	for v in x.XPath('json(*).data.episodes()[lockData/state="110" or lockData/state="130"]').Get() do
+	for v in x.XPath('json(*).data.episodes()[lockData/state="100" or lockData/state="110" or lockData/state="130" or lockData/state="140"]').Get() do
 		MANGAINFO.ChapterLinks.Add(v.GetProperty('id').ToString())
 		MANGAINFO.ChapterNames.Add(x.XPathString('data/title', v))
 	end
