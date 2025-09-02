@@ -139,6 +139,7 @@ end
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
 	local u = API_URL .. '/v1.0/search?limit=300' .. DirectoryPages[MODULE.CurrentDirectoryIndex + 1] .. '&page=' .. (URL + 1) .. '&sort=user_follow_count'
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -270,6 +271,7 @@ end
 -- Get the page count for the current chapter.
 function GetPageNumber()
 	local u = API_URL .. '/chapter' .. URL .. '?tachiyomi=true'
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
 
 	if not HTTP.GET(u) then return false end
 
