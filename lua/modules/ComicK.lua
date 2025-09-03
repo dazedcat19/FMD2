@@ -271,6 +271,7 @@ end
 -- Get the page count for the current chapter.
 function GetPageNumber()
 	local u = API_URL .. '/chapter' .. URL .. '?tachiyomi=true'
+	HTTP.Reset()
 	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
 
 	if not HTTP.GET(u) then return false end
