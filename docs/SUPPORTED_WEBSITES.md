@@ -587,7 +587,7 @@
 | UnionMangas | [![https://unionmangasbr.org](https://img.shields.io/website?url=https://unionmangasbr.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://unionmangasbr.org)](https://unionmangasbr.org) | - | - | - |
 | UpKomik | [![https://upkomik.com](https://img.shields.io/website?url=https://upkomik.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://upkomik.com)](https://upkomik.com) | OK | 05.04.2025 | - |
 | UsagiOne | [![https://web.usagi.one](https://img.shields.io/website?url=https://web.usagi.one%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://web.usagi.one)](https://web.usagi.one) | OK | 29.12.2024 | - |
-| Utoon | [![https://utoon.net](https://img.shields.io/website?url=https://utoon.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://utoon.net)](https://utoon.net) | - | - | - |
+| Utoon | [![https://utoon.net](https://img.shields.io/website?url=https://utoon.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://utoon.net)](https://utoon.net) | OK | 07.09.2025 | - |
 | VerComicsPorno | [![https://vercomicsporno.com](https://img.shields.io/website?url=https://vercomicsporno.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://vercomicsporno.com)](https://vercomicsporno.com) | - | - | - |
 | VerMangasPorno | [![https://vermangasporno.com](https://img.shields.io/website?url=https://vermangasporno.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://vermangasporno.com)](https://vermangasporno.com) | - | - | - |
 | VnSharing | [![http://truyen.vnsharing.site](https://img.shields.io/website?url=http://truyen.vnsharing.site%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://truyen.vnsharing.site)](http://truyen.vnsharing.site) | - | - | - |
