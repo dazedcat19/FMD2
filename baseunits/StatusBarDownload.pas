@@ -128,7 +128,7 @@ begin
   StatusBarResize(FStatusBar);
 
   FTimerRepaint := TTimer.Create(FStatusBar);
-  FTimerRepaint.Interval := 500;
+  FTimerRepaint.Interval := 100;
   FTimerRepaint.OnTimer := @TimerRepaintTimer;
   FTimerRepaint.Enabled := True;
   FNeedRepaint := True;

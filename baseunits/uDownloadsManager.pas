@@ -667,7 +667,7 @@ begin
       end
       else
       begin
-        FilePath := AppendPathDelim(ExpandFileName(TempPath)) + '*' + ExtractFileExt(FilePath);
+        FilePath := AppendPathDelim(ExpandFileName(TempPath)) + '*';
       end;
 
       Result := ImageMagick.ConvertImage(FilePath, CurrentWorkingDir);
