@@ -36,9 +36,9 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.HeanCMS'
+local Template = require 'templates.Iken'
 API_URL = 'https://vapi.ezmanga.org'
-CDN_URL = 'https://media.ezmanga.org/file/13VSBnk1m'
+New = true
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
