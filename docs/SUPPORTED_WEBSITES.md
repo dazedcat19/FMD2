@@ -34,7 +34,6 @@
 | Assorted Scans | [![https://assortedscans.com](https://img.shields.io/website?url=https://assortedscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://assortedscans.com)](https://assortedscans.com) | OK | 05.08.2025 | - |
 | Asura Scans Free | [![https://asurascansfree.com](https://img.shields.io/website?url=https://asurascansfree.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://asurascansfree.com)](https://asurascansfree.com) | OK | 14.01.2025 | - |
 | Asura Scans | [![https://asuracomic.net](https://img.shields.io/website?url=https://asuracomic.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://asuracomic.net)](https://asuracomic.net) | OK | 14.12.2024 | Chapters behind website paywall are omited |
-| Aurora Scans | [![https://aurorascans.com](https://img.shields.io/website?url=https://aurorascans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://aurorascans.com)](https://aurorascans.com) | OK | 29.06.2025 | Paid chapters are hidden by default |
 | AzComix | [![https://azcomix.me](https://img.shields.io/website?url=https://azcomix.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://azcomix.me)](https://azcomix.me) | - | - | - |
 | Azora Manga | [![https://azoramoon.com](https://img.shields.io/website?url=https://azoramoon.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://azoramoon.com)](https://azoramoon.com) | - | - | - |
 | BacaKomik | [![https://bacakomik.net](https://img.shields.io/website?url=https://bacakomik.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://bacakomik.net)](https://bacakomik.net) | - | - | - |
@@ -431,7 +430,6 @@
 | NiAddRU | [![https://ru.niadd.com](https://img.shields.io/website?url=https://ru.niadd.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://ru.niadd.com)](https://ru.niadd.com) | OK | 14.02.2025 | - |
 | NicoManga | [![https://nicomanga.com](https://img.shields.io/website?url=https://nicomanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://nicomanga.com)](https://nicomanga.com) | OK | 08.15.2025 | - |
 | NightComic | [![https://nightcomic.com](https://img.shields.io/website?url=https://nightcomic.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://nightcomic.com)](https://nightcomic.com) | - | - | - |
-| NightScans | [![https://nightscans.net](https://img.shields.io/website?url=https://nightscans.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://nightscans.net)](https://nightscans.net) | - | - | - |
 | Niji Translations | [![https://niji-translations.com](https://img.shields.io/website?url=https://niji-translations.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://niji-translations.com)](https://niji-translations.com) | OK | 25.07.2025 | - |
 | NineManga | [![https://www.ninemanga.com](https://img.shields.io/website?url=https://www.ninemanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.ninemanga.com)](https://www.ninemanga.com) | OK | 09.02.2025 | - |
 | NineMangaBR | [![https://br.ninemanga.com](https://img.shields.io/website?url=https://br.ninemanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://br.ninemanga.com)](https://br.ninemanga.com) | OK | 09.02.2025 | - |
@@ -473,7 +471,6 @@
 | Puzzmos | [![https://puzzmos.com](https://img.shields.io/website?url=https://puzzmos.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://puzzmos.com)](https://puzzmos.com) | - | - | - |
 | Pzykosis666HFansub | [![https://lector.pzykosis666hfansub.com](https://img.shields.io/website?url=https://lector.pzykosis666hfansub.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lector.pzykosis666hfansub.com)](https://lector.pzykosis666hfansub.com) | OK | 06.08.2025 | - |
 | Qi Scans | [![https://qiscans.org](https://img.shields.io/website?url=https://qiscans.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://qiscans.org)](https://qiscans.org) | OK | 16.09.2025 | Sometimes cloudflare workaround is required and paid chapters are hidden by default |
-| Quantum Toon | [![https://quantumtoon.com](https://img.shields.io/website?url=https://quantumtoon.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://quantumtoon.com)](https://quantumtoon.com) | OK | 25.08.2025 | Paid chapters are hidden by default |
 | Ragnarok Scanlation | [![https://ragnarokscanlation.org](https://img.shields.io/website?url=https://ragnarokscanlation.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://ragnarokscanlation.org)](https://ragnarokscanlation.org) | OK | 30.03.2025 | - |
 | Raiki Scan | [![https://raikiscan.com](https://img.shields.io/website?url=https://raikiscan.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://raikiscan.com)](https://raikiscan.com) | OK | 03.04.2025 | - |
 | Raven Scans | [![https://ravenscans.com](https://img.shields.io/website?url=https://ravenscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://ravenscans.com)](https://ravenscans.com) | OK | 14.01.2025 | - |
@@ -638,6 +635,7 @@
 | ~AstralLibrary~ | ~https://astrallibrary.net~ | Removed | 03.08.2025 | - |
 | ~AstraScans~ | ~https://astrascans.com~ | Removed | 03.08.2025 | - |
 | ~ATMSubs~ | ~https://atm-subs.fr~ | Removed | 03.08.2025 | - |
+| ~Aurora Scans~ | ~https://aurorascans.com~ | Removed | 16.09.2025 | Merged to Qi Scans |
 | ~AzureManga~ | ~https://azuremanga.com~ | Removed | 20.07.2025 | - |
 | ~BakaguyaScan~ | ~https://bakaguya-scan.tk~ | Removed | 03.08.2025 | - |
 | ~BDSFansub~ | ~https://bdsfansub.com~ | Removed | 03.08.2025 | - |
@@ -760,6 +758,7 @@
 | ~NeoxScanlator~ | ~https://neoxscans.net~ | Removed | 03.08.2025 | - |
 | ~Ney5~ | ~https://ney5.xyz~ | Removed | 07.02.2025 | - |
 | ~Nightow~ | ~http://nightow.net~ | Removed | 06.08.2025 | - |
+| ~NightScans~ | ~https://nightscans.net~ | Removed | 16.09.2025 | Merged to Qi Scans |
 | ~NinjaScans~ | ~https://ninjascans.com~ | Removed | 03.08.2025 | - |
 | ~NovelFrance~ | ~http://novel-france.fr~ | Removed | 03.08.2025 | - |
 | ~OneTimeScans~ | ~https://reader.otscans.com~ | Removed | 06.08.2025 | - |
@@ -774,6 +773,7 @@
 | ~PocketAngelScan~ | ~https://pocketangelscans.com~ | Removed | 03.08.2025 | - |
 | ~PowerManga~ | ~http://read.powermanga.org~ | Removed | 06.08.2025 | - |
 | ~Punuprojects~ | ~https://punuprojects.com~ | Removed | 25.08.2025 | - |
+| ~Quantum Toon~ | ~https://quantumtoon.com~ | Removed | 16.09.2025 | Merged to Qi Scans |
 | ~RaiderScans~ | ~https://raiderscans.com~ | Removed | 03.08.2025 | - |
 | ~RavensScans~ | ~http://ravens-scans.com~ | Removed | 06.08.2025 | - |
 | ~ReadManhua~ | ~https://readmanhua.net~ | Removed | 03.08.2025 | - |
