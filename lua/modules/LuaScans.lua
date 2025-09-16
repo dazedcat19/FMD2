@@ -54,21 +54,21 @@ end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	Template.GetNameAndLinkOld()
+	Template.GetNameAndLink()
 
 	return no_error
 end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	Template.GetInfoOld()
+	Template.GetInfo()
 
 	return no_error
 end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	Template.GetPageNumberOld()
+	Template.GetPageNumber()
 
 	return true
 end
