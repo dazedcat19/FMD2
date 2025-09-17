@@ -60,7 +60,6 @@
 | Com-X | [![https://comx.life](https://img.shields.io/website?url=https://comx.life%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comx.life)](https://comx.life) | OK | 18.07.2025 | - |
 | Comic-days | [![https://comic-days.com](https://img.shields.io/website?url=https://comic-days.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comic-days.com)](https://comic-days.com) | - | - | - |
 | ComicExtra | [![https://www.comicextra.me](https://img.shields.io/website?url=https://www.comicextra.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.comicextra.me)](https://www.comicextra.me) | - | - | - |
-| ComicK | [![https://comick.io](https://img.shields.io/website?url=https://comick.io%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comick.io)](https://comick.io) | OK | 02.09.2025 | Manga list is incomplete due to website API limitation |
 | ComickTop | [![https://comick.top](https://img.shields.io/website?url=https://comick.top%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comick.top)](https://comick.top) | - | - | - |
 | Comico | [![http://www.comico.jp](https://img.shields.io/website?url=http://www.comico.jp%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.comico.jp)](http://www.comico.jp) | - | - | - |
 | ComicoCoID | [![http://www.comico.co.id](https://img.shields.io/website?url=http://www.comico.co.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.comico.co.id)](http://www.comico.co.id) | - | - | - |
@@ -646,6 +645,7 @@
 | ~ComicDom~ | ~https://comicdom.org~ | Removed | 03.08.2025 | - |
 | ~ComicFx~ | ~https://comicfx.net~ | Removed | 01.04.2025 | - |
 | ~ComicKiba~ | ~https://comickiba.com~ | Removed | 03.08.2025 | Manhuagold |
+| ~ComicK~ | ~https://comick.io~ | Removed | 17.09.2025 | - |
 | ~ComicOnline~ | ~https://comiconline.org~ | Removed | 03.08.2025 | - |
 | ~DarkskyProjects~ | ~https://darkskyprojects.org~ | Removed | 03.08.2025 | - |
 | ~DokiFansubs~ | ~https://kobato.hologfx.com~ | Removed | 06.08.2025 | - |
