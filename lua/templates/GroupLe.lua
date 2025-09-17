@@ -21,19 +21,18 @@ SITE_ID             = ''
 
 -- Sign in to the current website.
 function _M.Login()
-	local s, x = nil
 	local crypto = require 'fmd.crypto'
-	local login_url = LoginUrl .. '/login/authenticate?ttt=' .. os.time() .. '&siteId=' .. SITE_ID
+	local u = LoginUrl .. '/login/authenticate?ttt=' .. os.time() .. '&siteId=' .. SITE_ID
 
 	if MODULE.Account.Enabled == false then return false end
 
-	s = 'targetUri=%2Flogin%2FcontinueSso%3FsiteId%3D' .. SITE_ID .. '%26targetUri%3D%252F' ..
+	local s = 'targetUri=%2Flogin%2FcontinueSso%3FsiteId%3D' .. SITE_ID .. '%26targetUri%3D%252F' ..
 	'&username='  .. crypto.EncodeURLElement(MODULE.Account.Username) ..
 	'&password=' .. crypto.EncodeURLElement(MODULE.Account.Password) ..
 	'&remember_me=true&_remember_me_yes=&remember_me_yes=on'
 	MODULE.Account.Status = asChecking
 
-	if HTTP.POST(login_url, s) then
+	if HTTP.POST(u, s) then
 		if (HTTP.ResultCode == 200) and (HTTP.Cookies.Values['remember_me'] ~= '') then
 			MODULE.Account.Status = asValid
 			return true
@@ -50,6 +49,7 @@ end
 -- Get the page count of the manga list of the current website.
 function _M.GetDirectoryPageNumber()
 	local u = MODULE.RootURL .. DirectoryPagination
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -61,6 +61,7 @@ end
 -- Get links and names from the manga list of the current website.
 function _M.GetNameAndLink()
 	local u = MODULE.RootURL .. DirectoryPagination .. DirectoryParameters .. (DirectoryOffset * URL)
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -71,12 +72,12 @@ end
 
 -- Get info and chapter list for the current manga.
 function _M.GetInfo()
-	local x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
 
 	if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
+	local x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Title     = x.XPathString('//h1[@class="names"]/span[@class="name"]')
 	MANGAINFO.AltTitles = x.XPathStringAll('//h1[@class="names"]//span[@class="eng-name"]|//h1[@class="names"]//span[@class="original-name"]')
 	MANGAINFO.CoverLink = x.XPathString('//div[@class="picture-fotorama"]/img[1]/@src')
@@ -97,22 +98,33 @@ end
 
 -- Get the page count for the current chapter.
 function _M.GetPageNumber()
-	local domain, json, user_hash, path = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if MODULE.Account.Status == 2 or HTTP.Cookies.Values['remember_me'] ~= '' then
 		if not HTTP.GET(u) then return false end
-		user_hash = HTTP.Document.ToString():match("window%.user_hash = '(.-)';")
+		local user_hash = HTTP.Document.ToString():match("window%.user_hash = '(.-)';")
 		u = u .. '?mtr=true&d=' .. user_hash
 	else
 		u = u .. '?mtr=true'
 	end
 
+	HTTP.Reset()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+
 	if not HTTP.GET(u) then return false end
 
-	json = CreateTXQuery(HTTP.Document).XPathString('//script[contains(., "rm_h.readerInit")]'):match('rm_h%.readerInit%(%[(%[.-%])%]')
-	for domain, path in json:gmatch("%['([^']+)','[^']*',\"([^\"]+)\"") do
-		TASK.PageLinks.Add(domain .. (KeepParameters and path or path:gsub('%?.*$', '')))
+	local json = CreateTXQuery(HTTP.Document).XPathString('//script[contains(., "rm_h.readerInit")]')
+	local image = json:match('rm_h%.readerInit%(%s*(%b[])%s*,')
+
+	if not image then
+		image = json:match('rm_h%.readerInit%([^,]+,%s*(%b[])%s*,')
+	end
+
+	if image then
+		for domain, path in image:gmatch("%['([^']+)','[^']*',\"([^\"]+)\"") do
+			local image_url = domain .. (KeepParameters and path or path:gsub('%?.*$', ''))
+			TASK.PageLinks.Add(image_url)
+		end
 	end
 
 	return true
