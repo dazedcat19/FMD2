@@ -6,7 +6,7 @@ function Init()
 	local function AddWebsiteModule(id, url, cat)
 		local m = NewWebsiteModule()
 		m.ID                       = id
-		m.Name                     = 'Batoto'
+		m.Name                     = 'Bato.To'
 		m.RootURL                  = url
 		m.Category                 = cat
 		m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
@@ -23,6 +23,8 @@ function Init()
 	AddWebsiteModule('4040307fbc04489587bb71ffcefb3ccf', 'https://mto.to')
 	AddWebsiteModule('02e8d0899c8b48c8bfdde57e5e3b8f38', 'https://batotwo.com')
 	AddWebsiteModule('24bdc3fed5e343e89b4ee4448d9389be', 'https://readtoto.org')
+	AddWebsiteModule('c2f6082e637841b8b1031786994d4d5b', 'https://xbato.com')
+	AddWebsiteModule('ad4c8809dba94062bad8ee75d8de4e1c', 'https://zbato.org')
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -67,7 +69,7 @@ function GetNameAndLink()
 
 	local x = CreateTXQuery(HTTP.Document)
 	for v in x.XPath('//div[@id="series-list"]/div/div').Get() do
-		LINKS.Add(x.XPathString('a/@href', v):gsub('(/series/%d+).*', '%1'))
+		LINKS.Add('series/' .. x.XPathString('a/@href', v):match('/(%d+)[/%-]'))
 		NAMES.Add(x.XPathString('a', v) .. GetLanguageCodeSuffix(x.XPathString('em/@data-lang', v)))
 	end
 
@@ -76,7 +78,7 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local u = MaybeFillHost(MODULE.RootURL, URL):gsub('(/series/%d+).*', '%1')
+	local u = MODULE.RootURL .. '/series/' .. URL:match('/(%d+)[/%-]')
 
 	if not HTTP.GET(u) then return net_problem end
 
