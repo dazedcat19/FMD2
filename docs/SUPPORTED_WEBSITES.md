@@ -524,6 +524,7 @@
 | ShonenJumpPlus | [![https://shonenjumpplus.com](https://img.shields.io/website?url=https://shonenjumpplus.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://shonenjumpplus.com)](https://shonenjumpplus.com) | - | - | - |
 | Shqqaa | [![https://www.shqqaa.com](https://img.shields.io/website?url=https://www.shqqaa.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.shqqaa.com)](https://www.shqqaa.com) | - | - | - |
 | SiberOwl | [![http://siberowl.com](https://img.shields.io/website?url=http://siberowl.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://siberowl.com)](http://siberowl.com) | - | - | - |
+| Siren Scans | [![https://sirenscans.com](https://img.shields.io/website?url=https://sirenscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://sirenscans.com)](https://sirenscans.com) | OK | 20.09.2025 | - |
 | SirenKomik | [![https://sirenkomik.my.id](https://img.shields.io/website?url=https://sirenkomik.my.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://sirenkomik.my.id)](https://sirenkomik.my.id) | - | - | - |
 | SKSubs | [![http://sksubs.com](https://img.shields.io/website?url=http://sksubs.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://sksubs.com)](http://sksubs.com) | - | - | - |
 | Sky Manga | [![https://skymanga.work](https://img.shields.io/website?url=https://skymanga.work%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://skymanga.work)](https://skymanga.work) | OK | 28.07.2025 | - |
