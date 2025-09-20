@@ -38,6 +38,7 @@
 | AzComix | [![https://azcomix.me](https://img.shields.io/website?url=https://azcomix.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://azcomix.me)](https://azcomix.me) | - | - | - |
 | Azora Manga | [![https://azoramoon.com](https://img.shields.io/website?url=https://azoramoon.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://azoramoon.com)](https://azoramoon.com) | - | - | - |
 | BacaKomik | [![https://bacakomik.net](https://img.shields.io/website?url=https://bacakomik.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://bacakomik.net)](https://bacakomik.net) | - | - | - |
+| Baek 100 Scans | [![https://baektoons.com](https://img.shields.io/website?url=https://baektoons.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://baektoons.com)](https://baektoons.com) | OK | 20.09.2025 | - |
 | Bato.To | [![https://bato.to](https://img.shields.io/website?url=https://bato.to%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://bato.to)](https://bato.to) | OK | 20.09.2024 | - |
 | BeeHentai | [![https://beehentai.com](https://img.shields.io/website?url=https://beehentai.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://beehentai.com)](https://beehentai.com) | OK | 09.07.2025 | - |
 | BiliBiliComics | [![https://www.bilibilicomics.com](https://img.shields.io/website?url=https://www.bilibilicomics.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.bilibilicomics.com)](https://www.bilibilicomics.com) | - | - | - |
