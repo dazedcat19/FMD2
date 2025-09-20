@@ -1,5 +1,5 @@
 {==============================================================================|
-| Project : Ararat Synapse                                       | 004.000.000 |
+| Project : Ararat Synapse                                       | 004.001.000 |
 |==============================================================================|
 | Content: FTP client                                                          |
 |==============================================================================|
@@ -34,10 +34,12 @@
 |==============================================================================|
 | The Initial Developer of the Original Code is Lukas Gebauer (Czech Republic).|
 | Portions created by Lukas Gebauer are Copyright (c) 1999-2010.               |
+| Portions created by Jan Fiala are Copyright (c) 2019.                        |
 | All Rights Reserved.                                                         |
 |==============================================================================|
 | Contributor(s):                                                              |
 |   Petr Esner <petr.esner@atlas.cz>                                           |
+|   Jan Fiala                                                                  |
 |==============================================================================|
 | History: see HISTORY.HTM from distribution package                           |
 |          (Found at URL: http://www.ararat.cz/synapse/)                       |
@@ -67,7 +69,13 @@ interface
 
 uses
   SysUtils, Classes,
-  blcksock, synautil, synaip, synsock;
+  blcksock, synautil, synaip, synsock
+  {$IfDef POSIX}
+   ,System.Generics.Collections, System.Generics.Defaults
+  {$EndIf}
+  {$IfDef NEXTGEN}
+   ,synafpc
+  {$EndIf};
 
 const
   cFtpProtocol = '21';
@@ -122,12 +130,18 @@ type
     property Permission: string read FPermission write FPermission;
   end;
 
+  {$IFDEF POSIX}
+    TFTPRecList = TList<TFTPListRec>;
+  {$ELSE}
+    TFTPRecList = TList;
+  {$ENDIF}
+
   {:@abstract(This is TList of TFTPListRec objects.)
    This object is used for holding lististing of all files information in listed
    directory on FTP server.}
   TFTPList = class(TObject)
   protected
-    FList: TList;
+    FList: TFTPRecList;
     FLines: TStringList;
     FMasks: TStringList;
     FUnparsedLines: TStringList;
@@ -173,9 +187,13 @@ type
      @link(TFTPListRec).}
     procedure ParseLines; virtual;
 
+    {:try to parse MLSD directory listing in @link(lines) to list of
+     @link(TFTPListRec).}
+    procedure ParseMLSDLines; virtual;
+
     {:By this property you have access to list of @link(TFTPListRec).
      This is for compatibility only. Please, use @link(Items) instead.}
-    property List: TList read FList;
+    property List: TFTPRecList read FList;
 
     {:By this property you have access to list of @link(TFTPListRec).}
     property Items[Index: Integer]: TFTPListRec read GetListItem; default;
@@ -229,6 +247,7 @@ type
     FIsDataTLS: Boolean;
     FTLSonData: Boolean;
     FFullSSL: Boolean;
+    FUseMLSDList: Boolean;
     function Auth(Mode: integer): Boolean; virtual;
     function Connect: Boolean; virtual;
     function InternalStor(const Command: string; RestoreAt: int64): Boolean; virtual;
@@ -446,6 +465,9 @@ type
     {:If @true (default), then try to use SSL/TLS on data transfers too.
      If @false, then SSL/TLS is used only for control connection.}
     property TLSonData: Boolean read FTLSonData write FTLSonData;
+
+    {:Enable MLSD support for directory list.}
+    property UseMLSDList: Boolean read FUseMLSDList write FUseMLSDList;
   end;
 
 {:A very useful function, and example of use can be found in the TFtpSend object.
@@ -465,6 +487,8 @@ function FtpInterServerTransfer(
   const ToIP, ToPort, ToFile, ToUser, ToPass: string): Boolean;
 
 implementation
+
+uses DateUtils, StrUtils;
 
 constructor TFTPSend.Create;
 begin
@@ -497,6 +521,7 @@ begin
   FIsTLS := False;
   FIsDataTLS := False;
   FTLSonData := True;
+  UseMLSDList := false;
 end;
 
 destructor TFTPSend.Destroy;
@@ -986,7 +1011,10 @@ begin
   if NameList then
     x := FTPCommand('NLST' + Directory)
   else
-    x := FTPCommand('LIST' + Directory);
+    if FUseMLSDList then
+      x := FTPCommand('MLSD' + Directory)
+    else
+      x := FTPCommand('LIST' + Directory);
   if (x div 100) <> 1 then
     Exit;
   Result := DataRead(FDataStream);
@@ -994,7 +1022,10 @@ begin
   begin
     FDataStream.Position := 0;
     FFTPList.Lines.LoadFromStream(FDataStream);
-    FFTPList.ParseLines;
+    if FUseMLSDList then
+      FFTPList.ParseMLSDLines
+    else
+      FFTPList.ParseLines;
   end;
   FDataStream.Position := 0;
 end;
@@ -1217,13 +1248,13 @@ end;
 constructor TFTPList.Create;
 begin
   inherited Create;
-  FList := TList.Create;
+  FList := TFTPRecList.Create;
   FLines := TStringList.Create;
   FMasks := TStringList.Create;
   FUnparsedLines := TStringList.Create;
   //various UNIX
-  FMasks.add('pppppppppp $!!!S*$TTT$DD$hh mm ss$YYYY$n*');
-  FMasks.add('pppppppppp $!!!S*$DD$TTT$hh mm ss$YYYY$n*');
+  FMasks.add('pppppppppp $!!!S*$TTT$DD$hh:mm:ss$YYYY$n*');                      //Fiala - pridany dvojtecky do casu
+  FMasks.add('pppppppppp $!!!S*$DD$TTT$hh:mm:ss$YYYY$n*');                      //Fiala - pridany dvojtecky do casu
   FMasks.add('pppppppppp $!!!S*$TTT$DD$UUUUU$n*');  //mostly used UNIX format
   FMasks.add('pppppppppp $!!!S*$DD$TTT$UUUUU$n*');
   //MacOS
@@ -1240,8 +1271,20 @@ begin
   FMasks.add('DD MM YYYY  hh mmH $ d!n*');
   //VMS
   FMasks.add('v*$  DD TTT YYYY hh mm');
+  FMasks.add('v*$DD TTT YYYY hh mm ss');
+  FMasks.add('v*$D TTT YYYY hh mm');                                            //Fiala
+  FMasks.add('v*$!DD TTT YYYY hh mm ss');
+  //sample:   ABB.DIR;1                1/35         18-SEP-2007 10:46:39  [STEVEH]               (RWE,RWE,RWE,RWE)
+  FMasks.add('v*\$!DD TTT YYYY hh mm ss');
+  //sample:   DELMAS.SQL;7             0/0           6-DEC-2007 10:43:44  [STEVEH]               (RWED,RWED,RWED,RWED)
+  FMasks.add('v*$!D TTT YYYY hh mm ss');                                        //Fiala
+  FMasks.add('v*\$!D TTT YYYY hh mm ss');                                       //Fiala
+  FMasks.add('v*$!D TTT YYYY hh mm ss');                                        //Fiala
+  FMasks.add('n*$                 YYYY MM DD hh mm$S*');                        //Fiala
+  //sample:   STANS_DIFF.DIR;1            1  13-APR-2006 13:27 [AGR4] (RWE,RWE,RE,E)
   FMasks.add('v*$!DD TTT YYYY hh mm');
-  FMasks.add('n*$                 YYYY MM DD hh mm$S*');
+//  FMasks.add('n*$                 YYYY MM DD hh mm$S*');
+  FMasks.add('$!: :n*');
   //AS400
   FMasks.add('!S*$MM DD YY hh mm ss !n*');
   FMasks.add('!S*$DD MM YY hh mm ss !n*');
@@ -1272,9 +1315,35 @@ begin
   //BullGCOS8
   FMasks.add('             $S* MM DD YY hh mm ss  !n*');
   FMasks.add('d            $S* MM DD YY           !n*');
+  //IBM AIXs
+  // sample:  -rw----      1 ITINERA      DAT       58 JAN 09  2008 TSITIS009VAJ_COB
+  FMasks.add('ppppppp $!!!S*$TTT$DD$YYYY$n*');                                  //Fiala
+
+  FMasks.add('pppppppppp                        SSSSSSSSSS DD !YYYY n*');       //Fiala
+  FMasks.add('pppppppppp                        SSSSSSSSSS DD !hh mm n*');      //Fiala
+  //          drwxr-xr-x  10 hol      prog          45056 20  8 10:00 adis30161
+  FMasks.add('pppppppppp                       SSSSSSSSSS DD MM!hh mm n*');     //Fiala
+  //          drwxr-xr-x   2 hol      prog           4096 20  1 2005  bin
+  FMasks.add('pppppppppp                       SSSSSSSSSS DD MM YYYY  n*');     //Fiala
+
+  //IBM VM                                                                      //Fiala
+  //          MQ_REPTS TESTVIEW V         72        139          1 2009-01-28 11:58:07 -
+  //          NEW               DIR        -          -          - 2009-11-04 18:31:50 -
+  FMasks.add('n*.$n*$             SSSSSSSSSS            YYYY-MM-DD hh:mm:ss -');
+  FMasks.add('nnnnnnnnnnnnnnnnn d          -          -          - YYYY-MM-DD hh:mm:ss -');
+  //sample:   Migrated                                                $SRC.AFLG
+  FMasks.add('       dxx                                              n*');     //Fiala
+  //VMS - new untouched files (name only)
+  //          ADR10AI2
+  FMasks.Add('n*§');                                                            //Fiala
+  //IBM VM
+  //          MQ_REPTS TESTVIEW V         72        139          1 2009-01-28 11:58:07 -
+  //          NEW               DIR        -          -          - 2009-11-04 18:31:50 -
+  FMasks.add('nnnnnnnnnnnnnnnnn  x           SSSSSSSSSS            YYYY-MM-DD hh:mm:ss -');
+  FMasks.add('nnnnnnnnnnnnnnnnn d          -          -          - YYYY-MM-DD hh:mm:ss -');
   //BullGCOS7
-  FMasks.add('                                         TTT DD  YYYY n*');
-  FMasks.add('  d                                                   n*');
+//  FMasks.add('                                         TTT DD  YYYY n*');
+//  FMasks.add('  d                                                   n*');
 end;
 
 destructor TFTPList.Destroy;
@@ -1366,16 +1435,17 @@ begin
   IMask := 1;
   Result := 1;
   LastMaskC := ' ';
+  Value := TrimRight(Value);                                                    //Fiala
   while Imask <= Length(mask) do
   begin
-    if (Mask[Imask] <> '*') and (Ivalue > Length(Value)) then
+    if not (Mask[Imask] in ['*', '\', '§']) and (Ivalue > Length(Value)) then   //Fiala
     begin
       Result := 0;
       Exit;
     end;
     MaskC := Mask[Imask];
-    if Ivalue > Length(Value) then
-      Exit;
+//    if Ivalue > Length(Value) then
+//      Exit;
     c := Value[Ivalue];
     case MaskC of
       'n':
@@ -1422,6 +1492,8 @@ begin
             Result := 0;
             Exit;
           end;
+      'y':                                                                        //Fiala
+        if c <> ' ' then Result := 0;
       '*':
         begin
           s := '';
@@ -1474,6 +1546,12 @@ begin
           end;
           Dec(IValue);
         end;
+      '§':                                                                      //Fiala
+        if IValue < Length(Value) then
+        begin
+          Result := 0;
+          Break;
+        end;
       '$':
         begin
           while IValue <= Length(Value) do
@@ -1512,6 +1590,12 @@ begin
               end;
           end;
         end;
+      ':':                                                                      //Fiala
+        if c <> ':' then
+        begin
+          Result := 0;
+          Exit;
+        end;
       '\':
         begin
           Value := NextValue;
@@ -1530,6 +1614,7 @@ var
   x, n: integer;
 begin
   Result := false;
+  if (Trim(FileName) = '') and (Trim(VMSFileName) = '') then Exit;              //Fiala
   if FileName <> '' then
   begin
     if pos('?', VMSFilename) > 0 then
@@ -1540,15 +1625,15 @@ begin
   if VMSFileName <> '' then
     if pos(';', VMSFilename) <= 0 then
       Exit;
-  if (FileName = '') and (VMSFileName = '') then
-    Exit;
+//  if (FileName = '') and (VMSFileName = '') then
+//    Exit;
   if Permissions <> '' then
   begin
-    if length(Permissions) <> 10 then
+    if (length(Permissions) <> 10) and (length(Permissions) <> 7) then          //Fiala
       Exit;
-    for n := 1 to 10 do
-      if not(Permissions[n] in
-        ['a', 'b', 'c', 'd', 'h', 'l', 'p', 'r', 's', 't', 'w', 'x', 'y', '-']) then
+    for n := 1 to length(Permissions) do                                        //Fiala
+      if not (Permissions[n] in 
+        ['a', 'b', 'c', 'd', 'h', 'l', 'p', 'r', 's', 't', 'w', 'x', 'y', '-', 'S']) then  //Fiala
         Exit;
   end;
   if Day <> '' then
@@ -1690,6 +1775,9 @@ begin
   {$ENDIF}
 
   DecodeDate(Date,myear,mmonth,mday);
+  myear := YearOf(Date);                                                        //Fiala
+  mMonth := 1;                                                                  //Fiala
+  mDay := 1;                                                                    //Fiala
   mhours := 0;
   mminutes := 0;
   mseconds := 0;
@@ -1718,9 +1806,13 @@ begin
       YearTime := TrimSP(YearTime);
       mhours := StrToIntDef(Separateleft(YearTime, ':'), 0);
       mminutes := StrToIntDef(SeparateRight(YearTime, ':'), 0);
-      if (Encodedate(myear, mmonth, mday)
-        + EncodeTime(mHours, mminutes, 0, 0)) > now then
-        Dec(mYear);
+      try   { osetreni spatneho formatu data }                                  //Fiala
+        if (Encodedate(myear, mmonth, mday)   //tohle kvuli spatnemu casu na FTP serveru
+          + EncodeTime(mHours, mminutes, 0, 0)) > now then
+          Dec(mYear);
+      except                                                                    //Fiala
+        mYear := YearOf(Date());                                                //Fiala
+      end;
     end
     else
       myear := StrToIntDef(YearTime, 0);
@@ -1737,6 +1829,10 @@ begin
         if mHours <> 12 then
           mHours := MHours + 12;
   end;
+  { osetrime prechodne roky }                                                   //Fiala
+  if (mday = 29) and (mmonth = 2) and not IsLeapYear(myear) then
+    Dec(Mday);
+
   Value.FileTime := Encodedate(myear, mmonth, mday)
     + EncodeTime(mHours, mminutes, mseconds, 0);
   if Permissions <> '' then
@@ -1958,6 +2054,52 @@ begin
   finally
     ToFTP.Free;
     FromFTP.Free;
+  end;
+end;
+
+procedure TFTPList.ParseMLSDLines;
+var
+  flr: TFTPListRec;
+  i: Integer;
+  s: string;
+  ye,mo,da,ho,mi,se: Word;
+
+  function GetPart(const ALine, AName: string): string;
+  var
+    i, j: Integer;
+  begin
+    i := Pos(AnsiUpperCase(AName), AnsiUpperCase(ALine));
+    i := i + Length(AName);
+    j := PosEx(';', ALine, i);
+    if j < 1 then j := MaxInt;
+    Result := Copy(ALine, i, j-i);
+  end;
+
+begin
+  for i := 0 to Lines.Count - 1 do
+  begin
+    s := GetPart(Lines[i], 'modify=');
+    ye := StrToIntDef(Copy(s, 1, 4), 1970);
+    mo := StrToIntDef(Copy(s, 5, 2), 1);
+    da := StrToIntDef(Copy(s, 7, 2), 1);
+    ho := StrToIntDef(Copy(s, 9, 2), 0);
+    mi := StrToIntDef(Copy(s, 11, 2), 0);
+    se := StrToIntDef(Copy(s, 13, 2), 0);
+
+    flr := TFTPListRec.create;
+    flr.OriginalLine := Lines[i];
+    { osetrime kraviny, protoze autori FTP serveru nerespektuji RFC, tykajici se MLSD prikazu }
+    try
+      flr.FFileTime := EncodeDateTime(ye,mo,da,ho,mi,se, 0);
+    except
+      flr.FFileTime := EncodeDateTime(1970,1,1,0,0,0, 0);
+    end;
+    flr.FDirectory := AnsiSameText(GetPart(Lines[i], 'type='), 'dir') or AnsiSameText(GetPart(Lines[i], 'type='), 'cdir');
+    flr.FFileSize := StrToInt64Def(GetPart(Lines[i], 'size='), 0);
+    flr.FPermission := GetPart(Lines[i], 'mode=');
+    s := flr.FPermission;
+    flr.FFileName := GetPart(Lines[i], '; ');
+    Flist.Add(flr);
   end;
 end;
 

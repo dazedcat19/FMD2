@@ -1,9 +1,9 @@
 {==============================================================================|
-| Project : Ararat Synapse                                       | 001.002.003 |
+| Project : Ararat Synapse                                       | 002.000.000 |
 |==============================================================================|
 | Content: SysLog client                                                       |
 |==============================================================================|
-| Copyright (c)1999-2010, Lukas Gebauer                                        |
+| Copyright (c)1999-2023, Lukas Gebauer                                        |
 | All rights reserved.                                                         |
 |                                                                              |
 | Redistribution and use in source and binary forms, with or without           |
@@ -33,7 +33,7 @@
 | DAMAGE.                                                                      |
 |==============================================================================|
 | The Initial Developer of the Original Code is Lukas Gebauer (Czech Republic).|
-| Portions created by Lukas Gebauer are Copyright (c)2001-2010.                |
+| Portions created by Lukas Gebauer are Copyright (c)2001-2023.                |
 | All Rights Reserved.                                                         |
 |==============================================================================|
 | Contributor(s):                                                              |
@@ -45,7 +45,7 @@
 
 {:@abstract(BSD SYSLOG protocol)
 
-Used RFC: RFC-3164
+Used RFC: RFC-3164, RFC-5424 (millisecond grade timestamp, nonASCII support)
 }
 
 {$IFDEF FPC}
@@ -91,6 +91,9 @@ const
   FCL_Local7 = 23;
 
 type
+  {:@abstract(Define Syslog versions)}
+  TSyslogVersion = (RFC3164, RFC5424);
+
   {:@abstract(Define possible priority of Syslog message)}
   TSyslogSeverity = (Emergency, Alert, Critical, Error, Warning, Notice, Info,
     Debug);
@@ -98,31 +101,46 @@ type
   {:@abstract(encoding or decoding of SYSLOG message)}
   TSyslogMessage = class(TObject)
   private
-    FFacility:Byte;
-    FSeverity:TSyslogSeverity;
-    FDateTime:TDateTime;
-    FTag:String;
-    FMessage:String;
-    FLocalIP:String;
-    function GetPacketBuf:String;
-    procedure SetPacketBuf(Value:String);
+    FVersion: TSyslogVersion;
+    FFacility: Byte;
+    FSeverity: TSyslogSeverity;
+    FDateTime: TDateTime;
+    FTag: String;
+    FMessage: String;
+    FLocalIP: String;
+    FProcID: string;
+    FMsgID: string;
+    function GetPacketBuf: AnsiString;
+    procedure SetPacketBuf(Value: AnsiString);
   public
     {:Reset values to defaults}
     procedure Clear;
-  published
+
+    {:Define packet format version.}
+    property Version: TSyslogVersion read FVersion write FVersion;
+
     {:Define facilicity of Syslog message. For specify you may use predefined
      FCL_* constants. Default is "FCL_Local0".}
-    property Facility:Byte read FFacility write FFacility;
+    property Facility: Byte read FFacility write FFacility;
 
     {:Define possible priority of Syslog message. Default is "Debug".}
-    property Severity:TSyslogSeverity read FSeverity write FSeverity;
+    property Severity: TSyslogSeverity read FSeverity write FSeverity;
 
     {:date and time of Syslog message}
-    property DateTime:TDateTime read FDateTime write FDateTime;
+    property DateTime: TDateTime read FDateTime write FDateTime;
 
     {:This is used for identify process of this message. Default is filename
      of your executable file.}
-    property Tag:String read FTag write FTag;
+    property Tag: String read FTag write FTag;
+
+    {:alias to Tag}
+    property AppName: String read FTag write FTag;
+
+    {:Identification of logging process, like handle of process, transaction ID, etc.}
+    property ProcID: String read FProcID write FProcID;
+
+    {:Identification of message type category. Messages with same ID should have same semantic.}
+    property MsgID: String read FMsgID write FMsgID;
 
     {:Text of your message for log.}
     property LogMessage:String read FMessage write FMessage;
@@ -130,8 +148,9 @@ type
     {:IP address of message sender.}
     property LocalIP:String read FLocalIP write FLocalIP;
 
-    {:This property holds encoded binary SYSLOG packet}
-    property PacketBuf:String read GetPacketBuf write SetPacketBuf;
+    {:This property holds encoded binary SYSLOG packet.
+      Note: writing is deprecated and working for RFC3164 only.}
+    property PacketBuf: AnsiString read GetPacketBuf write SetPacketBuf;
   end;
 
   {:@abstract(This object implement BSD SysLog client)
@@ -147,28 +166,57 @@ type
     destructor Destroy; override;
     {:Send Syslog UDP packet defined by @link(SysLogMessage).}
     function DoIt: Boolean;
-  published
     {:Syslog message for send}
     property SysLogMessage:TSysLogMessage read FSysLogMessage write FSysLogMessage;
   end;
 
-{:Simply send packet to specified Syslog server.}
+{:Simply send old RFC-3164 packet to specified Syslog server.}
 function ToSysLog(const SyslogServer: string; Facil: Byte;
   Sever: TSyslogSeverity; const Content: string): Boolean;
 
+{:Simply send RFC-5424 version 1 packet to specified Syslog server.}
+function ToSysLog1(const SyslogServer: string; Facil: Byte;
+  Sever: TSyslogSeverity; const ProcID, MsgID, Content: string): Boolean;
+
 implementation
 
-function TSyslogMessage.GetPacketBuf:String;
+function TSyslogMessage.GetPacketBuf: AnsiString;
+var
+  s: ansistring;
 begin
-  Result := '<' + IntToStr((FFacility * 8) + Ord(FSeverity)) + '>';
-  Result := Result + CDateTime(FDateTime) + ' ';
-  Result := Result + FLocalIP + ' ';
-  Result := Result + FTag + ': ' + FMessage;
+  case FVersion of
+    RFC3164:
+      begin
+        Result := '<' + IntToStr((FFacility * 8) + Ord(FSeverity)) + '>';
+        Result := Result + CDateTime(FDateTime) + ' ';
+        Result := Result + FLocalIP + ' ';
+        Result := Result + FTag + ': ' + FMessage;
+      end;
+    RFC5424:
+      begin
+        Result := '<' + IntToStr((FFacility * 8) + Ord(FSeverity)) + '>1 ';
+        Result := Result + Rfc3339DateTime(FDateTime) + ' ';
+        Result := Result + FLocalIP + ' ';
+        if FTag = '' then s := '-'
+          else s := FTag;
+        Result := Result + FTag + ' ';
+        if FProcID = '' then s := '-'
+          else s := FProcID;
+        Result := Result + FProcID + ' ';
+        if FMsgID = '' then s := '-'
+          else s := FMsgID;
+        Result := Result + FMsgID + ' ';
+        Result := Result + '- '; //structured data not implemented yet
+        Result := Result + #$EF#$BB#$BF + AnsiToUtf8(FMessage); //BOM and UTF8 encoded text
+      end;
+    else
+      Result := '';
+  end;
 end;
 
-procedure TSyslogMessage.SetPacketBuf(Value:String);
-var StrBuf:String;
-    IntBuf,Pos:Integer;
+procedure TSyslogMessage.SetPacketBuf(Value: AnsiString);
+var StrBuf: AnsiString;
+    IntBuf, Pos: Integer;
 begin
   if Length(Value) < 1 then exit;
   Pos := 1;
@@ -251,11 +299,14 @@ end;
 
 procedure TSysLogMessage.Clear;
 begin
+  FVersion := RFC3164;
   FFacility := FCL_Local0;
   FSeverity := Debug;
   FTag := ExtractFileName(ParamStr(0));
+  FProcID := '';
+  FMsgID := '';
   FMessage := '';
-  FLocalIP  := '0.0.0.0';
+  FLocalIP := '0.0.0.0';
 end;
 
 //------------------------------------------------------------------------------
@@ -266,6 +317,7 @@ begin
   FSock := TUDPBlockSocket.Create;
   FSock.Owner := self;
   FSysLogMessage := TSysLogMessage.Create;
+  FSysLogMessage.Clear;
   FTargetPort := cSysLogProtocol;
 end;
 
@@ -278,26 +330,18 @@ end;
 
 function TSyslogSend.DoIt: Boolean;
 var
-  L: TStringList;
+  s: ansistring;
 begin
   Result := False;
-  L := TStringList.Create;
-  try
-    FSock.ResolveNameToIP(FSock.Localname, L);
-    if L.Count < 1 then
-      FSysLogMessage.LocalIP := '0.0.0.0'
-    else
-      FSysLogMessage.LocalIP := L[0];
-  finally
-    L.Free;
-  end;
+  FSysLogMessage.LocalIP := Fsock.ResolveIPToName(FSock.Localname);
   FSysLogMessage.DateTime := Now;
-  if Length(FSysLogMessage.PacketBuf) <= 1024 then
-  begin
-    FSock.Connect(FTargetHost, FTargetPort);
-    FSock.SendString(FSysLogMessage.PacketBuf);
-    Result := FSock.LastError = 0;
-  end;
+  s := FSysLogMessage.PacketBuf;
+  if FSysLogMessage.Version = RFC3164 then
+    if Length(s) > 1024 then
+      exit; //old format does not allow larger size!
+  FSock.Connect(FTargetHost, FTargetPort);
+  FSock.SendString(s);
+  Result := FSock.LastError = 0;
 end;
 
 {==============================================================================}
@@ -307,7 +351,8 @@ function ToSysLog(const SyslogServer: string; Facil: Byte;
 begin
   with TSyslogSend.Create do
     try
-      TargetHost :=SyslogServer;
+      TargetHost := SyslogServer;
+      SysLogMessage.Version := RFC3164;
       SysLogMessage.Facility := Facil;
       SysLogMessage.Severity := Sever;
       SysLogMessage.LogMessage := Content;
@@ -316,5 +361,24 @@ begin
       Free;
     end;
 end;
+
+function ToSysLog1(const SyslogServer: string; Facil: Byte;
+  Sever: TSyslogSeverity; const ProcID, MsgID, Content: string): Boolean;
+begin
+  with TSyslogSend.Create do
+    try
+      TargetHost := SyslogServer;
+      SysLogMessage.Version := RFC5424;
+      SysLogMessage.Facility := Facil;
+      SysLogMessage.Severity := Sever;
+      SysLogMessage.ProcID := ProcID;
+      SysLogMessage.MsgID := MsgID;
+      SysLogMessage.LogMessage := Content;
+      Result := DoIt;
+    finally
+      Free;
+    end;
+end;
+
 
 end.

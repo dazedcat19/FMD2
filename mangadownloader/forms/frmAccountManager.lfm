@@ -5,12 +5,11 @@ object AccountManagerForm: TAccountManagerForm
   Width = 392
   ActiveControl = vtAccountList
   BorderStyle = bsNone
-  Caption = 'AccountManagerForm'
   ClientHeight = 316
   ClientWidth = 392
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  LCLVersion = '3.6.0.0'
+  LCLVersion = '3.8.0.0'
   object pnBtContainer: TPanel
     Left = 307
     Height = 316

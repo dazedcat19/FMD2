@@ -9,7 +9,7 @@ object CustomColorForm: TCustomColorForm
   ClientHeight = 352
   ClientWidth = 535
   OnCreate = FormCreate
-  LCLVersion = '3.6.0.0'
+  LCLVersion = '3.8.0.0'
   object CBColors: TColorBox
     AnchorSideRight.Control = btColors
     Left = 363
@@ -232,7 +232,7 @@ object CustomColorForm: TCustomColorForm
     Width = 136
     Anchors = [akTop, akLeft, akRight]
     Caption = 'Reset list colors'
-    TabOrder = 2
     OnClick = btResetColorsClick
+    TabOrder = 2
   end
 end

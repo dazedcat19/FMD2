@@ -12,6 +12,7 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 	m.MaxTaskLimit             = 2
 	m.MaxConnectionLimit       = 4
 	m.SortedList               = true
@@ -107,4 +108,11 @@ function GetPageNumber()
 	CreateTXQuery(HTTP.Document).XPathStringAll('//img/@src', TASK.PageLinks)
 
 	return no_error
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+
+	return true
 end

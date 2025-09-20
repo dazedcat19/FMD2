@@ -1,164 +1,188 @@
-function GetInfo()
-	MANGAINFO.URL = MaybeFillHost(MODULE.RootURL, URL)
-	if not HTTP.GET(MANGAINFO.URL) then return net_problem end
-	
-	local x = CreateTXQuery(HTTP.Document)
-	if x.XPathString('//title'):lower() =='redirect' then
-		if HTTP.GET(x.XPathString('//a/@href')) then
-			x.ParseHTML(HTTP.Document)
-		else return net_problem end
-	end
-	
-	MANGAINFO.Title     = x.XPathString('//div[starts-with(@class,"gallery")]/h1')
-	MANGAINFO.CoverLink = MaybeFillHost(MODULE.RootURL, x.XPathString('//div[@class="cover"]//img/@src')):gsub('^//','https://')
-	MANGAINFO.Authors   = x.XPathStringAll('//div[starts-with(@class,"gallery")]/h2/ul/li/a')
-	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="gallery-info"]/table//tr/td//a')
-	
-	MANGAINFO.ChapterLinks.Add(x.XPathString('//div[contains(@class,"cover-column")]/a/@href'))
-	MANGAINFO.ChapterNames.Add(MANGAINFO.Title)
-	return no_error
-end
-----------------------------------------------------------------------------------------------
-
-function GetPageNumber()
-	if HTTP.GET(MaybeFillHost(MODULE.RootURL, URL)) then
-		----------------------------------------------------------------------------------------------
-		--  direct translaton of https://ltn.hitomi.la/common.js and https://ltn.hitomi.la/reader.js
-
-		local function subdomain_from_galleryid(g, number_of_frontends)
-			local o = g % number_of_frontends
-			return string.char(97 + o)
-		end
-
-		local function subdomain_from_url(url, base)
-			local retval = 'b'
-			if (base) then
-				retval = base
-			end
-
-			local number_of_frontends = 2
-			local b = 16
-
-			local r = '^.*/%w/(%w%w)/.*$'
-			local m = url:gsub(r, '%1')
-			if not(m) then
-				return 'a'
-			end
-
-			local g = tonumber(m, b) or nil
-			if g then
-				local o = 0
-				if (g < 0x7c) then
-					o = 1
-				end
-				-- retval = subdomain_from_galleryid(g, number_of_frontends) .. retval
-				retval = string.char(97 + o) .. retval
-			end
-			return retval
-		end
-
-		local function url_from_url(url, base)
-			return url:gsub('//..?%.hitomi%.la/', '//' .. subdomain_from_url(url, base) .. '.hitomi.la/')
-		end
-
-		local function full_path_from_hash(hash)
-			if (hash:len() < 3) then
-				return hash
-			end
-			return hash:gsub('^.*(..)(.)$', '%2/%1/' .. hash)
-		end
-
-		local function url_from_hash(galleryid, image, dir, ext)
-			ext = ext or dir or image.name:match('%.(.+)')
-			dir = dir or 'images'
-			return 'https://a.hitomi.la/' .. dir .. '/' .. full_path_from_hash(image.hash) .. '.' .. ext
-		end
-
-		function url_from_url_from_hash(galleryid, image, dir, ext, base)
-			return url_from_url(url_from_hash(galleryid, image, dir, ext), base)
-		end
-
-		local function image_url_from_image(galleryid, image, no_webp)
-			local webp
-			if (image['hash'] and image['haswebp'] and not(no_webp)) then
-				webp = 'webp'
-				return url_from_url_from_hash(galleryid, image, webp, webp, 'a')
-			end
-			return url_from_url_from_hash(galleryid, image, webp)
-			
-		end
-		-- end of https://ltn.hitomi.la/common.js
-
-		local x = CreateTXQuery(HTTP.Document)
-		local galleryid   = URL:match('/(%d+)%.html')
-		local gallery_url = x.XPathString('//script[contains(@src,"reader.js")]/@src'):match('//(.+)/')
-		if galleryid and gallery_url and HTTP.GET('https://'..gallery_url..'/galleries/'..galleryid..'.js') then
-			local no_webp = not MODULE.GetOption('download_webp')
-			local s = HTTP.Document.ToString():match('("files":%[.-%])'):gsub('"files":','')
-			if s then
-				x.ParseHTML(s)
-				local image={}, v for v in x.XPath('json(*)()').Get() do
-					image.hash    = x.XPathString('./hash', v)
-					image.haswebp = x.XPathString('./haswebp', v) == '1'
-					image.name    = x.XPathString('./name', v)
-					image.hasavif = x.XPathString('./hasavif', v) == '1'
-					TASK.PageLinks.Add(image_url_from_image(galleryid, image, no_webp))
-				end
-			end
-		end
-	else
-		return false
-	end
-	return true
-end
-
-function BeforeDownloadImage()
-	HTTP.Headers.Values['Pragma'] = 'no-cache'
-	HTTP.Headers.Values['Cache-Control'] = 'no-cache'
-	HTTP.Headers.Values['Referer'] = MaybeFillHost(MODULE.RootURL, URL)
-	return true
-end
-
-function GetNameAndLink()
-	if not HTTP.GET('https://ltn.hitomi.la/index-all.nozomi') then return net_problem end
-	local s = HTTP.Document.ToString()
-	local prefix = MODULE.RootURL .. '/galleries/'
-	-- number in uint32 little-endian
-	local n
-	for i = 1, s:len(), 4 do
-		n = s:byte(i+3) + (s:byte(i+2) << 8) + (s:byte(i+1) << 16) + (s:byte(i) << 24)
-		LINKS.Add(prefix..n..'.html')
-		NAMES.Add(n)
-	end
-	return no_error
-end
-
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                    = '1972cec9c85b43f6b10b11920a7aafef'
-	m.Name                  = 'HitomiLa'
+	m.Name                  = 'Hitomi'
 	m.RootURL               = 'https://hitomi.la'
 	m.Category              = 'H-Sites'
+	m.OnGetNameAndLink      = 'GetNameAndLink'
 	m.OnGetInfo             = 'GetInfo'
 	m.OnGetPageNumber       = 'GetPageNumber'
-	m.OnGetNameAndLink      = 'GetNameAndLink'
 	m.OnBeforeDownloadImage = 'BeforeDownloadImage'
+end
 
-	local fmd = require 'fmd.env'
-	local slang = fmd.SelectedLanguage
-	local lang = {
-		['en'] = {
-			['webp'] = 'Download WebP'
-		},
-		['id_ID'] = {
-			['webp'] = 'Unduh WebP'
-		},
-		get =
-			function(self, key)
-				local sel = self[slang]
-				if sel == nil then sel = self['en'] end
-				return sel[key]
-			end
+----------------------------------------------------------------------------------------------------
+-- Local Constants
+----------------------------------------------------------------------------------------------------
+
+local CDN_URL = 'gold-usergeneratedcontent.net'
+local gg_data = nil
+
+----------------------------------------------------------------------------------------------------
+-- Auxiliary Functions
+----------------------------------------------------------------------------------------------------
+
+-- Fetches and parses gg.js, caching the result for efficiency.
+function GetGgData()
+	if gg_data then return gg_data end
+
+	if not HTTP.GET('https://ltn.' .. CDN_URL .. '/gg.js') then return nil end
+
+	local gg_script = HTTP.Document.ToString()
+
+	-- Store parsed data in the module-level cache
+	gg_data = {
+		subdomain_offset_default = tonumber(gg_script:match('var o = (%d)')),
+		subdomain_offset_map = {},
+		common_image_id = gg_script:match("b: '(.+)'")
 	}
-	m.AddOptionCheckBox('download_webp', lang:get('webp'), true)
+
+	local o = tonumber(gg_script:match('o = (%d); break;'))
+	for case in gg_script:gmatch('case (%d+):') do
+		gg_data.subdomain_offset_map[tonumber(case)] = o
+	end
+
+	return gg_data
+end
+
+-- Calculates a numeric ID from an image hash.
+function GetImageIdFromHash(hash)
+	if not hash or hash:len() < 3 then return 0 end
+	local last_three = hash:sub(-3)
+	local part1 = last_three:sub(1, 2)
+	local part2 = last_three:sub(3, 3)
+	return tonumber(part2 .. part1, 16)
+end
+
+-- Determines the subdomain offset using the parsed gg.js data.
+function GetSubdomainOffset(image_id, gg)
+	return (image_id and gg.subdomain_offset_map[image_id]) or gg.subdomain_offset_default
+end
+
+-- Generates the path for a thumbnail image.
+function ThumbPathFromHash(hash)
+	return hash:gsub('^.*(..)(.)$', '%2/%1')
+end
+
+----------------------------------------------------------------------------------------------------
+-- Event Functions
+----------------------------------------------------------------------------------------------------
+
+-- Get links and names from the manga list of the current website.
+function GetNameAndLink()
+	local u = 'https://ltn.' .. CDN_URL .. '/index-all.nozomi'
+
+	if not HTTP.GET(u) then return net_problem end
+
+	local s = HTTP.Document.ToString()
+
+	-- The .nozomi file contains gallery IDs as 32-bit big-endian integers.
+	for i = 1, s:len(), 4 do
+		local id = (s:byte(i) * 16777216) + (s:byte(i+1) * 65536) + (s:byte(i+2) * 256) + s:byte(i+3)
+		LINKS.Add('galleries/' .. id .. '.html')
+		NAMES.Add(id)
+	end
+
+	return no_error
+end
+
+-- Get info and chapter list for the current manga.
+function GetInfo()
+	local gg = GetGgData()
+
+	if not gg then return net_problem end
+
+	if not HTTP.GET('https://ltn.' .. CDN_URL .. '/galleries/' .. URL:match('(%d+)%.html') .. '.js') then return net_problem end
+
+	local x = CreateTXQuery()
+	x.ParseHTML(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()):match('^var galleryinfo = (.*)'))
+
+	local first_file_hash = x.XPathString('json(*).files(1).hash')
+	local image_id = GetImageIdFromHash(first_file_hash)
+	local subdomain_offset = GetSubdomainOffset(image_id, gg)
+	local thumb_subdomain = string.char(string.byte('a') + subdomain_offset) .. 'tn'
+
+	local desc = {}
+
+	local parodies = {}
+	local parody_nodes = x.XPath('json(*).parodys().parody')
+	for i = 1, parody_nodes.Count do
+		table.insert(parodies, parody_nodes.Get(i).ToString())
+	end
+
+	local characters = {}
+	local chara_nodes = x.XPath('json(*).characters().character')
+	for i = 1, chara_nodes.Count do
+		table.insert(characters, chara_nodes.Get(i).ToString())
+	end
+
+	local page_count = x.XPathCount('json(*).files()')
+	local language = x.XPathString('json(*).language')
+
+	if #parodies > 0 then table.insert(desc, 'Series: ' .. table.concat(parodies, ', ')) end
+	if #characters > 0 then table.insert(desc, 'Characters: ' .. table.concat(characters, ', ')) end
+	if page_count > 0 then table.insert(desc, 'Pages: ' .. page_count) end
+	if #language > 0 and language ~= 'null' then table.insert(desc, 'Language: ' .. language) end
+
+	local Title = x.XPathString('json(*).title')
+	local AltTitles = x.XPathString('json(*).japanese_title')
+	if Title:lower() == 'null' and AltTitles ~= 'null' then Title = AltTitles end
+	if AltTitles == 'null' or AltTitles == Title then AltTitles = '' end
+
+	MANGAINFO.Title     = Title
+	MANGAINFO.AltTitles = AltTitles
+	MANGAINFO.CoverLink = string.format('https://%s.%s/webpbigtn/%s/%s.webp',
+		thumb_subdomain, CDN_URL, ThumbPathFromHash(first_file_hash), first_file_hash)
+	MANGAINFO.Genres    = x.XPathStringAll('json(*).tags().tag')
+	MANGAINFO.Summary   = table.concat(desc, '\r\n')
+
+	local groups = x.XPathStringAll('json(*).groups().group')
+	if #groups > 0 and groups ~= 'null' then
+		MANGAINFO.Artitst = groups
+	else
+		MANGAINFO.Artists = x.XPathStringAll('json(*).artists().artist')
+	end
+
+	local type = x.XPathString('json(*).type')
+	if MANGAINFO.Genres ~= '' then
+		MANGAINFO.Genres = MANGAINFO.Genres .. ', ' .. type
+	else
+		MANGAINFO.Genres = type
+	end
+
+	MANGAINFO.ChapterLinks.Add(x.XPathString('json(*).galleryurl'))
+	MANGAINFO.ChapterNames.Add(MANGAINFO.Title)
+
+	HTTP.Reset()
+	HTTP.Headers.Values['Referer'] = MANGAINFO.URL
+
+	return no_error
+end
+
+-- Get the page count for the current chapter.
+function GetPageNumber()
+	local gg = GetGgData()
+
+	if not gg then return false end
+
+	if not HTTP.GET('https://ltn.' .. CDN_URL .. '/galleries/' .. URL:match('(%d+)%.html') .. '.js') then return false end
+
+	local x = CreateTXQuery()
+	x.ParseHTML(HTTP.Document.ToString():match('^var galleryinfo = (.*)'))
+
+	for image_node in x.XPath('json(*).files()').Get() do
+		local hash = x.XPathString('hash', image_node)
+		local image_id = GetImageIdFromHash(hash)
+		local subdomain_offset = GetSubdomainOffset(image_id, gg)
+
+		TASK.PageLinks.Add('https://w' .. (subdomain_offset + 1) .. '.' .. CDN_URL .. '/' .. gg.common_image_id .. image_id .. '/' .. hash .. '.webp')
+	end
+
+	return true
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+
+	return true
 end

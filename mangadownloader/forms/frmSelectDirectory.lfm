@@ -10,7 +10,7 @@ object SelectDirectoryForm: TSelectDirectoryForm
   ClientHeight = 186
   ClientWidth = 551
   Position = poMainFormCenter
-  LCLVersion = '3.6.0.0'
+  LCLVersion = '3.8.0.0'
   object dePath: TDirectoryEdit
     Left = 8
     Height = 23

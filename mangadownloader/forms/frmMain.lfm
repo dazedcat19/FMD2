@@ -12,7 +12,7 @@ object MainForm: TMainForm
   OnDestroy = FormDestroy
   OnWindowStateChange = FormWindowStateChange
   ShowHint = True
-  LCLVersion = '3.6.0.0'
+  LCLVersion = '3.8.0.0'
   object pcMain: TPageControl
     Left = 2
     Height = 609
@@ -957,6 +957,7 @@ object MainForm: TMainForm
                         ClientWidth = 146
                         Color = clWindow
                         ParentBackground = False
+                        ParentColor = False
                         TabOrder = 0
                         object imCover: TImage
                           Left = 0
@@ -2824,7 +2825,7 @@ object MainForm: TMainForm
             Height = 455
             Top = 8
             Width = 829
-            HorzScrollBar.Page = 536
+            HorzScrollBar.Page = 534
             VertScrollBar.Page = 455
             Align = alClient
             BorderStyle = bsNone
@@ -2835,7 +2836,7 @@ object MainForm: TMainForm
             ClientHeight = 455
             ClientWidth = 812
             ParentBackground = False
-            TabOrder = 0 
+            TabOrder = 0
             object lbOptionLanguage: TLabel
               Left = 4
               Height = 15
@@ -2898,8 +2899,8 @@ object MainForm: TMainForm
               Left = 4
               Height = 15
               Top = 100
-              Width = 117
-              Caption = 'Theme (Requires restart to take effect):'
+              Width = 201
+              Caption = 'Theme (requires restart to take effect):'
               ParentColor = False
             end
             object cbDarkmode: TComboBox
@@ -2919,7 +2920,7 @@ object MainForm: TMainForm
               ParentFont = False
               Style = csDropDownList
               TabOrder = 3
-            end  
+            end
             object lbDarkmodeHint: TLabel
               AnchorSideLeft.Control = cbDarkmode
               AnchorSideLeft.Side = asrBottom
@@ -2943,7 +2944,7 @@ object MainForm: TMainForm
               AnchorSideTop.Side = asrBottom
               Left = 4
               Height = 23
-              Top = 216
+              Top = 162
               Width = 50
               BorderSpacing.Top = 20
               MaxValue = 365
@@ -2959,19 +2960,19 @@ object MainForm: TMainForm
               AnchorSideTop.Side = asrCenter
               Left = 58
               Height = 15
-              Top = 220
+              Top = 166
               Width = 238
               Caption = 'New manga based on  it''s update time (days)'
               ParentColor = False
               ParentFont = False
-            end 
+            end
             object cbOptionMinimizeOnStart: TCheckBox
               AnchorSideLeft.Control = seOptionNewMangaTime
               AnchorSideTop.Control = seOptionNewMangaTime
               AnchorSideTop.Side = asrBottom
               Left = 4
               Height = 19
-              Top = 259
+              Top = 205
               Width = 110
               BorderSpacing.Top = 20
               Caption = 'Minimize on start'
@@ -2984,7 +2985,7 @@ object MainForm: TMainForm
               AnchorSideTop.Side = asrBottom
               Left = 4
               Height = 19
-              Top = 282
+              Top = 228
               Width = 104
               Caption = 'Minimize to tray'
               ParentFont = False
@@ -2996,7 +2997,7 @@ object MainForm: TMainForm
               AnchorSideTop.Side = asrBottom
               Left = 4
               Height = 19
-              Top = 305
+              Top = 251
               Width = 175
               Caption = 'Permit only one FMD running'
               ParentFont = False
@@ -3008,7 +3009,7 @@ object MainForm: TMainForm
               AnchorSideTop.Side = asrBottom
               Left = 4
               Height = 19
-              Top = 328
+              Top = 274
               Width = 208
               Caption = 'Enable live search (slow on long list)'
               ParentFont = False
@@ -3019,7 +3020,7 @@ object MainForm: TMainForm
               AnchorSideTop.Side = asrBottom
               Left = 4
               Height = 19
-              Top = 351
+              Top = 297
               Width = 187
               Caption = 'Delete completed tasks on close'
               TabOrder = 9
@@ -3029,7 +3030,7 @@ object MainForm: TMainForm
               AnchorSideTop.Side = asrBottom
               Left = 4
               Height = 19
-              Top = 374
+              Top = 320
               Width = 283
               Caption = 'Sort Downloads when adding new download tasks'
               TabOrder = 10
@@ -3039,7 +3040,7 @@ object MainForm: TMainForm
               AnchorSideTop.Side = asrBottom
               Left = 4
               Height = 19
-              Top = 397
+              Top = 343
               Width = 155
               Caption = 'Vacuum databases on exit'
               TabOrder = 11
@@ -3050,9 +3051,9 @@ object MainForm: TMainForm
               AnchorSideTop.Side = asrBottom
               Left = 4
               Height = 19
-              Top = 420
-              Width = 528
-              Caption = 'Enable long name paths (Can break most/all interaction with the file in Windows and other apps)'
+              Top = 366
+              Width = 526
+              Caption = 'Enable long name paths (can break most/all interaction with the file in Windows and other apps)'
               TabOrder = 12
             end
             object gbOptionExternal: TGroupBox
@@ -3061,7 +3062,7 @@ object MainForm: TMainForm
               AnchorSideTop.Side = asrBottom
               Left = 4
               Height = 118
-              Top = 459
+              Top = 405
               Width = 650
               Anchors = [akTop, akLeft, akRight]
               BorderSpacing.Top = 20
@@ -3231,6 +3232,8 @@ object MainForm: TMainForm
               Min = 5
               OnChange = tbDropTargetOpacityChange
               Position = 200
+              Color = 3487029
+              ParentColor = False
               TabOrder = 2
             end
             object lbDropTargetOpacity: TLabel
@@ -3940,7 +3943,7 @@ object MainForm: TMainForm
               ClientWidth = 808
               ParentBackground = False
               ParentFont = False
-              TabOrder = 5
+              TabOrder = 6
               object cbOptionChangeUnicodeCharacter: TCheckBox
                 Left = 4
                 Height = 19
@@ -4002,7 +4005,6 @@ object MainForm: TMainForm
                 Top = 73
                 Width = 13
                 Caption = '[?]'
-                Enabled = False
                 Font.Color = clHighlight
                 ParentColor = False
                 ParentFont = False
@@ -4188,7 +4190,7 @@ object MainForm: TMainForm
                 Width = 80
                 Enabled = False
                 TabOrder = 1
-                TextHint = 'Unicode Char'
+                TextHint = 'Character'
               end
             end
             object lbDefaultDownloadPath: TLabel
@@ -4240,6 +4242,7 @@ object MainForm: TMainForm
               Width = 50
               BorderSpacing.Top = 4
               Enabled = False
+              MaxValue = 100
               MinValue = 5
               ParentFont = False
               ParentShowHint = False
@@ -4310,23 +4313,21 @@ object MainForm: TMainForm
               }
               MaxLength = 0
               NumGlyphs = 1
-              OnButtonClick = edOptionDefaultPathButtonClick
               ParentFont = False
               PasswordChar = #0
               TabOrder = 1
               TextHint = 'Default download path'
+              OnButtonClick = edOptionDefaultPathButtonClick
             end
             object gbImageConversion: TGroupBox
               AnchorSideLeft.Control = lbDefaultDownloadPath
               AnchorSideTop.Control = seOptionPDFQuality
               AnchorSideTop.Side = asrBottom
-              AnchorSideRight.Control = sbSaveTo
-              AnchorSideRight.Side = asrBottom
               Left = 4
               Height = 122
               Top = 145
               Width = 812
-              Anchors = [akTop, akLeft, akRight]
+              Anchors = [akTop, akLeft]
               AutoSize = True
               Caption = 'Image Conversion'
               ChildSizing.LeftRightSpacing = 4
@@ -4422,6 +4423,7 @@ object MainForm: TMainForm
                 Height = 23
                 Top = 75
                 Width = 47
+                MaxValue = 100
                 MinValue = 1
                 TabOrder = 3
                 Value = 80
@@ -4436,6 +4438,156 @@ object MainForm: TMainForm
                 Caption = 'Save PNG as JPEG'
                 TabOrder = 0
               end
+            end
+            object gbImageMagick: TGroupBox
+              AnchorSideLeft.Control = gbImageConversion
+              AnchorSideLeft.Side = asrBottom
+              AnchorSideTop.Control = seOptionPDFQuality
+              AnchorSideTop.Side = asrBottom
+              AnchorSideRight.Control = sbSaveTo
+              AnchorSideRight.Side = asrBottom
+              Left = 250
+              Height = 122
+              Top = 145
+              Width = 979
+              Anchors = [akTop, akLeft, akRight] 
+              AutoSize = True
+              Caption = 'Image Magick'
+              ChildSizing.LeftRightSpacing = 4
+              ChildSizing.TopBottomSpacing = 4
+              ChildSizing.HorizontalSpacing = 6
+              ChildSizing.VerticalSpacing = 6
+              ClientHeight = 102
+              ClientWidth = 975
+              Enabled = False
+              ParentBackground = False
+              TabOrder = 5
+              object ckImageMagick: TCheckBox
+                AnchorSideLeft.Control = gbImageMagick
+                AnchorSideTop.Control = gbImageMagick
+                Left = 4
+                Height = 19
+                Top = 4
+                Width = 191
+                Caption = 'Enable ImageMagick Conversion'
+                Enabled = False
+                TabOrder = 0
+                OnChange = ckImageMagickChange
+              end
+              object lbImageMagickSaveAs: TLabel
+                AnchorSideLeft.Control = gbImageMagick
+                AnchorSideTop.Control = ckImageMagick
+                AnchorSideTop.Side = asrBottom
+                Left = 4
+                Height = 15
+                Top = 29
+                Width = 74
+                Caption = 'Save Image as'
+              end
+              object cbImageMagickSaveAs: TComboBox
+                AnchorSideLeft.Control = lbImageMagickSaveAs
+                AnchorSideLeft.Side = asrBottom
+                AnchorSideTop.Control = lbImageMagickSaveAs
+                AnchorSideTop.Side = asrCenter
+                Left = 84
+                Height = 23
+                Top = 25
+                Width = 100
+                Enabled = False
+                ItemHeight = 15
+                ItemIndex = 0
+                Items.Strings = (
+                  'JPEG'
+                )
+                TabOrder = 1
+                Text = 'JPEG'
+              end
+              object lbImageMagickCompression: TLabel
+                AnchorSideLeft.Control = lbImageMagickSaveAs
+                AnchorSideTop.Control = cbImageMagickSaveAs
+                AnchorSideTop.Side = asrBottom
+                Left = 4
+                Height = 15
+                Top = 54
+                Width = 132
+                Caption = 'Image Compression type'
+              end
+              object cbImageMagickCompression: TComboBox
+                AnchorSideLeft.Control = lbImageMagickCompression
+                AnchorSideLeft.Side = asrBottom
+                AnchorSideTop.Control = lbImageMagickCompression
+                AnchorSideTop.Side = asrCenter
+                AnchorSideRight.Side = asrBottom
+                Left = 142
+                Height = 23
+                Top = 50
+                Width = 100
+                Enabled = False
+                ItemHeight = 15
+                ItemIndex = 0
+                Items.Strings = (
+                  'None'
+                )
+                TabOrder = 2
+                Text = 'None'
+              end
+              object lbImageMagickQuality: TLabel
+                AnchorSideLeft.Control = lbImageMagickSaveAs
+                AnchorSideTop.Control = cbImageMagickCompression
+                AnchorSideTop.Side = asrBottom
+                Left = 4
+                Height = 15
+                Top = 79
+                Width = 72
+                Caption = 'Image quality'
+              end
+              object seImageMagickQuality: TSpinEdit
+                AnchorSideLeft.Control = lbImageMagickQuality
+                AnchorSideLeft.Side = asrBottom
+                AnchorSideTop.Control = lbImageMagickQuality
+                AnchorSideTop.Side = asrCenter
+                AnchorSideRight.Side = asrBottom
+                Left = 82
+                Height = 23
+                Top = 75
+                Width = 47
+                Enabled = False
+                MaxValue = 100
+                MinValue = 1
+                TabOrder = 3
+                Value = 75
+              end
+            end
+            object lbImageMagickHint: TLabel
+              AnchorSideLeft.Control = gbImageMagick
+              AnchorSideTop.Control = gbImageMagick
+              Left = 340
+              Height = 15
+              Top = 145
+              Width = 13
+              BorderSpacing.Left = 90
+              Caption = '[?]'
+              Font.Color = clHighlight
+              ParentColor = False
+              ParentFont = False
+              ParentShowHint = False
+              ShowHint = True
+            end
+            object lbImageConversionHint: TLabel
+              AnchorSideLeft.Control = gbImageConversion
+              AnchorSideTop.Control = gbImageConversion
+              Left = 114
+              Height = 15
+              Top = 145
+              Width = 13
+              BorderSpacing.Left = 110
+              Caption = '[?]'
+              Font.Color = clHighlight
+              ParentColor = False
+              ParentFont = False
+              ParentShowHint = False
+              ShowHint = True
+              Visible = False
             end
           end
         end

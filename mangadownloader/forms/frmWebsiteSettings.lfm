@@ -8,7 +8,7 @@ object WebsiteSettingsForm: TWebsiteSettingsForm
   ClientWidth = 572
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  LCLVersion = '3.6.0.0'
+  LCLVersion = '3.8.0.0'
   object spMain: TPairSplitter
     Left = 0
     Height = 461

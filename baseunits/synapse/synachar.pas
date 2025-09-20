@@ -1,5 +1,5 @@
 {==============================================================================|
-| Project : Ararat Synapse                                       | 005.002.004 |
+| Project : Ararat Synapse                                       | 005.002.005 |
 |==============================================================================|
 | Content: Charset conversion support                                          |
 |==============================================================================|
@@ -72,6 +72,11 @@ Internal routines knows all major charsets for Europe or America. For East-Asian
   {$WARN IMPLICIT_STRING_CAST_LOSS OFF}
 {$ENDIF}
 
+{$IFDEF NEXTGEN}
+  {$LEGACYIFEND ON}
+  {$ZEROBASEDSTRINGS OFF}
+{$ENDIF}
+
 unit synachar;
 
 interface
@@ -79,13 +84,17 @@ interface
 uses
 {$IFNDEF MSWINDOWS}
   {$IFNDEF FPC}
-  Libc,
+    {$IFNDEF POSIX}
+      Libc,
+    {$ELSE}
+      Posix.Langinfo,
+    {$ENDIF}
   {$ENDIF}
 {$ELSE}
   Windows,
 {$ENDIF}
   SysUtils,
-  synautil, synacode, synaicnv;
+  synautil, synacode, synaicnv, synafpc;
 
 type
   {:Type with all supported charsets.}
@@ -1376,6 +1385,9 @@ var
   NotNeedTransform: Boolean;
   FromID, ToID: string;
 begin
+  if not synaicnv.InitIconvInterface then
+    DisableIconv := True;
+
   NotNeedTransform := (High(TransformTable) = 0);
   if (CharFrom = CharTo) and NotNeedTransform then
   begin
@@ -1501,7 +1513,15 @@ end;
 function GetCurCP: TMimeChar;
 begin
   {$IFNDEF FPC}
+    {$IFNDEF POSIX}
   Result := GetCPFromID(nl_langinfo(_NL_CTYPE_CODESET_NAME));
+    {$ELSE}
+      {$IFNDEF ANDROID}
+  Result := GetCPFromID(nl_langinfo(CODESET));
+      {$ELSE}
+  Result := UTF_8;
+      {$ENDIF}
+    {$ENDIF}
   {$ELSE}
   //How to get system codepage without LIBC?
   Result := UTF_8;
@@ -1736,15 +1756,40 @@ begin
   Result := '';
   case Value of
     UCS_2:
-      Result := #$fe + #$ff;
+    begin
+      SetLength(Result, 2);
+      Result[1] := #$fe;
+      Result[2] := #$ff;
+    end;
     UCS_4:
-      Result := #$00 + #$00 + #$fe + #$ff;
+    begin
+      SetLength(Result, 4);
+      Result[1] := #$00;
+      Result[2] := #$00;
+      Result[3] := #$fe;
+      Result[4] := #$ff;
+    end;
     UCS_2LE:
-      Result := #$ff + #$fe;
+    begin
+      SetLength(Result, 2);
+      Result[1] := #$ff;
+      Result[2] := #$fe;
+    end;
     UCS_4LE:
-      Result := #$ff + #$fe + #$00 + #$00;
+    begin
+      SetLength(Result, 4);
+      Result[1] := #$ff;
+      Result[2] := #$fe;
+      Result[3] := #$00;
+      Result[4] := #$00;
+    end;
     UTF_8:
-      Result := #$ef + #$bb + #$bf;
+    begin
+      SetLength(Result, 3);
+      Result[1] := #$ef;
+      Result[2] := #$bb;
+      Result[3] := #$bf;
+    end;
   end;
 end;
 

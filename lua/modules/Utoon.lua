@@ -18,10 +18,6 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.Madara'
--- XPathTokenAuthors = 'Author(s)'
--- XPathTokenArtists = 'Artist(s)'
--- XPathTokenGenres  = 'Genre(s)'
--- XPathTokenStatus  = 'Status'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -34,7 +30,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
 
@@ -43,7 +39,16 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	Template.GetPageNumber()
+	local u = MaybeFillHost(MODULE.RootURL, URL)
+	if not u:find('style=list', 1, true) then u = u:gsub('?style=paged', '') .. '?style=list' end
 
-	return no_error
+	if not HTTP.GET(u) then return false end
+
+	for v in CreateTXQuery(HTTP.Document).XPath('//div[contains(@class, "page-break")]/img').Get() do
+		if not v.GetAttribute('src'):find('banner', 1, true) then
+			TASK.PageLinks.Add(v.GetAttribute('src'))
+		end
+	end
+
+	return true
 end

@@ -35,6 +35,7 @@ msgstr "Abort"
 
 #: dbupdater.rs_downloading
 #, object-pascal-format
+msgctxt "dbupdater.rs_downloading"
 msgid "Downloading %s"
 msgstr "Downloading %s"
 
@@ -106,6 +107,31 @@ msgstr "OK"
 msgid "Username or password can't be empty!"
 msgstr "Username or password can't be empty!"
 
+#: frmcustommessagedlg.rs_dialogconfirmation
+msgctxt "frmcustommessagedlg.rs_dialogconfirmation"
+msgid "Confirmation"
+msgstr "Confirmation"
+
+#: frmcustommessagedlg.rs_dialogcustom
+msgctxt "frmcustommessagedlg.rs_dialogcustom"
+msgid "Message"
+msgstr "Message"
+
+#: frmcustommessagedlg.rs_dialogerror
+msgctxt "frmcustommessagedlg.rs_dialogerror"
+msgid "Error"
+msgstr "Error"
+
+#: frmcustommessagedlg.rs_dialoginformation
+msgctxt "frmcustommessagedlg.rs_dialoginformation"
+msgid "Information"
+msgstr "Information"
+
+#: frmcustommessagedlg.rs_dialogwarning
+msgctxt "frmcustommessagedlg.rs_dialogwarning"
+msgid "Warning"
+msgstr "Warning"
+
 #: frmimportfavorites.rs_importcompleted
 msgid "Import completed."
 msgstr "Import completed."
@@ -122,15 +148,33 @@ msgstr "Importing..."
 msgid "List of unimported manga"
 msgstr "List of unimported manga"
 
+#: frmluamodulesupdater.rs_awaitingproceed
+msgid "Awaiting permission to proceed..."
+msgstr "Awaiting permission to proceed..."
+
 #: frmluamodulesupdater.rs_checking
 msgctxt "frmluamodulesupdater.rs_checking"
 msgid "Checking..."
 msgstr "Checking..."
 
+#: frmluamodulesupdater.rs_checklocalmodules
+msgid "Checking local modules..."
+msgstr "Checking local modules..."
+
 #: frmluamodulesupdater.rs_checkupdate
 msgctxt "frmluamodulesupdater.rs_checkupdate"
 msgid "Check update"
 msgstr "Check update"
+
+#: frmluamodulesupdater.rs_deletingflaggedmodules
+msgid "Deleting flagged modules..."
+msgstr "Deleting flagged modules..."
+
+#: frmluamodulesupdater.rs_downloadingmodule
+#, object-pascal-format
+msgctxt "frmluamodulesupdater.rs_downloadingmodule"
+msgid "Downloading %s"
+msgstr "Downloading %s"
 
 #: frmluamodulesupdater.rs_finishchecking
 msgid "Finish checking"
@@ -139,6 +183,23 @@ msgstr "Finish checking"
 #: frmluamodulesupdater.rs_finishdownload
 msgid "Finish download"
 msgstr "Finish download"
+
+#: frmluamodulesupdater.rs_githubconnectfail
+msgid ""
+"Failed to connect to GitHub API for latest module updates.\n"
+"Please try again later."
+msgstr ""
+"Failed to connect to GitHub API for latest module updates.\n"
+"Please try again later."
+
+#: frmluamodulesupdater.rs_githubconnecting
+msgid "Connecting to GitHub..."
+msgstr "Connecting to GitHub..."
+
+#: frmluamodulesupdater.rs_githubratestats
+#, object-pascal-format
+msgid "GitHub API core rate - call limit: %d, remaining calls: %d, used calls: %d, limit refresh: %s"
+msgstr "GitHub API core rate - call limit: %d, remaining calls: %d, used calls: %d, limit refresh: %s"
 
 #: frmluamodulesupdater.rs_modulesupdatedrestart
 msgid "Modules updated, restart now?"
@@ -219,6 +280,9 @@ msgid ""
 "Dark\n"
 "Light"
 msgstr ""
+"System\n"
+"Dark\n"
+"Light"
 
 #: frmmain.rs_dlgcannotconnecttoserver
 msgid "Cannot connect to the server."
@@ -550,6 +614,20 @@ msgctxt "frmtransferfavorites.rs_valid"
 msgid "Valid"
 msgstr "Valid"
 
+#: imagemagickmanager.rs_imagemagicknotfoundhint
+msgctxt "imagemagickmanager.rs_imagemagicknotfoundhint"
+msgid ""
+"Failed to detect an install of ImageMagick!\n"
+"Please install ImageMagick from www.imagemagick.org if you haven't already."
+msgstr ""
+
+#: imagemagickmanager.rs_imagemagickpreferencehint
+msgctxt "imagemagickmanager.rs_imagemagickpreferencehint"
+msgid ""
+"ImageMagick has been enabled!\n"
+"The following settings have been disabled because ImageMagick has taken preference."
+msgstr ""
+
 #: selfupdater.rs_buttoncancel
 msgctxt "selfupdater.rs_buttoncancel"
 msgid "Abort"
@@ -637,10 +715,6 @@ msgstr "Edit"
 msgid "Refresh"
 msgstr "Refresh"
 
-#: taccountmanagerform.caption
-msgid "AccountManagerForm"
-msgstr "AccountManagerForm"
-
 #: taccountmanagerform.vtaccountlist.header.columns[1].text
 msgctxt "TACCOUNTMANAGERFORM.VTACCOUNTLIST.HEADER.COLUMNS[1].TEXT"
 msgid "Website"
@@ -695,7 +769,7 @@ msgstr "Password"
 
 #: tcustomcolorform.btresetcolors.caption
 msgid "Reset list colors"
-msgstr ""
+msgstr "Reset list colors"
 
 #: tcustomcolorform.caption
 msgid "CustomColorForm"
@@ -918,6 +992,14 @@ msgstr "Add to download list as stopped task"
 msgid "<none>"
 msgstr "<none>"
 
+#: tmainform.cbimagemagickcompression.text
+msgid "None"
+msgstr ""
+
+#: tmainform.cbimagemagicksaveas.text
+msgid "JPEG"
+msgstr ""
+
 #: tmainform.cbonlynew.caption
 msgid "Search only new manga"
 msgstr "Search only new manga"
@@ -975,8 +1057,8 @@ msgid "Enable load manga cover"
 msgstr "Enable load manga cover"
 
 #: tmainform.cboptionenablelongnamepaths.caption
-msgid "Enable long name paths (Can break most/all interaction with the file in Windows and other apps)"
-msgstr ""
+msgid "Enable long name paths (can break most/all interaction with the file in Windows and other apps)"
+msgstr "Enable long name paths (can break most/all interaction with the file in Windows and other apps)"
 
 #: tmainform.cboptiongeneratechapterfolder.caption
 msgid "Auto generate chapter folder"
@@ -1416,6 +1498,10 @@ msgstr "Yuri"
 msgid "This work usually involves intimate relationships between women."
 msgstr "This work usually involves intimate relationships between women."
 
+#: tmainform.ckimagemagick.caption
+msgid "Enable ImageMagick Conversion"
+msgstr ""
+
 #: tmainform.ckoptionsalwaysstarttaskfromfailedchapters.caption
 msgctxt "tmainform.ckoptionsalwaysstarttaskfromfailedchapters.caption"
 msgid "Always start task from failed chapters"
@@ -1469,8 +1555,8 @@ msgid "Search title..."
 msgstr "Search title..."
 
 #: tmainform.edoptionchangeunicodecharacterstr.texthint
-msgid "Unicode Char"
-msgstr ""
+msgid "Character"
+msgstr "Character"
 
 #: tmainform.edoptionchaptercustomrename.texthint
 msgctxt "TMAINFORM.EDOPTIONCHAPTERCUSTOMRENAME.TEXTHINT"
@@ -1482,7 +1568,6 @@ msgid "Default download path"
 msgstr "Default download path"
 
 #: tmainform.edoptiondefaultuseragent.texthint
-#, fuzzy
 msgctxt "tmainform.edoptiondefaultuseragent.texthint"
 msgid "Default user-agent"
 msgstr "Default user-agent"
@@ -1545,6 +1630,10 @@ msgstr "Drop Box"
 msgid "Image Conversion"
 msgstr "Image Conversion"
 
+#: tmainform.gbimagemagick.caption
+msgid "Image Magick"
+msgstr ""
+
 #: tmainform.gboptionexternal.caption
 msgid "External program"
 msgstr "External program"
@@ -1577,11 +1666,10 @@ msgid "Miscellaneous"
 msgstr "Miscellaneous"
 
 #: tmainform.lbdarkmode.caption
-msgid "Theme (Requires restart to take effect):"
-msgstr ""
+msgid "Theme (requires restart to take effect):"
+msgstr "Theme (requires restart to take effect):"
 
 #: tmainform.lbdarkmodehint.caption
-#, fuzzy
 msgctxt "tmainform.lbdarkmodehint.caption"
 msgid "[?]"
 msgstr "[?]"
@@ -1591,6 +1679,8 @@ msgid ""
 "Only supports Windows 10 1809 and above.\n"
 "Theme's auto disable on any unsupported versions."
 msgstr ""
+"Only supports Windows 10 1809 and above.\n"
+"Theme's auto disable on any unsupported versions."
 
 #: tmainform.lbdefaultdownloadpath.caption
 msgid "Choose the default download path:"
@@ -1662,6 +1752,33 @@ msgstr "Summary"
 msgctxt "tmainform.lbfiltertitle.caption"
 msgid "Title"
 msgstr "Title"
+
+#: tmainform.lbimageconversionhint.caption
+#, fuzzy
+msgctxt "tmainform.lbimageconversionhint.caption"
+msgid "[?]"
+msgstr "[?]"
+
+#: tmainform.lbimagemagickcompression.caption
+msgctxt "tmainform.lbimagemagickcompression.caption"
+msgid "Image Compression type"
+msgstr ""
+
+#: tmainform.lbimagemagickhint.caption
+#, fuzzy
+msgctxt "tmainform.lbimagemagickhint.caption"
+msgid "[?]"
+msgstr "[?]"
+
+#: tmainform.lbimagemagickquality.caption
+msgctxt "tmainform.lbimagemagickquality.caption"
+msgid "Image quality"
+msgstr ""
+
+#: tmainform.lbimagemagicksaveas.caption
+msgctxt "tmainform.lbimagemagicksaveas.caption"
+msgid "Save Image as"
+msgstr ""
 
 #: tmainform.lbjpegquality.caption
 msgid "JPEG quality"
@@ -2608,6 +2725,10 @@ msgstr "Setting name"
 msgid "Compressing..."
 msgstr "Compressing..."
 
+#: udownloadsmanager.rs_converting
+msgid "Converting..."
+msgstr ""
+
 #: udownloadsmanager.rs_disabled
 msgctxt "udownloadsmanager.rs_disabled"
 msgid "Disabled"
@@ -2708,6 +2829,10 @@ msgstr "Loading: %d/%d"
 #, object-pascal-format
 msgid "%s has %d new manga(s)"
 msgstr "%s has %d new manga(s)"
+
+#: uupdatethread.rs_dlgupdatelistcheckisrunning
+msgid "Update list(s) is running!"
+msgstr "Update list(s) is running!"
 
 #: uupdatethread.rs_gettingdirectory
 msgid "Getting directory"

@@ -364,7 +364,7 @@ begin
         begin
           FillSaveTo;
           OverrideSaveTo(d.DownloadInfo.Module);
-          FSaveTo := edSaveTo.Text;
+          FSaveTo := TrimPath(edSaveTo.Text);
           // save to
           if OptionGenerateMangaFolder then
             FSaveTo := AppendPathDelim(FSaveTo) + CustomRename(
@@ -415,7 +415,7 @@ begin
       begin
         FillSaveTo;
 	OverrideSaveTo(FModule);
-        s := edSaveTo.Text;
+        s := TrimPath(edSaveTo.Text);
       end
       else
         s := FSaveTo;
@@ -447,8 +447,6 @@ begin
 end;
  
 procedure TSilentThread.SyncImportToFavorite;
-var
-  s: String;
 begin
   try
     with MainForm do
@@ -461,7 +459,7 @@ begin
       begin
         FillSaveTo;
 	OverrideSaveTo(FModule);
-        FSaveTo := edSaveTo.Text;
+        FSaveTo := TrimPath(edSaveTo.Text);
       end;
 
       FavoriteManager.Add(
@@ -481,7 +479,6 @@ begin
 end;
 
 procedure TSilentThread.Execute;
-
 begin
   while FManager.GetMetaData(Self) do
   begin

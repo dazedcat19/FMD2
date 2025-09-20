@@ -15,7 +15,7 @@ object FormLogger: TFormLogger
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   Position = poMainFormCenter
-  LCLVersion = '3.6.0.0'
+  LCLVersion = '3.8.0.0'
   object tvLog: TCustomLogTreeView
     Left = 6
     Height = 237

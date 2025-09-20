@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '8b8a11bb9b0e4cd8b30c8577c762d19c'
 	m.Name                     = 'NewToki'
-	m.RootURL                  = 'https://newtoki467.com'
+	m.RootURL                  = 'https://newtoki468.com'
 	m.Category                 = 'Raw'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -67,16 +67,17 @@ end
 -- Get the page count for the current chapter.
 function GetPageNumber()
 	local s, x = nil
-	local u = MaybeFillHost(MODULE.RootURL, URL)
+	local crypto = require 'fmd.crypto'
+	local u = crypto.EncodeURL(MaybeFillHost(MODULE.RootURL, URL))
 
-	if not HTTP.GET(u) then return net_problem end
+	if not HTTP.GET(u) then return false end
 
 	x = CreateTXQuery(HTTP.Document)
 	s = x.XPathString('//script[contains(., "var html_data")]')
-	x.ParseHTML(require 'fmd.crypto'.HexToStr(s:match("html_data%+%=\'.*\';"):gsub("[html_data+=.;%'\n]", "")))
+	x.ParseHTML(crypto.HexToStr(s:match("html_data%+%=\'.*\';"):gsub("[html_data+=.;%'\n]", "")))
 	x.XPathStringAll('//img[@src="/img/loading-image.gif"]/@*[contains(name(), "data-")]', TASK.PageLinks)
 
-	return no_error
+	return true
 end
 
 -- Prepare the URL, http header and/or http cookies before downloading an image.

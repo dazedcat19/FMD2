@@ -5,23 +5,20 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '94caa4da3f334418b27bc1ba7e127b57'
-	m.Name                     = 'KDT Scans'
-	m.RootURL                  = 'https://kdtscans.com'
+	m.Name                     = 'Armageddon'
+	m.RootURL                  = 'https://www.silentquill.net'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.Madara'
--- XPathTokenAuthors = 'Author(s)'
--- XPathTokenArtists = 'Artist(s)'
--- XPathTokenGenres  = 'Genre(s)'
--- XPathTokenStatus  = 'Status'
+local Template = require 'templates.MangaThemesia'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -34,7 +31,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
 
@@ -45,5 +42,12 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+
+	return true
 end

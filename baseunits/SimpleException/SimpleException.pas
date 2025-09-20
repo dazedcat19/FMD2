@@ -240,11 +240,12 @@ begin
     wv8: Result += '8';
     wv8_1: Result += '8.1';
     wv10: Result += '10';
-    wvLater: Result += IntToStr(Win32MajorVersion) + '.' + IntToStr(Win32MinorVersion);
+    wv11: Result += '11';
+    else Result += IntToStr(Win32MajorVersion) + '.' + IntToStr(Win32MinorVersion);
   end;
   FillChar({%H-}wdir, SizeOf(wdir), 0);
   GetWindowsDirectory(PChar(wdir), MAX_PATH);
-  if DirectoryExists(wdir + '\SysWOW64') then
+  if (WindowsVersion <> wv11) and DirectoryExists(wdir + '\SysWOW64') then
     Result += ' 64-bit';
   Result += ' Build ' + IntToStr(Win32BuildNumber);
   {$ENDIF}

@@ -11,7 +11,7 @@ object LuaModulesUpdaterForm: TLuaModulesUpdaterForm
   ClientWidth = 580
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  LCLVersion = '3.6.0.0'
+  LCLVersion = '3.8.0.0'
   object vtLuaModulesRepos: TVirtualStringTree
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = btCheckUpdate

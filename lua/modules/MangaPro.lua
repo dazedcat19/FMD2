@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '54c235db8c894a7796ff33839d126b85'
 	m.Name                     = 'Manga Pro'
-	m.RootURL                  = 'https://promanga.pro'
+	m.RootURL                  = 'https://promanga.net'
 	m.Category                 = 'Arabic-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -38,13 +38,14 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.Iken'
+API_URL = 'https://api.promanga.net'
 ChapterName = 'الفصل '
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
--- Login account to the current website.
+-- Sign in to the current website.
 function Login()
 	Template.Login()
 

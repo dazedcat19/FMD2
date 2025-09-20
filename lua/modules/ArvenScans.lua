@@ -5,37 +5,19 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '472b381dbdf44438b90ee93e0caeccf9'
-	m.Name                     = 'Arven Scans'
+	m.Name                     = 'Arven Comic'
 	m.RootURL                  = 'https://arvencomics.com'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
-
-	local fmd = require 'fmd.env'
-	local slang = fmd.SelectedLanguage
-	local lang = {
-		['en'] = {
-			['showpaidchapters'] = 'Show paid chapters'
-		},
-		['id_ID'] = {
-			['showpaidchapters'] = 'Tampilkan bab berbayar'
-		},
-		get =
-			function(self, key)
-				local sel = self[slang]
-				if sel == nil then sel = self['en'] end
-				return sel[key]
-			end
-	}
-	m.AddOptionCheckBox('showpaidchapters', lang:get('showpaidchapters'), false)
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.KeyoApp'
+local Template = require 'templates.Madara'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -48,7 +30,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
 

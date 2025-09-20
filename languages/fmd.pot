@@ -25,6 +25,7 @@ msgstr ""
 
 #: dbupdater.rs_downloading
 #, object-pascal-format
+msgctxt "dbupdater.rs_downloading"
 msgid "Downloading %s"
 msgstr ""
 
@@ -93,6 +94,31 @@ msgstr ""
 msgid "Username or password can't be empty!"
 msgstr ""
 
+#: frmcustommessagedlg.rs_dialogconfirmation
+msgctxt "frmcustommessagedlg.rs_dialogconfirmation"
+msgid "Confirmation"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogcustom
+msgctxt "frmcustommessagedlg.rs_dialogcustom"
+msgid "Message"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogerror
+msgctxt "frmcustommessagedlg.rs_dialogerror"
+msgid "Error"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialoginformation
+msgctxt "frmcustommessagedlg.rs_dialoginformation"
+msgid "Information"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogwarning
+msgctxt "frmcustommessagedlg.rs_dialogwarning"
+msgid "Warning"
+msgstr ""
+
 #: frmimportfavorites.rs_importcompleted
 msgid "Import completed."
 msgstr ""
@@ -109,14 +135,32 @@ msgstr ""
 msgid "List of unimported manga"
 msgstr ""
 
+#: frmluamodulesupdater.rs_awaitingproceed
+msgid "Awaiting permission to proceed..."
+msgstr ""
+
 #: frmluamodulesupdater.rs_checking
 msgctxt "frmluamodulesupdater.rs_checking"
 msgid "Checking..."
 msgstr ""
 
+#: frmluamodulesupdater.rs_checklocalmodules
+msgid "Checking local modules..."
+msgstr ""
+
 #: frmluamodulesupdater.rs_checkupdate
 msgctxt "frmluamodulesupdater.rs_checkupdate"
 msgid "Check update"
+msgstr ""
+
+#: frmluamodulesupdater.rs_deletingflaggedmodules
+msgid "Deleting flagged modules..."
+msgstr ""
+
+#: frmluamodulesupdater.rs_downloadingmodule
+#, object-pascal-format
+msgctxt "frmluamodulesupdater.rs_downloadingmodule"
+msgid "Downloading %s"
 msgstr ""
 
 #: frmluamodulesupdater.rs_finishchecking
@@ -125,6 +169,21 @@ msgstr ""
 
 #: frmluamodulesupdater.rs_finishdownload
 msgid "Finish download"
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubconnectfail
+msgid ""
+"Failed to connect to GitHub API for latest module updates.\n"
+"Please try again later."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubconnecting
+msgid "Connecting to GitHub..."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubratestats
+#, object-pascal-format
+msgid "GitHub API core rate - call limit: %d, remaining calls: %d, used calls: %d, limit refresh: %s"
 msgstr ""
 
 #: frmluamodulesupdater.rs_modulesupdatedrestart
@@ -499,6 +558,20 @@ msgctxt "frmtransferfavorites.rs_valid"
 msgid "Valid"
 msgstr ""
 
+#: imagemagickmanager.rs_imagemagicknotfoundhint
+msgctxt "imagemagickmanager.rs_imagemagicknotfoundhint"
+msgid ""
+"Failed to detect an install of ImageMagick!\n"
+"Please install ImageMagick from www.imagemagick.org if you haven't already."
+msgstr ""
+
+#: imagemagickmanager.rs_imagemagickpreferencehint
+msgctxt "imagemagickmanager.rs_imagemagickpreferencehint"
+msgid ""
+"ImageMagick has been enabled!\n"
+"The following settings have been disabled because ImageMagick has taken preference."
+msgstr ""
+
 #: selfupdater.rs_buttoncancel
 msgctxt "selfupdater.rs_buttoncancel"
 msgid "Abort"
@@ -579,10 +652,6 @@ msgstr ""
 
 #: taccountmanagerform.btrefresh.caption
 msgid "Refresh"
-msgstr ""
-
-#: taccountmanagerform.caption
-msgid "AccountManagerForm"
 msgstr ""
 
 #: taccountmanagerform.vtaccountlist.header.columns[1].text
@@ -861,6 +930,14 @@ msgstr ""
 msgid "<none>"
 msgstr ""
 
+#: tmainform.cbimagemagickcompression.text
+msgid "None"
+msgstr ""
+
+#: tmainform.cbimagemagicksaveas.text
+msgid "JPEG"
+msgstr ""
+
 #: tmainform.cbonlynew.caption
 msgid "Search only new manga"
 msgstr ""
@@ -914,7 +991,7 @@ msgid "Enable load manga cover"
 msgstr ""
 
 #: tmainform.cboptionenablelongnamepaths.caption
-msgid "Enable long name paths (Can break most/all interaction with the file in Windows and other apps)"
+msgid "Enable long name paths (can break most/all interaction with the file in Windows and other apps)"
 msgstr ""
 
 #: tmainform.cboptiongeneratechapterfolder.caption
@@ -1347,6 +1424,10 @@ msgstr ""
 msgid "This work usually involves intimate relationships between women."
 msgstr ""
 
+#: tmainform.ckimagemagick.caption
+msgid "Enable ImageMagick Conversion"
+msgstr ""
+
 #: tmainform.ckoptionsalwaysstarttaskfromfailedchapters.caption
 msgid "Always start task from failed chapters"
 msgstr ""
@@ -1396,7 +1477,7 @@ msgid "Search title..."
 msgstr ""
 
 #: tmainform.edoptionchangeunicodecharacterstr.texthint
-msgid "Unicode Char"
+msgid "Character"
 msgstr ""
 
 #: tmainform.edoptionchaptercustomrename.texthint
@@ -1468,6 +1549,10 @@ msgstr ""
 msgid "Image Conversion"
 msgstr ""
 
+#: tmainform.gbimagemagick.caption
+msgid "Image Magick"
+msgstr ""
+
 #: tmainform.gboptionexternal.caption
 msgid "External program"
 msgstr ""
@@ -1500,7 +1585,7 @@ msgid "Miscellaneous"
 msgstr ""
 
 #: tmainform.lbdarkmode.caption
-msgid "Theme (Requires restart to take effect):"
+msgid "Theme (requires restart to take effect):"
 msgstr ""
 
 #: tmainform.lbdarkmodehint.caption
@@ -1574,6 +1659,31 @@ msgstr ""
 #: tmainform.lbfiltertitle.caption
 msgctxt "tmainform.lbfiltertitle.caption"
 msgid "Title"
+msgstr ""
+
+#: tmainform.lbimageconversionhint.caption
+msgctxt "tmainform.lbimageconversionhint.caption"
+msgid "[?]"
+msgstr ""
+
+#: tmainform.lbimagemagickcompression.caption
+msgctxt "tmainform.lbimagemagickcompression.caption"
+msgid "Image Compression type"
+msgstr ""
+
+#: tmainform.lbimagemagickhint.caption
+msgctxt "tmainform.lbimagemagickhint.caption"
+msgid "[?]"
+msgstr ""
+
+#: tmainform.lbimagemagickquality.caption
+msgctxt "tmainform.lbimagemagickquality.caption"
+msgid "Image quality"
+msgstr ""
+
+#: tmainform.lbimagemagicksaveas.caption
+msgctxt "tmainform.lbimagemagicksaveas.caption"
+msgid "Save Image as"
 msgstr ""
 
 #: tmainform.lbjpegquality.caption
@@ -2482,6 +2592,10 @@ msgstr ""
 msgid "Compressing..."
 msgstr ""
 
+#: udownloadsmanager.rs_converting
+msgid "Converting..."
+msgstr ""
+
 #: udownloadsmanager.rs_disabled
 msgctxt "udownloadsmanager.rs_disabled"
 msgid "Disabled"
@@ -2581,6 +2695,10 @@ msgstr ""
 #: uupdatethread.rs_dlghasnewmanga
 #, object-pascal-format
 msgid "%s has %d new manga(s)"
+msgstr ""
+
+#: uupdatethread.rs_dlgupdatelistcheckisrunning
+msgid "Update list(s) is running!"
 msgstr ""
 
 #: uupdatethread.rs_gettingdirectory

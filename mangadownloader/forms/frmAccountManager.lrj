@@ -1,5 +1,4 @@
 {"version":1,"strings":[
-{"hash":265040957,"name":"taccountmanagerform.caption","sourcebytes":[65,99,99,111,117,110,116,77,97,110,97,103,101,114,70,111,114,109],"value":"AccountManagerForm"},
 {"hash":310020,"name":"taccountmanagerform.btedit.caption","sourcebytes":[69,100,105,116],"value":"Edit"},
 {"hash":146640072,"name":"taccountmanagerform.btrefresh.caption","sourcebytes":[82,101,102,114,101,115,104],"value":"Refresh"},
 {"hash":230269173,"name":"taccountmanagerform.vtaccountlist.header.columns[1].text","sourcebytes":[87,101,98,115,105,116,101],"value":"Website"},

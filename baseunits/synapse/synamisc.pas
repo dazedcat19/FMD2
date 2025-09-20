@@ -1,9 +1,9 @@
 {==============================================================================|
-| Project : Ararat Synapse                                       | 001.003.001 |
+| Project : Ararat Synapse                                       | 001.004.000 |
 |==============================================================================|
 | Content: misc. procedures and functions                                      |
 |==============================================================================|
-| Copyright (c)1999-2014, Lukas Gebauer                                        |
+| Copyright (c)1999-2022, Lukas Gebauer                                        |
 | All rights reserved.                                                         |
 |                                                                              |
 | Redistribution and use in source and binary forms, with or without           |
@@ -33,7 +33,7 @@
 | DAMAGE.                                                                      |
 |==============================================================================|
 | The Initial Developer of the Original Code is Lukas Gebauer (Czech Republic).|
-| Portions created by Lukas Gebauer are Copyright (c) 2002-2010.               |
+| Portions created by Lukas Gebauer are Copyright (c) 2002-2022.               |
 | All Rights Reserved.                                                         |
 |==============================================================================|
 | Contributor(s):                                                              |
@@ -64,6 +64,10 @@
   {$WARN IMPLICIT_STRING_CAST_LOSS OFF}
 {$ENDIF}
 
+{$IFDEF NEXTGEN}
+  {$ZEROBASEDSTRINGS OFF}
+{$ENDIF}
+
 unit synamisc;
 
 interface
@@ -78,12 +82,16 @@ interface
 
 uses
   synautil, blcksock, SysUtils, Classes
-{$IFDEF UNIX}
-  {$IFNDEF FPC}
-  , Libc
-  {$ENDIF}
+{$IFDEF POSIX}
+  ,Types,Posix.Stdlib
 {$ELSE}
-  , Windows
+  {$IFDEF UNIX}
+    {$IFNDEF FPC}
+    , Libc
+    {$ENDIF}
+  {$ELSE}
+    , Windows
+  {$ENDIF}
 {$ENDIF}
 ;
 
@@ -93,13 +101,15 @@ Type
     Host: string;
     Port: string;
     Bypass: string;
+    ResultCode: integer;
+    Autodetected: boolean;
   end;
 
 {:With this function you can turn on a computer on the network, if this computer
- supports Wake-on-LAN feature. You need the MAC address 
- (network card identifier) of the computer. You can also assign a target IP 
- addres. If you do not specify it, then broadcast is used to deliver magic 
- wake-on-LAN packet. 
+ supports Wake-on-LAN feature. You need the MAC address
+ (network card identifier) of the computer. You can also assign a target IP
+ addres. If you do not specify it, then broadcast is used to deliver magic
+ wake-on-LAN packet.
  However broadcasts work only on your local network. When you need to wake-up a
  computer on another network, you must specify any existing IP addres on same
  network segment as targeting computer.}
@@ -109,13 +119,23 @@ procedure WakeOnLan(MAC, IP: string);
  is defined, then the result is comma-delimited.}
 function GetDNS: string;
 
-{:Autodetect InternetExplorer proxy setting for given protocol. This function
+{:Read InternetExplorer 5.0+ proxy setting for given protocol. This function
 works only on windows!}
 function GetIEProxy(protocol: string): TProxySetting;
 
-{:Return all known IP addresses on the local system. Addresses are divided by 
+{:Return all known IP addresses of required type on the local system. Addresses are divided by
+comma/comma-delimited.}
+function GetLocalIPsFamily(value: TSocketFamily): string;
+
+{:Return all known IP addresses on the local system. Addresses are divided by
 comma/comma-delimited.}
 function GetLocalIPs: string;
+
+{$IFDEF MSWINDOWS}
+{:Autodetect system proxy setting for specified URL. This function
+works only on windows!}
+function GetProxyForURL(const AURL: WideString): TProxySetting;
+{$ENDIF}
 
 implementation
 
@@ -138,7 +158,7 @@ begin
     for n := 0 to 5 do
     begin
       b := StrToIntDef('$' + MAC[n * 2 + 1] + MAC[n * 2 + 2], 0);
-      HexMac := HexMac + char(b);
+      HexMac := HexMac + AnsiChar(b);
     end;
     if IP = '' then
       IP := cBroadcast;
@@ -296,29 +316,59 @@ end;
 {$ENDIF}
 
 {==============================================================================}
-
 function GetIEProxy(protocol: string): TProxySetting;
-{$IFDEF UNIX}
+{$IFNDEF MSWINDOWS}
 begin
   Result.Host := '';
   Result.Port := '';
   Result.Bypass := '';
+  Result.ResultCode := -1;
+  Result.Autodetected := false;
 end;
 {$ELSE}
 type
-  PInternetProxyInfo = ^TInternetProxyInfo;
-  TInternetProxyInfo = packed record
-    dwAccessType: DWORD;
-    lpszProxy: LPCSTR;
-    lpszProxyBypass: LPCSTR;
+  PInternetPerConnOption = ^INTERNET_PER_CONN_OPTION;
+  INTERNET_PER_CONN_OPTION = record
+    dwOption: DWORD;
+    case Integer of
+      0: (dwValue: DWORD);
+//      1: (pszValue:LPTSTR);
+      1: (pszValue:PAnsiChar);
+      2: (ftValue: FILETIME);
+    end;
+
+  PInternetPerConnOptionList = ^INTERNET_PER_CONN_OPTION_LIST;
+  INTERNET_PER_CONN_OPTION_LIST = record
+    dwSize        :DWORD;
+//    pszConnection :LPTSTR;
+    pszConnection :PAnsiChar;
+    dwOptionCount :DWORD;
+    dwOptionError :DWORD;
+    pOptions      :PInternetPerConnOption;
   end;
 const
-  INTERNET_OPTION_PROXY = 38;
-  INTERNET_OPEN_TYPE_PROXY = 3;
+  INTERNET_PER_CONN_FLAGS               = 1;
+  INTERNET_PER_CONN_PROXY_SERVER        = 2;
+  INTERNET_PER_CONN_PROXY_BYPASS        = 3;
+  INTERNET_PER_CONN_AUTOCONFIG_URL      = 4;
+  INTERNET_PER_CONN_AUTODISCOVERY_FLAGS = 5;
+  PROXY_TYPE_DIRECT         = $00000001;   // direct to net
+  PROXY_TYPE_PROXY          = $00000002;   // via named proxy
+  PROXY_TYPE_AUTO_PROXY_URL = $00000004;   // autoproxy URL
+  PROXY_TYPE_AUTO_DETECT    = $00000008;   // use autoproxy detection
+  AUTO_PROXY_FLAG_USER_SET                  =      $00000001;   // user changed this setting
+  AUTO_PROXY_FLAG_ALWAYS_DETECT             =      $00000002;   // force detection even when its not needed
+  AUTO_PROXY_FLAG_DETECTION_RUN             =      $00000004;   // detection has been run
+  AUTO_PROXY_FLAG_MIGRATED                  =      $00000008;   // migration has just been done
+  AUTO_PROXY_FLAG_DONT_CACHE_PROXY_RESULT   =      $00000010;   // don't cache result of host=proxy name
+  AUTO_PROXY_FLAG_CACHE_INIT_RUN            =      $00000020;   // don't initalize and run unless URL expired
+  AUTO_PROXY_FLAG_DETECTION_SUSPECT         =      $00000040;   // if we're on a LAN & Modem, with only one IP, bad?!?
+  INTERNET_OPTION_PER_CONNECTION_OPTION   = 75;
   WininetDLL = 'WININET.DLL';
 var
   WininetModule: THandle;
-  ProxyInfo: PInternetProxyInfo;
+  Option : array[0..4] of INTERNET_PER_CONN_OPTION;
+  List   : INTERNET_PER_CONN_OPTION_LIST;
   Err: Boolean;
   Len: DWORD;
   Proxy: string;
@@ -331,6 +381,8 @@ begin
   Result.Host := '';
   Result.Port := '';
   Result.Bypass := '';
+  Result.ResultCode := 0;
+  Result.Autodetected := false;
   WininetModule := LoadLibrary(WininetDLL);
   if WininetModule = 0 then
     exit;
@@ -341,15 +393,25 @@ begin
 
     if protocol = '' then
       protocol := 'http';
-    Len := 4096;
-    GetMem(ProxyInfo, Len);
     ProxyList := TStringList.Create;
     try
-      Err := InternetQueryOption(nil, INTERNET_OPTION_PROXY, ProxyInfo, Len);
+      Option[0].dwOption := INTERNET_PER_CONN_AUTOCONFIG_URL;
+      Option[1].dwOption := INTERNET_PER_CONN_AUTODISCOVERY_FLAGS;
+      Option[2].dwOption := INTERNET_PER_CONN_FLAGS;
+      Option[3].dwOption := INTERNET_PER_CONN_PROXY_BYPASS;
+      Option[4].dwOption := INTERNET_PER_CONN_PROXY_SERVER;
+
+      List.dwSize        := SizeOf(INTERNET_PER_CONN_OPTION_LIST);
+      List.pszConnection := nil;      // LAN
+      List.dwOptionCount := 5;
+      List.dwOptionError := 0;
+      List.pOptions      := @Option;
+
+
+      Err := InternetQueryOption(nil, INTERNET_OPTION_PER_CONNECTION_OPTION, @List, List.dwSize);
       if Err then
-        if ProxyInfo^.dwAccessType = INTERNET_OPEN_TYPE_PROXY then
         begin
-          ProxyList.CommaText := ReplaceString(ProxyInfo^.lpszProxy, ' ', ',');
+          ProxyList.CommaText := ReplaceString(Option[4].pszValue, ' ', ',');
           Proxy := '';
           DefProxy := '';
           for n := 0 to ProxyList.Count -1 do
@@ -369,11 +431,10 @@ begin
             Result.Host := Trim(SeparateLeft(Proxy, ':'));
             Result.Port := Trim(SeparateRight(Proxy, ':'));
           end;
-          Result.Bypass := ReplaceString(ProxyInfo^.lpszProxyBypass, ' ', ',');
+          Result.Bypass := ReplaceString(Option[3].pszValue, ' ', ',');
         end;
     finally
       ProxyList.Free;
-      FreeMem(ProxyInfo);
     end;
   finally
     FreeLibrary(WininetModule);
@@ -383,7 +444,7 @@ end;
 
 {==============================================================================}
 
-function GetLocalIPs: string;
+function GetLocalIPsFamily(value: TSocketFamily): string;
 var
   TcpSock: TTCPBlockSocket;
   ipList: TStringList;
@@ -393,6 +454,8 @@ begin
   try
     TcpSock := TTCPBlockSocket.create;
     try
+      if value <> SF_Any then
+        TcpSock.family := value;
       TcpSock.ResolveNameToIP(TcpSock.LocalName, ipList);
       Result := ipList.CommaText;
     finally
@@ -403,6 +466,179 @@ begin
   end;
 end;
 
+function GetLocalIPs: string;
+begin
+  Result := GetLocalIPsFamily(SF_Any);
+end;
+
 {==============================================================================}
+
+{$IFDEF MSWINDOWS}
+function GetProxyForURL(const AURL: WideString): TProxySetting;
+type
+  HINTERNET = Pointer;
+  INTERNET_PORT = Word;
+  PWinHTTPProxyInfo = ^TWinHTTPProxyInfo;
+  WINHTTP_PROXY_INFO = record
+    dwAccessType: DWORD;
+    lpszProxy: LPWSTR;
+    lpszProxyBypass: LPWSTR;
+  end;
+  TWinHTTPProxyInfo = WINHTTP_PROXY_INFO;
+  LPWINHTTP_PROXY_INFO = PWinHTTPProxyInfo;
+  PWinHTTPAutoProxyOptions = ^TWinHTTPAutoProxyOptions;
+  WINHTTP_AUTOPROXY_OPTIONS = record
+    dwFlags: DWORD;
+    dwAutoDetectFlags: DWORD;
+    lpszAutoConfigUrl: LPCWSTR;
+    lpvReserved: Pointer;
+    dwReserved: DWORD;
+    fAutoLogonIfChallenged: BOOL;
+  end;
+  TWinHTTPAutoProxyOptions = WINHTTP_AUTOPROXY_OPTIONS;
+  LPWINHTTP_AUTOPROXY_OPTIONS = PWinHTTPAutoProxyOptions;
+  PWinHTTPCurrentUserIEProxyConfig = ^TWinHTTPCurrentUserIEProxyConfig;
+  WINHTTP_CURRENT_USER_IE_PROXY_CONFIG = record
+    fAutoDetect: BOOL;
+    lpszAutoConfigUrl: LPWSTR;
+    lpszProxy: LPWSTR;
+    lpszProxyBypass: LPWSTR;
+  end;
+  TWinHTTPCurrentUserIEProxyConfig = WINHTTP_CURRENT_USER_IE_PROXY_CONFIG;
+  LPWINHTTP_CURRENT_USER_IE_PROXY_CONFIG = PWinHTTPCurrentUserIEProxyConfig;
+const
+  WINHTTP_NO_REFERER = nil;
+  WINHTTP_NO_PROXY_NAME = nil;
+  WINHTTP_NO_PROXY_BYPASS = nil;
+  WINHTTP_DEFAULT_ACCEPT_TYPES = nil;
+  WINHTTP_ACCESS_TYPE_DEFAULT_PROXY = 0;
+  WINHTTP_ACCESS_TYPE_NO_PROXY = 1;
+  WINHTTP_OPTION_PROXY = 38;
+  WINHTTP_OPTION_PROXY_USERNAME = $1002;
+  WINHTTP_OPTION_PROXY_PASSWORD = $1003;
+  WINHTTP_AUTOPROXY_AUTO_DETECT = $00000001;
+  WINHTTP_AUTOPROXY_CONFIG_URL = $00000002;
+  WINHTTP_AUTO_DETECT_TYPE_DHCP = $00000001;
+  WINHTTP_AUTO_DETECT_TYPE_DNS_A = $00000002;
+  WINHTTP_FLAG_BYPASS_PROXY_CACHE = $00000100;
+  WINHTTP_FLAG_REFRESH = WINHTTP_FLAG_BYPASS_PROXY_CACHE;
+var
+  WinHttpModule: THandle;
+  Session: HINTERNET;
+  AutoDetectProxy: Boolean;
+  WinHttpProxyInfo: TWinHTTPProxyInfo;
+  AutoProxyOptions: TWinHTTPAutoProxyOptions;
+  IEProxyConfig: TWinHTTPCurrentUserIEProxyConfig;
+  WinHttpOpen: function (pwszUserAgent: LPCWSTR; dwAccessType: DWORD;
+    pwszProxyName, pwszProxyBypass: LPCWSTR; dwFlags: DWORD): HINTERNET; stdcall;
+  WinHttpConnect: function(hSession: HINTERNET; pswzServerName: LPCWSTR;
+    nServerPort: INTERNET_PORT; dwReserved: DWORD): HINTERNET; stdcall;
+  WinHttpOpenRequest: function(hConnect: HINTERNET; pwszVerb: LPCWSTR;
+    pwszObjectName: LPCWSTR; pwszVersion: LPCWSTR; pwszReferer: LPCWSTR;
+    ppwszAcceptTypes: PLPWSTR; dwFlags: DWORD): HINTERNET; stdcall;
+  WinHttpQueryOption: function(hInet: HINTERNET; dwOption: DWORD;
+    lpBuffer: Pointer; var lpdwBufferLength: DWORD): BOOL; stdcall;
+  WinHttpGetProxyForUrl: function(hSession: HINTERNET; lpcwszUrl: LPCWSTR;
+    pAutoProxyOptions: LPWINHTTP_AUTOPROXY_OPTIONS;
+    var pProxyInfo: WINHTTP_PROXY_INFO): BOOL; stdcall;
+  WinHttpGetIEProxyConfigForCurrentUser: function(
+    var pProxyInfo: WINHTTP_CURRENT_USER_IE_PROXY_CONFIG): BOOL; stdcall;
+  WinHttpCloseHandle: function(hInternet: HINTERNET): BOOL; stdcall;
+begin
+  Result.Host := '';
+  Result.Port := '';
+  Result.Bypass := '';
+  Result.ResultCode := 0;
+  Result.Autodetected := false;
+  WinHttpModule := LoadLibrary('winhttp.dll');
+  if WinHttpModule = 0 then
+    exit;
+  try
+    WinHttpOpen := GetProcAddress(WinHttpModule,PAnsiChar(AnsiString('WinHttpOpen')));
+    if @WinHttpOpen = nil then
+      Exit;
+    WinHttpConnect := GetProcAddress(WinHttpModule,PAnsiChar(AnsiString('WinHttpConnect')));
+    if @WinHttpConnect = nil then
+      Exit;
+    WinHttpOpenRequest := GetProcAddress(WinHttpModule,PAnsiChar(AnsiString('WinHttpOpenRequest')));
+    if @WinHttpOpenRequest = nil then
+      Exit;
+    WinHttpQueryOption := GetProcAddress(WinHttpModule,PAnsiChar(AnsiString('WinHttpQueryOption')));
+    if @WinHttpQueryOption = nil then
+      Exit;
+    WinHttpGetProxyForUrl := GetProcAddress(WinHttpModule,PAnsiChar(AnsiString('WinHttpGetProxyForUrl')));
+    if @WinHttpGetProxyForUrl = nil then
+      Exit;
+    WinHttpGetIEProxyConfigForCurrentUser := GetProcAddress(WinHttpModule,PAnsiChar(AnsiString('WinHttpGetIEProxyConfigForCurrentUser')));
+    if @WinHttpGetIEProxyConfigForCurrentUser = nil then
+      Exit;
+    WinHttpCloseHandle := GetProcAddress(WinHttpModule,PAnsiChar(AnsiString('WinHttpCloseHandle')));
+    if @WinHttpCloseHandle = nil then
+      Exit;
+
+    AutoDetectProxy := False;
+    FillChar(AutoProxyOptions, SizeOf(AutoProxyOptions), 0);
+    if WinHttpGetIEProxyConfigForCurrentUser(IEProxyConfig) then
+    begin
+      if IEProxyConfig.fAutoDetect then
+      begin
+        AutoProxyOptions.dwFlags := WINHTTP_AUTOPROXY_AUTO_DETECT;
+        AutoProxyOptions.dwAutoDetectFlags := WINHTTP_AUTO_DETECT_TYPE_DHCP or
+          WINHTTP_AUTO_DETECT_TYPE_DNS_A;
+        AutoDetectProxy := True;
+      end;
+      if IEProxyConfig.lpszAutoConfigURL <> '' then
+      begin
+        AutoProxyOptions.dwFlags := AutoProxyOptions.dwFlags or
+          WINHTTP_AUTOPROXY_CONFIG_URL;
+        AutoProxyOptions.lpszAutoConfigUrl := IEProxyConfig.lpszAutoConfigUrl;
+        AutoDetectProxy := True;
+      end;
+      if not AutoDetectProxy then
+      begin
+        Result.Host := IEProxyConfig.lpszProxy;
+        Result.Bypass := IEProxyConfig.lpszProxyBypass;
+        Result.Autodetected := false;
+      end;
+    end
+    else
+    begin
+      AutoProxyOptions.dwFlags := WINHTTP_AUTOPROXY_AUTO_DETECT;
+      AutoProxyOptions.dwAutoDetectFlags := WINHTTP_AUTO_DETECT_TYPE_DHCP or
+        WINHTTP_AUTO_DETECT_TYPE_DNS_A;
+      AutoDetectProxy := True;
+    end;
+    if AutoDetectProxy then
+    begin
+      Session := WinHttpOpen(nil, WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
+        WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
+      if Assigned(Session) then
+      try
+        if WinHttpGetProxyForUrl(Session, LPCWSTR(AURL),
+          @AutoProxyOptions, WinHttpProxyInfo) then
+        begin
+          Result.Host := WinHttpProxyInfo.lpszProxy;
+          Result.Bypass := WinHttpProxyInfo.lpszProxyBypass;
+          Result.Autodetected := True;
+        end
+        else
+          Result.ResultCode := GetLastError;
+      finally
+        WinHttpCloseHandle(Session);
+      end
+      else
+        Result.ResultCode := GetLastError;
+    end;
+    if Result.Host <> '' then
+    begin
+      Result.Port := Trim(SeparateRight(Result.Host, ':'));
+      Result.Host := Trim(SeparateLeft(Result.Host, ':'));
+    end;
+  finally
+    FreeLibrary(WinHttpModule);
+  end;
+end;
+{$ENDIF}
+
 
 end.

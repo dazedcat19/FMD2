@@ -1,0 +1,56 @@
+object CustomMessageDlg: TCustomMessageDlg
+  Left = 0
+  Height = 118
+  Top = 0
+  Width = 300
+  BorderIcons = [biSystemMenu]
+  BorderStyle = bsDialog
+  ClientHeight = 118
+  ClientWidth = 300
+  OnCreate = FormCreate
+  LCLVersion = '3.8.0.0'
+  object imgIcon: TImage
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Owner
+    Left = 10
+    Height = 48
+    Top = 10
+    Width = 48
+    BorderSpacing.Left = 10
+    BorderSpacing.Top = 10
+    Center = True
+    ImageWidth = 48
+  end
+  object pnlButtons: TPanel
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = imgIcon
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 0
+    Height = 45
+    Top = 73
+    Width = 300
+    Anchors = [akLeft, akRight, akBottom]
+    BorderSpacing.Top = 10
+    TabOrder = 0
+  end
+  object lblMessage: TLabel
+    AnchorSideLeft.Control = imgIcon
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = imgIcon
+    AnchorSideTop.Side = asrCenter
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 68
+    Height = 1
+    Top = 34
+    Width = 222
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Left = 10
+    BorderSpacing.Right = 10
+    WordWrap = True
+  end
+end

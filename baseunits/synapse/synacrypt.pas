@@ -1989,7 +1989,6 @@ var
   Size: integer;
   KC, ROUNDS, j, r, t, rconpointer: longword;
   tk: array[0..MAXKC-1,0..3] of byte;
-  n: integer;
 begin
   FillChar(tk,Sizeof(tk),0);
   //key must have at least 128 bits and max 256 bits

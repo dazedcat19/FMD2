@@ -1,9 +1,9 @@
 {==============================================================================|
-| Project : Ararat Synapse                                       | 005.002.003 |
+| Project : Ararat Synapse                                       | 005.002.004 |
 |==============================================================================|
 | Content: Socket Independent Platform Layer                                   |
 |==============================================================================|
-| Copyright (c)1999-2013, Lukas Gebauer                                        |
+| Copyright (c)1999-2022, Lukas Gebauer                                        |
 | All rights reserved.                                                         |
 |                                                                              |
 | Redistribution and use in source and binary forms, with or without           |
@@ -33,7 +33,7 @@
 | DAMAGE.                                                                      |
 |==============================================================================|
 | The Initial Developer of the Original Code is Lukas Gebauer (Czech Republic).|
-| Portions created by Lukas Gebauer are Copyright (c)2001-2013.                |
+| Portions created by Lukas Gebauer are Copyright (c)2001-2022.                |
 | All Rights Reserved.                                                         |
 |==============================================================================|
 | Contributor(s):                                                              |
@@ -72,14 +72,14 @@ unit synsock;
         {$I ssfpc.inc}
        {$ENDIF OS2}
       {$ELSE}
-        {$I sslinux.inc}
+        {$IFDEF POSIX}
+          {$I ssposix.inc} //experimental!
+        {$ELSE}
+          {$I sslinux.inc}
+        {$ENDIF}
       {$ENDIF}
     {$ENDIF}
   {$ENDIF}
-{$ENDIF}
-{$IFDEF POSIX}
-//Posix.SysSocket
-   {$I ssposix.inc} //experimental!
 {$ENDIF}
 
 end.

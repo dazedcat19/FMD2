@@ -1,14 +1,14 @@
 {
   "_comment": "automatically build with make_release_win.bat",
   "i386-win32": {
-    "version": "2.0.34.1",
-    "download_url": "https://github.com/dazedcat19/FMD2/releases/download/2.0.34.1/fmd_2.0.34.1_i386-win32.7z",
+    "version": "2.0.34.5",
+    "download_url": "https://github.com/dazedcat19/FMD2/releases/download/2.0.34.5/fmd_2.0.34.5_i386-win32.7z",
     "changelog_url": "https://raw.githubusercontent.com/dazedcat19/FMD2/master/changelog.txt"
   }
   ,
   "x86_64-win64": {
-    "version": "2.0.34.1",
-    "download_url": "https://github.com/dazedcat19/FMD2/releases/download/2.0.34.1/fmd_2.0.34.1_x86_64-win64.7z",
+    "version": "2.0.34.5",
+    "download_url": "https://github.com/dazedcat19/FMD2/releases/download/2.0.34.5/fmd_2.0.34.5_x86_64-win64.7z",
     "changelog_url": "https://raw.githubusercontent.com/dazedcat19/FMD2/master/changelog.txt"
   }
 }

@@ -137,7 +137,7 @@ type
     {:See @inherited}
     function GetPeerName: string; override;
     {:See @inherited}
-    function GetPeerFingerprint: string; override;
+    function GetPeerFingerprint: ansistring; override;
     {:See @inherited}
     function GetCertInfo: string; override;
   published
@@ -470,7 +470,7 @@ begin
   end;
 end;
 
-function TSSLStreamSec.GetPeerFingerprint: string;
+function TSSLStreamSec.GetPeerFingerprint: ansistring;
 var
   Cert: PASN1Struct;
 begin

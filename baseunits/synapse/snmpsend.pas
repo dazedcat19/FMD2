@@ -62,6 +62,7 @@ Supported Privacy encryptions: DES, 3DES, AES
 {$IFDEF UNICODE}
   {$WARN IMPLICIT_STRING_CAST OFF}
   {$WARN IMPLICIT_STRING_CAST_LOSS OFF}
+  {$TYPEINFO ON}
 {$ENDIF}
 
 unit snmpsend;
@@ -70,7 +71,13 @@ interface
 
 uses
   Classes, SysUtils,
-  blcksock, synautil, asn1util, synaip, synacode, synacrypt;
+  blcksock, synautil, asn1util, synaip, synacode, synacrypt
+  {$IfDef POSIX}
+   ,System.Generics.Collections, System.Generics.Defaults
+  {$EndIf}
+  {$IfDef NEXTGEN}
+   ,synafpc
+  {$EndIf};
 
 const
   cSnmpProtocol = '161';
@@ -161,6 +168,12 @@ type
     EngineStamp: Cardinal;
   end;
 
+  {$IFDEF POSIX}
+    TSNMPMibList = TList<TSNMPMib>;
+  {$ELSE}
+    TSNMPMibList = TList;
+  {$ENDIF}
+
   {:@abstract(Data object abstracts SNMP data packet)}
   TSNMPRec = class(TObject)
   protected
@@ -170,7 +183,7 @@ type
     FErrorStatus: Integer;
     FErrorIndex: Integer;
     FCommunity: AnsiString;
-    FSNMPMibList: TList;
+    FSNMPMibList: TSNMPMibList;
     FMaxSize: Integer;
     FFlags: TV3Flags;
     FFlagReportable: Boolean;
@@ -227,7 +240,7 @@ type
     function MIBByIndex(Index: Integer): TSNMPMib;
 
     {:List of @link(TSNMPMib) objects.}
-    property SNMPMibList: TList read FSNMPMibList;
+    property SNMPMibList: TSNMPMibList read FSNMPMibList;
   published
     {:Version of SNMP packet. Default value is 0 (SNMP ver. 1). You can use
      value 1 for SNMPv2c or value 3 for SNMPv3.}
@@ -435,7 +448,7 @@ implementation
 constructor TSNMPRec.Create;
 begin
   inherited Create;
-  FSNMPMibList := TList.Create;
+  FSNMPMibList := TSNMPMibList.Create;
   Clear;
   FAuthMode := AuthMD5;
   FPassword := '';
@@ -1000,7 +1013,6 @@ function TSNMPSend.SendRequest: Boolean;
 var
   sync: TV3Sync;
 begin
-  Result := False;
   if FQuery.FVersion = 3 then
   begin
     sync := GetV3Sync;

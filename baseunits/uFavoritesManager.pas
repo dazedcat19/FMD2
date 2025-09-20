@@ -184,7 +184,7 @@ resourcestring
 implementation
 
 uses
-  frmMain, frmNewChapter, FMDVars, DateUtils;
+  frmMain, frmCustomMessageDlg, frmNewChapter, FMDVars, DateUtils;
 
 { TFavoriteContainer }
 
@@ -708,7 +708,9 @@ begin
     if isRunning then
     begin
       if not isAuto then
-        MessageDlg('', RS_DlgFavoritesCheckIsRunning, mtInformation, [mbOK], 0);
+      begin
+        CenteredMessageDlg(MainForm, RS_DlgFavoritesCheckIsRunning, mtInformation, [mbOK], 0);
+      end;
     end
     else
     begin

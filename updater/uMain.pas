@@ -11,7 +11,7 @@ uses
   {$endif}
   Classes, SysUtils, zipper, FileUtil, LazFileUtils, LazUTF8, LazUTF8Classes,
   Forms, Dialogs, ComCtrls, StdCtrls, ExtCtrls, RegExpr, blcksock,
-  ssl_openssl, ssl_openssl_lib, synacode, httpsendthread, uMisc, BaseThread,
+  ssl_openssl3, ssl_openssl3_lib, synacode, httpsendthread, uMisc, BaseThread,
   SimpleTranslator, SimpleException;
 
 type
@@ -233,8 +233,9 @@ end;
 procedure TDownloadThread.MainThreadErrorGetting;
 begin
   if not _NoError then
-    MessageDlg('Error', FErrorMessage,
-      mtError, [mbOK], 0);
+  begin
+    CenteredMessageDlg(MainForm, 'Error', FErrorMessage, mtError, [mbOK], 0);
+  end;
 end;
 
 procedure TDownloadThread.SockOnStatus(Sender: TObject; Reason: THookSocketReason;
@@ -454,7 +455,7 @@ begin
         FHTTP.Free;
         FHTTP := nil;
         SSLImplementation := TSSLNone;
-        ssl_openssl_lib.DestroySSLInterface;
+        ssl_openssl3_lib.DestroySSLInterface;
 
         UpdateStatus(Format(RS_UnpackFile, [fname]));
         if _UpdApp and
@@ -653,7 +654,7 @@ begin
     end
     else
     begin
-      MessageDlg(Application.Title, RS_InvalidURL, mtError, [mbOK], 0);
+      CenteredMessageDlg(Self, Application.Title, RS_InvalidURL, mtError, [mbOK], 0);
       Self.Close;
     end;
   end;

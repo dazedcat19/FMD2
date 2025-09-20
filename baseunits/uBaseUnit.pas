@@ -23,7 +23,7 @@ uses
   fgl, RegExpr, synautil, httpsend,
   synacode, MultiLog, FPimage, GZIPUtils, uMisc, httpsendthread, FMDOptions,
   ImgInfos, NaturalSortUnit,
-  MemBitmap, FPWritePNG, zstream, FPReadPNG, VirtualTrees;
+  MemBitmap, FPWritePNG, zstream, FPReadPNG, VirtualTrees, ImageMagickManager;
 
 const
   LineEnding2 = LineEnding + LineEnding;
@@ -434,6 +434,7 @@ procedure FilterVST(Tree: TVirtualStringTree; Key: String; Column: Integer = 0);
 
 // Remove Unicode
 function ReplaceUnicodeChar(const S, ReplaceStr: String): String;
+
 // Check a directory to see if it's empty (return TRUE) or not
 function IsDirectoryEmpty(const ADir: String): Boolean;
 function CorrectFilePath(const APath: String): String;
@@ -551,6 +552,11 @@ function FindStrQuick(const s: String; var AStrings: TStringList): Boolean;
 function GoogleResultURL(const AURL: String): String;
 procedure GoogleResultURLs(const AURLs: TStrings);
 
+// create FQDN file list       
+function CreateFQDNName(AFileName: String): String;
+function CreateFQDNFolder(Sender: TObject; ACurrentDir, AFileName: String): String;
+function CreateFQDNList(Sender: TObject; AFileName: String; AFileList: TStringList): String;
+
 // convert webp
 function WebPToPNGStream(const AStream: TMemoryStream; const ALevel: Tcompressionlevel = clfastest): Boolean;
 function WebPToJPEGStream(const AStream: TMemoryStream; const AQuality: Integer = 80): Boolean;
@@ -564,7 +570,8 @@ function SaveImageStreamToFile(AHTTP: THTTPSend; Path, FileName: String): String
 
 // check file exist with known extensions. AFilename is a filename without extensions
 function ImageFileExists(const AFileName: String): Boolean;
-function FindImageFile(const AFileName: String): String;
+function ImageFileExtExists(const AFileName, AFileExt: String): Boolean;
+function FindImageFile(const AFileName: String; AFileExt: String = ''): String;
 
 // load iamge from file with UTF8 aware
 function LoadImageFromFileUTF8(const FileName: String; var Image: TFPCustomImage): Boolean;
@@ -1454,13 +1461,11 @@ begin
   s := UTF8Decode(Result);
   if Length(s) > MAX_PATHDIR then
   begin
-    if MainForm.cbOptionEnableLongNamePaths.Checked then
+    s := MainForm.CheckLongNamePaths(s);
+    if not MainForm.cbOptionEnableLongNamePaths.Checked then
     begin
-      if Pos('\\?\', s) = 0 then
-        s := '\\?\' + s;
-    end
-    else
       SetLength(s, MAX_PATHDIR);
+    end;
     Result := UTF8Encode(s);
   end;
   {$ELSE}
@@ -2198,6 +2203,87 @@ begin
   end;
 end;
 
+function CreateFQDNName(AFileName: String): String;
+var
+  UniqueTimestampName: String;
+begin
+  UniqueTimestampName := StringReplace(ExtractFileName(AFileName), ExtractFileExt(AFileName), '', [rfReplaceAll])+ '_' + FormatDateTime('yyyy-mm-dd_hh-nn-ss', Now);
+  Result := StringReplace(('FQDNList_' + UniqueTimestampName), ' ', '_', [rfReplaceAll]);
+end;
+ 
+function CreateFQDNFolder(Sender: TObject; ACurrentDir, AFileName: String): String;
+var
+  FQDNFolderName: String;
+begin
+  FQDNFolderName := CreateFQDNName(AFileName);
+  Result := FQDNFolderName;
+
+  try
+    ForceDirectories(FQDNFolderName);
+  except
+    on E: EFCreateError do
+    begin
+      // If first attempt fails, try the second path
+      try
+        FQDNFolderName := AppendPathDelim(ACurrentDir) + FQDNFolderName;
+
+        if ForceDirectories(FQDNFolderName) then
+        begin
+          Result := FQDNFolderName;
+        end;
+      except
+        on E2: Exception do
+        begin
+          MainForm.ExceptionHandler(Sender, E2);
+        end;
+      end;
+    end;
+  end;
+end;
+
+function CreateFQDNList(Sender: TObject; AFileName: String; AFileList: TStringList): String;
+var
+  FQDNListName: String;
+  i: Integer;
+begin
+  FQDNListName := CreateFQDNName(AFileName) + '.txt';
+  Result := FQDNListName;
+
+  with TStringList.Create do
+  try
+    for i := 0 to AFileList.Count - 1 do
+    begin
+      AFileList[i] := MainForm.CheckLongNamePaths(AFileList[i]);
+      Add('"' + AFileList[i] + '"');
+    end;
+
+    try
+      SaveToFile(FQDNListName);
+    except
+      on E: EFCreateError do
+      begin
+        // If first attempt fails, try the second path
+        try
+          FQDNListName := AppendPathDelim(ExtractFilePath(AFileName)) + FQDNListName;
+          SaveToFile(FQDNListName);
+
+          if FileExists(FQDNListName) then
+          begin
+            Result := FQDNListName;
+          end;
+        except
+          on E2: Exception do
+          begin
+            MainForm.ExceptionHandler(Sender, E2);
+          end;
+        end;
+      end;
+    end;
+  finally
+    Free;
+  end;
+end;
+
 function WebPToPNGStream(const AStream: TMemoryStream;
   const ALevel: Tcompressionlevel): Boolean;
 var
@@ -2279,59 +2365,91 @@ end;
 
 function SaveImageStreamToFile(Stream: TMemoryStream; Path, FileName: String; Age: LongInt): String;
 var
-  p, f: String;
-  fs: TFileStream;
+  FilePath, PathDirectory, FileExt: String;
+  FileStream: TFileStream;
 begin
   Result := '';
-  if Stream = nil then Exit;
-  if Stream.Size = 0 then Exit;
-  p := CorrectPathSys(Path);
-  if ForceDirectories(p) then begin
-    f := GetImageStreamExt(Stream);
-    if f = 'png' then
+
+  if Stream = nil then
+  begin
+    Exit;
+  end;
+
+  if Stream.Size = 0 then
+  begin
+    Exit;
+  end;
+
+  PathDirectory := CorrectPathSys(Path);
+  if ForceDirectories(PathDirectory) then
+  begin
+    FileExt := GetImageStreamExt(Stream);
+
+    if not TImageMagickManager.Instance.Enabled then
     begin
-      if OptionPNGSaveAsJPEG then
-        if PNGToJPEGStream(Stream, OptionJPEGQuality) then f := 'jpg'
-    end
-    else
-    if f = 'webp' then
-    begin
-      case OptionWebPSaveAs of
-        1: if WebPToPNGStream(Stream, Tcompressionlevel(OptionPNGCompressionLevel)) then f := 'png';
-        2: if WebPToJPEGStream(Stream, OptionJPEGQuality) then f := 'jpg';
+      if FileExt = 'png' then
+      begin
+        if OptionPNGSaveAsJPEG then
+        begin
+          if PNGToJPEGStream(Stream, OptionJPEGQuality) then
+          begin
+            FileExt := 'jpg';
+          end;
+        end;
+      end
+      else if FileExt = 'webp' then
+      begin
+        case OptionWebPSaveAs of
+          1: if WebPToPNGStream(Stream, Tcompressionlevel(OptionPNGCompressionLevel)) then
+             begin
+               FileExt := 'png';
+             end;
+          2: if WebPToJPEGStream(Stream, OptionJPEGQuality) then
+             begin
+               FileExt := 'jpg';
+             end;
+        end;
       end;
     end;
 
-    if f = '' then Exit;
-    f := p + FileName + '.' + f;
-    if MainForm.cbOptionEnableLongNamePaths.Checked then
+    if FileExt = '' then
     begin
-      if Pos('\\?\', f) = 0 then
-        f := '\\?\' + f;
+      Exit;
     end;
-    if FileExists(f) then DeleteFile(f);
+
+    FilePath := PathDirectory + FileName + '.' + FileExt;
+    FilePath := MainForm.CheckLongNamePaths(FilePath);
+
+    if FileExists(FilePath) then
+    begin
+      DeleteFile(FilePath);
+    end;
+
     try
-      fs := TFileStream.Create(f, fmCreate);
+      FileStream := TFileStream.Create(FilePath, fmCreate);
       try
         Stream.Position := 0;
-        fs.CopyFrom(Stream, Stream.Size);
+        FileStream.CopyFrom(Stream, Stream.Size);
       finally
-        fs.Free;
+        FileStream.Free;
       end;
     except
       on E: Exception do
-        SendLogException('SaveImageStreamToFile.WriteToFile Failed! ' + f, E);
+        SendLogException('SaveImageStreamToFile.WriteToFile Failed! ' + FilePath, E);
     end;
-    if FileExists(f) then
+
+    if FileExists(FilePath) then
     begin
-      Result := f;
+      Result := FilePath;
       if Age > 0 then
+      begin
         try
-          FileSetDateUTF8(f, Age);
+          FileSetDateUTF8(FilePath, Age);
         except
           on E: Exception do
-            SendLogException('SaveImageStreamToFile.FileSetDate Error! ' + f, E);
+            SendLogException('SaveImageStreamToFile.FileSetDate Error! ' + FilePath, E);
         end;
+      end;
     end;
   end;
 end;
@@ -2353,19 +2471,36 @@ end;
 function ImageFileExists(const AFileName: String): Boolean;
 begin
   Result := FindImageFile(AFileName) <> '';
+end; 
+
+function ImageFileExtExists(const AFileName, AFileExt: String): Boolean;
+begin
+  Result := FindImageFile(AFileName, AFileExt) <> '';
 end;
 
-function FindImageFile(const AFileName: String): String;
+function FindImageFile(const AFileName: String; AFileExt: String = ''): String;
 var
   i: TImageHandlerRec;
   s: String;
 begin
+  if AFileExt <> '' then
+  begin
+    s := AFileName + '.' + AFileExt;
+    if FileExists(s) then
+    begin
+      Exit(s);
+    end;
+  end;
+
   for i in ImageHandlerMgr.List do
   begin
     s := AFileName + '.' + i.Ext;
     if FileExists(s) then
+    begin
       Exit(s);
+    end;
   end;
+
   Result := '';
 end;
 

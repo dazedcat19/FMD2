@@ -131,7 +131,7 @@ type
     {:See @inherited}
     function GetPeerName: string; override;
     {:See @inherited}
-    function GetPeerFingerprint: string; override;
+    function GetPeerFingerprint: ansistring; override;
     {:See @inherited}
     function GetCertInfo: string; override;
   published
@@ -325,7 +325,7 @@ begin
     Result := FElSecureClient.CipherSuite;
 end;
 
-function TSSLSBB.GetPeerFingerprint: string;
+function TSSLSBB.GetPeerFingerprint: ansistring;
 begin
   Result := '';
   // if FServer then

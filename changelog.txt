@@ -4,6 +4,21 @@ https://github.com/dazedcat19/FMD2
 Changelog:
 ([!] Important, [+] Addition, [-] Removal, [*] Fix/Change, [?] Feedback needed)
 
+2.0.34.5 (17.03.2025)
+[+] Added check for duplicate entries on update list -> Thank you @NhKPaNdA
+[+] Added dark mode theme selection (only works on Windows version 1809 or later and disables on unsupported versions) -> Thank you @NhKPaNdA
+[+] Added database structure check when searching all sites -> Thank you @NhKPaNdA
+[+] Added GitHub API error to check rate limit for better clarity on module updates -> Thank you @NhKPaNdA
+[+] Added limit check when searching all sites (SQL limit is 125) -> Thank you @NhKPaNdA
+[+] Added progress bar for module downloads -> Thank you @NhKPaNdA
+[+] Added reset list colors button -> Thank you @NhKPaNdA
+[+] Added unique naming for compression list so threads don't accidently share -> Thank you @NhKPaNdA
+[*] Changed message dialogs with single buttons to OK instead of Yes -> Thank you @NhKPaNdA
+[*] Fixed already running dialog for update list saying favorites instead of update list -> Thank you @NhKPaNdA
+[*] Fixed color blending in manga list -> Thank you @NhKPaNdA
+[*] Fixed message dialogs not appearing at the center of form -> Thank you @NhKPaNdA
+[*] Fixed trailing spaces in save path causing error on CreateDir -> Thank you @NhKPaNdA
+
 2.0.34.1 (06.02.2025)
 [*] Changed compression file list to fallback to save location path if FMD folder path fails -> Thank you @NhKPaNdA
 [*] Changed database structure check to also check after downloading manga list from FMD server -> Thank you @NhKPaNdA

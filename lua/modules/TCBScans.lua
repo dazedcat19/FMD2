@@ -5,8 +5,8 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '80cb4513684e4b4ebc68730d0813781c'
-	m.Name                     = 'TCBScans'
-	m.RootURL                  = 'https://tcbscans.me'
+	m.Name                     = 'TCB Scans'
+	m.RootURL                  = 'https://tcbonepiecechapters.com'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -34,7 +34,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	local v, x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
@@ -62,9 +62,9 @@ end
 function GetPageNumber()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
-	if not HTTP.GET(u) then return net_problem end
+	if not HTTP.GET(u) then return false end
 
 	CreateTXQuery(HTTP.Document).XPathStringAll('//img[@class="fixed-ratio-content"]/@src', TASK.PageLinks)
 
-	return no_error
+	return true
 end

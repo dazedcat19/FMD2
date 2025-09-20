@@ -56,17 +56,22 @@ function TPacker.DoZipCbz: Boolean;
 var
   i: Integer;
 begin
-  Result:=False;
+  Result := False;
+
   with TZipper.Create do
+  begin
     try
       try
         FileName := FSavedFileName;
         for i := 0 to FFileList.Count - 1 do
+        begin
           with Entries.AddFileEntry(FFileList[i]) do
           begin
             CompressionLevel := clnone;
             ArchiveFileName := ExtractFileName(FFileList[i]);
           end;
+        end;
+
         ZipAllFiles;
       except
         on E: Exception do
@@ -78,35 +83,47 @@ begin
     finally
       Free;
     end;
+  end;
+
   Result := FileExists(FSavedFileName);
   if Result then
+  begin
     with TUnZipper.Create do
+    begin
       try
-         FileName:=FSavedFileName;
+         FileName := FSavedFileName;
          Examine;
          Result := FileList.Count = Entries.Count;
+
          if not Result then
+         begin
            Logger.SendWarning('Some files failed to be compressed!');
+         end;
       finally
         Free;
       end;
+    end;
+  end;
 end;
 
 Function MaybeQuoteIfNotQuoted(Const S : TProcessString) : TProcessString;
 
 begin
-  If (Pos(' ',S)<>0) and (pos('"',S)=0) then
-    Result:='"'+S+'"'
+  If (Pos(' ', S) <> 0) and (pos('"', S) = 0) then
+  begin
+    Result := '"' + S + '"';
+  end
   else
-     Result:=S;
+  begin
+     Result := S;
+  end;
 end;
 
 function TPacker.Do7Zip: Boolean;
 var
   p: TProcess;
   exit_status, i: Integer;
-  s, sout, serr, fFileName: string;
-  f: TextFile;
+  s, sout, serr, fFileName: String;
 begin
   Result := False;
   p := TProcess.Create(nil);
@@ -120,39 +137,7 @@ begin
       end;
     end;
 
-    fFileName := 'FQDNlist.txt';
-    with TStringList.Create do
-    try
-      for i := 0 to FFileList.Count - 1 do
-      begin
-        if MainForm.cbOptionEnableLongNamePaths.Checked then
-        begin
-          if Pos('\\?\', FFileList[i]) = 0 then
-            FFileList[i] := '\\?\' + FFileList[i];
-        end;
-        Add(FFileList[i]);
-      end;
-
-      try
-        SaveToFile(fFileName);
-      except
-        on E: EFCreateError do
-        begin
-          // If first attempt fails, try the second path
-          try
-            fFileName := AppendPathDelim(ExtractFilePath(FSavedFileName)) + fFileName;
-            SaveToFile(fFileName);
-          except
-            on E2: Exception do
-            begin
-              MainForm.ExceptionHandler(Self, E2);
-            end;
-          end;
-        end;
-      end;
-    finally
-      Free;
-    end;
+    fFileName := CreateFQDNList(Self, FSavedFileName, FFileList);
 
     p.Executable := CURRENT_ZIP_EXE;
     with p.Parameters do begin
@@ -170,12 +155,18 @@ begin
       Add(FSavedFileName);
       Add('@' + fFileName);
     end;
+
     sout := '';
     serr := '';
     p.ShowWindow := swoHIDE;
     p.RunCommandLoop(sout, serr, exit_status);
     Result := exit_status = 0;
-    DeleteFile(fFileName);
+
+    if FileExists(fFileName) then
+    begin
+      DeleteFile(fFileName);
+    end;
+
     if not Result then
     begin
       serr := '';
@@ -189,11 +180,13 @@ begin
         else
           s := 'Unknown';
       end;
+
       s += ' ' + MaybeQuoteIfNotQuoted(p.Executable);
       for i := 0 to p.Parameters.Count-1 do
       begin
         s += ' ' + MaybeQuoteIfNotQuoted(p.Parameters[i]);
       end;
+
       Logger.SendError(Self.ClassName + '.Do7zip Error: ' + s);
     end;
   finally
@@ -213,6 +206,7 @@ begin
       pdf.CompressionQuality := CompressionQuality;
       pdf.Infos.Title := GetLastDir(Path);
       pdf.Infos.Creator := ApplicationName;
+
       for i := 0 to FFileList.Count - 1 do
       begin
         try
@@ -249,6 +243,7 @@ begin
     epub := TEpubBuilder.Create;
     try
       epub.Title := GetLastDir(Path);
+
       for i := 0 to FFileList.Count - 1 do
       begin
         try
@@ -285,7 +280,11 @@ begin
 
   if FFileList.Count = 0 then
   begin
-    if DirectoryExists(Path) = False then Exit;
+    if not DirectoryExists(Path) then
+    begin
+      Exit;
+    end;
+
     with TFileSearcher.Create do
       try
         OnFileFound := FileFound;
@@ -295,8 +294,6 @@ begin
       end;
   end;
 
-  if FFileList.Count = 0 then Exit;
-
   FFileList.CustomSort(NaturalCustomSort);
   case Format of
     pfZIP: FExt := '.zip';
@@ -304,28 +301,61 @@ begin
     pfPDF: FExt := '.pdf';
     pfEPUB: FExt := '.epub';
   end;
+
   if FileName <> '' then
-    FSavedFileName := FileName + FExt
+  begin
+    FSavedFileName := FileName + FExt;
+  end
   else
+  begin
     FSavedFileName := TrimAndExpandFilename(Path) + FExt;
+  end;
+
+  if FFileList.Count = 0 then
+  begin
+    if FileExists(FSavedFileName) then
+    begin
+      Exit(True);
+    end;
+
+    Exit;
+  end;
+
   if FileExists(FSavedFileName) then
-    if DeleteFile(FSavedFileName) = False then
+  begin
+    if not DeleteFile(FSavedFileName) then
+    begin
       Exit;
+    end;
+  end;
+
   packResult:=True;
   case Format of
     pfZIP, pfCBZ: packResult:=Do7Zip;
     pfPDF: DoPdf;
     pfEPUB: DoEpub;
   end;
-  if not packResult then Exit(False);
+
+  if not packResult then
+  begin
+    Exit(False);
+  end;
+
   Result := FileExists(FSavedFileName);
   if Result then
   begin
     if not (Format in [pfZIP, pfCBZ]) then // let 7za delete the files
+    begin
       for i := 0 to FFileList.Count - 1 do
+      begin
         DeleteFile(FFileList[i]);
+      end;
+    end;
+
     if IsDirectoryEmpty(Path) then
+    begin
       RemoveDir(Path);
+    end;
   end;
 end;
 

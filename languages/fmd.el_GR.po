@@ -39,6 +39,7 @@ msgstr "Άκυρο"
 
 #: dbupdater.rs_downloading
 #, object-pascal-format
+msgctxt "dbupdater.rs_downloading"
 msgid "Downloading %s"
 msgstr ""
 
@@ -107,6 +108,31 @@ msgstr "Εντάξει"
 msgid "Username or password can't be empty!"
 msgstr "Το όνομα χρήστη ή ο κωδικός πρόσβασης δεν μπορεί να είναι κενά!"
 
+#: frmcustommessagedlg.rs_dialogconfirmation
+msgctxt "frmcustommessagedlg.rs_dialogconfirmation"
+msgid "Confirmation"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogcustom
+msgctxt "frmcustommessagedlg.rs_dialogcustom"
+msgid "Message"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogerror
+msgctxt "frmcustommessagedlg.rs_dialogerror"
+msgid "Error"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialoginformation
+msgctxt "frmcustommessagedlg.rs_dialoginformation"
+msgid "Information"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogwarning
+msgctxt "frmcustommessagedlg.rs_dialogwarning"
+msgid "Warning"
+msgstr ""
+
 #: frmimportfavorites.rs_importcompleted
 msgid "Import completed."
 msgstr "Η εισαγωγή ολοκληρώθηκε."
@@ -123,14 +149,32 @@ msgstr ""
 msgid "List of unimported manga"
 msgstr "Λίστα μη εισηγμένων manga"
 
+#: frmluamodulesupdater.rs_awaitingproceed
+msgid "Awaiting permission to proceed..."
+msgstr ""
+
 #: frmluamodulesupdater.rs_checking
 msgctxt "frmluamodulesupdater.rs_checking"
 msgid "Checking..."
 msgstr "Έλεγχος..."
 
+#: frmluamodulesupdater.rs_checklocalmodules
+msgid "Checking local modules..."
+msgstr ""
+
 #: frmluamodulesupdater.rs_checkupdate
 msgctxt "frmluamodulesupdater.rs_checkupdate"
 msgid "Check update"
+msgstr ""
+
+#: frmluamodulesupdater.rs_deletingflaggedmodules
+msgid "Deleting flagged modules..."
+msgstr ""
+
+#: frmluamodulesupdater.rs_downloadingmodule
+#, object-pascal-format
+msgctxt "frmluamodulesupdater.rs_downloadingmodule"
+msgid "Downloading %s"
 msgstr ""
 
 #: frmluamodulesupdater.rs_finishchecking
@@ -139,6 +183,21 @@ msgstr ""
 
 #: frmluamodulesupdater.rs_finishdownload
 msgid "Finish download"
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubconnectfail
+msgid ""
+"Failed to connect to GitHub API for latest module updates.\n"
+"Please try again later."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubconnecting
+msgid "Connecting to GitHub..."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubratestats
+#, object-pascal-format
+msgid "GitHub API core rate - call limit: %d, remaining calls: %d, used calls: %d, limit refresh: %s"
 msgstr ""
 
 #: frmluamodulesupdater.rs_modulesupdatedrestart
@@ -220,6 +279,9 @@ msgid ""
 "Dark\n"
 "Light"
 msgstr ""
+"Σύστημα\n"
+"Σκοτεινό\n"
+"Φωτεινό"
 
 #: frmmain.rs_dlgcannotconnecttoserver
 msgid "Cannot connect to the server."
@@ -547,6 +609,20 @@ msgctxt "frmtransferfavorites.rs_valid"
 msgid "Valid"
 msgstr ""
 
+#: imagemagickmanager.rs_imagemagicknotfoundhint
+msgctxt "imagemagickmanager.rs_imagemagicknotfoundhint"
+msgid ""
+"Failed to detect an install of ImageMagick!\n"
+"Please install ImageMagick from www.imagemagick.org if you haven't already."
+msgstr ""
+
+#: imagemagickmanager.rs_imagemagickpreferencehint
+msgctxt "imagemagickmanager.rs_imagemagickpreferencehint"
+msgid ""
+"ImageMagick has been enabled!\n"
+"The following settings have been disabled because ImageMagick has taken preference."
+msgstr ""
+
 #: selfupdater.rs_buttoncancel
 msgctxt "selfupdater.rs_buttoncancel"
 msgid "Abort"
@@ -630,10 +706,6 @@ msgstr "Επεξεργασία"
 #: taccountmanagerform.btrefresh.caption
 msgid "Refresh"
 msgstr "Ανανέωση"
-
-#: taccountmanagerform.caption
-msgid "AccountManagerForm"
-msgstr ""
 
 #: taccountmanagerform.vtaccountlist.header.columns[1].text
 msgctxt "taccountmanagerform.vtaccountlist.header.columns[1].text"
@@ -915,6 +987,14 @@ msgstr "Προσθήκη στη λίστα λήψης ως διακοπείσα 
 msgid "<none>"
 msgstr "<καμία>"
 
+#: tmainform.cbimagemagickcompression.text
+msgid "None"
+msgstr ""
+
+#: tmainform.cbimagemagicksaveas.text
+msgid "JPEG"
+msgstr ""
+
 #: tmainform.cbonlynew.caption
 msgid "Search only new manga"
 msgstr "Αναζήτηση μόνο νέου manga"
@@ -972,7 +1052,7 @@ msgid "Enable load manga cover"
 msgstr "Ενεργοποίηση φόρτωσης εξώφυλλου manga"
 
 #: tmainform.cboptionenablelongnamepaths.caption
-msgid "Enable long name paths (Can break most/all interaction with the file in Windows and other apps)"
+msgid "Enable long name paths (can break most/all interaction with the file in Windows and other apps)"
 msgstr ""
 
 #: tmainform.cboptiongeneratechapterfolder.caption
@@ -1464,6 +1544,10 @@ msgstr "Yuri"
 msgid "This work usually involves intimate relationships between women."
 msgstr "Το έργο αυτό συνήθως περιλαμβάνει στενές σχέσεις μεταξύ γυναικών."
 
+#: tmainform.ckimagemagick.caption
+msgid "Enable ImageMagick Conversion"
+msgstr ""
+
 #: tmainform.ckoptionsalwaysstarttaskfromfailedchapters.caption
 msgctxt "tmainform.ckoptionsalwaysstarttaskfromfailedchapters.caption"
 msgid "Always start task from failed chapters"
@@ -1517,7 +1601,7 @@ msgid "Search title..."
 msgstr "Αναζήτηση τίτλου..."
 
 #: tmainform.edoptionchangeunicodecharacterstr.texthint
-msgid "Unicode Char"
+msgid "Character"
 msgstr ""
 
 #: tmainform.edoptionchaptercustomrename.texthint
@@ -1592,6 +1676,10 @@ msgstr "Κουτί φύλαξης"
 msgid "Image Conversion"
 msgstr ""
 
+#: tmainform.gbimagemagick.caption
+msgid "Image Magick"
+msgstr ""
+
 #: tmainform.gboptionexternal.caption
 msgid "External program"
 msgstr "Εξωτερικό πρόγραμμα"
@@ -1626,11 +1714,10 @@ msgid "Miscellaneous"
 msgstr ""
 
 #: tmainform.lbdarkmode.caption
-msgid "Theme (Requires restart to take effect):"
+msgid "Theme (requires restart to take effect):"
 msgstr ""
 
 #: tmainform.lbdarkmodehint.caption
-#, fuzzy
 msgctxt "tmainform.lbdarkmodehint.caption"
 msgid "[?]"
 msgstr "[?]"
@@ -1711,6 +1798,33 @@ msgstr "Περίληψη"
 msgctxt "tmainform.lbfiltertitle.caption"
 msgid "Title"
 msgstr "Τίτλος"
+
+#: tmainform.lbimageconversionhint.caption
+#, fuzzy
+msgctxt "tmainform.lbimageconversionhint.caption"
+msgid "[?]"
+msgstr "[?]"
+
+#: tmainform.lbimagemagickcompression.caption
+msgctxt "tmainform.lbimagemagickcompression.caption"
+msgid "Image Compression type"
+msgstr ""
+
+#: tmainform.lbimagemagickhint.caption
+#, fuzzy
+msgctxt "tmainform.lbimagemagickhint.caption"
+msgid "[?]"
+msgstr "[?]"
+
+#: tmainform.lbimagemagickquality.caption
+msgctxt "tmainform.lbimagemagickquality.caption"
+msgid "Image quality"
+msgstr ""
+
+#: tmainform.lbimagemagicksaveas.caption
+msgctxt "tmainform.lbimagemagicksaveas.caption"
+msgid "Save Image as"
+msgstr ""
 
 #: tmainform.lbjpegquality.caption
 msgid "JPEG quality"
@@ -2658,6 +2772,10 @@ msgstr ""
 msgid "Compressing..."
 msgstr ""
 
+#: udownloadsmanager.rs_converting
+msgid "Converting..."
+msgstr ""
+
 #: udownloadsmanager.rs_disabled
 #, fuzzy
 msgctxt "udownloadsmanager.rs_disabled"
@@ -2763,6 +2881,10 @@ msgstr ""
 #: uupdatethread.rs_dlghasnewmanga
 #, object-pascal-format
 msgid "%s has %d new manga(s)"
+msgstr ""
+
+#: uupdatethread.rs_dlgupdatelistcheckisrunning
+msgid "Update list(s) is running!"
 msgstr ""
 
 #: uupdatethread.rs_gettingdirectory

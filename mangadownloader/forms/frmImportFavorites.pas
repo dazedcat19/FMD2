@@ -47,7 +47,7 @@ resourcestring
 implementation
 
 uses
-  frmMain, uSilentThread, FMDVars;
+  frmMain, frmCustomMessageDlg, uSilentThread, FMDVars;
 
 {$R *.lfm}
 
@@ -286,11 +286,11 @@ begin
   FUnimportedMangas.Free;
   if FImportFailed then
   begin
-    MessageDlg('', RS_ImportFailed, mtError, [mbOK], 0);
+    CenteredMessageDlg(Self, RS_ImportFailed, mtError, [mbOK], 0);
   end
   else
   begin
-    MessageDlg('', RS_ImportCompleted, mtConfirmation, [mbYes], 0);
+    CenteredMessageDlg(Self, RS_ImportCompleted, mtConfirmation, [mbOk], 0);
   end;
 end;
 

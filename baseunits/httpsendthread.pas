@@ -5,7 +5,7 @@ unit httpsendthread;
 interface
 
 uses
-  Classes, SysUtils, httpsend, synautil, synacode, ssl_openssl, blcksock,
+  Classes, SysUtils, httpsend, synautil, synacode, ssl_openssl3, blcksock,
   BaseThread, httpcookiemanager, dateutils, strutils,
   GZIPUtils, BrotliDec;
 
@@ -157,7 +157,7 @@ function FormatByteSize(const ABytes: Integer; AShowPerSecond: Boolean = False):
 const
   UserAgentSynapse   = 'Mozilla/4.0 (compatible; Synapse)';
   UserAgentCURL      = 'curl/7.70.0';
-  UserAgentDefault   = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36'; // Chrome default at 04.02.2025
+  UserAgentDefault   = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36'; // Chrome default at 04.03.2025
   HeartBeatRate      = 1000;
 
 var

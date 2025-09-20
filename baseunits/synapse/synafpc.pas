@@ -1,9 +1,9 @@
 {==============================================================================|
-| Project : Ararat Synapse                                       | 001.003.001 |
+| Project : Ararat Synapse                                       | 001.004.000 |
 |==============================================================================|
 | Content: Utils for FreePascal compatibility                                  |
 |==============================================================================|
-| Copyright (c)1999-2013, Lukas Gebauer                                        |
+| Copyright (c)1999-2022, Lukas Gebauer                                        |
 | All rights reserved.                                                         |
 |                                                                              |
 | Redistribution and use in source and binary forms, with or without           |
@@ -38,6 +38,7 @@
 |==============================================================================|
 | Contributor(s):                                                              |
 |   Tomas Hajny (OS2 support)                                                  |
+|   Projeto ACBr                                                               |
 |==============================================================================|
 | History: see HISTORY.HTM from distribution package                           |
 |          (Found at URL: http://www.ararat.cz/synapse/)                       |
@@ -45,9 +46,8 @@
 
 {:@exclude}
 
-{$IFDEF FPC}
-  {$MODE DELPHI}
-{$ENDIF}
+{$INCLUDE 'jedi.inc'}
+
 {$H+}
 //old Delphi does not have MSWINDOWS define.
 {$IFDEF WIN32}
@@ -56,25 +56,41 @@
   {$ENDIF}
 {$ENDIF}
 
+{$IFDEF NEXTGEN}
+  {$LEGACYIFEND ON}
+  {$ZEROBASEDSTRINGS OFF}
+{$ENDIF}
+
+{$IfDef DELPHI2009_UP}
+  {$DEFINE HAS_CHARINSET}
+{$EndIf}
+{$IfDef FPC}
+  {$DEFINE HAS_CHARINSET}
+{$EndIf}
+
 unit synafpc;
 
 interface
 
 uses
-{$IFDEF FPC}
-  dynlibs, sysutils;
-{$ELSE}
-  {$IFDEF MSWINDOWS}
-  Windows;
+  {$IFDEF FPC}
+   dynlibs,
   {$ELSE}
-  SysUtils;
+   {$IFDEF DELPHIXE4_UP}
+    {$IFNDEF NEXTGEN}
+    System.AnsiStrings,
+    {$ENDIF}
+   {$ENDIF}
+   {$IFDEF MSWINDOWS}
+    Windows,
+   {$ENDIF}
   {$ENDIF}
-{$ENDIF}
+  SysUtils;
 
 {$IFDEF FPC}
 type
   TLibHandle = dynlibs.TLibHandle;
-  
+
 function LoadLibrary(ModuleName: PChar): TLibHandle;
 function FreeLibrary(Module: TLibHandle): LongBool;
 function GetProcAddress(Module: TLibHandle; Proc: PChar): Pointer;
@@ -82,22 +98,36 @@ function GetModuleFileName(Module: TLibHandle; Buffer: PChar; BufLen: Integer): 
 {$ELSE} //not FPC
 type
   {$IFDEF CIL}
-  TLibHandle = Integer;
-  PtrInt = Integer;
+   TLibHandle = Integer;
+   PtrInt = Integer;
   {$ELSE}
-  TLibHandle = HModule;
-    {$IFDEF WIN64}
-  PtrInt = NativeInt;
-    {$ELSE}
-  PtrInt = Integer;
-    {$ENDIF}
+   TLibHandle = HModule;
+   {$IFDEF WIN64}
+    PtrInt = NativeInt;
+   {$ELSE}
+    PtrInt = Integer;
+   {$ENDIF}
   {$ENDIF}
-  {$IFDEF VER100}
-  LongWord = DWord;
+
+  {$IFDEF DELPHI3}
+   LongWord = DWord;
+  {$ENDIF}
+
+  {$IFDEF NEXTGEN}  // Android FMX
+   AnsiString = RawByteString;
+   AnsiChar = UTF8Char;
+   PAnsiChar = PUTF8Char;
+   WideString = String;
   {$ENDIF}
 {$ENDIF}
 
+function StrLCopy(Dest: PAnsiChar; const Source: PAnsiChar; MaxLen: Cardinal): PAnsiChar;
+function StrLComp(const Str1, Str2: PANSIChar; MaxLen: Cardinal): Integer;
 procedure Sleep(milliseconds: Cardinal);
+
+{$IfNDef HAS_CHARINSET}
+function CharInSet(C: AnsiChar; const CharSet: TSysCharSet): Boolean;
+{$EndIf}
 
 
 implementation
@@ -127,9 +157,42 @@ function GetModuleFileName(Module: TLibHandle; Buffer: PChar; BufLen: Integer): 
 begin
   Result := 0;
 end;
-
 {$ELSE}
 {$ENDIF}
+
+function StrLCopy(Dest: PAnsiChar; const Source: PAnsiChar; MaxLen: Cardinal): PAnsiChar;
+begin
+  {$IfDef FPC}
+   Result := SysUtils.StrLCopy(Dest, Source, MaxLen);
+  {$Else}
+   {$IFDEF DELPHIXE4_UP}
+    {$IfDef NEXTGEN}
+     Result := PAnsiChar( System.SysUtils.StrLCopy(PWideChar(Dest^), PWideChar(Source^), MaxLen)^ );
+    {$Else}
+     Result := System.AnsiStrings.StrLCopy(Dest, Source, MaxLen);
+    {$EndIf}
+   {$Else}
+    Result := SysUtils.StrLCopy(Dest, Source, MaxLen);
+   {$ENDIF}
+  {$EndIf}
+end;
+
+function StrLComp(const Str1, Str2: PAnsiChar; MaxLen: Cardinal): Integer;
+begin
+  {$IfDef FPC}
+   Result := SysUtils.strlcomp(Str1, Str2, MaxLen);
+  {$Else}
+   {$IFDEF DELPHIXE4_UP}
+    {$IfDef NEXTGEN}
+     Result := System.SysUtils.StrLComp(PWideChar(Str1^), PWideChar(Str2^), MaxLen);
+    {$Else}
+     Result := System.AnsiStrings.StrLComp(Str1, Str2, MaxLen);
+    {$EndIf}
+   {$Else}
+    Result := SysUtils.StrLComp(Str1, Str2, MaxLen);
+   {$ENDIF}
+  {$EndIf}
+end;
 
 procedure Sleep(milliseconds: Cardinal);
 begin
@@ -142,7 +205,13 @@ begin
 {$ELSE}
   sysutils.sleep(milliseconds);
 {$ENDIF}
-
 end;
+
+{$IfNDef HAS_CHARINSET}
+function CharInSet(C: AnsiChar; const CharSet: TSysCharSet): Boolean;
+begin
+  result := C in CharSet;     
+end;
+{$EndIf}
 
 end.

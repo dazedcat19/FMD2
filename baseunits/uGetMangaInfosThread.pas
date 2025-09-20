@@ -48,7 +48,7 @@ type
 implementation
 
 uses
-  frmMain, WebsiteModules, FMDVars;
+  frmMain, frmCustomMessageDlg, WebsiteModules, FMDVars;
 
 procedure TGetMangaInfosThread.MainThreadSyncInfos;
 begin
@@ -158,8 +158,7 @@ end;
 
 procedure TGetMangaInfosThread.MainThreadShowCannotGetInfo;
 begin
-  MessageDlg('', RS_DlgCannotGetMangaInfo,
-    mtInformation, [mbYes], 0);
+  CenteredMessageDlg(MainForm, RS_DlgCannotGetMangaInfo, mtInformation, [mbOk], 0);
   MainForm.rmInformation.Clear;
   MainForm.tmAnimateMangaInfo.Enabled := False;
   MainForm.pbWait.Visible := False;

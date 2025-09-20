@@ -1452,7 +1452,7 @@ begin
       if ServEnt = nil then
         Result := StrToIntDef(string(Port), 0)
       else
-        Result := synsock.htons(ServEnt^.s_port);
+        Result := synsock.ntohs(ServEnt^.s_port);
     finally
       SynSockCS.Leave;
     end;
@@ -1470,9 +1470,9 @@ begin
       if (r = 0) and Assigned(Addr) then
       begin
         if Addr^.ai_family = AF_INET then
-          Result := synsock.htons(Addr^.ai_addr^.sin_port);
+          Result := synsock.ntohs(Addr^.ai_addr^.sin_port);
         if Addr^.ai_family = AF_INET6 then
-          Result := synsock.htons(PSockAddrIn6(Addr^.ai_addr)^.sin6_port);
+          Result := synsock.ntohs(PSockAddrIn6(Addr^.ai_addr)^.sin6_port);
       end;
     finally
       if Assigned(Addr) then

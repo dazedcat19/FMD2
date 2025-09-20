@@ -14,7 +14,7 @@ object TransferFavoritesForm: TTransferFavoritesForm
   OnDestroy = FormDestroy
   OnShow = FormShow
   Position = poMainFormCenter
-  LCLVersion = '3.6.0.0'
+  LCLVersion = '3.8.0.0'
   object cbWebsites: TComboBox
     AnchorSideLeft.Control = lbTransferTo
     AnchorSideLeft.Side = asrBottom

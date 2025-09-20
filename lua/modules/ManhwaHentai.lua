@@ -12,6 +12,7 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.SortedList               = true
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -20,7 +21,6 @@ end
 
 local Template = require 'templates.Madara'
 ChapterParameters = 'action=ajax_chap&post_id='
-DirectoryPagination = '/home/page/'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -28,18 +28,14 @@ DirectoryPagination = '/home/page/'
 
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
-	if not HTTP.GET(MODULE.RootURL .. DirectoryPagination .. 1) then return net_problem end
-
-	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//div[@class="wp-pagenavi"]/a[last()-1]/@href'):match('/(%d+)/')) or 1
+	Template.GetDirectoryPageNumber()
 
 	return no_error
 end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	if not HTTP.GET(MODULE.RootURL .. DirectoryPagination .. (URL + 1)) then return net_problem end
-
-	CreateTXQuery(HTTP.Document).XPathHREFAll('//div[contains(@class, "post-title")]//a', LINKS, NAMES)
+	Template.GetNameAndLinkWithPagination()
 
 	return no_error
 end
@@ -55,5 +51,5 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
 end

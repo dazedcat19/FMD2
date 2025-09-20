@@ -11,6 +11,7 @@ function Init()
 	m.OnGetNameAndLink      = 'GetNameAndLink'
 	m.OnGetInfo             = 'GetInfo'
 	m.OnGetPageNumber       = 'GetPageNumber'
+	m.OnBeforeDownloadImage = 'BeforeDownloadImage'
 	m.SortedList            = true
 
 	local fmd = require 'fmd.env'
@@ -70,4 +71,11 @@ function GetPageNumber()
 	Template.GetPageNumber()
 
 	return no_error
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	Template.BeforeDownloadImage()
+
+	return true
 end

@@ -16,7 +16,7 @@ function GetInfo()
 	if MANGAINFO.Title == '' then MANGAINFO.Title = x.XPathString('(//h1//span[@itemprop="title"])[last()]') end
 	MANGAINFO.Authors   = x.XPathString('//*[@itemprop="author"]')
 	MANGAINFO.Genres = x.XPathStringAll('//div[@class="genres"]/a')
-	MANGAINFO.Status = x.XPathString('//span[@class="scanstatus"]')
+	MANGAINFO.Status = MangaInfoStatusIfPos(x.XPathString('//span[@class="scanstatus"]'), 'No', 'Yes')
 	local chapters = x.XPath('//table[@id="index-table"]/tbody/tr')
 	for ic = 1, chapters.Count do
 		MANGAINFO.ChapterLinks.Add(x.XPathString('td/a[contains(text(),"Read")]/@href', chapters.Get(ic)))
@@ -27,6 +27,8 @@ end
 
 function GetPageNumber()
     local crypto = require 'fmd.crypto'
+	local json = require("utils.json")
+	HTTP.Headers.Values['charset'] = 'utf-8'
     HTTP.GET(MODULE.RootURL .. URL)
 	if HTTP.ResultCode ~= 200 then
 	    CheckAuth()
@@ -41,15 +43,10 @@ function GetPageNumber()
 	datapath = x.XPathString('//div[@id="reader"]/@data-path')
 	datapath = crypto.EncodeURLElement(datapath)
 	datafiles = x.XPathString('//div[@id="reader"]/@data-files')
-	datafiles = datafiles:sub(2,-2):gsub('\\/','/')
-	TASK.PageLinks.Delimiter = ','
-	TASK.PageLinks.DelimitedText = datafiles
-	if TASK.PageLinks.Count > 0 then
-	    for i = 0, TASK.PageLinks.Count - 1 do
-		    TASK.PageLinks[i] = MODULE.RootURL .. '/reader/image?path=' .. datapath .. '&file=' .. crypto.EncodeURLElement(TASK.PageLinks[i])
-		end
+	datafiles = json.decode(datafiles)
+	for i=1, #(datafiles) do
+	    TASK.PageLinks.Add(MODULE.RootURL .. '/reader/image?path=' .. datapath .. '&file=' .. crypto.EncodeURLElement(datafiles[i]))
 	end
-
 end
 
 function CheckAuth()

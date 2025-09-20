@@ -14,7 +14,7 @@ object NewChapter: TNewChapter
   ClientWidth = 394
   OnCreate = FormCreate
   Position = poScreenCenter
-  LCLVersion = '3.6.0.0'
+  LCLVersion = '3.8.0.0'
   object lbNotification: TLabel
     Left = 8
     Height = 1

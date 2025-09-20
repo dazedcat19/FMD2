@@ -91,7 +91,7 @@ end
 function GetInfo()
 	local name, json, lang, v, x = nil
 	local u = API_URL .. '/title_detailV3?title_id=' .. URL:match('(%d+)') .. '&format=json'
-
+	
 	if not HTTP.GET(u) then return net_problem end
 
 	x = CreateTXQuery(HTTP.Document)
@@ -101,6 +101,7 @@ function GetInfo()
 	MANGAINFO.CoverLink = x.XPathString('titleImageUrl', json)
 	MANGAINFO.Authors   = x.XPathString('title/author', json)
 	MANGAINFO.Summary   = x.XPathString('overview', json)
+	MANGAINFO.Status = MangaInfoStatusIfPos(x.XPathString('titleLabels/releaseSchedule', json), 'monthly|weekly') -- just 'ly' also works
 
 	local function addChapter(chapterlist)
 		name = chapterlist.GetProperty('subTitle').ToString()

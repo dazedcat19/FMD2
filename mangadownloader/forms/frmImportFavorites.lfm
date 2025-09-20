@@ -12,7 +12,7 @@ object ImportFavorites: TImportFavorites
   ClientHeight = 127
   ClientWidth = 426
   Position = poDesktopCenter
-  LCLVersion = '3.6.0.0'
+  LCLVersion = '3.8.0.0'
   object lbSelectSoftware: TLabel
     Left = 8
     Height = 15

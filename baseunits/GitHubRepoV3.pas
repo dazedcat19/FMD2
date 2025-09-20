@@ -5,7 +5,7 @@ unit GitHubRepoV3;
 interface
 
 uses
-  Classes, SysUtils, fgl, httpsendthread, BaseThread, fpjson;
+  Classes, SysUtils, fgl, httpsendthread, BaseThread, fpjson, MultiLog, DateUtils;
 
 type
 { TGitHubRepo }
@@ -19,7 +19,7 @@ type
 
   TGitHubRepo = class
   private
-    fdirty:boolean;
+    FDirty: boolean;
     ConfigFile: String;
     WorkFile: String;
     HTTP: THTTPSendThread;
@@ -47,18 +47,21 @@ type
     function GetLastCommitMessage(const FRepoPath: String): String;
     function GetTree: Boolean;
     function GetUpdate: Boolean;
+    function CheckRateLimited: Boolean;
     function GetDownloadURL(const AName: String): String;
   end;
 
 implementation
 
-uses jsonConf, jsonini, uBaseUnit;
+uses jsonConf, jsonini, uBaseUnit, frmLuaModulesUpdater;
 
 function AppendURLDelim(const URL: String): String;
 begin
   Result := URL;
   if (URL <> '') and (URL[Length(URL)] <> '/') then
+  begin
     Result := URL + '/';
+  end;
 end;
 
 { TGitHubRepo }
@@ -66,23 +69,33 @@ end;
 procedure TGitHubRepo.ReadWorkFile;
 begin
   if FileExists(WorkFile) then
+  begin
     with TJSONConfig.Create(nil) do
     begin
       try
         Filename := WorkFile;
-        last_commit_sha  := GetValue('last_commit_sha', '');
+        last_commit_sha := GetValue('last_commit_sha', '');
         last_commit_etag := GetValue('last_commit_etag', '');
-        fdirty := false;
+        FDirty := False;
       except
       end;
       Free;
     end;
+  end;
 end;
 
 procedure TGitHubRepo.WriteWorkFile;
 begin
-  if not fdirty then Exit;
-  if FileExists(WorkFile) then DeleteFile(WorkFile);
+  if not FDirty then
+  begin
+    Exit;
+  end;
+
+  if FileExists(WorkFile) then
+  begin
+    DeleteFile(WorkFile);
+  end;
+
   with TJSONConfig.Create(nil) do
   begin
     try
@@ -91,7 +104,7 @@ begin
       Formatted := True;
       SetValue('last_commit_sha' , last_commit_sha);
       SetValue('last_commit_etag', last_commit_etag);
-      fdirty:=false;
+      FDirty := false;
     except
     end;
     Free;
@@ -110,22 +123,34 @@ begin
   HTTP.ResetBasic;
 
   if FileExists(ConfigFile) then
+  begin
     with TJSONIniFile.Create(ConfigFile) do
+    begin
       try
-        api_url      := ReadString               ('GitHub', 'api_url'     , '');
-        download_url := ReadString               ('GitHub', 'download_url', '');
-        owner        := ReadString               ('GitHub', 'owner'       , '');
-        name         := ReadString               ('GitHub', 'name'        , '');
-        ref          := ReadString               ('GitHub', 'ref'         , '');
-        path         := ReadString               ('GitHub', 'path'        , '');
+        api_url := ReadString('GitHub', 'api_url', '');
+        download_url := ReadString('GitHub', 'download_url', '');
+        owner := ReadString('GitHub', 'owner', '');
+        name := ReadString('GitHub', 'name' , '');
+        ref := ReadString('GitHub', 'ref', '');
+        path := ReadString('GitHub', 'path', '');
       finally
         Free;
       end;
-  if api_url  = '' then api_url  := 'https://api.github.com/';
-  if ref      = '' then ref      := 'master';
+    end;
+  end;
+
+  if api_url = '' then
+  begin
+    api_url := 'https://api.github.com/';
+  end;
+
+  if ref = '' then
+  begin
+    ref := 'master';
+  end;
 
   ReadWorkFile;
-  Tree:=TTreeItems.Create;
+  Tree := TTreeItems.Create;
 end;
 
 destructor TGitHubRepo.Destroy;
@@ -141,29 +166,43 @@ var
   s: String;
   d: TJSONData;
 begin
-  Result:='';
+  Result := '';
   HTTP.ResetBasic;
   // use conditional etag, ignore if return 304 not modified
   // https://developer.github.com/v3/#conditional-requests
-  if last_commit_etag<>'' then HTTP.Headers.Values['If-None-Match']:=' '+last_commit_etag;
-  s:=AppendURLDelim(api_url)+'repos/'+owner+'/'+name+'/commits?sha='+ref+'&per_page=1';
-  if path<>'' then s+='&path='+path;
+  if last_commit_etag <> '' then
+  begin
+    HTTP.Headers.Values['If-None-Match'] := ' ' + last_commit_etag;
+  end;
+
+  s := AppendURLDelim(api_url) + 'repos/' + owner + '/' + name + '/commits?sha=' + ref + '&per_page=1';
+  if path <> '' then
+  begin
+    s += '&path=' + path;
+  end;
+
   if HTTP.GET(s) then
   begin
-    s:=Trim(HTTP.Headers.Values['ETag']);
-    if s<>'' then last_commit_etag := s;
-    d:=GetJSON(HTTP.Document);
+    s := Trim(HTTP.Headers.Values['ETag']);
+    if s <> '' then
+    begin
+      last_commit_etag := s;
+    end;
+
+    d := GetJSON(HTTP.Document);
     if Assigned(d) then
     begin
       try
-        if d.JSONType=jtArray then
-          last_commit_sha:=TJSONObject(TJSONArray(d).Items[0]).Get('sha');
+        if d.JSONType = jtArray then
+        begin
+          last_commit_sha := TJSONObject(TJSONArray(d).Items[0]).Get('sha');
+        end;
       except
       end;
       d.Free;
     end;
   end;
-  Result:=last_commit_sha;
+  Result := last_commit_sha;
 end;
 
 function TGitHubRepo.GetLastCommitMessage(const FRepoPath: String): String;
@@ -171,27 +210,32 @@ var
   s, message: String;
   d: TJSONData;
 begin
-  Result:='';
-  message:='';
+  Result := '';
+  message := '';
   HTTP.ResetBasic;
-  s:=AppendURLDelim(api_url)+'repos/'+owner+'/'+name+'/commits?per_page=1';
-  if path<>'' then s+='&path='+path+'/'+FRepoPath;
+  s := AppendURLDelim(api_url) + 'repos/' + owner + '/' + name + '/commits?per_page=1';
+  if path <> '' then
+  begin
+    s += '&path=' + path + '/' + FRepoPath;
+  end;
+
   if HTTP.GET(s) then
   begin
-    d:=GetJSON(HTTP.Document);
+    d := GetJSON(HTTP.Document);
     if Assigned(d) then
     begin
       try
-        if d.JSONType=jtArray then
+        if d.JSONType = jtArray then
         begin
-          message:=TJSONObject(TJSONArray(d).Items[0]).FindPath('commit.message').AsString;
+          message := TJSONObject(TJSONArray(d).Items[0]).FindPath('commit.message').AsString;
         end;
       except
       end;
       d.Free;
     end;
   end;
-  Result:=message;
+
+  Result := message;
 end;
 
 function TGitHubRepo.GetTree: Boolean;
@@ -202,35 +246,44 @@ var
   i: Integer;
   item: TTreeItem;
 begin
-  Result:=false;
+  Result := False;
   HTTP.ResetBasic;
-  s:=last_commit_sha; if s='' then s:=ref;
-  s:=AppendURLDelim(api_url)+'repos/'+owner+'/'+name+'/git/trees/'+s+':'+path+'?recursive=1';
+
+  s := last_commit_sha;
+  if s = '' then
+  begin
+    s := ref;
+  end;
+
+  s := AppendURLDelim(api_url) + 'repos/' + owner + '/' + name + '/git/trees/' + s + ':' + path + '?recursive=1';
   if HTTP.GET(s) then
   begin
-    d:=GetJSON(HTTP.Document);
+    d := GetJSON(HTTP.Document);
     if Assigned(d) then
     begin
       try
-        a:=TJSONArray(d.GetPath('tree'));
+        a := TJSONArray(d.GetPath('tree'));
         Tree.Clear;
-        for i:=0 to a.Count-1 do
+        for i := 0 to a.Count-1 do
+        begin
           with TJSONObject(a.Items[i]) do
           begin
-            s:=Get('type');
-            if s<>'tree' then
+            s := Get('type');
+
+            if s <> 'tree' then
             begin
-              item:=TTreeItem.Create;
+              item := TTreeItem.Create;
               item.path := Get('path');
               item.sha := Get('sha');
               Tree.Add(item);
             end;
           end;
+        end;
       except
       end;
       d.Free;
     end;
-    Result:=Tree.Count<>0;
+    Result := Tree.Count <> 0;
   end
 end;
 
@@ -238,20 +291,64 @@ function TGitHubRepo.GetUpdate: Boolean;
 var
   old_commit_sha, new_commit_sha: String;
 begin
-  result:=false;
-  old_commit_sha:=last_commit_sha;
-  new_commit_sha:=GetLastCommit;
-  if (new_commit_sha<>'') and (new_commit_sha<>old_commit_sha) then
-    result:=GetTree;
-  fdirty:=result;
+  Result := False;
+  old_commit_sha := last_commit_sha;
+  new_commit_sha := GetLastCommit;
+
+  if (new_commit_sha <> '') and (new_commit_sha <> old_commit_sha) then
+  begin
+    Result := GetTree;
+  end;
+
+  FDirty := Result;
+end;
+
+function TGitHubRepo.CheckRateLimited: Boolean;
+var
+  s: String;
+  d: TJSONData;
+  coreLimit, coreRemaining, coreReset, coreUsed: Integer;
+  convertedLocalTime: TDateTime;
+begin
+  Result := True;
+  HTTP.ResetBasic;
+  s := AppendURLDelim(api_url) + 'rate_limit';
+
+  if HTTP.GET(s) then
+  begin
+    d := GetJSON(HTTP.Document);
+    if Assigned(d) then
+    begin
+      try
+        if d.JSONType = jtObject then
+        begin
+          coreLimit := TJSONObject(d).FindPath('resources.core.limit').AsInteger;
+          coreRemaining := TJSONObject(d).FindPath('resources.core.remaining').AsInteger;
+          coreReset := TJSONObject(d).FindPath('resources.core.reset').AsInteger;
+          coreUsed := TJSONObject(d).FindPath('resources.core.used').AsInteger;
+
+          convertedLocalTime := UniversalTimeToLocal(UnixToDateTime(coreReset));
+          Logger.Send(Self.ClassName + ': ' + Format(RS_GitHubRateStats, [coreLimit, coreRemaining, coreUsed, DateTimeToStr(convertedLocalTime)]));
+
+          Result := coreRemaining = 0;
+        end;
+      except
+      end;
+      d.Free;
+    end;
+  end;
 end;
 
 function TGitHubRepo.GetDownloadURL(const AName: String): String;
 var
   lpath: String;
 begin
-  lpath:=path; if lpath<>'' then lpath:=lpath+'/';
-  Result:=AppendURLDelim(download_url)+owner+'/'+name+'/'+ref+'/'+lpath+AName;
+  lpath := path;
+  if lpath <> '' then
+  begin
+    lpath := lpath + '/';
+  end;
+  Result := AppendURLDelim(download_url) + owner + '/' + name + '/' + ref + '/' + lpath + AName;
 end;
 
 end.

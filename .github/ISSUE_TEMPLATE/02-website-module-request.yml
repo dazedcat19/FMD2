@@ -1,0 +1,82 @@
+name: 🌐 Website module request
+description: Suggest a new website module support
+title: "[website module request] "
+body:
+  - type: input
+    attributes:
+      label: Name
+      placeholder: |
+        WebsiteName
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Root URL
+      placeholder: |
+        https://example.com
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Directory list URL
+      placeholder: |
+        https://example.com/manga-list
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Example manga info URL
+      description: |
+        Manga info should contains chapter list or provide a way to get the chapter list.
+      placeholder: |
+        https://example.com/manga/title
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Example chapter URL
+      placeholder: |
+        https://example.com/reader/title/chapter-1
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Language
+      description: |
+        If the language is not in the list, select **Other** and write the language in **Additional details** section.
+      options:
+        - Arabic
+        - English
+        - French
+        - German
+        - Indonesian
+        - Italian
+        - Portuguese
+        - Raw
+        - Russian
+        - Spanish
+        - Turkish
+        - Vietnamese
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Scanlation
+      description: |
+        Is it a scanlation group website?
+      options:
+        - "No"
+        - "Yes"
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Website relationship
+      placeholder: |
+        If applicable describe the relation with any other website (eg : "alternative domain, copy of ...")
+  - type: textarea
+    attributes:
+      label: Additional details
+      placeholder: |
+        Add any other context details that you may have found (like template to reuse)

@@ -1,9 +1,9 @@
 {==============================================================================|
-| Project : Ararat Synapse                                       | 002.001.000 |
+| Project : Ararat Synapse                                       | 002.001.001 |
 |==============================================================================|
 | Content: support for ASN.1 BER coding and decoding                           |
 |==============================================================================|
-| Copyright (c)1999-2014, Lukas Gebauer                                        |
+| Copyright (c)1999-2021, Lukas Gebauer                                        |
 | All rights reserved.                                                         |
 |                                                                              |
 | Redistribution and use in source and binary forms, with or without           |
@@ -33,7 +33,7 @@
 | DAMAGE.                                                                      |
 |==============================================================================|
 | The Initial Developer of the Original Code is Lukas Gebauer (Czech Republic).|
-| Portions created by Lukas Gebauer are Copyright (c) 1999-2014                |
+| Portions created by Lukas Gebauer are Copyright (c) 1999-2021                |
 | Portions created by Hernan Sanchez are Copyright (c) 2000.                   |
 | All Rights Reserved.                                                         |
 |==============================================================================|
@@ -378,9 +378,9 @@ end;
 {==============================================================================}
 function MibToId(Mib: String): AnsiString;
 var
-  x: Integer;
+  x: int64;
 
-  function WalkInt(var s: String): Integer;
+  function WalkInt(var s: String): int64;
   var
     x: Integer;
     t: AnsiString;
@@ -396,7 +396,7 @@ var
       t := Copy(s, 1, x - 1);
       s := Copy(s, x + 1, Length(s) - x);
     end;
-    Result := StrToIntDef(t, 0);
+    Result := StrToInt64Def(t, 0);
   end;
 
 begin
@@ -414,7 +414,8 @@ end;
 {==============================================================================}
 function IdToMib(const Id: AnsiString): String;
 var
-  x, y, n: Integer;
+  x, y: int64;
+  n: Integer;
 begin
   Result := '';
   n := 1;

@@ -17,8 +17,8 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.MangaEsp'
--- DirectoryPagination = '/comics'
+local Template = require 'templates.Iken'
+API_URL = 'https://api.eternalmangas.com'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -31,7 +31,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
 
@@ -42,5 +42,5 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
 end

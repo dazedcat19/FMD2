@@ -43,8 +43,10 @@ function GetInfo()
 	Template.GetInfo()
 
 	local v, x = nil
-
 	local u = MODULE.RootURL .. '/app/manga/controllers/cont.Listchapter.php?slug=' .. URL:match('-(.-).html')
+
+	MANGAINFO.CoverLink = CreateTXQuery(HTTP.Document).XPathString('//img[contains(@class, "thumbnail")]/@data-original')
+
 	HTTP.Reset()
 	HTTP.Headers.Values['Referer'] = MANGAINFO.URL
 
@@ -62,20 +64,14 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	local cid = nil
+	local v = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL) .. '.html'
 
 	if not HTTP.GET(u) then return net_problem end
 
-	cid = CreateTXQuery(HTTP.Document).XPathString('(//input[@id="chapter"])[1]/@value')
-
-	HTTP.Reset()
-	HTTP.Headers.Values['Referer'] = MODULE.RootURL
-	u = MODULE.RootURL .. '/app/manga/controllers/cont.Showimage.php?cid=' .. cid
-
-	if not HTTP.GET(u) then return net_problem end
-
-	CreateTXQuery(HTTP.Document).XPathStringAll('//img/@data-original', TASK.PageLinks)
+	for v in CreateTXQuery(HTTP.Document).XPath('//div[@class="chapter-content"]//img').Get() do
+		TASK.PageLinks.Add(require 'fmd.crypto'.DecodeBase64(v.GetAttribute('data-img')))
+	end
 
 	return no_error
 end

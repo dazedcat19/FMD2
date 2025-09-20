@@ -18,7 +18,7 @@ object ShutdownCounterForm: TShutdownCounterForm
   OnKeyDown = FormKeyDown
   OnShow = FormShow
   Position = poDesktopCenter
-  LCLVersion = '3.6.0.0'
+  LCLVersion = '3.8.0.0'
   object pnBottom: TPanel
     Left = 0
     Height = 38

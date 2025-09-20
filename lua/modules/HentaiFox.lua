@@ -1,101 +1,108 @@
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
 function Init()
-	function AddWebsiteModule(id, name, url)
-		local m = NewWebsiteModule()
-		m.ID                         = id
-		m.Name                       = name
-		m.RootURL                    = url
-		m.Category                   = 'H-Sites'
-		m.OnGetDirectoryPageNumber   = 'GetDirectoryPageNumber'
-		m.OnGetNameAndLink           = 'GetNameAndLink'
-		m.OnGetInfo                  = 'GetInfo'
-		m.OnGetPageNumber            = 'GetPageNumber'
-		m.OnBeforeDownloadImage      = 'BeforeDownloadImage'
-		m.SortedList                 = true
-		end
-	AddWebsiteModule('58a2dec76ebf43a5a9e7dc9b453e52e9', 'HentaiFox', 'https://hentaifox.com')
-	AddWebsiteModule('67e22e0c766c4c9c990e179350262b3c', 'IMHentai', 'https://imhentai.xxx')
+	local m = NewWebsiteModule()
+	m.ID                       = '58a2dec76ebf43a5a9e7dc9b453e52e9'
+	m.Name                     = 'HentaiFox'
+	m.RootURL                  = 'https://hentaifox.com'
+	m.Category                 = 'H-Sites'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnGetImageURL            = 'GetImageURL'
+	m.SortedList               = true
 end
 
+----------------------------------------------------------------------------------------------------
+-- Local Constants
+----------------------------------------------------------------------------------------------------
+
+DirectoryPagination = '/page/'
+
+----------------------------------------------------------------------------------------------------
+-- Event Functions
+----------------------------------------------------------------------------------------------------
+
+-- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
-	if HTTP.GET(MODULE.RootURL) then
-		PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//ul[@class="pagination"]/li[last()-1]/a')) or 1
-		return no_error
-	else
-		return net_problem
-	end
+	local u = MODULE.RootURL
+
+	if not HTTP.GET(u) then return net_problem end
+
+	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//ul[@class="pagination"]/li[last()-1]/a'))
+
+	return no_error
 end
 
+-- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	if MODULE.ID == '58a2dec76ebf43a5a9e7dc9b453e52e9' then -- HentaiFox
-		if HTTP.GET(MODULE.RootURL .. '/pag/' .. (URL + 1) .. '/') then
-			CreateTXQuery(HTTP.Document).XPathHREFAll('//h2[@class="g_title"]/a', LINKS, NAMES)
-			return no_error
-		else
-			return net_problem
-		end
-	else
-		if HTTP.GET(MODULE.RootURL .. '/?page=' .. (URL + 1)) then
-			CreateTXQuery(HTTP.Document).XPathHREFAll('//h2[@class="gallery_title"]/a', LINKS, NAMES)
-			return no_error
-		else
-			return net_problem
-		end
-	end
+	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1)
+
+	if not HTTP.GET(u) then return net_problem end
+
+	CreateTXQuery(HTTP.Document).XPathHREFAll('//h2[@class="g_title"]/a', LINKS, NAMES)
+
+	return no_error
 end
 
+-- Get info and chapter list for the current manga.
 function GetInfo()
-	MANGAINFO.URL = MaybeFillHost(MODULE.RootURL, URL)
-	if HTTP.GET(MANGAINFO.URL) then
-		local x = CreateTXQuery(HTTP.Document)
-		if MODULE.ID == '58a2dec76ebf43a5a9e7dc9b453e52e9' then -- HentaiFox
-			MANGAINFO.Title      = x.XPathString('//div[@class="info"]/h1')
-			MANGAINFO.CoverLink  = MaybeFillHost(MODULE.RootURL, x.XPathString('//div[@class,"cover"]/img/@src'))
-			MANGAINFO.Artists    = x.XPathStringAll('//ul[@class="artists"]/li/a/text()[not(parent::span)]')
-			MANGAINFO.Genres     = x.XPathStringAll('//div[@class="info"]/ul[not(@class="artists")]/li/a/text()[not(parent::span)]')
-		else
-			MANGAINFO.Title      = x.XPathString('//div[contains(@class,"right_details")]/h1')
-			MANGAINFO.CoverLink  = x.XPathString('//div[contains(@class,"left_cover")]//img/@data-src')
-			MANGAINFO.Artists    = x.XPathStringAll('//ul[@class="galleries_info"]/li[contains(.,"Artists")]/a/text()[not(parent::span)]')
-			MANGAINFO.Genres     = x.XPathStringAll('//ul[@class="galleries_info"]/li[not(contains(.,"Artists"))]/a/text()[not(parent::span)]')
-		end
-		MANGAINFO.ChapterLinks.Add(URL)
+	local pages, x = nil
+	local p = 1
+	local u = MaybeFillHost(MODULE.RootURL, URL:gsub('(.*)pag/.*', '%1'):gsub('(.*)popular/.*', '%1'))
+	if u:find(MODULE.RootURL .. '/page/') then return net_problem end
+
+	if not HTTP.GET(u) then return net_problem end
+
+	x = CreateTXQuery(HTTP.Document)
+	MANGAINFO.Title     = x.XPathString('//div[@class="info"]/h1|//h1[@class="tag_info"]/span')
+	MANGAINFO.CoverLink = x.XPathString('//div[@class="cover"]/img/@src|(//div[@class="lc_galleries"]/div[@class="thumb"])[1]//img/@data-src')
+	MANGAINFO.Artists   = x.XPathStringAll('//ul[@class="artists"]/li/a/text()')
+	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="info"]/ul[not(@class="artists")]/li/a/text()')
+
+	if u:find('/gallery/') then
+		MANGAINFO.ChapterLinks.Add(MANGAINFO.URL)
 		MANGAINFO.ChapterNames.Add(MANGAINFO.Title)
-		return no_error
 	else
-		return net_problem
-	end
-end
-
-local ext = {
-	['p'] = '.png',
-	['j'] = '.jpg',
-	['g'] = '.gif',
-	['w'] = '.webp'
-}
-
-function GetPageNumber()
-	if HTTP.GET(MaybeFillHost(MODULE.RootURL, URL)) then
-		local x = CreateTXQuery(HTTP.Document)
-		local dir       = x.XPathString('(//*[@id="load_dir"]/@value)[1]')
-		local id        = x.XPathString('(//*[@id="load_id"]/@value)[1]')
-		local server    = x.XPathString('//*[@id="load_server"]/@value')
-		local json      = GetBetween("parseJSON('{", "');", x.XPathString('//script[contains(., "var g_th")]'))
-		json = json:gsub('","', ';'):gsub('"}', ';'):gsub(':', ','):gsub('"', '')
-		local i; for i in json:gmatch('(.-);') do
-			i1, i2 = i:match('(.-),(.-),.-,.-')
-			if MODULE.ID == '58a2dec76ebf43a5a9e7dc9b453e52e9' then -- HentaiFox
-				TASK.PageLinks.Add('https://i.hentaifox.com/' .. dir .. '/' .. id .. '/' .. i1 .. ext[i2])
+		pages = tonumber(x.XPathString('//ul[@class="pagination"]/li[last()-1]/a')) or 1
+		while true do
+			x.XPathHREFAll('//h2[@class="g_title"]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+			p = p + 1
+			if p > pages then
+				break
+			elseif HTTP.GET(u .. 'pag/' .. tostring(p)) then
+				x.ParseHTML(HTTP.Document)
 			else
-				TASK.PageLinks.Add('https://m' .. server .. '.imhentai.xxx/' .. dir .. '/' .. id .. '/' .. i1 .. ext[i2])
+				break
 			end
 		end
-		return true
-	else
-		return false
 	end
+	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
+
+	return no_error
 end
 
-function BeforeDownloadImage()
-	HTTP.Headers.Values['Referer'] = MODULE.RootURL
-	return true
-end
+-- Get the page count for the current chapter.
+function GetPageNumber()
+ 	local u = MaybeFillHost(MODULE.RootURL, URL)
+ 
+ 	if not HTTP.GET(u) then return net_problem end
+ 
+ 	TASK.PageNumber = tonumber(CreateTXQuery(HTTP.Document).XPathString('(//span[@class="i_text pages"])[1]/substring-after(., ": ")')) or 0
+ 
+ 	return no_error
+ end
+
+-- Extract/Build/Repair image urls before downloading them.
+function GetImageURL()
+ 	local u = MaybeFillHost(MODULE.RootURL, URL:gsub('/gallery/', '/g/')) .. (WORKID + 1) .. '/'
+ 
+ 	if not HTTP.GET(u) then return net_problem end
+ 
+ 	TASK.PageLinks[WORKID] = CreateTXQuery(HTTP.Document).XPathString('//img[@id="gimg"]/@data-src')
+ 
+ 	return true
+ end

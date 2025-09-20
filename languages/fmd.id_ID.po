@@ -39,6 +39,7 @@ msgstr "Batalkan"
 
 #: dbupdater.rs_downloading
 #, object-pascal-format
+msgctxt "dbupdater.rs_downloading"
 msgid "Downloading %s"
 msgstr "Mengunduh %s"
 
@@ -110,6 +111,31 @@ msgstr "Oke"
 msgid "Username or password can't be empty!"
 msgstr "Nama pengguna atau kata sandi tidak boleh kosong!"
 
+#: frmcustommessagedlg.rs_dialogconfirmation
+msgctxt "frmcustommessagedlg.rs_dialogconfirmation"
+msgid "Confirmation"
+msgstr "Konfirmasi"
+
+#: frmcustommessagedlg.rs_dialogcustom
+msgctxt "frmcustommessagedlg.rs_dialogcustom"
+msgid "Message"
+msgstr "Pesan"
+
+#: frmcustommessagedlg.rs_dialogerror
+msgctxt "frmcustommessagedlg.rs_dialogerror"
+msgid "Error"
+msgstr "Galat"
+
+#: frmcustommessagedlg.rs_dialoginformation
+msgctxt "frmcustommessagedlg.rs_dialoginformation"
+msgid "Information"
+msgstr "Informasi"
+
+#: frmcustommessagedlg.rs_dialogwarning
+msgctxt "frmcustommessagedlg.rs_dialogwarning"
+msgid "Warning"
+msgstr "Peringatan"
+
 #: frmimportfavorites.rs_importcompleted
 msgid "Import completed."
 msgstr "Selesai mengimpor."
@@ -126,15 +152,33 @@ msgstr "Mengimpor..."
 msgid "List of unimported manga"
 msgstr "Daftar komik yang tidak bisa diimpor"
 
+#: frmluamodulesupdater.rs_awaitingproceed
+msgid "Awaiting permission to proceed..."
+msgstr "Menunggu izin untuk melanjutkan..."
+
 #: frmluamodulesupdater.rs_checking
 msgctxt "frmluamodulesupdater.rs_checking"
 msgid "Checking..."
 msgstr "Memeriksa..."
 
+#: frmluamodulesupdater.rs_checklocalmodules
+msgid "Checking local modules..."
+msgstr "Memeriksa modul lokal..."
+
 #: frmluamodulesupdater.rs_checkupdate
 msgctxt "frmluamodulesupdater.rs_checkupdate"
 msgid "Check update"
 msgstr "Periksa pemutakhiran"
+
+#: frmluamodulesupdater.rs_deletingflaggedmodules
+msgid "Deleting flagged modules..."
+msgstr "Menghapus modul yang ditandai..."
+
+#: frmluamodulesupdater.rs_downloadingmodule
+#, object-pascal-format
+msgctxt "frmluamodulesupdater.rs_downloadingmodule"
+msgid "Downloading %s"
+msgstr "Mengunduh %s"
 
 #: frmluamodulesupdater.rs_finishchecking
 msgid "Finish checking"
@@ -143,6 +187,23 @@ msgstr "Selesai memeriksa"
 #: frmluamodulesupdater.rs_finishdownload
 msgid "Finish download"
 msgstr "Selesai mengunduh"
+
+#: frmluamodulesupdater.rs_githubconnectfail
+msgid ""
+"Failed to connect to GitHub API for latest module updates.\n"
+"Please try again later."
+msgstr ""
+"Gagal menyambung ke GitHub API untuk pemutakhiran modul terbaru.\n"
+"Silakan coba lagi nanti."
+
+#: frmluamodulesupdater.rs_githubconnecting
+msgid "Connecting to GitHub..."
+msgstr "Menyambungkan GitHub..."
+
+#: frmluamodulesupdater.rs_githubratestats
+#, object-pascal-format
+msgid "GitHub API core rate - call limit: %d, remaining calls: %d, used calls: %d, limit refresh: %s"
+msgstr "GitHub API core rate - call limit: %d, remaining calls: %d, used calls: %d, limit refresh: %s"
 
 #: frmluamodulesupdater.rs_modulesupdatedrestart
 msgid "Modules updated, restart now?"
@@ -223,6 +284,9 @@ msgid ""
 "Dark\n"
 "Light"
 msgstr ""
+"Sistem\n"
+"Gelap\n"
+"Terang"
 
 #: frmmain.rs_dlgcannotconnecttoserver
 msgid "Cannot connect to the server."
@@ -554,6 +618,20 @@ msgctxt "frmtransferfavorites.rs_valid"
 msgid "Valid"
 msgstr "Valid"
 
+#: imagemagickmanager.rs_imagemagicknotfoundhint
+msgctxt "imagemagickmanager.rs_imagemagicknotfoundhint"
+msgid ""
+"Failed to detect an install of ImageMagick!\n"
+"Please install ImageMagick from www.imagemagick.org if you haven't already."
+msgstr ""
+
+#: imagemagickmanager.rs_imagemagickpreferencehint
+msgctxt "imagemagickmanager.rs_imagemagickpreferencehint"
+msgid ""
+"ImageMagick has been enabled!\n"
+"The following settings have been disabled because ImageMagick has taken preference."
+msgstr ""
+
 #: selfupdater.rs_buttoncancel
 msgctxt "selfupdater.rs_buttoncancel"
 msgid "Abort"
@@ -641,10 +719,6 @@ msgstr "Sunting"
 msgid "Refresh"
 msgstr "Segarkan"
 
-#: taccountmanagerform.caption
-msgid "AccountManagerForm"
-msgstr "Form Manajer Akun"
-
 #: taccountmanagerform.vtaccountlist.header.columns[1].text
 msgctxt "taccountmanagerform.vtaccountlist.header.columns[1].text"
 msgid "Website"
@@ -699,7 +773,7 @@ msgstr "Kata sandi"
 
 #: tcustomcolorform.btresetcolors.caption
 msgid "Reset list colors"
-msgstr ""
+msgstr "Atur ulang daftar warna"
 
 #: tcustomcolorform.caption
 msgid "CustomColorForm"
@@ -922,6 +996,14 @@ msgstr "Tambahkan ke daftar unduhan tanpa dimulai"
 msgid "<none>"
 msgstr "<tidak ada>"
 
+#: tmainform.cbimagemagickcompression.text
+msgid "None"
+msgstr ""
+
+#: tmainform.cbimagemagicksaveas.text
+msgid "JPEG"
+msgstr ""
+
 #: tmainform.cbonlynew.caption
 msgid "Search only new manga"
 msgstr "Hanya cari komik baru"
@@ -979,8 +1061,8 @@ msgid "Enable load manga cover"
 msgstr "Aktifkan sampul komik"
 
 #: tmainform.cboptionenablelongnamepaths.caption
-msgid "Enable long name paths (Can break most/all interaction with the file in Windows and other apps)"
-msgstr "Aktifkan lokasi dengan nama panjang (Dapat merusak sebagian besar/semua interaksi dengan berkas di Windows dan aplikasi lainnya)"
+msgid "Enable long name paths (can break most/all interaction with the file in Windows and other apps)"
+msgstr "Aktifkan lokasi dengan nama panjang (dapat merusak sebagian besar/semua interaksi dengan berkas di Windows dan aplikasi lainnya)"
 
 #: tmainform.cboptiongeneratechapterfolder.caption
 msgid "Auto generate chapter folder"
@@ -1420,6 +1502,10 @@ msgstr "Yuri"
 msgid "This work usually involves intimate relationships between women."
 msgstr "Biasanya melibatkan hubungan yang intim antara perempuan."
 
+#: tmainform.ckimagemagick.caption
+msgid "Enable ImageMagick Conversion"
+msgstr ""
+
 #: tmainform.ckoptionsalwaysstarttaskfromfailedchapters.caption
 msgctxt "tmainform.ckoptionsalwaysstarttaskfromfailedchapters.caption"
 msgid "Always start task from failed chapters"
@@ -1473,8 +1559,8 @@ msgid "Search title..."
 msgstr "Cari judul..."
 
 #: tmainform.edoptionchangeunicodecharacterstr.texthint
-msgid "Unicode Char"
-msgstr ""
+msgid "Character"
+msgstr "Karakter"
 
 #: tmainform.edoptionchaptercustomrename.texthint
 msgctxt "tmainform.edoptionchaptercustomrename.texthint"
@@ -1486,7 +1572,6 @@ msgid "Default download path"
 msgstr "Lokasi unduhan asali"
 
 #: tmainform.edoptiondefaultuseragent.texthint
-#, fuzzy
 msgctxt "tmainform.edoptiondefaultuseragent.texthint"
 msgid "Default user-agent"
 msgstr "User-agent asali"
@@ -1549,6 +1634,10 @@ msgstr "Kotak unduh"
 msgid "Image Conversion"
 msgstr "Konversi gambar"
 
+#: tmainform.gbimagemagick.caption
+msgid "Image Magick"
+msgstr ""
+
 #: tmainform.gboptionexternal.caption
 msgid "External program"
 msgstr "Program eksternal"
@@ -1581,11 +1670,10 @@ msgid "Miscellaneous"
 msgstr "Lain-lain"
 
 #: tmainform.lbdarkmode.caption
-msgid "Theme (Requires restart to take effect):"
-msgstr ""
+msgid "Theme (requires restart to take effect):"
+msgstr "Tema (perlu mulai ulang agar berlaku):"
 
 #: tmainform.lbdarkmodehint.caption
-#, fuzzy
 msgctxt "tmainform.lbdarkmodehint.caption"
 msgid "[?]"
 msgstr "[?]"
@@ -1595,6 +1683,8 @@ msgid ""
 "Only supports Windows 10 1809 and above.\n"
 "Theme's auto disable on any unsupported versions."
 msgstr ""
+"Hanya mendukung Windows 10 1809 dan di atasnya.\n"
+"Tema dinonaktifkan otomatis pada versi yang tidak didukung."
 
 #: tmainform.lbdefaultdownloadpath.caption
 msgid "Choose the default download path:"
@@ -1666,6 +1756,33 @@ msgstr "Ringkasan"
 msgctxt "tmainform.lbfiltertitle.caption"
 msgid "Title"
 msgstr "Judul"
+
+#: tmainform.lbimageconversionhint.caption
+#, fuzzy
+msgctxt "tmainform.lbimageconversionhint.caption"
+msgid "[?]"
+msgstr "[?]"
+
+#: tmainform.lbimagemagickcompression.caption
+msgctxt "tmainform.lbimagemagickcompression.caption"
+msgid "Image Compression type"
+msgstr ""
+
+#: tmainform.lbimagemagickhint.caption
+#, fuzzy
+msgctxt "tmainform.lbimagemagickhint.caption"
+msgid "[?]"
+msgstr "[?]"
+
+#: tmainform.lbimagemagickquality.caption
+msgctxt "tmainform.lbimagemagickquality.caption"
+msgid "Image quality"
+msgstr ""
+
+#: tmainform.lbimagemagicksaveas.caption
+msgctxt "tmainform.lbimagemagicksaveas.caption"
+msgid "Save Image as"
+msgstr ""
 
 #: tmainform.lbjpegquality.caption
 msgid "JPEG quality"
@@ -2612,6 +2729,10 @@ msgstr "Nama pengaturan"
 msgid "Compressing..."
 msgstr "Mengompresi..."
 
+#: udownloadsmanager.rs_converting
+msgid "Converting..."
+msgstr ""
+
 #: udownloadsmanager.rs_disabled
 msgctxt "udownloadsmanager.rs_disabled"
 msgid "Disabled"
@@ -2712,6 +2833,10 @@ msgstr "Memuat: %d/%d"
 #, object-pascal-format
 msgid "%s has %d new manga(s)"
 msgstr "%s memiliki %d komik baru"
+
+#: uupdatethread.rs_dlgupdatelistcheckisrunning
+msgid "Update list(s) is running!"
+msgstr "Pemutakhiran daftar sedang berjalan!"
 
 #: uupdatethread.rs_gettingdirectory
 msgid "Getting directory"

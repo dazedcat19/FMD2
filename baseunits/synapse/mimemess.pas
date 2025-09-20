@@ -1,9 +1,9 @@
 {==============================================================================|
-| Project : Ararat Synapse                                       | 002.006.000 |
+| Project : Ararat Synapse                                       | 002.006.001 |
 |==============================================================================|
 | Content: MIME message object                                                 |
 |==============================================================================|
-| Copyright (c)1999-2012, Lukas Gebauer                                        |
+| Copyright (c)1999-2021, Lukas Gebauer                                        |
 | All rights reserved.                                                         |
 |                                                                              |
 | Redistribution and use in source and binary forms, with or without           |
@@ -33,7 +33,7 @@
 | DAMAGE.                                                                      |
 |==============================================================================|
 | The Initial Developer of the Original Code is Lukas Gebauer (Czech Republic).|
-| Portions created by Lukas Gebauer are Copyright (c)2000-2012.                |
+| Portions created by Lukas Gebauer are Copyright (c)2000-2021.                |
 | Portions created by Petr Fejfar are Copyright (c)2011-2012.                  |
 | All Rights Reserved.                                                         |
 |==============================================================================|
@@ -306,9 +306,9 @@ implementation
 constructor TMessHeader.Create;
 begin
   inherited Create;
-  FToList := TStringList.Create;
-  FCCList := TStringList.Create;
-  FCustomHeaders := TStringList.Create;
+  FToList := CreateStringList;
+  FCCList := CreateStringList;
+  FCustomHeaders := CreateStringList;
   FCharsetCode := GetCurCP;
 end;
 
@@ -583,7 +583,7 @@ constructor TMimeMess.CreateAltHeaders(HeadClass: TMessHeaderClass);
 begin
   inherited Create;
   FMessagePart := TMimePart.Create;
-  FLines := TStringList.Create;
+  FLines := CreateStringList;
   FHeader := HeadClass.Create;
 end;
 
@@ -640,7 +640,7 @@ begin
     Secondary := 'plain';
     Description := 'Message text';
     Disposition := 'inline';
-    CharsetCode := IdealCharsetCoding(Value.Text, TargetCharset, IdealCharsets);
+    CharsetCode := IdealCharsetCoding(AnsiString(Value.Text), TargetCharset, IdealCharsets);
     EncodingCode := ME_QUOTED_PRINTABLE;
     EncodePart;
     EncodePartHeader;
@@ -687,7 +687,7 @@ function TMimeMess.AddPartTextFromFile(const FileName: String; const PartParent:
 var
   tmp: TStrings;
 begin
-  tmp := TStringList.Create;
+  tmp := CreateStringList;
   try
     tmp.LoadFromFile(FileName);
     Result := AddPartText(tmp, PartParent);
@@ -700,7 +700,7 @@ function TMimeMess.AddPartHTMLFromFile(const FileName: String; const PartParent:
 var
   tmp: TStrings;
 begin
-  tmp := TStringList.Create;
+  tmp := CreateStringList;
   try
     tmp.LoadFromFile(FileName);
     Result := AddPartHTML(tmp, PartParent);
@@ -784,7 +784,7 @@ function TMimeMess.AddPartMessFromFile(const FileName: String; const PartParent:
 var
   tmp: TStrings;
 begin
-  tmp := TStringList.Create;
+  tmp := CreateStringList;
   try
     tmp.LoadFromFile(FileName);
     Result := AddPartMess(tmp, PartParent);
@@ -801,7 +801,7 @@ var
   x: integer;
 begin
   //merge headers from THeaders and header field from MessagePart
-  l := TStringList.Create;
+  l := CreateStringList;
   try
     FHeader.EncodeHeaders(l);
     x := IndexByBegin('CONTENT-TYPE', FMessagePart.Headers);
