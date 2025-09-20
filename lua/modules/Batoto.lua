@@ -69,7 +69,7 @@ function GetNameAndLink()
 
 	local x = CreateTXQuery(HTTP.Document)
 	for v in x.XPath('//div[@id="series-list"]/div/div').Get() do
-		LINKS.Add('series/' .. x.XPathString('a/@href', v):match('/(%d+)[/%-]'))
+		LINKS.Add('series/' .. x.XPathString('a/@href', v):match('/(%d+)'))
 		NAMES.Add(x.XPathString('a', v) .. GetLanguageCodeSuffix(x.XPathString('em/@data-lang', v)))
 	end
 
@@ -78,7 +78,7 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local u = MODULE.RootURL .. '/series/' .. URL:match('/(%d+)[/%-]')
+	local u = MODULE.RootURL .. '/series/' .. URL:match('/(%d+)')
 
 	if not HTTP.GET(u) then return net_problem end
 
