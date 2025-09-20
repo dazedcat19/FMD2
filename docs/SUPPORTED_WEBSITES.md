@@ -161,7 +161,7 @@
 | KappaBeast | [![https://kappabeast.com](https://img.shields.io/website?url=https://kappabeast.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kappabeast.com)](https://kappabeast.com) | - | - | - |
 | Ken Scans | [![https://kenscans.org](https://img.shields.io/website?url=https://kenscans.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kenscans.org)](https://kenscans.org) | OK | 29.06.2025 | Paid chapters are hidden by default |
 | Kewn Scans | [![https://kewnscans.org](https://img.shields.io/website?url=https://kewnscans.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kewnscans.org)](https://kewnscans.org) | OK | 09.01.2025 | - |
-| Kira Scans | [![https://kirascans.com](https://img.shields.io/website?url=https://kirascans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kirascans.com)](https://kirascans.com) | OK | 02.07.2025 | - |
+| Kira Scans | [![https://kirascans.com](https://img.shields.io/website?url=https://kirascans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kirascans.com)](https://kirascans.com) | OK | 20.09.2025 | - |
 | Kiryuu | [![https://kiryuu.id](https://img.shields.io/website?url=https://kiryuu.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kiryuu.id)](https://kiryuu.id) | - | - | - |
 | KissManga | [![https://kissmanga.org](https://img.shields.io/website?url=https://kissmanga.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kissmanga.org)](https://kissmanga.org) | - | - | - |
 | KissMangaIN | [![https://kissmanga.in](https://img.shields.io/website?url=https://kissmanga.in%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kissmanga.in)](https://kissmanga.in) | - | - | - |
