@@ -71,19 +71,19 @@ function _M.GetInfo()
 
 	if not HTTP.POST(API_URL, s) then return net_problem end
 
-	local x = json.decode(HTTP.Document.ToString()).data.manga
+	local x = json.decode(HTTP.Document.ToString())
 	if x.errors ~= nil then MANGAINFO.Title = 'API rate limit excessed! Please try again later.' return no_error end
-	MANGAINFO.Title     = x.title
-	MANGAINFO.AltTitles = x.alternativeTitle
-	MANGAINFO.CoverLink = 'https://thumb.mghcdn.com/' .. x.image
-	MANGAINFO.Authors   = x.author
-	MANGAINFO.Artists   = x.artist
-	MANGAINFO.Genres    = x.genres
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.status)
-	MANGAINFO.Summary   = x.description
+	MANGAINFO.Title     = x.data.manga.title
+	MANGAINFO.AltTitles = x.data.manga.alternativeTitle
+	MANGAINFO.CoverLink = 'https://thumb.mghcdn.com/' .. x.data.manga.image
+	MANGAINFO.Authors   = x.data.manga.author
+	MANGAINFO.Artists   = x.data.manga.artist
+	MANGAINFO.Genres    = x.data.manga.genres
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.data.manga.status)
+	MANGAINFO.Summary   = x.data.manga.description
 
-	local slug = x.slug
-	for _, v in ipairs(x.chapters) do
+	local slug = x.data.manga.slug
+	for _, v in ipairs(x.data.manga.chapters) do
 		MANGAINFO.ChapterLinks.Add(slug .. '/chapter-' .. v.number)
 		MANGAINFO.ChapterNames.Add(v.title)
 	end
