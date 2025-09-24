@@ -10,26 +10,26 @@ local DirectoryPagination = '/'   --> Override template variable by uncommenting
 
 -- Get info and chapter list for current manga.
 function GetInfo()
-	local u = MaybeFillHost(MODULE.RootURL, URL)
+    local json = require 'utils.json'
+    local u = MaybeFillHost(MODULE.RootURL, URL)
 
-	if not HTTP.GET(u) then return net_problem end
+    if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//div[@id="breadcrumbs"]/substring-before(substring-after(., "Start"), "|")'):gsub('^%s*(.-)%s*$', '%1')
-	MANGAINFO.Summary   = x.XPathString('//table[@class="infobox"]//tr[6]//td[2]')
+    local x = json.decode(HTTP.Document.ToString():match('window.__data = (.-);'))
+    MANGAINFO.Title   = x.category.name
+    MANGAINFO.Status  = MangaInfoStatusIfPos(x.category.status, '0')
+    MANGAINFO.Summary = x.category.description
 
-	local v for v in x.XPath('//table[@class="list"]//tr[./td/@onclick|./td[2]]').Get() do
-		MANGAINFO.ChapterNames.Add(x.XPathString('string-join((td[1],td[2])," ")', v))
-		if MANGAINFO.Title == "Kapitel" then
-			-- remove last /1 for quick getimageurl later
-			MANGAINFO.ChapterLinks.Add(x.XPathString('td[@onclick]/substring-before(substring-after(@onclick, "\'"),"\'")', v):gsub('/1$',''))
-		else
-			-- remove last /1 for quick getimageurl later
-			MANGAINFO.ChapterLinks.Add(x.XPathString('substring-before(substring-after(@onclick, "\'"),"\'")', v):gsub('/1$',''))
-		end
-	end
+    local entry_slug = x.category.entry_slug
+    for _, chapter in ipairs(x.entries) do
+    	if chapter.pages > 0 then
+	        MANGAINFO.ChapterLinks.Add('manga/' .. entry_slug .. '/' .. chapter.number)
+	        MANGAINFO.ChapterNames.Add(chapter.number .. ' - ' .. chapter.name)
+        end
+    end
+    MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
-	return no_error
+    return no_error
 end
 
 -- Get the page count of the manga list of the current website.
@@ -44,12 +44,11 @@ function GetNameAndLink()
 	local u = MODULE.RootURL .. DirectoryPagination
 
 	if not HTTP.GET(u) then return net_problem end
-
 	x = CreateTXQuery(HTTP.Document)
-	v = x.XPath('//div[@id="mangalist"]//a[not(@id="SpinOffOpen")]')
+	v = x.XPath('(//a[contains(@class,"nav-link dropdown-toggle")]/following-sibling::ul)[2]//a')
 
 	for i = 1, v.Count do
-		LINKS.Add(MODULE.RootURL .. x.XPathString('@href', v.Get(i)))
+		LINKS.Add(x.XPathString('@href', v.Get(i)))
 		NAMES.Add(x.XPathString('text()', v.Get(i)))
 	end
 
@@ -59,20 +58,13 @@ end
 -- Get the page count for the current chapter.
 function GetPageNumber()
 	if HTTP.GET(MaybeFillHost(MODULE.RootURL,URL) .. '/1') then
-		x=CreateTXQuery(HTTP.Document)
-		-- get total page number
-		TASK.PageNumber = tonumber(x.XPathString('//td[@id="tablecontrols"]/a[last()]')) or 0
-		-- first page image URL
-		TASK.PageLinks.Add(x.XPathString('//img[@id="p"]/@src'))
-		return true
-	else
-		return false
-	end
-end
+	    local json = require 'utils.json'
+	    local x = json.decode(HTTP.Document.ToString():match('window.__data = (.-);'))
+	 
+	    for _,v in ipairs(x.chapter.pages) do
+	    	TASK.PageLinks.Add(v.url)
+    	end
 
-function GetImageURL()
-	if HTTP.GET(MaybeFillHost(MODULE.RootURL, URL):gsub('/+$', '') .. '/' .. (WORKID + 1)) then
-		TASK.PageLinks[WORKID] = CreateTXQuery(HTTP.Document).XPathString('//img[@id="p"]/@src')
 		return true
 	else
 		return false
@@ -87,11 +79,10 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '4c3fb549e0de4a1cbad85869d3d79ef7'
 	m.Name                     = 'OnePiece-Tube'
-	m.RootURL                  = 'https://onepiece-tube.com'
+	m.RootURL                  = 'https://onepiece.tube'
 	m.Category                 = 'German'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnGetImageURL            = 'GetImageURL'
 end
