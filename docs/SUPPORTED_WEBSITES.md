@@ -254,7 +254,7 @@
 | MangaFoxFun | [![https://mangafox.fun](https://img.shields.io/website?url=https://mangafox.fun%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangafox.fun)](https://mangafox.fun) | - | - | - |
 | MangaFreak | [![https://w11.mangafreak.net](https://img.shields.io/website?url=https://w11.mangafreak.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://w11.mangafreak.net)](https://w11.mangafreak.net) | - | - | - |
 | MangaFull | [![https://mangafull.org](https://img.shields.io/website?url=https://mangafull.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangafull.org)](https://mangafull.org) | - | - | - |
-| MangaGeko | [![https://www.mgeko.cc](https://img.shields.io/website?url=https://www.mgeko.cc%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mgeko.cc)](https://www.mgeko.cc) | - | - | - |
+| MangaGeko | [![https://www.mgeko.cc](https://img.shields.io/website?url=https://www.mgeko.cc%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mgeko.cc)](https://www.mgeko.cc) | OK | 30.09.2025 | - |
 | MangaGG | [![https://mangagg.com](https://img.shields.io/website?url=https://mangagg.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangagg.com)](https://mangagg.com) | OK | 29.03.2025 | - |
 | MangaGo | [![https://www.mangago.me](https://img.shields.io/website?url=https://www.mangago.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangago.me)](https://www.mangago.me) | OK | 16.08.2025 | - |
 | MangaGun | [![https://mangagun.net](https://img.shields.io/website?url=https://mangagun.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangagun.net)](https://mangagun.net) | OK | 16.03.2025 | - |
