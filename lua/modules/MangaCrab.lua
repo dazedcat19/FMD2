@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '73cfa250c661470c81428d99cdb8a140'
 	m.Name                     = 'MangaCrab'
-	m.RootURL                  = 'https://mangacrab.topmanhuas.org'
+	m.RootURL                  = 'https://mangacrab.org'
 	m.Category                 = 'Spanish'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
@@ -43,16 +43,18 @@ end
 function GetInfo()
 	Template.GetInfo()
 
-	local x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
+	local x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Title     = x.XPathString('//h1[@class="post-title"]')
 	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="genres-content"]//a')
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@class="manga-status"]/span[2]'), 'En Emisión', 'Finalizado', 'En Hiatus', 'Cancelada')
 	MANGAINFO.Summary   = x.XPathString('//div[@class="summary__content"]/p')
+
+	x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/div/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
 end
@@ -63,7 +65,9 @@ function GetPageNumber()
 
 	if not HTTP.GET(u) then return false end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('//div[contains(@class, "page-break")]/img/@data-src-base64', TASK.PageLinks)
+	for v in CreateTXQuery(HTTP.Document).XPath('//div[contains(@class, "page-break")]/img/@*[contains(name(), "zdk-")]').Get() do
+		TASK.PageLinks.Add(MaybeFillHost(MODULE.RootURL, v.ToString()))
+	end
 
 	return true
 end
