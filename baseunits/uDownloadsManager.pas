@@ -762,12 +762,18 @@ var
 begin
   if FCurrentWorkingDir = AValue then Exit;
   FCurrentWorkingDir := CorrectPathSys(AValue);
+
   {$IFDEF Windows}
   s := UTF8Decode(FCurrentWorkingDir);
+
   if MainForm.cbOptionEnableLongNamePaths.Checked then
-    FCurrentMaxFileNameLength := FMDMaxImageFilePath + Length(s)
+  begin
+    FCurrentMaxFileNameLength := FMDMaxImageFilePath + Length(s);
+  end
   else
+  begin
     FCurrentMaxFileNameLength := FMDMaxImageFilePath - Length(s);
+  end;
   {$ENDIF}
 end;
 
