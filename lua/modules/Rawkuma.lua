@@ -17,7 +17,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.MangaThemesia'
+local Template = require 'templates.Natsu'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
