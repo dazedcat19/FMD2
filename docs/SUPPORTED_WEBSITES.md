@@ -296,7 +296,6 @@
 | MangaOnlineBR | [![http://mangaonline.com.br](https://img.shields.io/website?url=http://mangaonline.com.br%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://mangaonline.com.br)](http://mangaonline.com.br) | - | - | - |
 | MangaOnlineFun | [![https://mangaonline.fun](https://img.shields.io/website?url=https://mangaonline.fun%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangaonline.fun)](https://mangaonline.fun) | - | - | - |
 | MangaOwl | [![https://mangaowl.io](https://img.shields.io/website?url=https://mangaowl.io%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangaowl.io)](https://mangaowl.io) | OK | 01.04.2025 | - |
-| MangaPanda | [![http://www.mangapanda.com](https://img.shields.io/website?url=http://www.mangapanda.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.mangapanda.com)](http://www.mangapanda.com) | - | - | - |
 | MangaPandaOnl | [![https://mangapanda.onl](https://img.shields.io/website?url=https://mangapanda.onl%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangapanda.onl)](https://mangapanda.onl) | - | - | - |
 | MangaPark | [![https://comicpark.org](https://img.shields.io/website?url=https://comicpark.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comicpark.org)](https://comicpark.org) | OK | 18.09.2025 | - |
 | MangaPark | [![https://comicpark.to](https://img.shields.io/website?url=https://comicpark.to%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comicpark.to)](https://comicpark.to) | OK | 18.09.2025 | - |
@@ -317,7 +316,7 @@
 | MangaPuma | [![https://mangapuma.com](https://img.shields.io/website?url=https://mangapuma.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangapuma.com)](https://mangapuma.com) | OK | 08.07.2025 | - |
 | MangaRaw1001 | [![https://mangaraw1001.cc](https://img.shields.io/website?url=https://mangaraw1001.cc%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangaraw1001.cc)](https://mangaraw1001.cc) | OK | 20.01.2025 | - |
 | MangaRead | [![https://www.mangaread.org](https://img.shields.io/website?url=https://www.mangaread.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangaread.org)](https://www.mangaread.org) | - | - | - |
-| MangaReader | [![http://www.mangareader.net](https://img.shields.io/website?url=http://www.mangareader.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.mangareader.net)](http://www.mangareader.net) | - | - | - |
+| MangaReader | [![https://mangareader.to](https://img.shields.io/website?url=https://mangareader.to%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangareader.to)](https://mangareader.to) | OK | 15.10.2025 | - |
 | MangaReaderSite | [![https://mangareader.site](https://img.shields.io/website?url=https://mangareader.site%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangareader.site)](https://mangareader.site) | - | - | - |
 | MangaRolls | [![https://mangarolls.net](https://img.shields.io/website?url=https://mangarolls.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangarolls.net)](https://mangarolls.net) | - | - | - |
 | MangaRoom | [![http://manga-room.com](https://img.shields.io/website?url=http://manga-room.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://manga-room.com)](http://manga-room.com) | - | - | - |
@@ -728,6 +727,7 @@
 | ~MangaMonarca~ | ~https://mangamonarca.xyzca.xyz~ | Removed | 02.04.2025 | - |
 | ~MangaNeloLink~ | ~https://manganelo.link~ | Removed | 03.08.2025 | - |
 | ~MangaNeloTeam~ | ~https://manganeloteam.com~ | Removed | 03.08.2025 | - |
+| ~MangaPanda~ | ~http://www.mangapanda.com~ | Removed | 15.10.2025 | - |
 | ~Mangas20~ | ~https://mangas20.com~ | Removed | 03.08.2025 | - |
 | ~MangaSee~ | ~https://mangasee123.com~ | Removed | 07.02.2025 | Moved to Weeb Central |
 | ~MangasRaw~ | ~https://mangas-raw.com~ | Removed | 20.07.2025 | - |
