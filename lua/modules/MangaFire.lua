@@ -48,27 +48,6 @@ end
 
 local DirectoryPagination = '/newest?page='
 
-----------------------------------------------------------------------------------------------------
--- Helper Functions
-----------------------------------------------------------------------------------------------------
-
-local VRF_JS = [=[
-function atob(data){if(arguments.length===0){throw new TypeError("1 argument required, but only 0 present.")}var keystr="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";function atobLookup(chr){var index=keystr.indexOf(chr);return index<0?undefined:index}data=""+data;data=data.replace(/[ \t\n\f\r]/g,"");if(data.length%4===0){data=data.replace(/==?$/,"")}if(data.length%4===1||/[^+/0-9A-Za-z]/.test(data)){return null}var output="";var buffer=0;var accumulatedBits=0;for(var i=0;i<data.length;i++){buffer<<=6;buffer|=atobLookup(data[i]);accumulatedBits+=6;if(accumulatedBits===24){output+=String.fromCharCode((buffer&16711680)>>16);output+=String.fromCharCode((buffer&65280)>>8);output+=String.fromCharCode(buffer&255);buffer=accumulatedBits=0}}if(accumulatedBits===12){buffer>>=4;output+=String.fromCharCode(buffer)}else if(accumulatedBits===18){buffer>>=2;output+=String.fromCharCode((buffer&65280)>>8);output+=String.fromCharCode(buffer&255)}return output}
-function btoa(s){if(arguments.length===0){throw new TypeError("1 argument required, but only 0 present.")}var keystr="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";function btoaLookup(index){if(index>=0&&index<64){return keystr[index]}return undefined}var i;s=""+s;for(i=0;i<s.length;i++){if(s.charCodeAt(i)>255){return null}}var out="";for(i=0;i<s.length;i+=3){var groupsOfSix=[undefined,undefined,undefined,undefined];groupsOfSix[0]=s.charCodeAt(i)>>2;groupsOfSix[1]=(s.charCodeAt(i)&3)<<4;if(s.length>i+1){groupsOfSix[1]|=s.charCodeAt(i+1)>>4;groupsOfSix[2]=(s.charCodeAt(i+1)&15)<<2}if(s.length>i+2){groupsOfSix[2]|=s.charCodeAt(i+2)>>6;groupsOfSix[3]=s.charCodeAt(i+2)&63}for(var j=0;j<groupsOfSix.length;j++){if(typeof groupsOfSix[j]==="undefined"){out+="="}else{out+=btoaLookup(groupsOfSix[j])}}}return out}
-var atob_=atob;var btoa_=btoa;var toBytes=function(str){var bytes=[];for(var i=0;i<str.length;i++){bytes.push(str.charCodeAt(i)&255)}return bytes};var fromBytes=function(bytes){var str="";for(var i=0;i<bytes.length;i++){str+=String.fromCharCode(bytes[i]&255)}return str};function rc4Bytes(key,input){var s=[];for(var i=0;i<256;i++){s[i]=i}var j=0;for(var i=0;i<256;i++){j=(j+s[i]+key.charCodeAt(i%key.length))&255;var temp=s[i];s[i]=s[j];s[j]=temp}var out=new Array(input.length);i=0;j=0;for(var y=0;y<input.length;y++){i=(i+1)&255;j=(j+s[i])&255;var temp=s[i];s[i]=s[j];s[j]=temp;var k=s[(s[i]+s[j])&255];out[y]=(input[y]^k)&255}return out}
-function transform(input,initSeedBytes,prefixKeyString,prefixLen,schedule){var out=[];for(var i=0;i<input.length;i++){if(i<prefixLen)out.push(prefixKeyString.charCodeAt(i)&255);out.push(schedule[i%10]((input[i]^initSeedBytes[i%32])&255)&255)}return out}var add8=function(n){return function(c){return(c+n)&255}};var sub8=function(n){return function(c){return(c-n+256)&255}};var xor8=function(n){return function(c){return c^n}};var rotl8=function(n){return function(c){return((c<<n)|(c>>>(8-n)))&255}};
-var scheduleC=[sub8(48),sub8(19),xor8(241),sub8(19),add8(223),sub8(19),sub8(170),sub8(19),sub8(48),xor8(8),];var scheduleY=[rotl8(4),add8(223),rotl8(4),xor8(163),sub8(48),add8(82),add8(223),sub8(48),xor8(83),rotl8(4),];var scheduleB=[sub8(19),add8(82),sub8(48),sub8(170),rotl8(4),sub8(48),sub8(170),xor8(8),add8(82),xor8(163),];var scheduleJ=[add8(223),rotl8(4),add8(223),xor8(83),sub8(19),add8(223),sub8(170),add8(223),sub8(170),xor8(83),];
-var scheduleE=[add8(82),xor8(83),xor8(163),add8(82),sub8(170),xor8(8),xor8(241),add8(82),add8(176),rotl8(4),];function base64UrlEncodeBytes(bytes){var std=btoa_(fromBytes(bytes));return std.replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}function bytesFromBase64(b64){return toBytes(atob_(b64))}
-var CONST={rc4Keys:{l:"u8cBwTi1CM4XE3BkwG5Ble3AxWgnhKiXD9Cr279yNW0=",g:"t00NOJ/Fl3wZtez1xU6/YvcWDoXzjrDHJLL2r/IWgcY=",B:"S7I+968ZY4Fo3sLVNH/ExCNq7gjuOHjSRgSqh6SsPJc=",m:"7D4Q8i8dApRj6UWxXbIBEa1UqvjI+8W0UvPH9talJK8=",F:"0JsmfWZA1kwZeWLk5gfV5g41lwLL72wHbam5ZPfnOVE=",},seeds32:{A:"pGjzSCtS4izckNAOhrY5unJnO2E1VbrU+tXRYG24vTo=",V:"dFcKX9Qpu7mt/AD6mb1QF4w+KqHTKmdiqp7penubAKI=",N:"owp1QIY/kBiRWrRn9TLN2CdZsLeejzHhfJwdiQMjg3w=",P:"H1XbRvXOvZAhyyPaO68vgIUgdAHn68Y6mrwkpIpEue8=",k:"2Nmobf/mpQ7+Dxq1/olPSDj3xV8PZkPbKaucJvVckL0=",},prefixKeys:{O:"Rowe+rg/0g==",v:"8cULcnOMJVY8AA==",L:"n2+Og2Gth8Hh",p:"aRpvzH+yoA==",W:"ZB4oBi0=",},};
-function crc_vrf(input){var bytes=toBytes(encodeURIComponent(input));bytes=rc4Bytes(atob_(CONST.rc4Keys.l),bytes);bytes=transform(bytes,bytesFromBase64(CONST.seeds32.A),atob_(CONST.prefixKeys.O),7,scheduleC);bytes=rc4Bytes(atob_(CONST.rc4Keys.g),bytes);bytes=transform(bytes,bytesFromBase64(CONST.seeds32.V),atob_(CONST.prefixKeys.v),10,scheduleY);bytes=rc4Bytes(atob_(CONST.rc4Keys.B),bytes);bytes=transform(bytes,bytesFromBase64(CONST.seeds32.N),atob_(CONST.prefixKeys.L),9,scheduleB);bytes=rc4Bytes(atob_(CONST.rc4Keys.m),bytes);bytes=transform(bytes,bytesFromBase64(CONST.seeds32.P),atob_(CONST.prefixKeys.p),7,scheduleJ);bytes=rc4Bytes(atob_(CONST.rc4Keys.F),bytes);bytes=transform(bytes,bytesFromBase64(CONST.seeds32.k),atob_(CONST.prefixKeys.W),5,scheduleE);return base64UrlEncodeBytes(bytes)}
-]=];
-
-local function GenerateVRF(input)
-	local script = VRF_JS .. "\ncrc_vrf('" .. input:gsub("'", "\\'") .. "');"
-	local result = require 'fmd.duktape'.ExecJS(script)
-	return result
-end
-
 local Langs = {
 	["en"] = "English",
 	["fr"] = "French",
@@ -78,6 +57,131 @@ local Langs = {
 	["es-la"] = "Spanish (LATAM)",
 	["es"] = "Spanish (Es)"
 }
+
+----------------------------------------------------------------------------------------------------
+-- Helper Functions
+----------------------------------------------------------------------------------------------------
+
+local function ToBytes(s)
+	local t = {}
+    for i = 1, #s do
+		t[#t + 1] = string.byte(s, i) & 255
+    end
+	return t
+end
+
+local function FromBytes(t)
+	return string.char(table.unpack(t))
+end
+
+local function Rc4(key, input)
+	local s = {}
+	for i = 0, 255 do
+		s[i] = i
+	end
+	local j = 0
+	for i = 0, 255 do
+		j = (j + s[i] + key[(i % #key) + 1]) & 255
+		s[i], s[j] = s[j], s[i]
+	end
+	local out = {}
+	local i = 0
+	j = 0
+	for y = 1, #input do
+		i = (i + 1) & 255
+		j = (j + s[i]) & 255
+		s[i], s[j] = s[j], s[i]
+		local k = s[(s[i] + s[j]) & 255]
+		out[y] = (input[y] ~ k) & 255
+	end
+	return out
+end
+
+local function Transform(input, init_seed_bytes, prefix_key, prefix_len, schedule)
+	local out = {}
+	for i = 1, #input do
+		if i - 1 < prefix_len then
+			out[#out + 1] = prefix_key[i] or 0
+		end
+		out[#out + 1] = schedule[((i - 1) % 10) + 1]((input[i] ~ init_seed_bytes[((i - 1) % 32) + 1]) & 255) & 255
+	end
+	return out
+end
+
+local function Add8(n) return function(c) return (c + n) & 255 end end
+local function Sub8(n) return function(c) return (c - n) & 255 end end
+local function Xor8(n) return function(c) return (c ~ n) & 255 end end
+local function Rotl8(n) return function(c) return ((c << n) | (c >> (8 - n))) & 255 end end
+
+local schedule_c = {
+	Sub8(48), Sub8(19), Xor8(241), Sub8(19), Add8(223),
+	Sub8(19), Sub8(170), Sub8(19), Sub8(48), Xor8(8),
+}
+
+local schedule_y = {
+	Rotl8(4), Add8(223), Rotl8(4), Xor8(163), Sub8(48),
+	Add8(82), Add8(223), Sub8(48), Xor8(83), Rotl8(4),
+}
+
+local schedule_b = {
+	Sub8(19), Add8(82), Sub8(48), Sub8(170), Rotl8(4),
+	Sub8(48), Sub8(170), Xor8(8), Add8(82), Xor8(163),
+}
+
+local schedule_j = {
+	Add8(223), Rotl8(4), Add8(223), Xor8(83), Sub8(19),
+	Add8(223), Sub8(170), Add8(223), Sub8(170), Xor8(83),
+}
+
+local schedule_e = {
+	Add8(82), Xor8(83), Xor8(163), Add8(82), Sub8(170),
+	Xor8(8), Xor8(241), Add8(82), Add8(176), Rotl8(4),
+}
+
+local rc4_keys = {
+	L = "u8cBwTi1CM4XE3BkwG5Ble3AxWgnhKiXD9Cr279yNW0=",
+	G = "t00NOJ/Fl3wZtez1xU6/YvcWDoXzjrDHJLL2r/IWgcY=",
+	B = "S7I+968ZY4Fo3sLVNH/ExCNq7gjuOHjSRgSqh6SsPJc=",
+	M = "7D4Q8i8dApRj6UWxXbIBEa1UqvjI+8W0UvPH9talJK8=",
+	F = "0JsmfWZA1kwZeWLk5gfV5g41lwLL72wHbam5ZPfnOVE=",
+}
+
+local seeds_32 = {
+	A = "pGjzSCtS4izckNAOhrY5unJnO2E1VbrU+tXRYG24vTo=",
+	V = "dFcKX9Qpu7mt/AD6mb1QF4w+KqHTKmdiqp7penubAKI=",
+	N = "owp1QIY/kBiRWrRn9TLN2CdZsLeejzHhfJwdiQMjg3w=",
+	P = "H1XbRvXOvZAhyyPaO68vgIUgdAHn68Y6mrwkpIpEue8=",
+	K = "2Nmobf/mpQ7+Dxq1/olPSDj3xV8PZkPbKaucJvVckL0=",
+}
+
+local prefix_keys = {
+	O = "Rowe+rg/0g==",
+	V = "8cULcnOMJVY8AA==",
+	L = "n2+Og2Gth8Hh",
+	P = "aRpvzH+yoA==",
+	W = "ZB4oBi0=",
+}
+
+local function BytesFromBase64(b64)
+	return ToBytes(require 'fmd.crypto'.DecodeBase64(b64))
+end
+
+local function GenerateVRF(input)
+	local bytes = ToBytes(input)
+
+	bytes = Rc4(BytesFromBase64(rc4_keys.L), bytes)
+	bytes = Transform(bytes, BytesFromBase64(seeds_32.A), BytesFromBase64(prefix_keys.O), 7, schedule_c)
+	bytes = Rc4(BytesFromBase64(rc4_keys.G), bytes)
+	bytes = Transform(bytes, BytesFromBase64(seeds_32.V), BytesFromBase64(prefix_keys.V), 10, schedule_y)
+	bytes = Rc4(BytesFromBase64(rc4_keys.B), bytes)
+	bytes = Transform(bytes, BytesFromBase64(seeds_32.N), BytesFromBase64(prefix_keys.L), 9, schedule_b)
+	bytes = Rc4(BytesFromBase64(rc4_keys.M), bytes)
+	bytes = Transform(bytes, BytesFromBase64(seeds_32.P), BytesFromBase64(prefix_keys.P), 7, schedule_j)
+	bytes = Rc4(BytesFromBase64(rc4_keys.F), bytes)
+	bytes = Transform(bytes, BytesFromBase64(seeds_32.K), BytesFromBase64(prefix_keys.W), 5, schedule_e)
+
+	return require 'fmd.crypto'.EncodeBase64(FromBytes(bytes)):gsub("%+", "-"):gsub("/", "_"):gsub("=+$", "")
+end
 
 function GetLangList()
 	local t = {}
