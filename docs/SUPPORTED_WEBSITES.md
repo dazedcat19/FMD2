@@ -138,6 +138,7 @@
 | HentaiVN | [![https://hentaihvn.tv](https://img.shields.io/website?url=https://hentaihvn.tv%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://hentaihvn.tv)](https://hentaihvn.tv) | - | - | - |
 | HenTalk | [![https://hentalk.pw](https://img.shields.io/website?url=https://hentalk.pw%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://hentalk.pw)](https://hentalk.pw) | - | - | - |
 | HerenScan | [![https://herenscan.com](https://img.shields.io/website?url=https://herenscan.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://herenscan.com)](https://herenscan.com) | - | - | - |
+| Hijala Scans | [![https://en-hijala.com](https://img.shields.io/website?url=https://en-hijala.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://en-hijala.com)](https://en-hijala.com) | OK | 15.10.2025 | - |
 | HiperDEX | [![https://hiperdex.com](https://img.shields.io/website?url=https://hiperdex.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://hiperdex.com)](https://hiperdex.com) | OK | 02.09.2025 | - |
 | Hitomi | [![https://hitomi.la](https://img.shields.io/website?url=https://hitomi.la%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://hitomi.la)](https://hitomi.la) | OK | 11.07.2025 | - |
 | Hive Scans | [![https://hivetoons.org](https://img.shields.io/website?url=https://hivetoons.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://hivetoons.org)](https://hivetoons.org) | OK | 29.06.2025 | Paid chapters are hidden by default |
@@ -270,6 +271,7 @@
 | MangaHost | [![https://mangahost4.com](https://img.shields.io/website?url=https://mangahost4.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangahost4.com)](https://mangahost4.com) | - | - | - |
 | MangaHubIo | [![https://mangahub.io](https://img.shields.io/website?url=https://mangahub.io%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangahub.io)](https://mangahub.io) | - | - | - |
 | MangaHubRU | [![https://mangahub.ru](https://img.shields.io/website?url=https://mangahub.ru%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangahub.ru)](https://mangahub.ru) | - | - | - |
+| MangaInUA | [![https://manga.in.ua](https://img.shields.io/website?url=https://manga.in.ua%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga.in.ua)](https://manga.in.ua) | OK | 13.10.2025 | - |
 | MangaKakalot | [![https://www.mangakakalot.gg](https://img.shields.io/website?url=https://www.mangakakalot.gg%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangakakalot.gg)](https://www.mangakakalot.gg) | OK | 24.02.2025 | - |
 | MangaKakalotFun | [![https://mangakakalot.fun](https://img.shields.io/website?url=https://mangakakalot.fun%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangakakalot.fun)](https://mangakakalot.fun) | - | - | - |
 | MangaKakalots | [![https://mangakakalots.com](https://img.shields.io/website?url=https://mangakakalots.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangakakalots.com)](https://mangakakalots.com) | - | - | - |
@@ -277,7 +279,6 @@
 | MangaKiss | [![https://mangakiss.org](https://img.shields.io/website?url=https://mangakiss.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangakiss.org)](https://mangakiss.org) | - | - | - |
 | MangaKita | [![https://mangakita.id](https://img.shields.io/website?url=https://mangakita.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangakita.id)](https://mangakita.id) | - | - | - |
 | MangaKomi | [![https://mangakomi.io](https://img.shields.io/website?url=https://mangakomi.io%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangakomi.io)](https://mangakomi.io) | - | - | - |
-| MangaInUA | [![https://manga.in.ua](https://img.shields.io/website?url=https://manga.in.ua%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga.in.ua)](https://manga.in.ua) | OK | 13.10.2025 | - |
 | Mangakyo | [![https://mangakyo.vip](https://img.shields.io/website?url=https://mangakyo.vip%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangakyo.vip)](https://mangakyo.vip) | - | - | - |
 | MangaLib | [![https://mangalib.me](https://img.shields.io/website?url=https://mangalib.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangalib.me)](https://mangalib.me) | OK | 01.08.2025 | Authorization code is required to view locked chapters. See [here](https://github.com/dazedcat19/FMD2/issues/1834#issuecomment-2590512862) |
 | MangaLivre | [![https://mangalivre.tv](https://img.shields.io/website?url=https://mangalivre.tv%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangalivre.tv)](https://mangalivre.tv) | OK | 01.04.2025 | - |
