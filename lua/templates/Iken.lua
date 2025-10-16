@@ -69,7 +69,8 @@ function _M.GetInfo()
 	local json_root_key
 	if New then
 		MANGAINFO.Summary = x.XPathString('(//div[contains(@class, "xl:leading-relaxed")])[1]/string-join(p[not(contains(., "Alt title"))], "\r\n")')
-		local w = '{"series"' .. x.XPathString('//script[contains(., "totalChapterCount")]/substring-before(substring-after(., "{""series"""), "],[")')
+		local w = '{"series"' .. x.XPathString('//script[contains(., "totalChapterCount")]/substring-before(substring-after(., "{""series"""), "]}],")')
+		if w == '' then w = '{"series"' .. x.XPathString('//script[contains(., "totalChapterCount")]/substring-before(substring-after(., "{""series"""), "],[")') end
 		x.ParseHTML(w)
 		json_root_key = 'series'
 	else
