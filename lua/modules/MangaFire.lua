@@ -162,25 +162,22 @@ local prefix_keys = {
 	W = "ZB4oBi0=",
 }
 
-local function BytesFromBase64(b64)
-	return ToBytes(require 'fmd.crypto'.DecodeBase64(b64))
-end
-
 local function GenerateVRF(input)
-	local bytes = ToBytes(input)
+	local crypto = require 'fmd.crypto'
+	local bytes = ToBytes(crypto.EncodeURLElement(input))
 
-	bytes = Rc4(BytesFromBase64(rc4_keys.L), bytes)
-	bytes = Transform(bytes, BytesFromBase64(seeds_32.A), BytesFromBase64(prefix_keys.O), 7, schedule_c)
-	bytes = Rc4(BytesFromBase64(rc4_keys.G), bytes)
-	bytes = Transform(bytes, BytesFromBase64(seeds_32.V), BytesFromBase64(prefix_keys.V), 10, schedule_y)
-	bytes = Rc4(BytesFromBase64(rc4_keys.B), bytes)
-	bytes = Transform(bytes, BytesFromBase64(seeds_32.N), BytesFromBase64(prefix_keys.L), 9, schedule_b)
-	bytes = Rc4(BytesFromBase64(rc4_keys.M), bytes)
-	bytes = Transform(bytes, BytesFromBase64(seeds_32.P), BytesFromBase64(prefix_keys.P), 7, schedule_j)
-	bytes = Rc4(BytesFromBase64(rc4_keys.F), bytes)
-	bytes = Transform(bytes, BytesFromBase64(seeds_32.K), BytesFromBase64(prefix_keys.W), 5, schedule_e)
+	bytes = Rc4(ToBytes(crypto.DecodeBase64(rc4_keys.L)), bytes)
+	bytes = Transform(bytes, ToBytes(crypto.DecodeBase64(seeds_32.A)), ToBytes(crypto.DecodeBase64(prefix_keys.O)), 7, schedule_c)
+	bytes = Rc4(ToBytes(crypto.DecodeBase64(rc4_keys.G)), bytes)
+	bytes = Transform(bytes, ToBytes(crypto.DecodeBase64(seeds_32.V)), ToBytes(crypto.DecodeBase64(prefix_keys.V)), 10, schedule_y)
+	bytes = Rc4(ToBytes(crypto.DecodeBase64(rc4_keys.B)), bytes)
+	bytes = Transform(bytes, ToBytes(crypto.DecodeBase64(seeds_32.N)), ToBytes(crypto.DecodeBase64(prefix_keys.L)), 9, schedule_b)
+	bytes = Rc4(ToBytes(crypto.DecodeBase64(rc4_keys.M)), bytes)
+	bytes = Transform(bytes, ToBytes(crypto.DecodeBase64(seeds_32.P)), ToBytes(crypto.DecodeBase64(prefix_keys.P)), 7, schedule_j)
+	bytes = Rc4(ToBytes(crypto.DecodeBase64(rc4_keys.F)), bytes)
+	bytes = Transform(bytes, ToBytes(crypto.DecodeBase64(seeds_32.K)), ToBytes(crypto.DecodeBase64(prefix_keys.W)), 5, schedule_e)
 
-	return require 'fmd.crypto'.EncodeBase64(FromBytes(bytes)):gsub("%+", "-"):gsub("/", "_"):gsub("=+$", "")
+	return crypto.EncodeBase64(FromBytes(bytes)):gsub("%+", "-"):gsub("/", "_"):gsub("=+$", "")
 end
 
 function GetLangList()

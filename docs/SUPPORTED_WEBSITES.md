@@ -250,7 +250,7 @@
 | MangaEsp | [![https://mangaesp.net](https://img.shields.io/website?url=https://mangaesp.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangaesp.net)](https://mangaesp.net) | - | - | - |
 | Mangaf | [![https://mangaforall.com](https://img.shields.io/website?url=https://mangaforall.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangaforall.com)](https://mangaforall.com) | - | - | - |
 | MangaFab | [![https://mangafab.com](https://img.shields.io/website?url=https://mangafab.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangafab.com)](https://mangafab.com) | OK | 09.07.2025 | - |
-| MangaFire | [![https://mangafire.to](https://img.shields.io/website?url=https://mangafire.to%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangafire.to)](https://mangafire.to) | OK | 14.10.2025 | - |
+| MangaFire | [![https://mangafire.to](https://img.shields.io/website?url=https://mangafire.to%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangafire.to)](https://mangafire.to) | OK | 18.10.2025 | - |
 | MangaForest | [![https://mangaforest.me](https://img.shields.io/website?url=https://mangaforest.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangaforest.me)](https://mangaforest.me) | OK | 09.07.2025 | - |
 | MangaForFreeCom | [![https://mangaforfree.com](https://img.shields.io/website?url=https://mangaforfree.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangaforfree.com)](https://mangaforfree.com) | - | - | - |
 | MangaForFreeNet | [![https://mangaforfree.net](https://img.shields.io/website?url=https://mangaforfree.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangaforfree.net)](https://mangaforfree.net) | - | - | - |
