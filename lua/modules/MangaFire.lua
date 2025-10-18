@@ -64,9 +64,9 @@ local Langs = {
 
 local function ToBytes(s)
 	local t = {}
-    for i = 1, #s do
+	for i = 1, #s do
 		t[#t + 1] = string.byte(s, i) & 255
-    end
+	end
 	return t
 end
 
@@ -100,7 +100,7 @@ end
 local function Transform(input, init_seed_bytes, prefix_key, prefix_len, schedule)
 	local out = {}
 	for i = 1, #input do
-		if i - 1 < prefix_len then
+		if (i - 1) < prefix_len then
 			out[#out + 1] = prefix_key[i] or 0
 		end
 		out[#out + 1] = schedule[((i - 1) % 10) + 1]((input[i] ~ init_seed_bytes[((i - 1) % 32) + 1]) & 255) & 255
@@ -109,7 +109,7 @@ local function Transform(input, init_seed_bytes, prefix_key, prefix_len, schedul
 end
 
 local function Add8(n) return function(c) return (c + n) & 255 end end
-local function Sub8(n) return function(c) return (c - n) & 255 end end
+local function Sub8(n) return function(c) return (c - n + 256) & 255 end end
 local function Xor8(n) return function(c) return (c ~ n) & 255 end end
 local function Rotl8(n) return function(c) return ((c << n) | (c >> (8 - n))) & 255 end end
 
@@ -139,10 +139,10 @@ local schedule_e = {
 }
 
 local rc4_keys = {
-	L = "u8cBwTi1CM4XE3BkwG5Ble3AxWgnhKiXD9Cr279yNW0=",
-	G = "t00NOJ/Fl3wZtez1xU6/YvcWDoXzjrDHJLL2r/IWgcY=",
+	l = "u8cBwTi1CM4XE3BkwG5Ble3AxWgnhKiXD9Cr279yNW0=",
+	g = "t00NOJ/Fl3wZtez1xU6/YvcWDoXzjrDHJLL2r/IWgcY=",
 	B = "S7I+968ZY4Fo3sLVNH/ExCNq7gjuOHjSRgSqh6SsPJc=",
-	M = "7D4Q8i8dApRj6UWxXbIBEa1UqvjI+8W0UvPH9talJK8=",
+	m = "7D4Q8i8dApRj6UWxXbIBEa1UqvjI+8W0UvPH9talJK8=",
 	F = "0JsmfWZA1kwZeWLk5gfV5g41lwLL72wHbam5ZPfnOVE=",
 }
 
@@ -151,33 +151,52 @@ local seeds_32 = {
 	V = "dFcKX9Qpu7mt/AD6mb1QF4w+KqHTKmdiqp7penubAKI=",
 	N = "owp1QIY/kBiRWrRn9TLN2CdZsLeejzHhfJwdiQMjg3w=",
 	P = "H1XbRvXOvZAhyyPaO68vgIUgdAHn68Y6mrwkpIpEue8=",
-	K = "2Nmobf/mpQ7+Dxq1/olPSDj3xV8PZkPbKaucJvVckL0=",
+	k = "2Nmobf/mpQ7+Dxq1/olPSDj3xV8PZkPbKaucJvVckL0=",
 }
 
 local prefix_keys = {
 	O = "Rowe+rg/0g==",
-	V = "8cULcnOMJVY8AA==",
+	v = "8cULcnOMJVY8AA==",
 	L = "n2+Og2Gth8Hh",
-	P = "aRpvzH+yoA==",
+	p = "aRpvzH+yoA==",
 	W = "ZB4oBi0=",
 }
+
+local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+
+local function EncodeBase64(data)
+	return ((data:gsub('.', function(x)
+		local r, bits = '', x:byte()
+		for i = 8, 1, -1 do
+			r = r .. (bits % 2 ^ i - bits % 2 ^ (i - 1) > 0 and '1' or '0')
+		end
+		return r
+	end) .. '0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
+		if (#x < 6) then return '' end
+		local c = 0
+		for i = 1, 6 do
+			c = c + (x:sub(i ,i) == '1' and 2 ^ (6 - i) or 0)
+		end
+		return b:sub(c + 1, c +1)
+	end) .. ({ '', '==', '=' })[#data % 3 + 1])
+end
 
 local function GenerateVRF(input)
 	local crypto = require 'fmd.crypto'
 	local bytes = ToBytes(crypto.EncodeURLElement(input))
 
-	bytes = Rc4(ToBytes(crypto.DecodeBase64(rc4_keys.L)), bytes)
+	bytes = Rc4(ToBytes(crypto.DecodeBase64(rc4_keys.l)), bytes)
 	bytes = Transform(bytes, ToBytes(crypto.DecodeBase64(seeds_32.A)), ToBytes(crypto.DecodeBase64(prefix_keys.O)), 7, schedule_c)
-	bytes = Rc4(ToBytes(crypto.DecodeBase64(rc4_keys.G)), bytes)
-	bytes = Transform(bytes, ToBytes(crypto.DecodeBase64(seeds_32.V)), ToBytes(crypto.DecodeBase64(prefix_keys.V)), 10, schedule_y)
+	bytes = Rc4(ToBytes(crypto.DecodeBase64(rc4_keys.g)), bytes)
+	bytes = Transform(bytes, ToBytes(crypto.DecodeBase64(seeds_32.V)), ToBytes(crypto.DecodeBase64(prefix_keys.v)), 10, schedule_y)
 	bytes = Rc4(ToBytes(crypto.DecodeBase64(rc4_keys.B)), bytes)
 	bytes = Transform(bytes, ToBytes(crypto.DecodeBase64(seeds_32.N)), ToBytes(crypto.DecodeBase64(prefix_keys.L)), 9, schedule_b)
-	bytes = Rc4(ToBytes(crypto.DecodeBase64(rc4_keys.M)), bytes)
-	bytes = Transform(bytes, ToBytes(crypto.DecodeBase64(seeds_32.P)), ToBytes(crypto.DecodeBase64(prefix_keys.P)), 7, schedule_j)
+	bytes = Rc4(ToBytes(crypto.DecodeBase64(rc4_keys.m)), bytes)
+	bytes = Transform(bytes, ToBytes(crypto.DecodeBase64(seeds_32.P)), ToBytes(crypto.DecodeBase64(prefix_keys.p)), 7, schedule_j)
 	bytes = Rc4(ToBytes(crypto.DecodeBase64(rc4_keys.F)), bytes)
-	bytes = Transform(bytes, ToBytes(crypto.DecodeBase64(seeds_32.K)), ToBytes(crypto.DecodeBase64(prefix_keys.W)), 5, schedule_e)
+	bytes = Transform(bytes, ToBytes(crypto.DecodeBase64(seeds_32.k)), ToBytes(crypto.DecodeBase64(prefix_keys.W)), 5, schedule_e)
 
-	return crypto.EncodeBase64(FromBytes(bytes)):gsub("%+", "-"):gsub("/", "_"):gsub("=+$", "")
+	return EncodeBase64(FromBytes(bytes)):gsub("%+", "-"):gsub("/", "_"):gsub("=+$", "")
 end
 
 function GetLangList()
