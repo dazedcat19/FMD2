@@ -6,12 +6,12 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '214e30f0afec420cafddefe22b4d973c'
 	m.Name                     = 'ComicK'
-	m.RootURL                  = 'https://comick.io'
+	m.RootURL                  = 'https://comick.live'
 	m.Category                 = 'English'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
-	m.TotalDirectory           = #DirectoryPages
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 
 	local fmd = require 'fmd.env'
 	local slang = fmd.SelectedLanguage
@@ -42,12 +42,8 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local API_URL = 'https://api.comick.io'
-
-DirectoryPages = {'&status=1&demographic=1', '&status=1&demographic=2', '&status=1&demographic=3', '&status=1&demographic=4', '&status=1&demographic=5',
-	'&status=2&demographic=1', '&status=2&demographic=2', '&status=2&demographic=3', '&status=2&demographic=4', '&status=2&demographic=5',
-	'&status=3&demographic=1', '&status=3&demographic=2', '&status=3&demographic=3', '&status=3&demographic=4', '&status=3&demographic=5',
-	'&status=4&demographic=1', '&status=4&demographic=2', '&status=4&demographic=3', '&status=4&demographic=4', '&status=4&demographic=5'}
+local API_URL = 'https://comick.live/api'
+local DirectoryPagination = '/search?order_by=user_follow_count&order_direction=desc&type=comic'
 
 local Langs = {
 	['ar'] = 'Arabic',
@@ -138,65 +134,52 @@ end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local u = API_URL .. '/v1.0/search?limit=300' .. DirectoryPages[MODULE.CurrentDirectoryIndex + 1] .. '&page=' .. (URL + 1) .. '&sort=user_follow_count'
-	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
+	local u = API_URL .. DirectoryPagination
 
 	if not HTTP.GET(u) then return net_problem end
 
-	local series = CreateTXQuery(HTTP.Document).XPath('json(*)()')
-	if series.Count == 0 then return no_error end
-
-	for v in series.Get() do
-		LINKS.Add('comic/' .. v.GetProperty('slug').ToString())
-		NAMES.Add(v.GetProperty('title').ToString())
+	local x = CreateTXQuery(HTTP.Document)
+	local p = 1
+	while true do
+		sleep(7000)
+		for v in x.XPath('json(*).data()').Get() do
+			LINKS.Add('comic/' .. v.GetProperty('slug').ToString())
+			NAMES.Add(v.GetProperty('title').ToString())
+		end
+		local next_url = x.XPathString('json(*).next_page_url')
+		if next_url == '' then break end
+		UPDATELIST.UpdateStatusText('Loading page ' .. p)
+		p = p + 1
+		if not HTTP.GET(next_url) then break end
+		x.ParseHTML(HTTP.Document)
 	end
-	UPDATELIST.CurrentDirectoryPageNumber = UPDATELIST.CurrentDirectoryPageNumber + 1
 
 	return no_error
 end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local json = require 'utils.json'
-	local u = API_URL .. URL:match('(/comic/.-)$')
-	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
+	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	local x = json.decode(HTTP.Document.ToString())
-	MANGAINFO.Title      = x.comic.title
-	MANGAINFO.CoverLink  = 'https://meo3.comick.pictures/' .. x.comic.md_covers[1].b2key
-	MANGAINFO.Status     = MangaInfoStatusIfPos(x.comic.status, '1', '2', '4', '3')
-	MANGAINFO.Summary    = x.comic.desc
+	local x = CreateTXQuery(HTTP.Document)
+	local json = x.XPath('json(//script[@id="comic-data"])')
+	MANGAINFO.Title     = x.XPathString('title', json)
+	MANGAINFO.AltTitles = x.XPathString('string-join(md_titles?*/title, ", ")', json)
+	MANGAINFO.CoverLink = x.XPathString('default_thumbnail', json)
+	MANGAINFO.Authors   = x.XPathString('string-join(authors?*/name, ", ")', json)
+	MANGAINFO.Artists   = x.XPathString('string-join(artists?*/name, ", ")', json)
+	MANGAINFO.Genres    = x.XPathString('string-join(md_comic_md_genres?*/md_genres/name, ", ")', json)
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status', json), '1', '2', '4', '3')
+	MANGAINFO.Summary   = x.XPathString('desc', json)
 
-	local alttitles = {}
-	for _, alttitle in ipairs(x.comic.md_titles) do
-		table.insert(alttitles, alttitle.title)
-	end
-	MANGAINFO.AltTitles = table.concat(alttitles, ', ')
+	local demographic = x.XPathString('demographic_name', json):gsub('^%l', string.upper)
+	if demographic ~= '' then MANGAINFO.Genres = MANGAINFO.Genres .. ', ' .. demographic end
+	local origin = x.XPathString('origination', json)
+	if origin ~= '' then MANGAINFO.Genres = MANGAINFO.Genres .. ', ' .. origin end
 
-	local authors = {}
-	for _, author in ipairs(x.authors) do
-		table.insert(authors, author.name)
-	end
-	MANGAINFO.Authors = table.concat(authors, ', ')
-
-	local artists = {}
-	for _, artist in ipairs(x.artists) do
-		table.insert(artists, artist.name)
-	end
-	MANGAINFO.Artists = table.concat(artists, ', ')
-
-	local genres = {}
-	for _, genre in ipairs(x.comic.md_comic_md_genres) do
-		table.insert(genres, genre.md_genres.name)
-	end
-	MANGAINFO.Genres  = table.concat(genres, ', ')
-
-	local demographic = x.demographic
-	if demographic ~= nil then MANGAINFO.Genres = MANGAINFO.Genres .. ', ' .. demographic end
-
-	local manga_id   = x.comic.hid
+	local slug      = x.XPathString('slug', json)
 	local optgroup  = MODULE.GetOption('showscangroup')
 	local optlang   = MODULE.GetOption('lang')
 	local optlangid = FindLanguage(optlang)
@@ -206,16 +189,12 @@ function GetInfo()
 	if optlangid == nil then langparam = '' else langparam = '&lang=' .. optlangid end
 
 	while true do
-		HTTP.Reset()
-		HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
-		if not HTTP.GET(API_URL .. '/comic/' .. manga_id .. '/chapters?chap-order=1&page=' .. tostring(page) .. langparam) then return net_problem end
-		local chapter_data = json.decode(HTTP.Document.ToString())
-		local chapters = chapter_data.chapters
+		if not HTTP.GET(API_URL .. '/comics/' .. slug .. '/chapter-list?chapOrder=asc&page=' .. tostring(page) .. langparam) then return net_problem end
+		local chapters = require 'utils.json'.decode(HTTP.Document.ToString())
 
-		for _, chapter in ipairs(chapters) do
+		for _, chapter in ipairs(chapters.data) do
 			local ignore = false
 
-			-- Ignore chapters that have a delayed release time
 			if chapter.publish_at ~= nil then
 				if parse_iso8601(chapter.publish_at) >= os.time(os.date('!*t')) then
 					ignore = true
@@ -238,11 +217,11 @@ function GetInfo()
 			end
 
 			if not ignore then
-				local volume = chapter.vol ~= nil and chapter.vol ~= '' and string.format('Vol. %s ', chapter.vol) or ''
-				local chapter_number = chapter.chap ~= nil and chapter.chap ~= '' and string.format('Ch. %s', chapter.chap) or ''
-				local title = chapter.title ~= nil and chapter.title ~= '' and string.format(' - %s', chapter.title) or ''
+				local volume = (chapter.vol ~= nil and chapter.vol ~= '') and ('Vol. ' .. chapter.vol .. ' ') or ''
+				local chapter_number = (chapter.chap ~= nil and chapter.chap ~= '') and ('Ch. ' .. chapter.chap) or ''
+				local title = (chapter.title ~= nil and chapter.title ~= '') and (' - ' .. title) or ''
 
-				local language = optlang == 0 and string.format(' [%s]', chapter.lang) or ''
+				local language = (optlang == 0) and (' ' .. chapter.lang) or ''
 
 				local scanlators = ''
 				if optgroup then
@@ -253,30 +232,38 @@ function GetInfo()
 					end
 				end
 
-				MANGAINFO.ChapterLinks.Add(chapter.hid)
+				MANGAINFO.ChapterLinks.Add('comic/' .. slug .. '/' .. chapter.hid .. '-chapter-' .. chapter.chap .. '-' .. optlangid)
 				MANGAINFO.ChapterNames.Add(volume .. chapter_number .. title .. language .. scanlators)
 			end
 		end
 
 		page = page + 1
-		local pages = math.ceil(chapter_data.total / chapter_data.limit)
+		local pages = chapters.pagination.last_page
 		if page > pages then
 			break
 		end
 	end
+
+	HTTP.Reset()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
 
 	return no_error
 end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	local u = API_URL .. '/chapter' .. URL .. '?tachiyomi=true'
-	HTTP.Reset()
-	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
+	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return false end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).chapter.images().url', TASK.PageLinks)
+	CreateTXQuery(HTTP.Document).XPathStringAll('json(//script[@id="sv-data"]).chapter.images().url', TASK.PageLinks)
+
+	return true
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
 
 	return true
 end
