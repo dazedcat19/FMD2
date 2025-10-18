@@ -19,7 +19,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local API_URL = 'https://westmanga.me/api'
+local API_URL = 'https://data.westmanga.me/api'
 local DirectoryPagination = '/contents?orderBy=Added&type=Comic&page='
 
 ----------------------------------------------------------------------------------------------------
