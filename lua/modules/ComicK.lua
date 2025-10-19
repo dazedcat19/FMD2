@@ -147,7 +147,7 @@ function GetNameAndLink()
 			NAMES.Add(v.GetProperty('title').ToString())
 		end
 		local next_url = x.XPathString('json(*).next_page_url')
-		if next_url == '' then break end
+		if next_url == 'null' then break end
 		UPDATELIST.UpdateStatusText('Loading page ' .. p)
 		p = p + 1
 		if not HTTP.GET(next_url) then break end
@@ -219,7 +219,7 @@ function GetInfo()
 			if not ignore then
 				local volume = (chapter.vol ~= nil and chapter.vol ~= '') and ('Vol. ' .. chapter.vol .. ' ') or ''
 				local chapter_number = (chapter.chap ~= nil and chapter.chap ~= '') and ('Ch. ' .. chapter.chap) or ''
-				local title = (chapter.title ~= nil and chapter.title ~= '') and (' - ' .. title) or ''
+				local title = (chapter.title ~= nil and chapter.title ~= '') and (' - ' .. chapter.title) or ''
 
 				local language = (optlang == 0) and (' ' .. chapter.lang) or ''
 
