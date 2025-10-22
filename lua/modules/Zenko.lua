@@ -92,7 +92,7 @@ function GetDirectoryPageNumber()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	PAGENUMBER = (tonumber(CreateTXQuery(HTTP.Document).XPathString('json(*).meta.totalPages')) + 1) or 1
+	PAGENUMBER = (tonumber(CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString())).XPathString('json(*).meta.totalPages')) + 1) or 1
 
 	return no_error
 end
@@ -113,17 +113,18 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
+	local crypto = require 'fmd.crypto'
 	local u = API_URL .. URL:gsub('%?.*$', '')
 
 	if not HTTP.GET(u) then return net_problem end
 
-	local x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
+	local x = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString()))
 	MANGAINFO.Title     = x.XPathString('json(*).name')
-	MANGAINFO.AltTitles = x.XPathStringAll('(json(*).originalName, json(*).engName)')
+	MANGAINFO.AltTitles = x.XPathStringAll('(json(*).engName, json(*).originalName)')
 	MANGAINFO.CoverLink = CDN_URL .. '/' .. x.XPathString('json(*).coverImg') .. '?optimizer=image&width=560&quality=70'
 	MANGAINFO.Authors   = x.XPathStringAll('json(*).writers().name')
 	MANGAINFO.Artists   = x.XPathStringAll('json(*).painters().name')
-	MANGAINFO.Genres    = x.XPathStringAll('(json(*).genres().name, json(*).tags().name, json(*).category)')
+	MANGAINFO.Genres    = x.XPathStringAll('(json(*).genres().name, json(*).tags().name, concat(upper-case(substring(json(*).category, 1, 1)), lower-case(substring(json(*).category, 2))))')
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('json(*).translationStatus'), 'ONGOING', 'FINISHED', 'PAUSED')
 	MANGAINFO.Summary   = x.XPathString('json(*).description')
 
@@ -131,7 +132,7 @@ function GetInfo()
 
 	local chapters = {}
 	local optgroup = MODULE.GetOption('showscangroup')
-	for v in CreateTXQuery(HTTP.Document).XPath('json(*)()').Get() do
+	for v in CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString())).XPath('json(*)()').Get() do
 		local name = v.GetProperty('name').ToString()
 		local scanlator = ' [' .. v.GetProperty('publisher').GetProperty('name').ToString() .. ']'
 		local id = GenerateID(name)
