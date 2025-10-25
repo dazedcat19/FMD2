@@ -221,7 +221,7 @@ function GetInfo()
 				local chapter_number = (chapter.chap ~= nil and chapter.chap ~= '') and ('Ch. ' .. chapter.chap) or ''
 				local title = (chapter.title ~= nil and chapter.title ~= '') and (' - ' .. chapter.title) or ''
 
-				local language = (optlang == 0) and (' ' .. chapter.lang) or ''
+				local language = (optlang == 0) and (' [' .. chapter.lang .. ']') or ''
 
 				local scanlators = ''
 				if optgroup then
@@ -233,7 +233,7 @@ function GetInfo()
 				end
 
 				MANGAINFO.ChapterLinks.Add('comic/' .. slug .. '/' .. chapter.hid .. '-chapter-' .. chapter.chap .. '-' .. optlangid)
-				MANGAINFO.ChapterNames.Add(volume .. chapter_number .. title .. language .. scanlators)
+				MANGAINFO.ChapterNames.Add(volume .. chapter_number .. title .. string.upper(language) .. scanlators)
 			end
 		end
 
