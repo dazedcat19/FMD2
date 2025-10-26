@@ -74,12 +74,15 @@ function GetInfo()
 		MANGAINFO.ChapterNames.Add(x.XPathString('li/div[1]/span[1]', v))
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
+
 	return no_error
 end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
 	local u = MaybeFillHost(MODULE.RootURL, URL) .. '.html'
+	HTTP.Reset()
+	HTTP.Cookies.Values['smartlink_shown'] = 1
 
 	if not HTTP.GET(u) then return net_problem end
 
