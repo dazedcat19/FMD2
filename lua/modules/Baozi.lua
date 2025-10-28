@@ -12,6 +12,8 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.MaxTaskLimit             = 2
+	m.MaxConnectionLimit       = 4
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -52,7 +54,7 @@ function GetNameAndLink()
 	if not HTTP.GET(u) then return net_problem end
 
 	for v in CreateTXQuery(HTTP.Document).XPath('json(*).items()').Get() do
-		LINKS.Add(v.GetProperty('comic_id').ToString())
+		LINKS.Add('comic/' .. v.GetProperty('comic_id').ToString())
 		NAMES.Add(v.GetProperty('name').ToString())
 	end
 
