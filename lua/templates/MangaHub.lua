@@ -17,17 +17,21 @@ local json = require 'utils.json'
 -- Helper Functions
 ----------------------------------------------------------------------------------------------------
 
+math.randomseed(os.time())
+
+function RandomHex()
+    local hex = ''
+    for i = 1, 16 do
+        hex = hex .. string.format('%02x', math.random(0, 255))
+    end
+    return hex
+end
+
 -- Set the required http header for making a request.
 local function SetRequestHeaders()
-	if not HTTP.GET(MODULE.RootURL) then return net_problem end
-
-	local mhub_access = HTTP.Cookies.Values['mhub_access']
-	HTTP.Reset()
 	HTTP.Headers.Values['Origin'] = MODULE.RootURL
-	HTTP.Headers.Values['X-Mhub-Access'] = mhub_access
+	HTTP.Headers.Values['X-Mhub-Access'] = RandomHex()
 	HTTP.MimeType = 'application/json'
-
-	return no_error
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -66,7 +70,7 @@ end
 
 -- Get info and chapter list for the current manga.
 function _M.GetInfo()
-	local s = '{"query":"{manga(x:mh01,slug:\\"' .. URL:match('manga/(.-)$') .. '\\"){title,slug,status,image,author,artist,genres,description,alternativeTitle,chapters{number,title,slug}}}"}'
+	local s = '{"query":"{manga(x:' .. Variables .. ',slug:\\"' .. URL:match('manga/(.-)$') .. '\\"){title,slug,status,image,author,artist,genres,description,alternativeTitle,chapters{number,title,slug}}}"}'
 	SetRequestHeaders()
 
 	if not HTTP.POST(API_URL, s) then return net_problem end
@@ -84,8 +88,12 @@ function _M.GetInfo()
 
 	local slug = x.data.manga.slug
 	for _, v in ipairs(x.data.manga.chapters) do
-		MANGAINFO.ChapterLinks.Add(slug .. '/chapter-' .. v.number)
-		MANGAINFO.ChapterNames.Add(v.title)
+		local title = v.title
+		local number = v.number
+		if title == '' then title = 'Chapter ' .. number end
+
+		MANGAINFO.ChapterLinks.Add(slug .. '/chapter-' .. number)
+		MANGAINFO.ChapterNames.Add(title)
 	end
 
 	return no_error
@@ -96,6 +104,7 @@ function _M.GetPageNumber()
 	local chapter = URL:match('(%d+)$')
 	local slug = URL:match('^/(.-)/')
 	local s = '{"query":"{chapter(x:' .. Variables .. ',slug:\\"' .. slug ..'\\",number:' .. chapter .. '){pages}}"}'
+	HTTP.Reset()
 	SetRequestHeaders()
 
 	if not HTTP.POST(API_URL, s) then return false end
