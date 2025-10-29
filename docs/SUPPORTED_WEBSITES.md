@@ -260,7 +260,6 @@
 | MangaGeko | [![https://www.mgeko.cc](https://img.shields.io/website?url=https://www.mgeko.cc%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mgeko.cc)](https://www.mgeko.cc) | OK | 30.09.2025 | - |
 | MangaGG | [![https://mangagg.com](https://img.shields.io/website?url=https://mangagg.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangagg.com)](https://mangagg.com) | OK | 29.03.2025 | - |
 | MangaGo | [![https://www.mangago.me](https://img.shields.io/website?url=https://www.mangago.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangago.me)](https://www.mangago.me) | OK | 16.08.2025 | - |
-| MangaGun | [![https://mangagun.net](https://img.shields.io/website?url=https://mangagun.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangagun.net)](https://mangagun.net) | OK | 16.03.2025 | - |
 | MangaHasu | [![https://mangahasu.se](https://img.shields.io/website?url=https://mangahasu.se%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangahasu.se)](https://mangahasu.se) | - | - | - |
 | MangaHentai | [![https://mangahentai.me](https://img.shields.io/website?url=https://mangahentai.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangahentai.me)](https://mangahentai.me) | OK | 25.07.2025 | - |
 | MangaHere | [![https://www.mangahere.cc](https://img.shields.io/website?url=https://www.mangahere.cc%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangahere.cc)](https://www.mangahere.cc) | OK | 12.12.2024 | - |
@@ -435,6 +434,7 @@
 | NicoManga | [![https://nicomanga.com](https://img.shields.io/website?url=https://nicomanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://nicomanga.com)](https://nicomanga.com) | OK | 26.10.2025 | - |
 | NightComic | [![https://nightcomic.com](https://img.shields.io/website?url=https://nightcomic.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://nightcomic.com)](https://nightcomic.com) | - | - | - |
 | NightScans | [![https://nightscans.net](https://img.shields.io/website?url=https://nightscans.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://nightscans.net)](https://nightscans.net) | - | - | - |
+| NihonKuni | [![https://nihonkuni.com](https://img.shields.io/website?url=https://nihonkuni.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://nihonkuni.com)](https://nihonkuni.com) | OK | 29.10.2025 | - |
 | Niji Translations | [![https://niji-translations.com](https://img.shields.io/website?url=https://niji-translations.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://niji-translations.com)](https://niji-translations.com) | OK | 25.07.2025 | - |
 | NineManga | [![https://www.ninemanga.com](https://img.shields.io/website?url=https://www.ninemanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.ninemanga.com)](https://www.ninemanga.com) | OK | 09.02.2025 | - |
 | NineMangaBR | [![https://br.ninemanga.com](https://img.shields.io/website?url=https://br.ninemanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://br.ninemanga.com)](https://br.ninemanga.com) | OK | 09.02.2025 | - |
