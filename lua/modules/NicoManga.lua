@@ -82,7 +82,7 @@ end
 function GetPageNumber()
 	local u = MaybeFillHost(MODULE.RootURL, URL) .. '.html'
 	HTTP.Reset()
-	HTTP.Cookies.Values['smartlink_shown'] = 1
+	HTTP.Cookies.Values['smartlink_shown_guest'] = 1
 
 	if not HTTP.GET(u) then return net_problem end
 
