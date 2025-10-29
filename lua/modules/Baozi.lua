@@ -12,8 +12,8 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
-	m.MaxTaskLimit             = 2
-	m.MaxConnectionLimit       = 4
+	m.MaxTaskLimit             = 1
+	m.MaxConnectionLimit       = 1
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -36,6 +36,7 @@ function GetDirectoryPageNumber()
 	local s = CreateTXQuery(HTTP.Document).XPathString('json(*).next')
 
 	while s ~= '' do
+		Delay()
 		page = page + 1
 		if not HTTP.GET(u .. page) then return net_problem end
 		s = CreateTXQuery(HTTP.Document).XPathString('json(*).next')
@@ -45,10 +46,9 @@ function GetDirectoryPageNumber()
 	return no_error
 end
 
-
-
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
+	Delay()
 	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1)
 
 	if not HTTP.GET(u) then return net_problem end
@@ -63,6 +63,7 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
+	Delay()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
@@ -87,6 +88,7 @@ function GetPageNumber()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	while u do
+		Delay()
 		if not HTTP.GET(u) then return false end
 
 		local x = CreateTXQuery(HTTP.Document)
@@ -97,4 +99,14 @@ function GetPageNumber()
 	end
 
 	return true
+end
+
+function Delay()
+	local last_delay = tonumber(MODULE.Storage['last_delay']) or 1
+	local delay = 2
+	last_delay = os.time() - last_delay
+	if last_delay < delay then
+		sleep((delay - last_delay) * 1000)
+	end
+	MODULE.Storage['last_delay'] = os.time()
 end
