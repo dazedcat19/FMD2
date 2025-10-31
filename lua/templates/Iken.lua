@@ -63,13 +63,13 @@ function _M.GetInfo()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	local s = HTTP.Document.ToString():gsub('\\"', '"'):gsub('\\\\"', ''):gsub('\\\\', '\\')
+	local s = HTTP.Document.ToString():gsub('\\"', '"'):gsub('\\\\"', ''):gsub('\\\\', '\\'):gsub('"%]%)</script><script>self%.__next_f%.push%(%[1,"', '')
 	local x = CreateTXQuery(s)
 
 	local json_root_key
 	if New then
 		MANGAINFO.Summary = x.XPathString('(//div[contains(@class, "xl:leading-relaxed")])[1]/string-join(p[not(contains(., "Alt title"))], "\r\n")')
-		local w = '{"series"' .. x.XPathString('//script[contains(., "totalChapterCount")]/substring-before(substring-after(., "{""series"""), "]}],")')
+		local w = '{"series"' .. x.XPathString('//script[contains(., "totalChapterCount")]/substring-before(substring-after(., "{""series"""), "false}]}],")') .. 'false}'
 		if w == '' then w = '{"series"' .. x.XPathString('//script[contains(., "totalChapterCount")]/substring-before(substring-after(., "{""series"""), "],[")') end
 		x.ParseHTML(w)
 		json_root_key = 'series'
@@ -123,7 +123,7 @@ function _M.GetPageNumber()
 
 	if not HTTP.GET(u) then return false end
 
-	local s = HTTP.Document.ToString():gsub('\\"', '"')
+	local s = HTTP.Document.ToString():gsub('\\"', '"'):gsub('"%]%)</script><script>self%.__next_f%.push%(%[1,"', '')
 	local x = CreateTXQuery(s)
 	local json_extraction
 	local prefix = ''
