@@ -70,13 +70,13 @@ end
 
 -- Get info and chapter list for the current manga.
 function _M.GetInfo()
-	local s = '{"query":"{manga(x:' .. Variables .. ',slug:\\"' .. URL:match('manga/(.-)$') .. '\\"){title,slug,status,image,author,artist,genres,description,alternativeTitle,chapters{number,title,slug}}}"}'
+	local s = '{"query":"{manga(x:' .. Variables .. ',slug:\\"' .. URL:match('manga/(.-)$') .. '\\"){title,slug,status,image,author,artist,genres,description,alternativeTitle,chapters{number,title}}}"}'
 	SetRequestHeaders()
 
 	if not HTTP.POST(API_URL, s) then return net_problem end
 
 	local x = json.decode(HTTP.Document.ToString())
-	if x.errors ~= nil then MANGAINFO.Title = 'API rate limit excessed! Please try again later.' return no_error end
+	if x.errors then MANGAINFO.Title = 'Error: ' .. x.errors[1].message return no_error end
 	MANGAINFO.Title     = x.data.manga.title
 	MANGAINFO.AltTitles = x.data.manga.alternativeTitle
 	MANGAINFO.CoverLink = 'https://thumb.mghcdn.com/' .. x.data.manga.image
@@ -110,7 +110,7 @@ function _M.GetPageNumber()
 	if not HTTP.POST(API_URL, s) then return false end
 
 	local x = json.decode(HTTP.Document.ToString())
-	if x.errors ~= nil then print('API rate limit excessed! Please try again later.') return true end
+	if x.errors then print('Error: ' .. x.errors[1].message) return true end
 	local w = json.decode(x.data.chapter.pages)
 	local p = w.p
 	for _, v in ipairs(w.i) do
