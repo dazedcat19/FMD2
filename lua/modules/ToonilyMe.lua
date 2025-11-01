@@ -8,7 +8,6 @@ function Init()
 	m.Name                     = 'ToonilyMe'
 	m.RootURL                  = 'https://toonily.me'
 	m.Category                 = 'H-Sites'
-	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
@@ -26,13 +25,6 @@ UseSlugSearch = true
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
-
--- Get the page count of the manga list of the current website.
-function GetDirectoryPageNumber()
-	Template.GetDirectoryPageNumber()
-
-	return no_error
-end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
