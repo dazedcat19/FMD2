@@ -42,7 +42,7 @@ end
 local API_URL = 'https://api.weebdex.org'
 
 local Langs = {
-    { '',   'Any' },
+    { nil,   'All' },
     { 'en', 'English' },
     { 'ja', 'Japanese' }
 }
@@ -217,26 +217,26 @@ function GetInfo()
 	local optlang   = MODULE.GetOption('lang')
 	local optlangid = FindLanguage(optlang)
 	local page = 1
-	local langparam
-	if optlangid == nil then langparam = '' else langparam = '&tlang=' .. optlangid end
+	local langparam = optlangid and '&tlang=' .. optlangid or ''
 
 	while true do
 		SetRequestHeaders()
 		if not HTTP.GET(u .. '/chapters?order=asc&limit=100&page=' .. tostring(page) .. langparam) then return net_problem end
-		local chapters = require 'utils.json'.decode(HTTP.Document.ToString())
-		for _, chapter in ipairs(chapters.data or {}) do
+		local x = json.decode(HTTP.Document.ToString())
+		for _, chapters in ipairs(x.data or {}) do
 
 			local groups = {}
-			for _, group in ipairs(chapter.relationships.groups or {}) do
+			for _, group in ipairs(chapters.relationships.groups or {}) do
 				table.insert(groups, group.name)
 			end
 
-			local volume = (chapter.volume ~= nil and chapter.volume ~= '') and ('Vol. ' .. chapter.volume .. ' ') or ''
-			local chapter_number = (chapter.chapter ~= nil and chapter.chapter ~= '') and ('Ch. ' .. chapter.chapter) or ''
-			local title = (chapter.title ~= nil and chapter.title ~= '') and (' - ' .. chapter.title) or ''
-			if volume == '' and chapter_number == '' and title == '' then chapter_number = 'Oneshot' end
+			local volume = (chapters.volume ~= nil and chapters.volume ~= '') and ('Vol. ' .. chapters.volume .. ' ') or ''
+			local chapter = (chapters.chapter ~= nil and chapters.chapter ~= '') and ('Ch. ' .. chapters.chapter) or ''
+			local title = (chapters.title ~= nil and chapters.title ~= '') and (' - ' .. chapters.title) or ''
 
-			local language = (optlang == 0) and (' [' .. chapter.language .. ']') or ''
+			if volume == '' and chapter == '' and title == '' then title = 'Oneshot' end
+
+			local language = (optlang == 0) and (' [' .. chapters.language .. ']') or ''
 
 			local scanlators = ''
 			if optgroup then
@@ -247,12 +247,12 @@ function GetInfo()
 				end
 			end
 
-			MANGAINFO.ChapterLinks.Add(chapter.id)
-			MANGAINFO.ChapterNames.Add(volume .. chapter_number .. title .. string.upper(language) .. scanlators)
+			MANGAINFO.ChapterLinks.Add(chapters.id)
+			MANGAINFO.ChapterNames.Add(volume .. chapter .. title .. string.upper(language) .. scanlators)
 		end
 
 		page = page + 1
-		local pages = tonumber(math.ceil(chapters.total / chapters.limit)) or 1
+		local pages = tonumber(math.ceil(x.total / x.limit)) or 1
 		if page > pages then
 			break
 		end
