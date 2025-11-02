@@ -5,7 +5,7 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '5ae5c37ca5ec43bb99f1515eaedf2331'
-	m.Name                     = 'Zazaza'
+	m.Name                     = 'ZazaZa'
 	m.RootURL                  = 'https://a.zazaza.me'
 	m.Category                 = 'Russian'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
@@ -24,7 +24,6 @@ end
 
 local Template = require 'templates.GroupLe'
 SITE_ID = '1'
-
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
