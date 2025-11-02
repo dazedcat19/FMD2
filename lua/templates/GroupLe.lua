@@ -11,8 +11,7 @@ local _M = {}
 DirectoryPagination = '/list?sortType=DATE_CREATE'
 DirectoryParameters = '&offset='
 DirectoryOffset     = 50
-LoginUrl            = 'https://3.grouple.co'
-SITE_ID             = ''
+LOGIN_URL           = 'https://3.grouple.co'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -21,7 +20,7 @@ SITE_ID             = ''
 -- Sign in to the current website.
 function _M.Login()
 	local crypto = require 'fmd.crypto'
-	local u = LoginUrl .. '/login/authenticate?ttt=' .. os.time() .. '&siteId=' .. SITE_ID
+	local u = LOGIN_URL .. '/login/authenticate?ttt=' .. os.time() .. '&siteId=' .. SITE_ID
 
 	if MODULE.Account.Enabled == false then return false end
 
