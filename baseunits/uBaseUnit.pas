@@ -2207,8 +2207,12 @@ function CreateFQDNName(AFileName: String): String;
 var
   UniqueTimestampName: String;
 begin
-  UniqueTimestampName := StringReplace(ExtractFileName(AFileName), ExtractFileExt(AFileName), '', [rfReplaceAll])+ '_' + FormatDateTime('yyyy-mm-dd_hh-nn-ss', Now);
-  Result := StringReplace(('FQDNList_' + UniqueTimestampName), ' ', '_', [rfReplaceAll]);
+  UniqueTimestampName := StringReplace(ExtractFileName(AFileName), ExtractFileExt(AFileName), '', [rfReplaceAll]);
+  UniqueTimestampName := RemoveSymbols(UniqueTimestampName);
+  Delete(UniqueTimestampName, 100, 200);
+  UniqueTimestampName := UniqueTimestampName + '_' + FormatDateTime('yyyy-mm-dd_hh-nn-ss', Now);
+  UniqueTimestampName := StringReplace(('FQDNList_' + UniqueTimestampName), ' ', '_', [rfReplaceAll]);
+  Result := UniqueTimestampName;
 end;
  
 function CreateFQDNFolder(Sender: TObject; ACurrentDir, AFileName: String): String;
