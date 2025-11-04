@@ -161,7 +161,7 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local mid = URL:match('/manga/([^/]+)')
+	local mid = URL:match('/title/([^/]+)')
 	local u = API_URL .. '/manga/' .. mid
 	SetRequestHeaders()
 
