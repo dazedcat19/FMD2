@@ -135,7 +135,7 @@ function GetNameAndLink()
 						))
 
 						for _, data in ipairs(x.data or {}) do
-							LINKS.Add('manga/' .. data.id)
+							LINKS.Add('title/' .. data.id)
 							NAMES.Add(data.title)
 						end
 
