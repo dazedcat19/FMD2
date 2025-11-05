@@ -333,6 +333,7 @@
 | MangaSushi | [![https://mangasushi.org](https://img.shields.io/website?url=https://mangasushi.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangasushi.org)](https://mangasushi.org) | - | - | - |
 | MangaSusu | [![https://mangasusuku.com](https://img.shields.io/website?url=https://mangasusuku.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangasusuku.com)](https://mangasusuku.com) | OK | 23.12.2024 | - |
 | MangaTail | [![https://www.mangatail.me](https://img.shields.io/website?url=https://www.mangatail.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangatail.me)](https://www.mangatail.me) | - | - | - |
+| MangaTaro | [![https://mangataro.org](https://img.shields.io/website?url=https://mangataro.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangataro.org)](https://mangataro.org) | OK | 06.11.2025 | - |
 | MangaTodayFun | [![https://mangatoday.fun](https://img.shields.io/website?url=https://mangatoday.fun%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangatoday.fun)](https://mangatoday.fun) | - | - | - |
 | MangaToon | [![https://mangatoon.mobi](https://img.shields.io/website?url=https://mangatoon.mobi%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangatoon.mobi)](https://mangatoon.mobi) | - | - | - |
 | MangaToonAR | [![https://mangatoon.mobi/ar](https://img.shields.io/website?url=https://mangatoon.mobi/ar%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangatoon.mobi/ar)](https://mangatoon.mobi/ar) | - | - | - |
