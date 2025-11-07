@@ -27,7 +27,7 @@ local DirectoryPagination = '/explore/filteredView'
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
 	local u = API_URL .. DirectoryPagination
-	local s = '{"filter":{"tags":[],"status":[],"types":[]},"page":' .. URL .. '}'
+	local s = '{"filter":{"tags":[],"status":[],"types":[],"showAdult":true},"page":' .. URL .. '}'
 	HTTP.MimeType = 'application/json'
 
 	if not HTTP.POST(u, s) then return net_problem end
@@ -53,15 +53,15 @@ function GetInfo()
 	
 	local x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Title     = x.XPathString('json(*).mangaPage.title')
-	MANGAINFO.CoverLink = MaybeFillHost(MODULE.RootURL, x.XPathString('json(*).mangaPage.poster.image'))
+	MANGAINFO.CoverLink = MODULE.RootURL .. '/static/' .. x.XPathString('json(*).mangaPage.poster.image')
 	MANGAINFO.Authors   = x.XPathStringAll('json(*).mangaPage.authors().name')
-	MANGAINFO.Genres    = x.XPathStringAll('json(*).mangaPage.tags().name') .. ', ' .. x.XPathString('json(*).mangaPage.type')
+	MANGAINFO.Genres    = x.XPathStringAll('(json(*).mangaPage.tags().name, json(*).mangaPage.type)')
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('json(*).mangaPage.status'))
 	MANGAINFO.Summary   = x.XPathString('json(*).mangaPage.synopsis')
 
 	local page = 0
 	while true do
-		if not HTTP.GET(API_URL .. '/manga/chapters?id=' .. mid .. '&sort=asc&page=' .. tostring(page)) then return net_problem end
+		if not HTTP.GET(API_URL .. '/manga/chapters?id=' .. mid .. '&filter=all&sort=asc&page=' .. tostring(page)) then return net_problem end
 		local x = CreateTXQuery(HTTP.Document)
 		for v in x.XPath('json(*).chapters()').Get() do
 			MANGAINFO.ChapterLinks.Add(mid .. '/' .. v.GetProperty('id').ToString())
