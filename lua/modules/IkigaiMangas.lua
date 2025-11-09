@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'ds42a85566244b7e836679491ce679e8'
 	m.Name                     = 'Ikigai Mangas'
-	m.RootURL                  = 'https://visualikigai.tutorialesminecraft.com'
+	m.RootURL                  = 'https://viralikigai.nzvetclinics.one'
 	m.Category                 = 'Spanish'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
