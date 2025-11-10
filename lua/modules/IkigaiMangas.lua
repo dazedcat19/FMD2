@@ -92,6 +92,8 @@ end
 -- Get the page count for the current chapter.
 function GetPageNumber()
 	local u = MODULE.RootURL .. '/capitulo' .. URL .. '/'
+	HTTP.Reset()
+	HTTP.Headers.Values['X-Add-Nsfw-Cookie'] = 1
 
 	if not HTTP.GET(u) then return false end
 
