@@ -39,7 +39,11 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	Template.GetPageNumber()
+	local u = MaybeFillHost(MODULE.RootURL, URL)
+
+	if not HTTP.GET(u) then return false end
+
+	CreateTXQuery(HTTP.Document).XPathStringAll('//div[contains(@class, "page-break")]/img/@src', TASK.PageLinks)
 
 	return true
 end
