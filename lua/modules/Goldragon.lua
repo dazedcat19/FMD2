@@ -5,9 +5,10 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '0e45db2650604f74a0caeb7c1d69a749'
-	m.Name                     = 'Goldragon'
-	m.RootURL                  = 'https://swatscans.com'
+	m.Name                     = 'Swat Manga'
+	m.RootURL                  = 'https://meshmanga.com'
 	m.Category                 = 'Arabic'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
@@ -17,42 +18,80 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.MangaThemesia'
--- DirectoryPagination = '/manga/list-mode/'
--- XPathTokenAuthors   = 'Author'
--- XPathTokenArtists   = 'Artist'
+local API_URL = 'https://appswat.com/v2/api/v2'
+local DirectoryPagination = '/series/?order_by=-created_at&page_size=200&page='
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
+-- Get the page count of the manga list of the current website.
+function GetDirectoryPageNumber()
+	local u = API_URL .. DirectoryPagination .. 1
+	HTTP.Headers.Values['Accept'] = '*/*'
+
+	if not HTTP.GET(u) then return net_problem end
+
+	PAGENUMBER = math.ceil(CreateTXQuery(HTTP.Document).XPathString('json(*).count') / 200) or 1
+
+	return no_error
+end
+
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	Template.GetNameAndLink()
+	local u = API_URL .. DirectoryPagination .. (URL + 1)
+	HTTP.Headers.Values['Accept'] = '*/*'
+
+	if not HTTP.GET(u) then return net_problem end
+
+	for v in CreateTXQuery(HTTP.Document).XPath('json(*).results()').Get() do
+		LINKS.Add('series/' .. v.GetProperty('id').ToString())
+		NAMES.Add(v.GetProperty('title').ToString())
+	end
 
 	return no_error
 end
 
 -- Get info and chapter list for current manga.
 function GetInfo()
-	Template.GetInfo()
+	local mid = URL:match('/series/(%d+)$')
+	local u = API_URL .. '/series/' .. mid
+	HTTP.Headers.Values['Accept'] = '*/*'
 
-	x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//h1[@itemprop="headline"]')
-	MANGAINFO.Authors   = x.XPathStringAll('//span[contains(b, "المؤلف")]/text()')
-	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="spe"]/span[contains(b, "التصنيف")]/a')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//span[contains(b, "الحالة")]/a'))
-	MANGAINFO.Summary   = x.XPathString('//span[@class="desc"]/p')
+	if not HTTP.GET(u) then return net_problem end
 
-	x.XPathHREFAll('//span[@class="lchx"]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
-	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
+	local x = CreateTXQuery(HTTP.Document)
+	local json = x.XPath('json(*)')
+	MANGAINFO.Title     = x.XPathString('title', json)
+	MANGAINFO.AltTitles = x.XPathString('alternative', json)
+	MANGAINFO.CoverLink = x.XPathString('poster/thumbnail', json)
+	MANGAINFO.Authors   = x.XPathString('author/name', json)
+	MANGAINFO.Genres    = x.XPathString('string-join(genres?*/name, ", ")', json)
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status/name', json))
+	MANGAINFO.Summary   = x.XPathString('story', json)
+
+	HTTP.Reset()
+	HTTP.Headers.Values['Accept'] = '*/*'
+
+	if not HTTP.GET(API_URL .. '/chapters/?order_by=order&page_size=10000&serie=' .. mid) then return net_problem end
+
+	for v in CreateTXQuery(HTTP.Document).XPath('json(*).results()').Get() do
+		MANGAINFO.ChapterLinks.Add(v.GetProperty('id').ToString())
+		MANGAINFO.ChapterNames.Add(v.GetProperty('chapter').ToString())
+	end
 
 	return no_error
 end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	Template.GetPageNumber()
+	local u = API_URL .. '/chapters' .. URL
+	HTTP.Reset()
+	HTTP.Headers.Values['Accept'] = '*/*'
 
-	return no_error
+	if not HTTP.GET(u) then return false end
+
+	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).images().image', TASK.PageLinks)
+
+	return true
 end
