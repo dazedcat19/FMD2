@@ -140,7 +140,7 @@
 | HenTalk | [![https://hentalk.pw](https://img.shields.io/website?url=https://hentalk.pw%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://hentalk.pw)](https://hentalk.pw) | - | - | - |
 | HerenScan | [![https://herenscan.com](https://img.shields.io/website?url=https://herenscan.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://herenscan.com)](https://herenscan.com) | - | - | - |
 | Hijala Scans | [![https://en-hijala.com](https://img.shields.io/website?url=https://en-hijala.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://en-hijala.com)](https://en-hijala.com) | OK | 15.10.2025 | - |
-| HiperDEX | [![https://hiperdex.com](https://img.shields.io/website?url=https://hiperdex.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://hiperdex.com)](https://hiperdex.com) | OK | 02.09.2025 | - |
+| HiperDEX | [![https://hiperdex.com](https://img.shields.io/website?url=https://hiperdex.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://hiperdex.com)](https://hiperdex.com) | OK | 12.11.2025 | - |
 | Hitomi | [![https://hitomi.la](https://img.shields.io/website?url=https://hitomi.la%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://hitomi.la)](https://hitomi.la) | OK | 11.07.2025 | - |
 | Hive Scans | [![https://hivetoons.org](https://img.shields.io/website?url=https://hivetoons.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://hivetoons.org)](https://hivetoons.org) | OK | 29.06.2025 | Paid chapters are hidden by default |
 | HolyManga | [![https://www.holymanga.net](https://img.shields.io/website?url=https://www.holymanga.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.holymanga.net)](https://www.holymanga.net) | OK | 13.01.2025 | - |
