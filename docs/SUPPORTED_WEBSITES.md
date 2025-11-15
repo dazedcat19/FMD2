@@ -65,7 +65,7 @@
 | Comico | [![http://www.comico.jp](https://img.shields.io/website?url=http://www.comico.jp%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.comico.jp)](http://www.comico.jp) | - | - | - |
 | ComicoCoID | [![http://www.comico.co.id](https://img.shields.io/website?url=http://www.comico.co.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.comico.co.id)](http://www.comico.co.id) | - | - | - |
 | ComicVn | [![https://beeng.net](https://img.shields.io/website?url=https://beeng.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://beeng.net)](https://beeng.net) | - | - | - |
-| Comix | [![https://comix.to](https://img.shields.io/website?url=https://comix.to%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comix.to)](https://comix.to) | OK | 11.11.2025 | - |
+| Comix | [![https://comix.to](https://img.shields.io/website?url=https://comix.to%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comix.to)](https://comix.to) | OK | 15.11.2025 | - |
 | CopyPasteScanlation | [![https://www.cpscan.xyz](https://img.shields.io/website?url=https://www.cpscan.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.cpscan.xyz)](https://www.cpscan.xyz) | - | - | - |
 | CoYuHi | [![http://www.universoyuri.com](https://img.shields.io/website?url=http://www.universoyuri.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.universoyuri.com)](http://www.universoyuri.com) | - | - | - |
 | CrotPedia | [![https://crotpedia.net](https://img.shields.io/website?url=https://crotpedia.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://crotpedia.net)](https://crotpedia.net) | - | - | - |

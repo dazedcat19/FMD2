@@ -35,7 +35,7 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local API_URL = 'https://comix.to/api/v2'
-local DirectoryPagination = '/mangas?order[created_at]=desc&limit=100&page='
+local DirectoryPagination = '/manga?order[created_at]=desc&limit=100&page='
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -68,8 +68,8 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local u = API_URL .. '/mangas/' .. URL:match('/title/([^%-]+)%-')
-	
+	local u = API_URL .. '/manga/' .. URL:match('/title/([^%-]+)%-')
+
 	if not HTTP.GET(u) then return net_problem end
 
 	local x = CreateTXQuery(HTTP.Document)
