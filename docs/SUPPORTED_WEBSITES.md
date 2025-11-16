@@ -114,6 +114,7 @@
 | Gremory Mangas | [![https://gremorymangas.com](https://img.shields.io/website?url=https://gremorymangas.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://gremorymangas.com)](https://gremorymangas.com) | OK | 02.04.2025 | - |
 | Grim Scans | [![https://grimscans.com](https://img.shields.io/website?url=https://grimscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://grimscans.com)](https://grimscans.com) | OK | 20.09.2025 | - |
 | Guya | [![https://guya.cubari.moe](https://img.shields.io/website?url=https://guya.cubari.moe%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://guya.cubari.moe)](https://guya.cubari.moe) | OK | 06.06.2025 | - |
+| G社漫畫 (G-MH) | [![https://m.g-mh.org](https://img.shields.io/website?url=https://m.g-mh.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://m.g-mh.org)](https://m.g-mh.org) | OK | 16.11.2025 | - |
 | HachiRaw | [![https://hachiraw.win](https://img.shields.io/website?url=https://hachiraw.win%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://hachiraw.win)](https://hachiraw.win) | OK | 21.08.2025 | - |
 | HachiRaw | [![https://manga1001.win](https://img.shields.io/website?url=https://manga1001.win%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga1001.win)](https://manga1001.win) | OK | 21.08.2025 | - |
 | Hades Scans | [![https://lectorhades.latamtoon.com](https://img.shields.io/website?url=https://lectorhades.latamtoon.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lectorhades.latamtoon.com)](https://lectorhades.latamtoon.com) | OK | 22.08.2025 | - |
@@ -638,6 +639,7 @@
 | شبكة كونان العربية (detectiveconanar) | [![https://manga.detectiveconanar.com](https://img.shields.io/website?url=https://manga.detectiveconanar.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga.detectiveconanar.com)](https://manga.detectiveconanar.com) | OK | 03.04.2025 | - |
 | مانجا ليك (Lekmanga) | [![https://lekmanga.org](https://img.shields.io/website?url=https://lekmanga.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lekmanga.org)](https://lekmanga.org) | OK | 11.08.2025 | - |
 | 包子漫画 (Baozi) | [![https://www.baozimh.com](https://img.shields.io/website?url=https://www.baozimh.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.baozimh.com)](https://www.baozimh.com) | OK | 28.10.2025 | - |
+| 包子漫畫 (BaozimhOrg) | [![https://baozimh.org](https://img.shields.io/website?url=https://baozimh.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://baozimh.org)](https://baozimh.org) | OK | 16.11.2025 | - |
 | 古风漫画网 | [![https://www.gufengmh.com](https://img.shields.io/website?url=https://www.gufengmh.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.gufengmh.com)](https://www.gufengmh.com) | OK | 06.01.2025 | - |
 | 漫画RAW (mangajp) | [![https://mangajp.top](https://img.shields.io/website?url=https://mangajp.top%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangajp.top)](https://mangajp.top) | OK | 03.04.2025 | - |
 | ~365Manga~ | ~https://365manga.com~ | Removed | 03.08.2025 | - |
