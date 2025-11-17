@@ -44,7 +44,7 @@ function _M.GetInfo()
 
 	local x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.AltTitles = x.XPathString('//div[contains(@class, "text-sm text-text")]')
-	MANGAINFO.Summary   = x.XPathString('//div[@data-show="false" and @itemprop="description"]/string-join(p, "\r\n")')
+	MANGAINFO.Summary   = x.XPathString('string-join(//div[@data-show="false" and @itemprop="description"]//text(), "\r\n")')
 
 	local mid = x.XPathString('//div[@id="chapter-list"]/@hx-get/substring-before(substring-after(., "manga_id="), "&")')
 
