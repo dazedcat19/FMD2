@@ -112,54 +112,55 @@ local function Add8(n) return function(c) return (c + n) & 255 end end
 local function Sub8(n) return function(c) return (c - n + 256) & 255 end end
 local function Xor8(n) return function(c) return (c ~ n) & 255 end end
 local function Rotl8(n) return function(c) return ((c << n) | (c >> (8 - n))) & 255 end end
+local function Rotr8(n) return function(c) return ((c >> n) | (c << (8 - n))) & 255 end end
 
 local schedule_c = {
-	Sub8(48), Sub8(19), Xor8(241), Sub8(19), Add8(223),
-	Sub8(19), Sub8(170), Sub8(19), Sub8(48), Xor8(8),
+	Sub8(223), Rotr8(4), Rotr8(4), Add8(234), Rotr8(7),
+	Rotr8(2), Rotr8(7), Sub8(223), Rotr8(7), Rotr8(6),
 }
 
 local schedule_y = {
-	Rotl8(4), Add8(223), Rotl8(4), Xor8(163), Sub8(48),
-	Add8(82), Add8(223), Sub8(48), Xor8(83), Rotl8(4),
+	Add8(19), Rotr8(7), Add8(19), Rotr8(6), Add8(19),
+	Rotr8(1), Add8(19), Rotr8(6), Rotr8(7), Rotr8(4),
 }
 
 local schedule_b = {
-	Sub8(19), Add8(82), Sub8(48), Sub8(170), Rotl8(4),
-	Sub8(48), Sub8(170), Xor8(8), Add8(82), Xor8(163),
+	Sub8(223), Rotr8(1), Add8(19), Sub8(223), Rotl8(2),
+	Sub8(223), Add8(19), Rotl8(1), Rotl8(2), Rotl8(1),
 }
 
 local schedule_j = {
-	Add8(223), Rotl8(4), Add8(223), Xor8(83), Sub8(19),
-	Add8(223), Sub8(170), Add8(223), Sub8(170), Xor8(83),
+	Add8(19), Rotl8(1), Rotl8(1), Rotr8(1), Add8(234),
+	Rotl8(1), Sub8(223), Rotl8(6), Rotl8(4), Rotl8(1),
 }
 
 local schedule_e = {
-	Add8(82), Xor8(83), Xor8(163), Add8(82), Sub8(170),
-	Xor8(8), Xor8(241), Add8(82), Add8(176), Rotl8(4),
+	Rotr8(1), Rotl8(1), Rotl8(6), Rotr8(1), Rotl8(2),
+	Rotr8(4), Rotl8(1), Rotl8(1), Sub8(223), Rotl8(2),
 }
 
 local rc4_keys = {
-	l = "u8cBwTi1CM4XE3BkwG5Ble3AxWgnhKiXD9Cr279yNW0=",
-	g = "t00NOJ/Fl3wZtez1xU6/YvcWDoXzjrDHJLL2r/IWgcY=",
-	B = "S7I+968ZY4Fo3sLVNH/ExCNq7gjuOHjSRgSqh6SsPJc=",
-	m = "7D4Q8i8dApRj6UWxXbIBEa1UqvjI+8W0UvPH9talJK8=",
-	F = "0JsmfWZA1kwZeWLk5gfV5g41lwLL72wHbam5ZPfnOVE=",
+	l = "FgxyJUQDPUGSzwbAq/ToWn4/e8jYzvabE+dLMb1XU1o=",
+	g = "CQx3CLwswJAnM1VxOqX+y+f3eUns03ulxv8Z+0gUyik=",
+	B = "fAS+otFLkKsKAJzu3yU+rGOlbbFVq+u+LaS6+s1eCJs=",
+	m = "Oy45fQVK9kq9019+VysXVlz1F9S1YwYKgXyzGlZrijo=",
+	F = "aoDIdXezm2l3HrcnQdkPJTDT8+W6mcl2/02ewBHfPzg=",
 }
 
 local seeds_32 = {
-	A = "pGjzSCtS4izckNAOhrY5unJnO2E1VbrU+tXRYG24vTo=",
-	V = "dFcKX9Qpu7mt/AD6mb1QF4w+KqHTKmdiqp7penubAKI=",
-	N = "owp1QIY/kBiRWrRn9TLN2CdZsLeejzHhfJwdiQMjg3w=",
-	P = "H1XbRvXOvZAhyyPaO68vgIUgdAHn68Y6mrwkpIpEue8=",
-	k = "2Nmobf/mpQ7+Dxq1/olPSDj3xV8PZkPbKaucJvVckL0=",
+	A = "yH6MXnMEcDVWO/9a6P9W92BAh1eRLVFxFlWTHUqQ474=",
+	V = "RK7y4dZ0azs9Uqz+bbFB46Bx2K9EHg74ndxknY9uknA=",
+	N = "rqr9HeTQOg8TlFiIGZpJaxcvAaKHwMwrkqojJCpcvoc=",
+	P = "/4GPpmZXYpn5RpkP7FC/dt8SXz7W30nUZTe8wb+3xmU=",
+	k = "wsSGSBXKWA9q1oDJpjtJddVxH+evCfL5SO9HZnUDFU8=",
 }
 
 local prefix_keys = {
-	O = "Rowe+rg/0g==",
-	v = "8cULcnOMJVY8AA==",
-	L = "n2+Og2Gth8Hh",
-	p = "aRpvzH+yoA==",
-	W = "ZB4oBi0=",
+	O = "l9PavRg=",
+	v = "Ml2v7ag1Jg==",
+	L = "i/Va0UxrbMo=",
+	p = "WFjKAHGEkQM=",
+	W = "5Rr27rWd",
 }
 
 local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
@@ -185,16 +186,27 @@ local function GenerateVRF(input)
 	local crypto = require 'fmd.crypto'
 	local bytes = ToBytes(crypto.EncodeURLElement(input))
 
-	bytes = Rc4(ToBytes(crypto.DecodeBase64(rc4_keys.l)), bytes)
-	bytes = Transform(bytes, ToBytes(crypto.DecodeBase64(seeds_32.A)), ToBytes(crypto.DecodeBase64(prefix_keys.O)), 7, schedule_c)
-	bytes = Rc4(ToBytes(crypto.DecodeBase64(rc4_keys.g)), bytes)
-	bytes = Transform(bytes, ToBytes(crypto.DecodeBase64(seeds_32.V)), ToBytes(crypto.DecodeBase64(prefix_keys.v)), 10, schedule_y)
-	bytes = Rc4(ToBytes(crypto.DecodeBase64(rc4_keys.B)), bytes)
-	bytes = Transform(bytes, ToBytes(crypto.DecodeBase64(seeds_32.N)), ToBytes(crypto.DecodeBase64(prefix_keys.L)), 9, schedule_b)
-	bytes = Rc4(ToBytes(crypto.DecodeBase64(rc4_keys.m)), bytes)
-	bytes = Transform(bytes, ToBytes(crypto.DecodeBase64(seeds_32.P)), ToBytes(crypto.DecodeBase64(prefix_keys.p)), 7, schedule_j)
-	bytes = Rc4(ToBytes(crypto.DecodeBase64(rc4_keys.F)), bytes)
-	bytes = Transform(bytes, ToBytes(crypto.DecodeBase64(seeds_32.k)), ToBytes(crypto.DecodeBase64(prefix_keys.W)), 5, schedule_e)
+	local stages = {
+		{ rc4_keys.l, seeds_32.A, prefix_keys.O, schedule_c },
+		{ rc4_keys.g, seeds_32.V, prefix_keys.v, schedule_y },
+		{ rc4_keys.B, seeds_32.N, prefix_keys.L, schedule_b },
+		{ rc4_keys.m, seeds_32.P, prefix_keys.p, schedule_j },
+		{ rc4_keys.F, seeds_32.k, prefix_keys.W, schedule_e },
+	}
+
+	for _, st in ipairs(stages) do
+		local key_b64, seed_b64, prefix_b64, sched = st[1], st[2], st[3], st[4]
+
+		local rc4_key = ToBytes(crypto.DecodeBase64(key_b64))
+		bytes = Rc4(rc4_key, bytes)
+
+		local seed_bytes = ToBytes(crypto.DecodeBase64(seed_b64))
+		local prefix_bytes_str = crypto.DecodeBase64(prefix_b64)
+		local prefix_bytes = ToBytes(prefix_bytes_str)
+		local prefix_len = #prefix_bytes_str
+
+		bytes = Transform(bytes, seed_bytes, prefix_bytes, prefix_len, sched)
+	end
 
 	return EncodeBase64(FromBytes(bytes)):gsub("%+", "-"):gsub("/", "_"):gsub("=+$", "")
 end
@@ -271,7 +283,9 @@ function GetInfo()
 
 	if not HTTP.GET(MODULE.RootURL .. '/ajax/read/' .. URL:match('%.(.-)$') .. '/' .. listtype[sel_listtype] .. '/' .. langparam .. '?vrf=' .. vrf) then return net_problem end
 
-	x.ParseHTML(require 'utils.json'.decode(HTTP.Document.ToString()).result.html)
+	local s = HTTP.Document.ToString()
+	if s:sub(1, 1) == '<' then print('VRF value mismatch') return no_error end
+	x.ParseHTML(require 'utils.json'.decode(s).result.html)
 	for v in x.XPath('//a').Get() do
 		MANGAINFO.ChapterLinks.Add(v.GetAttribute('data-id'))
 		MANGAINFO.ChapterNames.Add(x.XPathString('text()', v))
