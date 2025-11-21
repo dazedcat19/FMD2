@@ -208,6 +208,7 @@
 | Like Manga | [![https://likemanga.ink](https://img.shields.io/website?url=https://likemanga.ink%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://likemanga.ink)](https://likemanga.ink) | OK | 28.05.2025 | - |
 | Lily Manga | [![https://lilymanga.net](https://img.shields.io/website?url=https://lilymanga.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lilymanga.net)](https://lilymanga.net) | OK | 27.07.2025 | - |
 | LoliVault | [![https://lector.lolivault.net](https://img.shields.io/website?url=https://lector.lolivault.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lector.lolivault.net)](https://lector.lolivault.net) | OK | 06.08.2025 | - |
+| Love4u | [![https://love4u.net](https://img.shields.io/website?url=https://love4u.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://love4u.net)](https://love4u.net) | OK | 21.11.2025 | - |
 | LSComic | [![https://lscomic.com](https://img.shields.io/website?url=https://lscomic.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lscomic.com)](https://lscomic.com) | - | - | - |
 | Lua Comic | [![https://luacomic.org](https://img.shields.io/website?url=https://luacomic.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://luacomic.org)](https://luacomic.org) | OK | 25.08.2025 | Paid chapters are hidden by default |
 | LuminousScans | [![https://luminousscans.net](https://img.shields.io/website?url=https://luminousscans.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://luminousscans.net)](https://luminousscans.net) | - | - | - |
@@ -613,7 +614,6 @@
 | WeebDex | [![https://weebdex.org](https://img.shields.io/website?url=https://weebdex.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://weebdex.org)](https://weebdex.org) | OK | 04.11.2025 | - |
 | WeiboManhua | [![http://manhua.weibo.com](https://img.shields.io/website?url=http://manhua.weibo.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://manhua.weibo.com)](http://manhua.weibo.com) | - | - | - |
 | WeLoMa | [![https://weloma.art](https://img.shields.io/website?url=https://weloma.art%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://weloma.art)](https://weloma.art) | OK | 18.01.2025 | - |
-| WeloveManga | [![https://welovemanga.one](https://img.shields.io/website?url=https://welovemanga.one%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://welovemanga.one)](https://welovemanga.one) | OK | 18.01.2025 | - |
 | WestManga | [![https://westmanga.me](https://img.shields.io/website?url=https://westmanga.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://westmanga.me)](https://westmanga.me) | OK | 18.10.2025 | - |
 | WhimSubs | [![https://whimsubs.xyz](https://img.shields.io/website?url=https://whimsubs.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://whimsubs.xyz)](https://whimsubs.xyz) | - | - | - |
 | WhiteCloudPavilion | [![https://www.whitecloudpavilion.com](https://img.shields.io/website?url=https://www.whitecloudpavilion.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.whitecloudpavilion.com)](https://www.whitecloudpavilion.com) | - | - | - |
