@@ -15,6 +15,17 @@ function Init()
 end
 
 ----------------------------------------------------------------------------------------------------
+-- Helper Functions
+----------------------------------------------------------------------------------------------------
+
+local function md5_hex(s)
+	local raw = require 'fmd.crypto'.MD5(s)
+	return (raw:gsub('.', function(c)
+		return string.format('%02x', string.byte(c))
+	end))
+end
+
+----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
@@ -45,24 +56,34 @@ function GetInfo()
 	if not HTTP.GET(u) then return net_problem end
 
 	local x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//div[contains(@class, "flex-1 text-center")]/h1')
-	MANGAINFO.AltTitles = x.XPathString('//div[contains(@class, "flex-1 text-center")]/p')
+	MANGAINFO.Title     = x.XPathString('//div[contains(@class, "flex-1 text-left")]/h1')
+	MANGAINFO.AltTitles = x.XPathString('//div[contains(@class, "flex-1 text-left")]/p')
 	MANGAINFO.CoverLink = x.XPathString('//img[contains(@alt, "Cover background")]/@src')
-	MANGAINFO.Authors   = x.XPathString('//div[contains(@class, "flex-1 text-center")]//div[./div="Author & Artist"]/div[1]')
-	MANGAINFO.Genres    = x.XPathStringAll('//div[contains(@class, "flex-1 text-center")]//a[contains(@href, "/tag/")]')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[contains(@class, "flex-1 text-center")]//span[contains(@class, "capitalize")]/text()'))
+	MANGAINFO.Authors   = x.XPathString('//div[contains(@class, "flex-1 text-left")]//div[./div="Author & Artist"]/div[1]')
+	MANGAINFO.Genres    = x.XPathStringAll('//div[contains(@class, "flex-1 text-left")]//a[contains(@href, "/tag/")]')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[contains(@class, "flex-1 text-left")]//span[contains(@class, "capitalize")]/text()'))
 	MANGAINFO.Summary   = x.XPathString('//div[@id="description-content-tab"]/string-join(p, "\r\n")')
 
-	for v in x.XPath('//div[contains(@class, "chapter-list")]/a').Get() do
-		local chapter = x.XPathString('(.//span[contains(@class, "text-neutral-100")])[2]', v)
-		local title   = x.XPathString('(.//p[contains(@class, "text-neutral-300")])[1]', v)
+	local utc = os.date('!*t')
+	local formatted = string.format('%04d%02d%02d%02d',
+		utc.year, utc.month, utc.day, utc.hour
+	)
+
+	local mid = x.XPathString('//body/@data-manga-id')
+	local timestamp = os.time()
+	local token = md5_hex(timestamp .. 'mng_ch_' .. formatted):sub(1, 16)
+
+	if not HTTP.GET(MODULE.RootURL .. '/auth/manga-chapters?manga_id=' .. mid .. '&offset=0&limit=9999&order=ASC&_t=' .. token .. '&_ts=' .. timestamp) then return net_problem end
+
+	for v in CreateTXQuery(HTTP.Document).XPath('json(*).chapters()').Get() do
+		local chapter = v.GetProperty('chapter').ToString()
+		local title   = v.GetProperty('title').ToString()
 
 		title = (title ~= 'N/A' and title ~= '—' and title ~= '') and (' - ' .. title) or ''
 
-		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
+		MANGAINFO.ChapterLinks.Add(v.GetProperty('url').ToString())
 		MANGAINFO.ChapterNames.Add(chapter .. title)
 	end
-	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
 end
