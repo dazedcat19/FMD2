@@ -82,8 +82,9 @@ function _M.GetInfo()
 
 	local id = x.XPathString('//div[contains(@id, "manga-chapters-holder")]/@data-id')
 
-	x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+	x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#") and not(@class="reward_ads")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 	if MANGAINFO.ChapterLinks.Count == 0 then
+		local link = ''
 		local p = 1
 		while true do
 			HTTP.Reset()
@@ -91,20 +92,15 @@ function _M.GetInfo()
 			HTTP.Headers.Values['X-Requested-With'] = 'XMLHttpRequest'
 			if not HTTP.POST(MANGAINFO.URL .. 'ajax/chapters/?t=' .. p) then return net_problem end
 			local x = CreateTXQuery(HTTP.Document)
-			if x.XPathCount('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#")]') == 0 then break end
-			x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+			if (x.XPathCount('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#") and not(@class="reward_ads")]') == 0) or (link == x.XPathString('(//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#") and not(@class="reward_ads")])[1]/@href')) then break end
+			local s = x.XPathString('(//div[@class="li__text"]/a[not(@href="#") and not(@class="reward_ads")])[1]')
+			if s ~= '' then
+				x.XPathHREFAll('//div[@class="li__text"]/a[not(@href="#") and not(@class="reward_ads")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+			else
+				x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#") and not(@class="reward_ads")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+			end
+			link = x.XPathString('(//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#") and not(@class="reward_ads")])[1]/@href')
 			p = p + 1
-		end
-	end
-	if MANGAINFO.ChapterLinks.Count == 0 then
-		HTTP.Reset()
-		HTTP.Headers.Values['Content-Length'] = 0
-		HTTP.Headers.Values['X-Requested-With'] = 'XMLHttpRequest'
-		if not HTTP.POST(MANGAINFO.URL .. 'ajax/chapters') then return net_problem end
-		local x = CreateTXQuery(HTTP.Document)
-		x.XPathHREFAll('//div[@class="li__text"]/a[not(@href="#")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
-		if MANGAINFO.ChapterLinks.Count == 0 then
-			x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#") and not(@class="reward_ads")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 		end
 	end
 	if MANGAINFO.ChapterLinks.Count == 0 then
@@ -114,7 +110,7 @@ function _M.GetInfo()
 		HTTP.MimeType = 'application/x-www-form-urlencoded'
 		local s = ChapterParameters .. id
 		if not HTTP.POST(MODULE.RootURL .. '/wp-admin/admin-ajax.php', s) then return net_problem end
-		CreateTXQuery(HTTP.Document).XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+		CreateTXQuery(HTTP.Document).XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#") and not(@class="reward_ads")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
