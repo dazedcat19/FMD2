@@ -84,7 +84,6 @@ function _M.GetInfo()
 
 	x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#") and not(@class="reward_ads")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 	if MANGAINFO.ChapterLinks.Count == 0 then
-		local link = ''
 		local p = 1
 		while true do
 			HTTP.Reset()
@@ -92,14 +91,15 @@ function _M.GetInfo()
 			HTTP.Headers.Values['X-Requested-With'] = 'XMLHttpRequest'
 			if not HTTP.POST(MANGAINFO.URL .. 'ajax/chapters/?t=' .. p) then return net_problem end
 			local x = CreateTXQuery(HTTP.Document)
-			if (x.XPathCount('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#") and not(@class="reward_ads")]') == 0) or (link == x.XPathString('(//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#") and not(@class="reward_ads")])[1]/@href')) then break end
+			local first_link = x.XPathString('(//li[contains(@class,"wp-manga-chapter")]/a[not(@href="#") and not(@class="reward_ads")])[1]/@href')
+			if first_link == '' then break end
+			if MANGAINFO.ChapterLinks.Count > 0 and MANGAINFO.ChapterLinks[0] == first_link then break end
 			local s = x.XPathString('(//div[@class="li__text"]/a[not(@href="#") and not(@class="reward_ads")])[1]')
 			if s ~= '' then
 				x.XPathHREFAll('//div[@class="li__text"]/a[not(@href="#") and not(@class="reward_ads")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 			else
 				x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#") and not(@class="reward_ads")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 			end
-			link = x.XPathString('(//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#") and not(@class="reward_ads")])[1]/@href')
 			p = p + 1
 		end
 	end
@@ -151,8 +151,8 @@ function _M.GetPageNumber()
 
 			]]):gsub('\\/', '/'):gsub('%[', ''):gsub('%]', '')
 
-			for i in img:gmatch('"([^",]+)') do
-				TASK.PageLinks.Add(i)
+			for v in img:gmatch('"([^",]+)') do
+				TASK.PageLinks.Add(v)
 			end
 		end
 	end
