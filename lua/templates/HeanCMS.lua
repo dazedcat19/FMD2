@@ -8,9 +8,7 @@ local _M = {}
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-API_URL = ''
-CDN_URL = ''
-DirectoryPagination = '/query?series_type=Comic&order=desc&orderBy=created_at&perPage=100&page='
+local DirectoryPagination = '/query?series_type=Comic&order=desc&orderBy=created_at&perPage=100&page='
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -30,7 +28,6 @@ end
 
 -- Get links and names from the manga list of the current website.
 function _M.GetNameAndLink()
-	local v = nil
 	local u = API_URL .. DirectoryPagination .. (URL + 1)
 	HTTP.Headers.Values['Referer'] = MODULE.RootURL
 
@@ -46,14 +43,12 @@ end
 
 -- Get info and chapter list for the current manga.
 function _M.GetInfo()
-	local id, pages, thumbnail, title, slug, v, x = nil
-	local page = 1
-	local u = API_URL .. '/series/' .. URL:match('/series/(.-)$')
+	local u = API_URL .. URL:match('(/series/.-)$')
 	HTTP.Headers.Values['Referer'] = MODULE.RootURL
 
 	if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
+	local x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
 	MANGAINFO.Title     = x.XPathString('json(*).title')
 	MANGAINFO.AltTitles = x.XPathString('json(*).alternative_names')
 	MANGAINFO.Authors   = x.XPathString('json(*).author')
@@ -61,21 +56,22 @@ function _M.GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('json(*).status'), 'Ongoing', 'Completed', 'Hiatus', 'Dropped')
 	MANGAINFO.Summary   = x.XPathString('json(*).description')
 
-	thumbnail = x.XPathString('json(*).thumbnail')
+	local thumbnail = x.XPathString('json(*).thumbnail')
 	if string.find(thumbnail, 'http', 1, true) == nil then
 		thumbnail = CDN_URL .. '/' .. thumbnail
 	end
 	MANGAINFO.CoverLink = thumbnail
 
-	id = x.XPathString('json(*).id')
-	slug = '/' .. x.XPathString('json(*).series_slug') .. '/'
-	HTTP.Reset()
-	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+	local id = x.XPathString('json(*).id')
+	local slug = '/' .. x.XPathString('json(*).series_slug') .. '/'
+	local page = 1
 	while true do
+		HTTP.Reset()
+		HTTP.Headers.Values['Referer'] = MODULE.RootURL
 		if not HTTP.GET(API_URL .. '/chapter/query?page=' .. tostring(page) .. '&perPage=100&series_id=' .. id) then return net_problem end
-		x = CreateTXQuery(HTTP.Document)
+		local x = CreateTXQuery(HTTP.Document)
 		for v in x.XPath('json(*).data()').Get() do
-			title = v.GetProperty('chapter_title').ToString()
+			local title = v.GetProperty('chapter_title').ToString()
 			title = title ~= 'null' and title ~= '' and string.format(' - %s', title) or ''
 
 			if MODULE.GetOption('showpaidchapters') then
@@ -89,7 +85,7 @@ function _M.GetInfo()
 			end
 		end
 		page = page + 1
-		pages = tonumber(x.XPathString('json(*).meta.last_page')) or 1
+		local pages = tonumber(x.XPathString('json(*).meta.last_page')) or 1
 		if page > pages then
 			break
 		end
@@ -101,23 +97,22 @@ end
 
 -- Get the page count for the current chapter.
 function _M.GetPageNumber()
-	local image, i, x = nil
 	local u = API_URL .. URL
 	HTTP.Headers.Values['Referer'] = MODULE.RootURL
 
 	if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
-	for i in x.XPath('json(*).chapter.chapter_data.images()').Get() do
-		image = i.ToString()
+	local x = CreateTXQuery(HTTP.Document)
+	for v in x.XPath('json(*).chapter.chapter_data.images()').Get() do
+		local image = v.ToString()
 		if string.find(image, 'http', 1, true) == nil then
 			image = CDN_URL .. '/' .. image
 		end
 		TASK.PageLinks.Add(image)
 	end
 	if TASK.PageLinks.Count == 0 then
-		for i in x.XPath('json(*).chapter.chapter_data.files()').Get() do
-			TASK.PageLinks.Add(i.GetProperty('url').ToString())
+		for v in x.XPath('json(*).chapter.chapter_data.files()').Get() do
+			TASK.PageLinks.Add(v.GetProperty('url').ToString())
 		end
 	end
 

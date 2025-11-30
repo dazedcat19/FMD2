@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'ds42a85566244b7e836679491ce679e8'
 	m.Name                     = 'Ikigai Mangas'
-	m.RootURL                  = 'https://visualikigai.kennyhowes.com'
+	m.RootURL                  = 'https://viralikigai.nzvetclinics.one'
 	m.Category                 = 'Spanish'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
@@ -92,6 +92,8 @@ end
 -- Get the page count for the current chapter.
 function GetPageNumber()
 	local u = MODULE.RootURL .. '/capitulo' .. URL .. '/'
+	HTTP.Reset()
+	HTTP.Headers.Values['X-Add-Nsfw-Cookie'] = 1
 
 	if not HTTP.GET(u) then return false end
 

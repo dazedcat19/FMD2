@@ -24,11 +24,11 @@ function getpagenumber()
 		local script = x.XPathString('//script[contains(@src, "chapter")]/@src')
 		if HTTP.GET(script) then
 			s = HTTP.Document.ToString()
-			s = '!function(){eval(function(p, a, c, k, e, r)'..GetBetween('eval(function(p, a, c, k, e, r)', '}();', s)..'}();'
+			s = '!function(){eval (function(p, a, c, k, e, r)'..GetBetween('eval (function(p, a, c, k, e, r)', '}();', s)..'}();'
 			s = 'var W={nonce:"'..nonce..'",DATA:"'..data..'"};'..s..';JSON.stringify(_v);'
 			s = duktape.ExecJS(s)
 			x.ParseHTML(s)
-			x.XPathStringAll('json(*).picture().URL', TASK.PageLinks)
+			x.XPathStringAll('json(*).picture().url', TASK.PageLinks)
 			return true
 		else
 			return false

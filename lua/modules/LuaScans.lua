@@ -37,7 +37,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.HeanCms'
+local Template = require 'templates.HeanCMS'
 API_URL = 'https://api.luacomic.org'
 CDN_URL = 'https://media.luacomic.org/file/V4IKlhs'
 
@@ -70,5 +70,5 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
 end

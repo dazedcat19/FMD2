@@ -16,7 +16,7 @@ type
 
   TEpubBuilder = class
   private
-    FTitle, FUuid: String;
+    FTitle, FUuid, FMetadata: String;
     FMimeType, FContainer, FStyle, FContent, FToc: TStringStream;
     FPages: TPages;
     function CreateContent: String;
@@ -25,6 +25,7 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure AddImage(const path: String);
+    procedure AddMetadata(const metadata: String);
     procedure SaveToStream(const stream: TStream);
     property Title: String read FTitle write FTitle;
   end;
@@ -82,6 +83,7 @@ const
     '    <dc:title>%s</dc:title>' + LineEnding +
     '    <dc:language>und</dc:language>' + LineEnding +
     '    <dc:identifier id="bookid" opf:scheme="UUID">urn:uuid:%s</dc:identifier>' + LineEnding +
+    '%s' + LineEnding +
     '  </metadata>' + LineEnding +
     '  <manifest>' + LineEnding +
     '    <item id="_toc" href="toc.ncx" media-type="application/x-dtbncx+xml"/>' + LineEnding +
@@ -167,7 +169,7 @@ begin
     items += FPages[i].ContentItem;
     refs += FPages[i].PageRef;
   end;
-  Result := Format(CONTENT, [EscapeHTML(Title), FUuid, items, refs]);
+  Result := Format(CONTENT, [EscapeHTML(Title), FUuid, FMetadata, items, refs]);
 end;
 
 function TEpubBuilder.CreateToc: String;
@@ -188,6 +190,11 @@ begin
   index := FPages.Count + 1;
   pageTitle := Format('%s - %.4d', [Title, index]);
   FPages.Add(TPage.Create(index, path, pageTitle));
+end;
+
+procedure TEpubBuilder.AddMetadata(const metadata: String);
+begin
+  FMetadata := metadata;
 end;
 
 procedure TEpubBuilder.SaveToStream(const stream: TStream);

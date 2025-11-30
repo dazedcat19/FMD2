@@ -4,35 +4,24 @@
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                       = 'dad8d672ae5c40ce8ffbca58676bdeae'
-	m.Name                     = 'ModeScanlator'
-	m.RootURL                  = 'https://site.modescanlator.net'
-	m.Category                 = 'Portuguese-Scanlation'
-	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+	m.ID                       = '37bdfd91c4364454a0fd6c361dd25d7a'
+	m.Name                     = 'Baek 100 Scans'
+	m.RootURL                  = 'https://baektoons.com'
+	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
-	m.SortedList               = true
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.HeanCms'
-API_URL = 'https://api.modescanlator.net'
-CDN_URL = 'https://media.modescanlator.com/file/mDSsZt'
+local Template = require 'templates.MangaThemesia'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
-
--- Get the page count of the manga list of the current website.
-function GetDirectoryPageNumber()
-	Template.GetDirectoryPageNumber()
-
-	return no_error
-end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
@@ -41,7 +30,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
 
@@ -50,7 +39,13 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	Template.GetPageNumber()
+	local u = MaybeFillHost(MODULE.RootURL, URL)
 
-	return no_error
+	if not HTTP.GET(u) then return false end
+
+	local x = CreateTXQuery(HTTP.Document)
+	x.ParseHTML(x.XPathString('//script[contains(., "ts_reader")]/substring-before(substring-after(., "run("), ")")'):gsub('!0', 'true'):gsub('!1', 'false'))
+	x.XPathStringAll('json(*).sources()[1].images()', TASK.PageLinks)
+
+	return true
 end

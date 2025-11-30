@@ -4,10 +4,10 @@
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                       = '287f665620664e468d4e05f5d76f5a44'
-	m.Name                     = 'Hades Comics'
-	m.RootURL                  = 'https://mangareaderpro.com'
-	m.Category                 = 'English-Scanlation'
+	m.ID                       = 'e39b96c82f8b4b949a729446884a7b37'
+	m.Name                     = 'Ikiru'
+	m.RootURL                  = 'https://02.ikiru.wtf'
+	m.Category                 = 'Indonesian'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
@@ -17,7 +17,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.MangaThemesia'
+local Template = require 'templates.NatsuId'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions

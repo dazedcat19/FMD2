@@ -4,13 +4,14 @@
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                       = 'f3098381220841f8b13928e682de4d7e'
-	m.Name                     = 'LectorMiau'
-	m.RootURL                  = 'https://lectormiau.com'
-	m.Category                 = 'Spanish'
+	m.ID                       = '6effe9b2092d46df89a5a1437beb836f'
+	m.Name                     = 'SushiScan'
+	m.RootURL                  = 'https://sushiscan.net'
+	m.Category                 = 'French'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -18,9 +19,10 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.MangaThemesia'
--- DirectoryPagination = '/manga/list-mode/'
--- XPathTokenAuthors   = 'Author'
--- XPathTokenArtists   = 'Artist'
+DirectoryPagination = '/catalogue/list-mode/'
+XPathTokenAuthors   = 'Auteur'
+XPathTokenArtists   = 'Dessinateur'
+XPathTokenStatus    = 'Statut'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -33,9 +35,12 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
+
+	HTTP.Reset()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
 
 	return no_error
 end
@@ -44,5 +49,12 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
+
+	return true
 end

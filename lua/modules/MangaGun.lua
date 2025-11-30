@@ -5,8 +5,8 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '42c61065259d4003940c1930f1ed7c26'
-	m.Name                     = 'MangaGun'
-	m.RootURL                  = 'https://mangagun.net'
+	m.Name                     = 'NihonKuni'
+	m.RootURL                  = 'https://nihonkuni.com'
 	m.Category                 = 'Raw'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
@@ -42,7 +42,6 @@ end
 function GetInfo()
 	Template.GetInfo()
 
-	local v, x = nil
 	local u = MODULE.RootURL .. '/app/manga/controllers/cont.Listchapter.php?slug=' .. URL:match('-(.-).html')
 
 	MANGAINFO.CoverLink = CreateTXQuery(HTTP.Document).XPathString('//img[contains(@class, "thumbnail")]/@data-original')
@@ -52,7 +51,7 @@ function GetInfo()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
+	local x = CreateTXQuery(HTTP.Document)
 	for v in x.XPath('//a').Get() do
 		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'):gsub('.html', ''))
 		MANGAINFO.ChapterNames.Add(x.XPathString('li/div[1]', v))
@@ -64,14 +63,16 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	local v = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL) .. '.html'
+	HTTP.Reset()
+	HTTP.Cookies.Values['smartlink_shown'] = 1
 
 	if not HTTP.GET(u) then return net_problem end
 
-	for v in CreateTXQuery(HTTP.Document).XPath('//div[@class="chapter-content"]//img').Get() do
-		TASK.PageLinks.Add(require 'fmd.crypto'.DecodeBase64(v.GetAttribute('data-img')))
-	end
+	local s = HTTP.Document.ToString():gsub('\\/', '/'):gsub('\\n', ''):gsub('\\r', '')
+	local x = CreateTXQuery(s)
+	x.ParseHTML(x.XPathString('//script[contains(., "window.chapterImages")]/substring-before(substring-after(., "window.chapterImages="""), """")'))
+	x.XPathStringAll('//img/@data-srcset', TASK.PageLinks)
 
 	return no_error
 end

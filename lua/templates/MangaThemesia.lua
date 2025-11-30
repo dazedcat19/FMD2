@@ -14,6 +14,55 @@ XPathTokenArtists   = 'Artist'
 XPathTokenStatus    = 'Status'
 
 ----------------------------------------------------------------------------------------------------
+-- Helper Functions
+----------------------------------------------------------------------------------------------------
+
+-- Extract alternative titles
+local function GetAltTitles(x)
+	local alttitle = x.XPathString('//div[@class="seriestualt"]')
+	if alttitle == '' then alttitle = x.XPathString('//span[@class="alternative"]') end
+	return alttitle
+end
+
+-- Extract the manga cover image URL
+local function GetCoverLink(x)
+	local img = x.XPathString('//div[@itemprop="image"]//img/@data-lazy-src')
+	if img == '' then img = x.XPathString('//div[@itemprop="image"]//img/@data-src') end
+	if img == '' then img = x.XPathString('//div[@itemprop="image"]//img/@src') end
+	return img
+end
+
+-- Extract author information
+local function GetAuthors(x)
+	local authors = x.XPathString('//td[contains(., "' .. XPathTokenAuthors .. '")]/following-sibling::td')
+	if authors == '' then authors = x.XPathString('//div[@class="fmed" and contains(b, "' .. XPathTokenAuthors .. '")]/span') end
+	if authors == '' then authors = x.XPathString('(//div[@class="imptdt" and contains(., "' .. XPathTokenAuthors .. '")]/i)[1]') end
+	return authors
+end
+
+-- Extract artist information
+local function GetArtists(x)
+	local artists = x.XPathString('//td[contains(., "' .. XPathTokenArtists .. '")]/following-sibling::td')
+	if artists == '' then artists = x.XPathString('//div[@class="fmed" and contains(b, "' .. XPathTokenArtists .. '")]/span') end
+	if artists == '' then artists = x.XPathString('(//div[@class="imptdt" and contains(., "' .. XPathTokenArtists .. '")]/i)[1]') end
+	return artists
+end
+
+-- Extract genre information
+local function GetGenres(x)
+	local genre = x.XPathStringAll('//div[@class="seriestugenre"]/a')
+	if genre == '' then genre = x.XPathStringAll('//span[@class="mgen"]/a') end
+	return genre
+end
+
+-- Extract status information
+local function GetStatus(x)
+	local status = x.XPathString('//td[contains(., "' .. XPathTokenStatus .. '")]/following-sibling::td')
+	if status == '' then status = x.XPathString('//div[@class="imptdt" and contains(., "' .. XPathTokenStatus .. '")]/i') end
+	return status
+end
+
+----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
@@ -30,19 +79,19 @@ end
 
 -- Get info and chapter list for the current manga.
 function _M.GetInfo()
-	local v, x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = GetTitle(x)
+	local x = CreateTXQuery(HTTP.Document)
+	MANGAINFO.Title     = x.XPathString('//h1[@class="entry-title"]')
+	MANGAINFO.AltTitles = GetAltTitles(x)
 	MANGAINFO.CoverLink = GetCoverLink(x)
 	MANGAINFO.Authors   = GetAuthors(x)
 	MANGAINFO.Artists   = GetArtists(x)
 	MANGAINFO.Genres    = GetGenres(x)
-	MANGAINFO.Status    = MangaInfoStatusIfPos(GetStatus(x), 'Berjalan|Ongoing|Publishing', 'Tamat|Completed|Finished')
-	MANGAINFO.Summary   = x.XPathString('//div[@itemprop="description"]/*[not(script)]')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(GetStatus(x), 'Berjalan|Ongoing|Publishing|En Cours', 'Tamat|Completed|Finished|Terminé', 'Hiatus|En Pause', 'Dropped|Abandonné')
+	MANGAINFO.Summary   = x.XPathString('//div[@itemprop="description"]/*[not(script)]/string-join(text(), "\r\n")')
 
 	for v in x.XPath('//div[@id="chapterlist"]//div[@class="eph-num"]/a').Get() do
 		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
@@ -53,64 +102,24 @@ function _M.GetInfo()
 	return no_error
 end
 
-function GetTitle(x)
-	local title = x.XPathString('//h1[@class="entry-title"]')
-	title = title:gsub('Bahasa Indonesia$', ''):gsub('Indonesia Terbaru$', ''):gsub('^Komik', '')
-	return title
-end
-
-function GetCoverLink(x)
-	local img = x.XPathString('//div[@itemprop="image"]//img/@data-lazy-src')
-	if img == '' then img = x.XPathString('//div[@itemprop="image"]//img/@data-src') end
-	if img == '' then img = x.XPathString('//div[@itemprop="image"]//img/@src') end
-	return img
-end
-
-function GetAuthors(x)
-	local authors = x.XPathString('//td[contains(., "' .. XPathTokenAuthors .. '")]/following-sibling::td')
-	if authors == '' then authors = x.XPathString('//div[@class="fmed" and contains(b, "' .. XPathTokenAuthors .. '")]/span') end
-	if authors == '' then authors = x.XPathString('(//div[@class="imptdt" and contains(., "' .. XPathTokenAuthors .. '")]/i)[1]') end
-	return authors
-end
-
-function GetArtists(x)
-	local artists = x.XPathString('//td[contains(., "' .. XPathTokenArtists .. '")]/following-sibling::td')
-	if artists == '' then artists = x.XPathString('//div[@class="fmed" and contains(b, "' .. XPathTokenArtists .. '")]/span') end
-	if artists == '' then artists = x.XPathString('(//div[@class="imptdt" and contains(., "' .. XPathTokenArtists .. '")]/i)[1]') end
-	return artists
-end
-
-function GetGenres(x)
-	local genre = x.XPathStringAll('//div[@class="seriestugenre"]/a')
-	if genre == '' then genre = x.XPathStringAll('//span[@class="mgen"]/a') end
-	return genre
-end
-
-function GetStatus(x)
-	local status = x.XPathString('//td[contains(., "Status")]/following-sibling::td')
-	if status == '' then status = x.XPathString('//div[@class="imptdt" and contains(., "' .. XPathTokenStatus .. '")]/i') end
-	return status
-end
-
 -- Get the page count for the current chapter.
 function _M.GetPageNumber()
-	local i, x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
-	if not HTTP.GET(u) then return net_problem end
+	if not HTTP.GET(u) then return false end
 
-	x = CreateTXQuery(HTTP.Document)
+	local x = CreateTXQuery(HTTP.Document)
 	x.ParseHTML(GetBetween('run(', ');', x.XPathString('//script[contains(., "ts_reader")]')))
 	x.XPathStringAll('json(*).sources()[1].images()', TASK.PageLinks)
-	for i = 0, TASK.PageLinks.Count - 1 do -- Bypass 'i0.wp.com' image CDN to ensure original images are loaded directly from host
-		TASK.PageLinks[i] = TASK.PageLinks[i]:gsub("i%d.wp.com/", "")
-		if string.find(TASK.PageLinks[i], "blogger") or string.find(TASK.PageLinks[i], "blogspot") then
-			TASK.PageLinks[i] = TASK.PageLinks[i]:gsub("/s1600/", "/s0/")
+	for i = 0, TASK.PageLinks.Count - 1 do
+		TASK.PageLinks[i] = TASK.PageLinks[i]:gsub('i%d.wp.com/', '')
+		if string.find(TASK.PageLinks[i], 'blogger') or string.find(TASK.PageLinks[i], 'blogspot') then
+			TASK.PageLinks[i] = TASK.PageLinks[i]:gsub('/s1600/', '/s0/')
 		end
 		i = i + 1
 	end
 
-	return no_error
+	return true
 end
 
 ----------------------------------------------------------------------------------------------------

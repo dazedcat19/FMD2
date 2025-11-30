@@ -1,6 +1,9 @@
 <div align="center">
-<img src="mangadownloader/md.ico" alt="Logo" style="width: 100px" />
-<h1>Free Manga Downloader 2 (FMD2)</h1>
+<img src="mangadownloader/md.ico" alt="Logo" width="80"/>
+
+# Free Manga Downloader 2 (FMD2)
+
+This is an active fork of the Free Manga Downloader which is a free open source application written in Object Pascal for managing and downloading manga from various websites. The source code was released under the GPLv2 license.  
 
 [![Supported Websites](https://img.shields.io/badge/Supported%20Websites-Blue?style=for-the-badge&color=purple)](https://github.com/dazedcat19/FMD2/blob/master/docs/SUPPORTED_WEBSITES.md)  
 [![Discord](https://img.shields.io/badge/Discord-FMD-Blue?style=for-the-badge&color=blue&logo=discord&logoColor=white)](https://discord.gg/cXKKgw3)
@@ -10,9 +13,7 @@
 [![Latest release](https://img.shields.io/github/release/dazedcat19/FMD2?style=for-the-badge)](https://github.com/dazedcat19/FMD2/releases/latest)  
 [![Download latest release (Win32)](https://img.shields.io/github/downloads/dazedcat19/FMD2/latest/fmd_2.0.34.5_i386-win32.7z?style=for-the-badge&label=Win32)](https://github.com/dazedcat19/FMD2/releases/download/2.0.34.5/fmd_2.0.34.5_i386-win32.7z)
 [![Download latest release (Win64)](https://img.shields.io/github/downloads/dazedcat19/FMD2/latest/fmd_2.0.34.5_x86_64-win64.7z?style=for-the-badge&label=Win64)](https://github.com/dazedcat19/FMD2/releases/download/2.0.34.5/fmd_2.0.34.5_x86_64-win64.7z)
-</div>
 
-<div align="center">
 <details>
   <summary>
     <h2>Project Samples</h2>
@@ -23,13 +24,10 @@
 ![image](https://github.com/user-attachments/assets/001af028-5d25-48fe-a88c-5b03ab62982f)
 
 </details>
-</div>
-
-## About FMD2
-
-This is an active fork of the Free Manga Downloader which is a free open source application written in Object Pascal for managing and downloading manga from various websites. The source code was released under the GPLv2 license.
 
 ## Features
+
+<div align="left">
 
 - Pure native code - No need to install .NET framework or Java VM.
 - Supported hundreds of manga websites.
@@ -41,7 +39,11 @@ This is an active fork of the Free Manga Downloader which is a free open source 
 - Compress/convert downloaded chapters to ZIP/CBZ/PDF/EPUB.
 - Proxy support (HTTP/SOCK4/SOCK5).
 
+</div>
+
 ## Build instructions
+
+<div align="left">
 
 In order to build FMD2 from the source code, you must install the latest stable version of Lazarus and Free Pascal Compiler:  
 [![Lazarus](https://img.shields.io/badge/Lazarus%20IDE-Blue?style=for-the-badge&color=blue)](https://sourceforge.net/projects/lazarus/files/Lazarus%20Windows%2064%20bits/)  
@@ -58,7 +60,11 @@ The following packages and components are used for building FMD2:
 - [![MetaDarkStyle](https://img.shields.io/badge/MetaDarkStyle-GitHub-Blue?style=plastic&color=blue)](https://github.com/zamtmn/metadarkstyle)  
 - [![Lazarus_CustomControls](https://img.shields.io/badge/Lazarus_CustomControls-GitHub-Blue?style=plastic&color=blue)](https://github.com/NhKPaNdA/Lazarus_CustomControls)
 
-> [!NOTE]
+</div>
+
+</div>
+
+> [!IMPORTANT]
 > By default `InternetTools` uses [FLRE](https://github.com/BeRo1985/flre) and [PUCU](https://github.com/BeRo1985/PUCU) for its regex engine. Just copy the `FLRE.pas` and `PUCU.pas` to `InternetTools\data` folder. You can use Sorokin's RegExpr engine that comes with lazarus by adjusting the defines. But it's not recommended since the author of `InternetTools` prefer FLRE and doesn't always check the Sorokin's RegExpr compatibility when making an update.
 
 > [!TIP]
@@ -85,11 +91,15 @@ These tools and libraries are not part of the source. You have to either downloa
 - `--max-flush-queue=256` override max number of update before commiting to database engine.
 - `--max-big-flush-queue=16384` override max number of update before commiting to database. Internally used when making large update to databases in one go. Be careful when reducing the number it might slowing down FMD2 significantly.
 - `--backup-interval=10` override backup databases interval (minutes).
-  
+
+<div align="center">
+
 ## Localization
+
+</div>
 
 Translations are stored inside `languages` folder with `.po` extension.  
 In order to translate FMD2 to your native language, you can copy `fmd.po` and rename it to `fmd.xx.po` where `xx` stand for two-letter language code.  
 Additionally you can add country code at the end of language code. For reference you can look at [List of ISO 639 language codes](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes) and [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1). For example `id_ID` will be recognized as `Bahasa Indonesia (Indonesia)`.  
-To translate the content of the file you need to use translation tools like [Poedit](https://poedit.net).  
+To translate the content of the file, you need to use translation tools like [Poedit](https://poedit.net).  
 Once you have finished translating all of its content, you can launch FMD2 and it will automatically detect your new languages upon startup.

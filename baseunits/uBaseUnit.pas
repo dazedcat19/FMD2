@@ -339,6 +339,7 @@ type
     destructor Destroy; override;
     function ModuleID: String; inline;
     function Website: String; inline;
+    function FullLink: String; inline;
     procedure Clear;
     function Clone: TMangaInfo;
   end;
@@ -357,6 +358,7 @@ type
     DateAdded,
     DateLastDownloaded: TDateTime;
     iProgress: Integer;
+    MangaPtr: TMangaInfo;
     private
       FModule: Pointer;
       FModuleID: String;
@@ -2971,6 +2973,11 @@ end;
 function TMangaInfo.Website: String;
 begin
   Result := TModuleContainer(Module).Name;
+end;
+
+function TMangaInfo.FullLink: String;
+begin
+  Result := FillHost(TModuleContainer(Module).RootURL, Link);
 end;
 
 procedure TMangaInfo.Clear;

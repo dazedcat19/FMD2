@@ -13,7 +13,8 @@ interface
 uses
   LazFileUtils, Classes, SysUtils, ExtCtrls, typinfo, fgl, FileUtil, synautil,
   blcksock, MultiLog, uBaseUnit, uPacker, uMisc, DownloadedChaptersDB, FMDOptions, ImgInfos,
-  httpsendthread, DownloadsDB, BaseThread, SQLiteData, dateutils, strutils, ImageMagickManager;
+  httpsendthread, DownloadsDB, BaseThread, SQLiteData, dateutils, strutils, ImageMagickManager,
+  uComicInfo;
 
 type
   TDownloadStatusType = (
@@ -553,6 +554,7 @@ end;
 function TTaskThread.Compress: Boolean;
 var
   uPacker: TPacker;
+  ComicInfoPath: String;
   i: Integer;
   FilePath, FileExt: String;
 begin
@@ -594,11 +596,38 @@ begin
         end;
       end;
 
+      // Add ComicInfo.xml to the ZIP or CBZ archive
+      if (Container.Manager.CompressType = 1) or (Container.Manager.CompressType = 2) then
+      begin
+        ComicInfoPath := IncludeTrailingPathDelimiter(CurrentWorkingDir) + 'ComicInfo.xml';
+        TComicInfo.GenerateComicInfoXML(
+          ComicInfoPath, // ComicInfo.xml
+          Container.ChapterNames[Container.CurrentDownloadChapterPtr], // Title (Chapter Title)
+          Container.CurrentDownloadChapterPtr, // Number (Issue/Chapter number)
+          Container.DownloadInfo.MangaPtr, // MangaInfo (Series, Writer, Penciller, Genre, Summary, Web)
+          Container.PageLinks.Count // PageCount
+        );
+        if FileExists(ComicInfoPath) then uPacker.FileList.Add(ComicInfoPath);
+      end;
+
+      // Add extra metadata to content.opf file in the EPUB archive
+      if (Container.Manager.CompressType = 4) then
+        uPacker.MetaData := TComicInfo.GenerateExtraEPUBMetadata(
+          ComicInfoPath, 
+          Container.ChapterNames[Container.CurrentDownloadChapterPtr], 
+          Container.CurrentDownloadChapterPtr,
+          Container.DownloadInfo.MangaPtr
+        );
+
       Result := uPacker.Execute;
       if not Result then
       begin
         Logger.SendWarning(Self.ClassName + ', failed to compress. ' + uPacker.SavedFileName);
       end;
+
+      // Clean up ComicInfo.xml/content.opf file after compression
+      if FileExists(ComicInfoPath) then DeleteFile(ComicInfoPath);
+
     except
       on E: Exception do
       begin
