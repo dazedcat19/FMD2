@@ -83,7 +83,7 @@ function _M.GetInfo()
 	local id = x.XPathString('//div[contains(@id, "manga-chapters-holder")]/@data-id')
 
 	x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#") and not(@class="reward_ads")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
-	if MANGAINFO.ChapterLinks.Count == 0 and id == '' then
+	if MANGAINFO.ChapterLinks.Count == 0 then
 		local p = 1
 		while true do
 			HTTP.Reset()
