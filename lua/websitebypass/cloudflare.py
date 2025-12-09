@@ -97,15 +97,12 @@ class CloudSolver:
                 ## include solution for debugging and testing
                 result.update({'solution': json_response.get('solution')})
                 
-                #print(json.dumps(result))
-                #solve_flare_result = json.dumps(result)
-                #solve_flare_result = result
+                solve_flare_result = result
                 logging.info(json_response)
         else:
-            #print(json_response.get('message'))
             solve_flare_result = json_response.get('message')
 
-        return response.status_code, result
+        return response.status_code, solve_flare_result
 
     def testing_solve_result(self, url_, result_dict):
         result_dict_ = dict(result_dict)
@@ -122,7 +119,6 @@ class CloudSolver:
                 solution_cookie.pop('sameSite')
                 expires_ = solution_cookie.pop('expiry')
                 rest_ = {'HttpOnly': solution_cookie.pop('httpOnly')}
-
                 solution_cookie.update({'expires': expires_,
                                         'rest': rest_})
                 testing_cookies.set(**solution_cookie)
@@ -132,9 +128,7 @@ class CloudSolver:
         final_result = {'flaresolver_status_code': '',
                         'flaresolver_result': '',
                         }
-        
         status_code, result_ = self.solve_flare(url_)
-        #status_code, result_ = (404, 'FlareSolverr is not running!')
         final_result['flaresolver_status_code'] = status_code
         final_result['flaresolver_result'] = result_
         if status_code == 200:
@@ -148,10 +142,7 @@ class CloudSolver:
             if final_result.get('flaresolver_result').get('solution'):
                 del final_result['flaresolver_result']['solution']
             final_result['flaresolver_result'] = json.dumps(final_result.get('flaresolver_result'))
-        
-
         print(final_result)
-        #print(json.dumps(final_result))
             
 
 def parse_arguments():
@@ -179,7 +170,6 @@ def parse_arguments():
             
 
 if __name__ == "__main__":
-    #url = sys.argv[1]
     args = parse_arguments()
     cloudsolver = CloudSolver(debug= args.debug,testing_result=args.testing)
     cloudsolver.solve(args.Url)

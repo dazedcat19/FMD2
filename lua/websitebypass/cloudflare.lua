@@ -160,8 +160,20 @@ function _m.solveWithWebDriver(self, url)
 	
 	local parsed_result = {}
 	
-	print(string.format('WebsiteBypass[cloudflare]: using webdriver "%s" "%s" "%s" "--testing"',webdriver_exe, webdriver_script, rooturl))
-	_status, result, _errors = subprocess.RunCommandHide(webdriver_exe, webdriver_script, rooturl, "--testing")
+	local cmd_ = {webdriver_exe}
+	table.insert(cmd_, webdriver_script)
+	table.insert(cmd_, rooturl)
+	
+	if webdriver_testing then
+		table.insert(cmd_, "--testing")
+	end
+	
+	if webdriver_debug then
+		table.insert(cmd_, "--debug")
+	end
+	
+	print('WebsiteBypass[cloudflare]: using webdriver ' .. table.concat(cmd_, " "))
+	_status, result, _errors = subprocess.RunCommandHide(table.unpack(cmd_))
 	print(result)
 	
 	if not _status then
@@ -245,6 +257,54 @@ function _m.applyCookies(self, parsedJSON, url)
 	end
 end
 
+function load_config()
+	local config_json = [[lua\websitebypass\cloudflare_config.json]]
+	if not (fileExist(config_json)) then
+		local config_table = {
+		use_webdriver = false,
+		testing = false,
+		debug = false
+		}
+		
+		local json_string = json.encode(config_table)
+		
+		local file_w, err_w = io.open(config_json, "w")
+		
+		if not file_w then
+			-- Handle the error if the file couldn't be opened
+			LOGGER.SendError("Error opening file: " .. tostring(err_w))
+		else
+			-- 3. Write the JSON string to the file
+			file_w:write(json_string)
+			
+			-- 4. Close the file handle
+			file_w:close()
+			print("Successfully wrote data to " .. config_json)
+		end
+	end
+	
+	local file, err = io.open(config_json, "r")
+	
+	if not file then
+		-- Handle the error if the file couldn't be opened
+		LOGGER.SendError("Error opening file: " .. tostring(err))
+	else
+		-- Read the entire file content into a string
+		local content = file:read("*a")
+		
+		-- Close the file
+		file:close()
+		
+		local config_table = json.decode(content)
+		use_webdriver = config_table['use_webdriver']
+		webdriver_testing = config_table['testing']
+		webdriver_debug = config_table['debug']
+	end
+	
+	
+
+end
+
 function _m.bypass(self, METHOD, URL)
 	fmd = require 'fmd.env'
 	duktape = require 'fmd.duktape'
@@ -255,7 +315,8 @@ function _m.bypass(self, METHOD, URL)
 	local result = 0
 	local maxretry = 3
 	
-	use_webdriver = fileExist([[lua\websitebypass\use_webdriver]])
+	load_config()
+	
 	webdriver_exe = 'python'
 	webdriver_script = [[lua\websitebypass\cloudflare.py]]
 	flaresolverr = false
