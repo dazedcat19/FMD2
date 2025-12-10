@@ -93,41 +93,52 @@ function GetInfo()
 	local chapter_list = {}
 
 	local page = 1
+	local pages = nil
 	while true do
-		if not HTTP.GET(u .. '/chapters?order[number]=asc&limit=100&page=' .. tostring(page)) then return net_problem end
+		if not HTTP.GET(u .. '/chapters?order[number]=asc&limit=100&page=' .. page) then return net_problem end
 		local x = CreateTXQuery(HTTP.Document)
 		for v in x.XPath('json(*).result.items()').Get() do
-			local number_str = v.GetProperty('number').ToString()
-			local ch_id = v.GetProperty('chapter_id').ToString()
+			local number = v.GetProperty('number').ToString()
+			local id = v.GetProperty('chapter_id').ToString()
 			local name = v.GetProperty('name').ToString()
-			local volume = v.GetProperty('volume').ToString()
-			local scan_group_id = v.GetProperty('scanlation_group_id').ToString()
+			local vol_num = v.GetProperty('volume').ToString()
+			local scan_group_id = tonumber(v.GetProperty('scanlation_group_id').ToString()) or 0
 			local scan_group_name = v.GetProperty('scanlation_group').GetProperty('name').ToString()
-			local votes = v.GetProperty('votes').ToString()
-			local updated_at = v.GetProperty('updated_at').ToString()
+			local votes = tonumber(v.GetProperty('votes').ToString()) or 0
+			local updated_at = tonumber(v.GetProperty('updated_at').ToString()) or 0
+			local official = tonumber(v.GetProperty('is_official').ToString()) or 0
 
 			if not deduplicate then
-				local vol_str = (volume ~= '0') and ('Vol. ' .. volume .. ' ') or ''
-				local ch_str = (number_str ~= '') and ('Ch. ' .. number_str) or ''
-				local title_str = (name ~= '') and (' - ' .. name) or ''
-				local scan_str = (scan_group_name ~= '') and optgroup and (' [' .. scan_group_name .. ']') or ''
+				local volume = (vol_num ~= '0') and ('Vol. ' .. vol_num .. ' ') or ''
+				local chapter = (number ~= '') and ('Ch. ' .. number) or ''
+				local title = (name ~= '') and (' - ' .. name) or ''
+				local scanlator = ''
+				if optgroup then
+					if scan_group_name ~= '' then
+						scanlator = ' [' .. scan_group_name .. ']'
+					elseif official == 1 then
+						scanlator = ' [Official]'
+					else
+						scanlator = ' [Unknown]'
+					end
+				end
 
-				MANGAINFO.ChapterLinks.Add(ch_id)
-				MANGAINFO.ChapterNames.Add(vol_str .. ch_str .. title_str .. scan_str)
+				MANGAINFO.ChapterLinks.Add(id)
+				MANGAINFO.ChapterNames.Add(volume .. chapter .. title .. scanlator)
 			else
-				local current = chapter_map[number_str]
+				local current = chapter_map[number]
 				local ch_data = {
-					id = ch_id, name = name, volume = volume, number = number_str,
+					id = id, name = name, vol_num = vol_num, number = number,
 					scan_group_id = scan_group_id, scan_group_name = scan_group_name,
-					votes = votes, updated_at = updated_at
+					votes = votes, updated_at = updated_at, official = official
 				}
 
 				if not current then
-					chapter_map[number_str] = ch_data
-					table.insert(chapter_list, number_str)
+					chapter_map[number] = ch_data
+					table.insert(chapter_list, number)
 				else
-					local official_new = (ch_data.scan_group_id == 9275)
-					local official_current = (current.scan_group_id == 9275)
+					local official_new = (ch_data.scan_group_id == 9275 or ch_data.official == 1)
+					local official_current = (current.scan_group_id == 9275 or current.official == 1)
 					local better = false
 
 					if official_new and not official_current then
@@ -145,29 +156,40 @@ function GetInfo()
 					end
 
 					if better then
-						chapter_map[number_str] = ch_data
+						chapter_map[number] = ch_data
 					end
 				end
 			end
 		end
+		if not pages then
+			pages = tonumber(x.XPathString('json(*).result.pagination.last_page')) or 1
+		end
 		page = page + 1
-		local pages = tonumber(x.XPathString('json(*).result.pagination.last_page')) or 1
 		if page > pages then
 			break
 		end
 	end
 
 	if deduplicate then
-		for _, number_str in ipairs(chapter_list) do
-			local ch = chapter_map[number_str]
+		for _, number in ipairs(chapter_list) do
+			local ch = chapter_map[number]
 
-			local vol_str = (ch.volume ~= '0') and ('Vol. ' .. ch.volume .. ' ') or ''
-			local ch_str = (ch.number ~= '') and ('Ch. ' .. ch.number) or ''
-			local title_str = (ch.name ~= '') and (' - ' .. ch.name) or ''
-			local scan_str = (ch.scan_group_name ~= '') and MODULE.GetOption('showscangroup') and (' [' .. ch.scan_group_name .. ']') or ''
+			local volume = (ch.vol_num ~= '0') and ('Vol. ' .. ch.vol_num .. ' ') or ''
+			local chapter = (ch.number ~= '') and ('Ch. ' .. ch.number) or ''
+			local title = (ch.name ~= '') and (' - ' .. ch.name) or ''
+			local scanlator = ''
+			if optgroup then
+				if ch.scan_group_name ~= '' then
+					scanlator = ' [' .. ch.scan_group_name .. ']'
+				elseif ch.official == 1 then
+					scanlator = ' [Official]'
+				else
+					scanlator = ' [Unknown]'
+				end
+			end
 
 			MANGAINFO.ChapterLinks.Add(ch.id)
-			MANGAINFO.ChapterNames.Add(vol_str .. ch_str .. title_str .. scan_str)
+			MANGAINFO.ChapterNames.Add(volume .. chapter .. title .. scanlator)
 		end
 	end
 
