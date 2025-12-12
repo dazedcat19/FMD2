@@ -202,7 +202,7 @@ function GetPageNumber()
 
 	if not HTTP.GET(u) then return false end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).result.images()', TASK.PageLinks)
+	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).result.images().url', TASK.PageLinks)
 
 	return true
 end
