@@ -3,7 +3,10 @@ local _m = {}
 function fileExist(s)
 	local f = io.open(s, 'r')
 	local r = false
-	if f then r = true f:close() end
+	if f then 
+		r = true
+		f:close()
+	end
 	return r
 end
 
@@ -17,7 +20,9 @@ end
 function _m.sleepOrBreak(self, delay)
 	local count = 0
 	while count < delay do
-		if HTTP.Terminated then break end
+		if HTTP.Terminated then 
+			break
+		end
 		count = count + 250
 		sleep(250)
 	end
@@ -174,13 +179,38 @@ function _m.solveWithWebDriver(self, url)
 	
 	print('WebsiteBypass[cloudflare]: using webdriver ' .. table.concat(cmd_, " "))
 	_status, result, _errors = subprocess.RunCommandHide(table.unpack(cmd_))
-	print(result)
 	
 	if not _status then
 		LOGGER.SendError("WebsiteBypass[cloudflare]: Please make sure python is installed.")
 		return -1
+	else:
+		local result_json = json.decode(result)
+		if webdriver_debug or webdriver_testing then
+			print(result)
+		end
+		
+		if tonumber(result_json['flaresolver_status_code']) == 200 then
+			cookies_result = result_json['flaresolver_result']
+			print('WebsiteBypass[cloudflare]: Flaresolver returned code ' .. result_json['flaresolver_status_code'] .. ' for ' .. url .. ' with cookies')
+		else
+			--LOGGER.SendError("WebsiteBypass[cloudflare]: " .. result_json['flaresolver_result'])
+			LOGGER.SendError('WebsiteBypass[cloudflare]: Flaresolver returned code ' .. result_json['flaresolver_status_code'] .. ' for ' .. url .. ' without cookies')
+		end
+		
+		if cookies_result then
+			parsed_result = json.decode(cookies_result)
+		end
+		
+		if not parsed_result then
+			LOGGER.SendError("WebsiteBypass[cloudflare]: webdriver failed to parse response\r\n" .. url)
+			return -1
+		end
+		
+		self:applyCookies(parsed_result, url)
+		return 2
 	end
 	
+	[[
 	local x = CreateTXQuery(result)
 	local result_json = x.XPath('json(*)')
 	
@@ -201,7 +231,7 @@ function _m.solveWithWebDriver(self, url)
 	
 	self:applyCookies(parsed_result, url)
 	return 2
-	
+	]]
 end
 
 function _m.solveWithWebDriver2(self, url, headless)
@@ -233,7 +263,9 @@ end
 
 function _m.applyCookies(self, parsedJSON, url)
 	local next = next
-	if next(parsedJSON) == nil then return end
+	if next(parsedJSON) == nil then
+		return
+	end
 	local rooturl = url:match('(https?://[^/]+)') or url
 	
 	HTTP.FollowRedirection = false
@@ -258,7 +290,7 @@ function _m.applyCookies(self, parsedJSON, url)
 end
 
 function load_config()
-	local config_json = [[lua\websitebypass\cloudflare_config.json]]
+	local config_json = [[lua\websitebypass\websitebypass_config.json]]
 	if not (fileExist(config_json)) then
 		local config_table = {
 		use_webdriver = false,
@@ -331,25 +363,29 @@ function _m.bypass(self, METHOD, URL)
 		end
 	end
 	
-	if HTTP.RetryCount > maxretry then maxretry = HTTP.RetryCount end
+	if HTTP.RetryCount > maxretry then 
+		maxretry = HTTP.RetryCount
+	end
 	MODULE.Storage["reload"] = "false"
 	
 	while maxretry > 0 do
 		maxretry = maxretry - 1
 		result = self:solveChallenge(URL)
-		if result ~= 0 then break end
-		if HTTP.Terminated then break end
+		if result ~= 0 or HTTP.Terminated then
+			break 
+		end
 		-- delay before retry
 		self:sleepOrBreak(1000)
 		if not flaresolverr then
 			HTTP.Reset()
-			HTTP.Request('GET', URL)
+			HTTP.Request(METHOD, URL)
 		end
 	end
 	
 	HTTP.RetryCount = maxretry
 	
 	if result == 2 then -- need to reload
+		HTTP.Reset()
 		HTTP.Request(METHOD, URL)
 		if flaresolverr then
 			local response = HTTP.Document.ToString()

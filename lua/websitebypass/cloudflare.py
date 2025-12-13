@@ -14,12 +14,15 @@ logging.basicConfig(filename=f'{Path(__file__).stem}.log', filemode='a',
 
 class CloudSolver:
     def __init__(self, debug=False, testing_result=False):
+        if not (debug or testing_result):
+            logging.disable()
         self.debug = debug
         self.testing_result = testing_result
         # just random UUID
         self.session_id = 'e69e9ce7-8118-470c-a069-13af7bee6e8b'
         self.post_body = {"cmd": "request.get",
-                          "session": self.session_id}
+                          "session": self.session_id
+                          }
         if self.debug:
             self.post_body.update(
                 {"returnScreenshot": True}
@@ -106,9 +109,14 @@ class CloudSolver:
 
     def testing_solve_result(self, url_, result_dict):
         result_dict_ = dict(result_dict)
+        cookies_dict = {}
         useragent_ = result_dict_.pop('user_agent')
         solution_ = result_dict_.pop('solution')
-        cookies_dict = result_dict_
+        #cookies_dict.update(result_dict_)
+        for cf_key in ['cf_clearance', 'csrftoken']:
+            if cf_key in result_dict_:
+                cookies_dict[cf_key] = result_dict_.get(cf_key)
+        #print(cookies_dict)
         testing_session = requests.session()
         testing_cookies = requests.sessions.cookiejar_from_dict(cookies_dict)
         testing_session.cookies.update(testing_cookies)
@@ -127,6 +135,9 @@ class CloudSolver:
     def solve(self, url_):
         final_result = {'flaresolver_status_code': '',
                         'flaresolver_result': '',
+                        'testing_cookies': self.testing_result,
+                        'testing_cookies_result': '',
+                        'enable_debug': self.debug,
                         }
         status_code, result_ = self.solve_flare(url_)
         final_result['flaresolver_status_code'] = status_code
@@ -134,9 +145,12 @@ class CloudSolver:
         if status_code == 200:
             if self.testing_result:
                 test_sc = self.testing_solve_result(url_, result_)
-                if test_sc != 200:
-                    final_result['flaresolver_status_code'] = test_sc
-                    final_result['flaresolver_result'] = f'FlareSolverr did return cookies for {url_}, but it failed while testing it'
+                if test_sc == 200:
+                    final_result['testing_cookies_result'] = 'testing cookies using python requests return code "200"'
+                else:
+                    #final_result['flaresolver_status_code'] = test_sc
+                    #final_result['flaresolver_result'] = f'FlareSolverr did return cookies for {url_}, but it failed while testing it'
+                    final_result['testing_cookies_result'] = f'FlareSolverr did return cookies for {url_}, but it failed with code {test_sc} while testing it'
         # Delete solution befoer dumping the final result
         if isinstance(final_result.get('flaresolver_result'), dict):
             if final_result.get('flaresolver_result').get('solution'):
