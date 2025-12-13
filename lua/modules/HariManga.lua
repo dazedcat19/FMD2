@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '05c34bb8074348a9a1c356f586f990f7'
 	m.Name                     = 'HariManga'
-	m.RootURL                  = 'https://harimanga.com'
+	m.RootURL                  = 'https://harimanga.me'
 	m.Category                 = 'Webcomics'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -18,10 +18,6 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.Madara'
--- XPathTokenAuthors = 'Author(s)'
--- XPathTokenArtists = 'Artist(s)'
--- XPathTokenGenres  = 'Genre(s)'
--- XPathTokenStatus  = 'Status'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -34,7 +30,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
 
@@ -45,5 +41,5 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
 end
