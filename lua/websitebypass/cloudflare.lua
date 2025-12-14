@@ -183,11 +183,11 @@ function _m.solveWithWebDriver(self, url)
 	if not _status then
 		LOGGER.SendError("WebsiteBypass[cloudflare]: Please make sure python is installed.")
 		return -1
-	else:
-		local result_json = json.decode(result)
+	else
 		if webdriver_debug or webdriver_testing then
 			print(result)
 		end
+		local result_json = json.decode(result)
 		
 		if tonumber(result_json['flaresolver_status_code']) == 200 then
 			cookies_result = result_json['flaresolver_result']
@@ -209,29 +209,6 @@ function _m.solveWithWebDriver(self, url)
 		self:applyCookies(parsed_result, url)
 		return 2
 	end
-	
-	[[
-	local x = CreateTXQuery(result)
-	local result_json = x.XPath('json(*)')
-	
-	if (tonumber(x.XPathString('flaresolver_status_code', result_json)) == 200) then
-		cookies_result = x.XPathString('flaresolver_result', result_json)
-	else
-		LOGGER.SendError("WebsiteBypass[cloudflare]: " .. x.XPathString('flaresolver_result', result_json))
-	end
-	
-	if cookies_result then
-		parsed_result = json.decode(cookies_result)
-	end
-	
-	if not parsed_result then
-		LOGGER.SendError("WebsiteBypass[cloudflare]: webdriver failed to parse response\r\n" .. url)
-		return -1
-	end
-	
-	self:applyCookies(parsed_result, url)
-	return 2
-	]]
 end
 
 function _m.solveWithWebDriver2(self, url, headless)
