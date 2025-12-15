@@ -83,7 +83,7 @@ function GetInfo()
 	MANGAINFO.CoverLink = MaybeFillHost(MODULE.RootURL, x.XPathString('urlCoverOri', json))
 	MANGAINFO.Authors   = x.XPathString('string-join(authors?*, ", ")', json)
 	MANGAINFO.Artists   = x.XPathString('string-join(artists?*, ", ")', json)
-	MANGAINFO.Genres    = x.XPathString('string-join(genres?*, ", ")', json):gsub("_", " "):gsub("(%l)(%w*)", function(first, rest) return first:upper() .. rest end)
+	MANGAINFO.Genres    = x.XPathString('string-join(genres?*, ", ")', json):gsub('_', ' '):gsub('(%l)(%w*)', function(first, rest) return first:upper() .. rest end)
 	MANGAINFO.Summary   = x.XPathString('summary', json)
 
 	local status = x.XPathString('uploadStatus', json)
@@ -115,9 +115,13 @@ function GetPageNumber()
 	HTTP.Reset()
 	HTTP.MimeType = 'application/json'
 
-	if not HTTP.POST(u, s) then return net_problem end
+	if not HTTP.POST(u, s) then return false end
 
 	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).data.get_chapterNode.data.imageFile.urlList()', TASK.PageLinks)
 
-	return no_error
+	for i = 0, TASK.PageLinks.Count - 1 do
+		TASK.PageLinks[i] = TASK.PageLinks[i]:gsub('s%d%d', 's00')
+	end
+
+	return true
 end
