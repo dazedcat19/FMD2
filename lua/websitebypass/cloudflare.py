@@ -20,8 +20,6 @@ if (Path(__file__)/ '..' / 'lua/websitebypass').exists():
 else:
     websitebypass_path = Path(__file__)/ '..'
 debug_path = (websitebypass_path / 'debug').resolve()
-    
-
 
 class CloudSolver:
     def __init__(self, debug=False, testing_result=False):

@@ -204,13 +204,12 @@ function _m.solveWithWebDriver(self, url)
 		end
 		
 		self:applyCookies(parsed_result, url)
-		self:applyCookies(parsed_result, url, HTTP_testing)
 		return 2
 	end
 end
 
 function _m.solveWithWebDriver2(self, url, headless)
-	print('blank function')
+	--Blank function
 end
 
 function _m.solveChallenge(self, url)
@@ -231,9 +230,7 @@ function _m.solveChallenge(self, url)
 	if (result <= 0) then
 		LOGGER.SendWarning('WebsiteBypass[cloudflare]: no Cloudflare solution found!\r\n' .. url)
 	end
-	return result
-	
-	
+	return result	
 end
 
 function _m.applyCookies(self, parsedJSON, url, http_m)
@@ -315,16 +312,19 @@ function load_config()
 
 end
 
+function testing_url(METHOD, URL)
+	--Blank function for future
+end
+
 function _m.bypass(self, METHOD, URL)
 	fmd = require 'fmd.env'
 	duktape = require 'fmd.duktape'
 	crypto = require 'fmd.crypto'
 	subprocess = require "fmd.subprocess"
 	json = require "utils.json"
-	HTTP_testing = HTTP
 	local result = 0
 	local maxretry = 3
-	
+
 	load_config()
 	
 	webdriver_exe = 'python'
@@ -350,14 +350,7 @@ function _m.bypass(self, METHOD, URL)
 		maxretry = maxretry - 1
 		result = self:solveChallenge(URL)
 		if webdriver_testing or webdriver_debug then
-			if METHOD == 'GET' then
-				HTTP_testing.GET(URL)
-			elseif METHOD == 'POST' then
-				HTTP_testing.POST(URL)
-			end
-			if METHOD == 'GET' or METHOD == 'POST' then
-				print('WebsiteBypass[cloudflare]: ' .. URL .. 'was tested with returned cookies in LUA, and the returned result is:' .. HTTP_testing.ResultCode)
-			end
+			testing_url(METHOD, URL)
 		end
 		if result ~= 0 or HTTP.Terminated then
 			break 
@@ -373,7 +366,6 @@ function _m.bypass(self, METHOD, URL)
 	HTTP.RetryCount = maxretry
 	
 	if result == 2 then -- need to reload
-		HTTP.Reset()
 		HTTP.Request(METHOD, URL)
 		if flaresolverr then
 			local response = HTTP.Document.ToString()
