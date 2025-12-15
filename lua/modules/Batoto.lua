@@ -102,7 +102,7 @@ end
 function GetPageNumber()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
-	if not HTTP.GET(u) then return net_problem end
+	if not HTTP.GET(u) then return false end
 	
 	local x = CreateTXQuery(HTTP.Document)
 	local script = x.XPathString('//script[contains(., "const batoPass")]')
@@ -114,7 +114,7 @@ function GetPageNumber()
 	]])
 	local delimiter = ','
 	ext = ext .. delimiter
-	local images = script:match('const imgHttps = %[([^%]]+)')
+	local images = script:match('const imgHttps = %[([^%]]+)'):gsub('https://k', 'https://n')
 	for image in images:gmatch('"([^",]+)') do
 		if ext ~= ',' then
 			local mtch = ext:match('(.-)' .. delimiter)
@@ -125,5 +125,5 @@ function GetPageNumber()
 		end
 	end
 
-	return no_error
+	return true
 end
