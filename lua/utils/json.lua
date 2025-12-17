@@ -45,22 +45,24 @@ for k, v in pairs(escape_char_map) do
   escape_char_map_inv[v] = k
 end
 
-
 local function escape_char(c)
   return "\\" .. (escape_char_map[c] or string.format("u%04x", c:byte()))
 end
-
 
 local function encode_nil(rope)
   rope[#rope + 1] = "null"
 end
 
-
-local function encode_table(rope, val, stack)
+local function encode_table(rope, val, stack, indent, depth)
   -- Circular reference?
   if stack[val] then error("circular reference") end
-
   stack[val] = true
+  
+  local indent_str = indent and string.rep(indent, depth) or ""
+  local indent_str_inner = indent and string.rep(indent, depth + 1) or ""
+  local newline = indent and "\n" or ""
+  local space = indent and " " or ""
+  
   if rawget(val, 1) ~= nil or next(val) == nil then
     -- Treat as array -- check keys are valid and it is not sparse
     local n = 0
@@ -79,7 +81,15 @@ local function encode_table(rope, val, stack)
       if i > 1 then
         rope[#rope + 1] = ","
       end
-      encode(rope, v, stack)
+      if indent then
+        rope[#rope + 1] = newline
+        rope[#rope + 1] = indent_str_inner
+      end
+      encode(rope, v, stack, indent, depth + 1)
+    end
+    if indent and #val > 0 then
+      rope[#rope + 1] = newline
+      rope[#rope + 1] = indent_str
     end
     rope[#rope + 1] = "]"
   else
@@ -93,23 +103,30 @@ local function encode_table(rope, val, stack)
       if not first then
         rope[#rope + 1] = ","
       end
-      encode(rope, k, stack)
+      if indent then
+        rope[#rope + 1] = newline
+        rope[#rope + 1] = indent_str_inner
+      end
+      encode(rope, k, stack, indent, depth + 1)
       rope[#rope + 1] = ":"
-      encode(rope, v, stack)
+      rope[#rope + 1] = space
+      encode(rope, v, stack, indent, depth + 1)
       first = false
+    end
+    if indent and not first then
+      rope[#rope + 1] = newline
+      rope[#rope + 1] = indent_str
     end
     rope[#rope + 1] = "}"
   end
   stack[val] = nil
 end
 
-
 local function encode_string(rope, val)
   rope[#rope + 1] = '"'
   rope[#rope + 1] = val:gsub('[%z\1-\31\\"]', escape_char)
   rope[#rope + 1] = '"'
 end
-
 
 local function encode_number(rope, val)
   -- Check for NaN, -inf and inf
@@ -133,20 +150,25 @@ local type_func_map = {
   [ "boolean" ] = encode_boolean,
 }
 
-
-function encode(rope, val, stack)
+function encode(rope, val, stack, indent, depth)
   local t = type(val)
   local encoder = type_func_map[t]
   if encoder then
-    return encoder(rope, val, stack)
+    if t == "table" then
+      return encoder(rope, val, stack, indent, depth or 0)
+    else
+      return encoder(rope, val, stack)
+    end
   end
   error("unexpected type '" .. t .. "'")
 end
 
-
-function json.encode(val)
+function json.encode(val, indent)
+  if indent == nil then
+    indent = "\t"
+  end
   local rope = {}
-  encode(rope, val, {})
+  encode(rope, val, {}, indent, 0)
   return table.concat(rope)
 end
 
