@@ -1,9 +1,10 @@
 import os
 import signal
+import re
 import psutil
 
 
-def find_processes_like(self, name_pattern, cmd_pattern=None):
+def find_processes_like(name_pattern, cmd_pattern=None):
     """
     Finds processes whose name or command line matches a given pattern.
     The pattern can be a simple substring or a regular expression.
@@ -25,9 +26,9 @@ def find_processes_like(self, name_pattern, cmd_pattern=None):
             pass
     return matching_processes
 
-chrome_query = self.find_processes_like(r'chrome', r'\\AppData\\Local\\Temp')
-chrome_query += self.find_processes_like(r'chromium', r'\\AppData\\Local\\Temp')
-chrome_query += self.find_processes_like(r'chromedriver.exe')
+chrome_query = find_processes_like(r'chrome', r'\\AppData\\Local\\Temp')
+chrome_query += find_processes_like(r'chromium', r'\\AppData\\Local\\Temp')
+chrome_query += find_processes_like(r'chromedriver.exe')
 for process in chrome_query:
     print(f'closing process {process.get("name")} pid:{process.get("pid")}')
     os.kill(process.get("pid"), signal.SIGILL)
