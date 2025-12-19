@@ -93,6 +93,7 @@ function GetInfo()
 end
 
 function GetPageNumber()
+	HTTP.Reset()
 	HTTP.Headers.Values['Referer'] = ' ' .. MaybeFillHost(MODULE.RootURL, TASK.Link)
 	URL = MaybeFillHost(MODULE.RootURL, URL)
 	Delay()
