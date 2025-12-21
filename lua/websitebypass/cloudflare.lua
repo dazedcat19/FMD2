@@ -155,14 +155,10 @@ end
 
 function _m.solveWithWebDriver(self, url)
 	local rooturl = url:match('(https?://[^/]+)') or url
-	
 	local result = nil
 	local cookies_result = nil
-	
 	local _status = 1
-	
 	local parsed_result = {}
-	
 	local cmd_ = {webdriver_exe}
 	table.insert(cmd_, webdriver_script)
 	table.insert(cmd_, rooturl)
