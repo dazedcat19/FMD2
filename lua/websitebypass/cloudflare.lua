@@ -30,14 +30,11 @@ end
 
 function _m.IUAMChallengeAnswer(self, body, url)
 	local script = body:match('<script.->(.-)</script')
-
 	if script == nil then
 		LOGGER.SendError('WebsitBypass[cloudflare]: IUAM challenge detected but failed to parse the javascript\r\n' .. url)
 		return nil
 	end
-
 	local rooturl = url:match('(https?://[^/]+)') or ''
-
 	local challenge = string.format([[
 function btoa(s) {return Duktape.enc('base64', s);};
 function atob(s) {return new TextDecoder().decode(Duktape.dec('base64', s));};
@@ -79,7 +76,6 @@ String.prototype.sup = function () { return "<sup>" + this + "</sup>"; };
 		end
 	end
 	challenge = challenge .. script .. '\r\nJSON.stringify($$e);'
-
 	local answer, timeout = duktape.ExecJS(challenge)
 	if (answer == nil) or (answer == 'NaN') or (answer == '') then
 		LOGGER.SendError('WebsiteBypass[cloudflare]: IUAM challenge detected but failed to solve the javascript challenge\r\n' .. url)
@@ -87,7 +83,6 @@ String.prototype.sup = function () { return "<sup>" + this + "</sup>"; };
 		answer = answer:match('"jschl%-answer":.-"value":"(.-)"')
 		timeout = tonumber(answer:match('"timeout":(%d+)')) or 4000
 	end
-
 	return timeout, answer
 end
 
@@ -96,7 +91,6 @@ function _m.solveIUAMChallenge(self, body, url)
 	if (answer == nil) or (answer == 'NaN') or (answer == '') then
 		return 0
 	end
-
 	local form, challengeUUID = body:match('<form (.-="challenge%-form" action="(.-__cf_chl_jschl_tk__=%S+)"(.-)</form>)')
 	if (form == nil) or (challengeUUID == nil) then
 		LOGGER.SendError('WebsiteBypass[cloudflare]: IUAM challenge detected but failed to parse the form\r\n' .. url)
@@ -106,7 +100,6 @@ function _m.solveIUAMChallenge(self, body, url)
 
 	-- cloudflare requires a delay
 	self:sleepOrBreak(timeout)
-
 	local payload = {}
 	local k, n, v = '', '', ''
 	for k in form:gmatch('\n%s*<input%s(.-name=".-)/>') do
@@ -114,22 +107,18 @@ function _m.solveIUAMChallenge(self, body, url)
 		v = k:match('value="(.-)"') or ''
 		payload[n] = v
 	end
-
 	local i = 0; for _ in pairs(payload) do i = i + 1 end
 	if i == 0 then
 		LOGGER.SendError('WebsiteBypass[cloudflare]: IUAM challenge detected but failed to parse the form payload\r\n' .. url)
 		return 0
 	end
 	payload['jschl_answer'] = answer
-
 	local rawdata = ''
 	for k, v in pairs(payload) do
 		rawdata = rawdata .. k .. '=' .. crypto.EncodeURLElement(payload[k]) .. '&'
 	end
 	rawdata = rawdata:gsub('&$', '')
-
 	local rooturl = url:match('(https?://[^/]+)') or ''
-
 	-- no need to redirect if it a success
 	HTTP.FollowRedirection = false
 	HTTP.Reset()
@@ -138,7 +127,6 @@ function _m.solveIUAMChallenge(self, body, url)
 	HTTP.MimeType = "application/x-www-form-urlencoded"
 	HTTP.Document.WriteString(rawdata)
 	HTTP.FollowRedirection = true
-
 	HTTP.Request('POST', rooturl .. challengeUUID)
 	local rbody = HTTP.Document.ToString()
 	if rbody:find('^Access denied%. Your IP') then
@@ -149,35 +137,26 @@ function _m.solveIUAMChallenge(self, body, url)
 	if HTTP.Cookies.Values["cf_clearance"] ~= "" then
 		return 1
 	end
-
 	return 0
 end
 
 function _m.solveWithWebDriver(self, url)
 	local rooturl = url:match('(https?://[^/]+)') or url
-	
 	local result = nil
 	local cookies_result = nil
-	
 	local _status = 1
-	
 	local parsed_result = {}
-	
 	local cmd_ = {webdriver_exe}
 	table.insert(cmd_, webdriver_script)
 	table.insert(cmd_, rooturl)
-	
 	if webdriver_testing then
 		table.insert(cmd_, "--testing")
 	end
-	
 	if webdriver_debug then
 		table.insert(cmd_, "--debug")
 	end
-	
 	print('WebsiteBypass[cloudflare]: using webdriver ' .. table.concat(cmd_, " "))
 	_status, result, _errors = subprocess.RunCommandHide(table.unpack(cmd_))
-	
 	if not _status then
 		LOGGER.SendError("WebsiteBypass[cloudflare]: Please make sure python is installed.")
 		return -1
@@ -186,23 +165,19 @@ function _m.solveWithWebDriver(self, url)
 			print('WebsiteBypass[cloudflare]: ' .. result)
 		end
 		local result_json = json.decode(result)
-		
 		if tonumber(result_json['flaresolver_status_code']) == 200 then
 			cookies_result = result_json['flaresolver_result']
 			print('WebsiteBypass[cloudflare]: Flaresolver returned code ' .. result_json['flaresolver_status_code'] .. ' for ' .. url .. ' with cookies')
 		else
 			LOGGER.SendError('WebsiteBypass[cloudflare]: Flaresolver returned code ' .. result_json['flaresolver_status_code'] .. ' for ' .. url .. ' without cookies')
 		end
-		
 		if cookies_result then
 			parsed_result = json.decode(cookies_result)
 		end
-		
 		if not parsed_result then
 			LOGGER.SendError("WebsiteBypass[cloudflare]: webdriver failed to parse response\r\n" .. url)
 			return -1
 		end
-		
 		self:applyCookies(parsed_result, url)
 		return 2
 	end
@@ -216,17 +191,14 @@ function _m.solveChallenge(self, url)
 	local body = HTTP.Document.ToString()
 	local rc = HTTP.ResultCode
 	local result = 0
-	
 	-- webdriver cloudflare bypass
 	if use_webdriver and (result <= 0) then
 		result = self:solveWithWebDriver(url)
 	end
-	
 	-- IUAM challenge
 	if ((rc == 429) or (rc == 503)) and body:find('<form .-="challenge%-form" action="/.-__cf_chl_jschl_tk__=%S+"') then
 		result = self:solveIUAMChallenge(body, url)
 	end
-	
 	if (result <= 0) then
 		LOGGER.SendWarning('WebsiteBypass[cloudflare]: no Cloudflare solution found!\r\n' .. url)
 	end
@@ -242,7 +214,6 @@ function _m.applyCookies(self, parsedJSON, url, http_m)
 	if http_m == nil then
 		http_m = HTTP
 	end
-	
 	http_m.FollowRedirection = false
 	http_m.Reset()
 	http_m.Headers.Values['Origin'] = ' ' .. rooturl
@@ -250,7 +221,6 @@ function _m.applyCookies(self, parsedJSON, url, http_m)
 	http_m.MimeType = "application/x-www-form-urlencoded"
 	http_m.FollowRedirection = true
 	http_m.ClearCookiesStorage()
-	
 	local key, value for key, value in pairs(parsedJSON) do
 		if key == "user_agent" and value ~= "" then
 			http_m.Headers.Values["user-agent"] = value
@@ -272,7 +242,6 @@ function load_config()
 		testing = false,
 		debug = false
 		}
-		
 		local json_string = json.encode(config_table)
 		
 		local file_w, err_w = io.open(config_json, "w")
@@ -283,33 +252,25 @@ function load_config()
 		else
 			-- 3. Write the JSON string to the file
 			file_w:write(json_string)
-			
 			-- 4. Close the file handle
 			file_w:close()
 			print("WebsiteBypass[cloudflare]: Successfully wrote data to " .. config_json)
 		end
 	end
-	
 	local file, err = io.open(config_json, "r")
-	
 	if not file then
 		-- Handle the error if the file couldn't be opened
 		LOGGER.SendError("Error opening file: " .. tostring(err))
 	else
 		-- Read the entire file content into a string
 		local content = file:read("*a")
-		
 		-- Close the file
 		file:close()
-		
 		local config_table = json.decode(content)
 		use_webdriver = config_table['use_webdriver']
 		webdriver_testing = config_table['testing']
 		webdriver_debug = config_table['debug']
 	end
-	
-	
-
 end
 
 function testing_url(METHOD, URL)
@@ -324,9 +285,7 @@ function _m.bypass(self, METHOD, URL)
 	json = require "utils.json"
 	local result = 0
 	local maxretry = 3
-
 	load_config()
-	
 	webdriver_exe = 'python'
 	webdriver_script = [[lua\websitebypass\cloudflare.py]]
 	flaresolverr = false
@@ -340,12 +299,10 @@ function _m.bypass(self, METHOD, URL)
 			flaresolverr = true
 		end
 	end
-	
 	if HTTP.RetryCount > maxretry then 
 		maxretry = HTTP.RetryCount
 	end
 	MODULE.Storage["reload"] = "false"
-	
 	while maxretry > 0 do
 		maxretry = maxretry - 1
 		result = self:solveChallenge(URL)
@@ -362,9 +319,7 @@ function _m.bypass(self, METHOD, URL)
 			HTTP.Request(METHOD, URL)
 		end
 	end
-	
 	HTTP.RetryCount = maxretry
-	
 	if result == 2 then -- need to reload
 		HTTP.Request(METHOD, URL)
 		if flaresolverr then
@@ -376,7 +331,6 @@ function _m.bypass(self, METHOD, URL)
 			end
 		end
 	end
-	
 	return (result >= 1)
 end
 
