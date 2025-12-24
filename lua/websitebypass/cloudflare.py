@@ -6,7 +6,7 @@ import logging
 import base64
 from pathlib import Path
 from datetime import datetime, timedelta
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlunparse
 
 try:
     import rookiepy
@@ -22,7 +22,8 @@ else:
 debug_path = (websitebypass_path / 'debug').resolve()
 
 class CloudSolver:
-    def __init__(self, debug=False, testing_result=False):
+    def __init__(self, debug=False, testing_result=False,
+                 flare_ip= "localhost", flare_port= 8191):
         if not (debug or testing_result):
             logging.disable()
         else:
@@ -32,6 +33,8 @@ class CloudSolver:
                     level=logging.INFO)
         self.debug = debug
         self.testing_result = testing_result
+        flare_api_parsed = urlparse('http://localhost:8191/v1')
+        self.flare_api_parsed = flare_api_parsed._replace(netloc=f"{flare_ip}:{flare_port}" if flare_port else flare_ip)
         # just random UUID
         self.session_id = 'e69e9ce7-8118-470c-a069-13af7bee6e8b'
         self.post_body = {"cmd": "request.get",
@@ -55,14 +58,14 @@ class CloudSolver:
 
         if cloudflare_json.get('next_run') < datetime.now().timestamp():
             sessions_list = requests.post(
-                'http://localhost:8191/v1',
+                self.flare_api_parsed.geturl(),
                 headers= {'Content-Type': 'application/json'},
                 json= {"cmd": "sessions.list",}
                 ).json()['sessions']
             logging.info(f'flaresolverr sessions list: {sessions_list}')
             if self.session_id in sessions_list:
                 requests.post(
-                    'http://localhost:8191/v1',
+                    self.flare_api_parsed.geturl(),
                     headers= {'Content-Type': 'application/json'},
                     json= {"cmd": "sessions.destroy",
                            "session": self.session_id}
@@ -75,7 +78,7 @@ class CloudSolver:
         
     def solve_flare(self, url_):
         try:
-            test_flaresolver = requests.get('http://127.0.0.1:8191/')
+            test_flaresolver = requests.get(self.flare_api_parsed._replace(path='').geturl())
             if test_flaresolver.status_code == 200:
                 if test_flaresolver.json()['msg'] != 'FlareSolverr is ready!':
                     logging.info('FlareSolverr is not running!')
@@ -87,7 +90,7 @@ class CloudSolver:
         post_body = self.post_body
         post_body['url'] = url_
         response = requests.post(
-            'http://localhost:8191/v1',
+            self.flare_api_parsed.geturl(),
             headers={'Content-Type': 'application/json'},
             json=post_body)
         logging.info(response.status_code)
@@ -238,11 +241,26 @@ def parse_arguments():
         action="store_true",
         help="Enable testing restult mode."
     )
+
+    # Use custom Flaresolverr ip
+    parser.add_argument(
+        "-Fip", "--flaresolverr-ip",
+        default= "localhost",
+        help="Use custom Flaresolverr ip.(default: %(default)s)"
+    )
+
+    # Use custom Flaresolverr port
+    parser.add_argument(
+        "-Fp", "--flaresolverr-port",
+        default= 8191,
+        help="Use custom Flaresolverr port.(default: %(default)s)"
+    )
     
     return parser.parse_args()
             
 
 if __name__ == "__main__":
     args = parse_arguments()
-    cloudsolver = CloudSolver(debug= args.debug,testing_result=args.testing)
+    cloudsolver = CloudSolver(debug=args.debug, testing_result=args.testing,
+                              flare_ip= args.flaresolverr_ip, flare_port= args.flaresolverr_port)
     cloudsolver.solve(args.Url)
