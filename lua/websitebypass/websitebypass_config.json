@@ -1,5 +1,5 @@
 {
-	"use_webdriver": true,
+	"use_webdriver": false,
 	"debug": false,
 	"flaresolverr_port": 8191,
 	"testing": false,
