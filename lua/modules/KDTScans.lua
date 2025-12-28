@@ -41,18 +41,19 @@ end
 -- Get the page count for the current chapter.
 function GetPageNumber()
 	Template.GetPageNumber()
+
 	if TASK.PageLinks.Count == 0 then --Secure Reader
-		x = CreateTXQuery(HTTP.Document)
+		local x = CreateTXQuery(HTTP.Document)
 		local secure_js = x.XPathString('//script[contains(., "const _0x1b8fbd")]')
-		local base64_str = GetBetween('const _0x1b8fbd="', '",', secure_js)
-		if secure_js == base64_str then
-			base64_str = GetBetween("const _0x1b8fbd='", "',", secure_js)
+		local base64 = GetBetween('const _0x1b8fbd="', '",', secure_js)
+		if secure_js == base64 then
+			base64 = GetBetween("const _0x1b8fbd='", "',", secure_js)
 		end
-		local urls_links = require "utils.json".decode(require 'fmd.crypto'.DecodeBase64(base64_str))
-		for i = 0, #urls_links -1 do
-			TASK.PageLinks.Add(urls_links[i])
-		end
+		local s = require 'fmd.crypto'.DecodeBase64(base64)
+		x.ParseHTML(s)
+		x.XPathStringAll('json(*)()', TASK.PageLinks)
 	end
+
 	return true
 end
 
