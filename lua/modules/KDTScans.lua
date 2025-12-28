@@ -42,6 +42,18 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
+	if TASK.PageLinks.Count == 0 then --Secure Reader
+		local x = CreateTXQuery(HTTP.Document)
+		local secure_js = x.XPathString('//script[contains(., "const _0x1b8fbd")]')
+		local base64 = GetBetween('const _0x1b8fbd="', '",', secure_js)
+		if secure_js == base64 then
+			base64 = GetBetween("const _0x1b8fbd='", "',", secure_js)
+		end
+		local s = require 'fmd.crypto'.DecodeBase64(base64)
+		x.ParseHTML(s)
+		x.XPathStringAll('json(*)()', TASK.PageLinks)
+	end
+
 	return true
 end
 
