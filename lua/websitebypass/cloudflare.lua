@@ -343,16 +343,20 @@ function _m.bypass(self, METHOD, URL)
 	webdriver_exe = 'python'
 	webdriver_script = [[lua\websitebypass\cloudflare.py]]
 	flaresolverr = false
-	-- use FlareSolverr url to check if it running
-	local flareSolverr_url = 'http://' .. webdriver_ip .. ':' .. webdriver_port .. '/'
-	HTTP.GET(flareSolverr_url)
-	if (HTTP.ResultCode == 200) then
-		local x = CreateTXQuery(HTTP.Document)
-		local requestJSON = x.XPath('json(*)')
-		if (x.XPathString('msg', requestJSON) == "FlareSolverr is ready!") then
-			print('WebsiteBypass[cloudflare]: FlareSolverr is running')
-			flaresolverr = true
+	if use_webdriver then
+		-- use FlareSolverr url to check if it running
+		local flareSolverr_url = 'http://' .. webdriver_ip .. ':' .. webdriver_port .. '/'
+		HTTP.GET(flareSolverr_url)
+		if (HTTP.ResultCode == 200) then
+			local x = CreateTXQuery(HTTP.Document)
+			local requestJSON = x.XPath('json(*)')
+			if (x.XPathString('msg', requestJSON) == "FlareSolverr is ready!") then
+				print('WebsiteBypass[cloudflare]: FlareSolverr is running')
+				flaresolverr = true
+			end
 		end
+	else
+		print("WebsiteBypass[cloudflare]: Webdriver isn't enabled")
 	end
 
 	if HTTP.RetryCount > maxretry then 
