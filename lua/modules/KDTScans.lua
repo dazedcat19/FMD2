@@ -20,6 +20,17 @@ end
 
 local Template = require 'templates.MangaThemesia'
 
+local function url_decode(str)
+    -- Optional: Convert '+' to ' ' (common in some URL query strings)
+    str = str:gsub("+", " ")
+    
+    -- Find '%' followed by two hex digits (%x%x)
+    -- The parenthesis around %x%x creates a 'capture' passed to the function
+    return (str:gsub("%%(%x%x)", function(hex)
+        return string.char(tonumber(hex, 16))
+    end))
+end
+
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
@@ -52,6 +63,9 @@ function GetPageNumber()
 		local s = require 'fmd.crypto'.DecodeBase64(base64)
 		x.ParseHTML(s)
 		x.XPathStringAll('json(*)()', TASK.PageLinks)
+		for i = 0, TASK.PageLinks.Count - 1 do
+			TASK.PageLinks[i] = url_decode(TASK.PageLinks[i])
+		end 
 	end
 
 	return true
