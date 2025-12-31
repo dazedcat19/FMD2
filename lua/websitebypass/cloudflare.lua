@@ -166,6 +166,10 @@ function _m.solveWithWebDriver(self, url)
 	local cmd_ = {webdriver_exe}
 	table.insert(cmd_, webdriver_script)
 	table.insert(cmd_, rooturl)
+	table.insert(cmd_, "--flaresolverr-ip")
+	table.insert(cmd_, webdriver_ip)
+	table.insert(cmd_, "--flaresolverr-port")
+	table.insert(cmd_, webdriver_port)
 
 	if webdriver_testing then
 		table.insert(cmd_, "--testing")
@@ -270,7 +274,9 @@ function load_config()
 		local config_table = {
 		use_webdriver = false,
 		testing = false,
-		debug = false
+		debug = false,
+		flaresolverr_ip = "localhost",
+		flaresolverr_port = 8191
 		}
 
 		local json_string = json.encode(config_table)
@@ -306,6 +312,16 @@ function load_config()
 		use_webdriver = config_table['use_webdriver']
 		webdriver_testing = config_table['testing']
 		webdriver_debug = config_table['debug']
+		if config_table['flaresolverr_ip'] ~= nil then
+			webdriver_ip = config_table['flaresolverr_ip']
+		else
+			webdriver_ip = "localhost"
+		end
+		if config_table['flaresolverr_port'] ~= nil then
+			webdriver_port = config_table['flaresolverr_port']
+		else
+			webdriver_port = 8191
+		end
 	end
 end
 
@@ -327,15 +343,20 @@ function _m.bypass(self, METHOD, URL)
 	webdriver_exe = 'python'
 	webdriver_script = [[lua\websitebypass\cloudflare.py]]
 	flaresolverr = false
-	-- use FlareSolverr url to check if it running
-	HTTP.GET('http://127.0.0.1:8191/')
-	if (HTTP.ResultCode == 200) then
-		local x = CreateTXQuery(HTTP.Document)
-		local requestJSON = x.XPath('json(*)')
-		if (x.XPathString('msg', requestJSON) == "FlareSolverr is ready!") then
-			print('WebsiteBypass[cloudflare]: FlareSolverr is running')
-			flaresolverr = true
+	if use_webdriver then
+		-- use FlareSolverr url to check if it running
+		local flareSolverr_url = 'http://' .. webdriver_ip .. ':' .. webdriver_port .. '/'
+		HTTP.GET(flareSolverr_url)
+		if (HTTP.ResultCode == 200) then
+			local x = CreateTXQuery(HTTP.Document)
+			local requestJSON = x.XPath('json(*)')
+			if (x.XPathString('msg', requestJSON) == "FlareSolverr is ready!") then
+				print('WebsiteBypass[cloudflare]: FlareSolverr is running')
+				flaresolverr = true
+			end
 		end
+	else
+		print("WebsiteBypass[cloudflare]: Webdriver isn't enabled")
 	end
 
 	if HTTP.RetryCount > maxretry then 
