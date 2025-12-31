@@ -6,14 +6,17 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, StdCtrls,
-  ComCtrls, WebsiteModules, LuaMangaInfo, LuaHTTPSend, LuaWebsiteModuleHandler,
-  LuaWebsiteModules, uData, LuaUtils, uDownloadsManager, LuaDownloadTask,
-  httpsendthread,
+  ComCtrls, Buttons, WebsiteModules, LuaMangaInfo, LuaHTTPSend,
+  LuaWebsiteModuleHandler, LuaWebsiteModules, uData, LuaUtils,
+  uDownloadsManager, LuaDownloadTask, httpsendthread,
   {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 type
   { TFormCheckModules }
   TFormCheckModules = class(TForm)
+    btnCheckAll: TBitBtn;
+    btnCheckNone: TBitBtn;
+    btnCheckReverse: TBitBtn;
     btnCheckIntegrity: TButton;
     btnRefreshModules: TButton;
     lvModules: TListView;
@@ -24,6 +27,9 @@ type
     Splitter1: TSplitter;
     procedure btnCheckIntegrityClick(Sender: TObject);
     procedure btnRefreshModulesClick(Sender: TObject);
+    procedure btnCheckAllClick(Sender: TObject);
+    procedure btnCheckNoneClick(Sender: TObject);
+    procedure btnCheckReverseClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -229,6 +235,7 @@ begin
   Item.SubItems.Add(BoolToStr(ACheckChapter <> '', 'Yes', 'No'));
   Item.SubItems.Add('Not Checked');
   Item.SubItems.Add('');
+  Item.Checked:= True;
 
   // Store check info
   CheckInfo := TModuleCheckInfo.Create;
@@ -250,6 +257,36 @@ end;
 procedure TFormCheckModules.btnCheckIntegrityClick(Sender: TObject);
 begin
   CheckModuleIntegrity;
+end;
+
+procedure TFormCheckModules.btnCheckAllClick(Sender: TObject);
+var
+  i: Integer;
+begin
+  for i := 0 to lvModules.Items.Count - 1 do
+  begin
+    lvModules.Items[i].Checked := True;
+  end;
+end;
+
+procedure TFormCheckModules.btnCheckNoneClick(Sender: TObject);
+var
+  i: Integer;
+begin
+  for i := 0 to lvModules.Items.Count - 1 do
+  begin
+    lvModules.Items[i].Checked := False;
+  end;
+end;
+
+procedure TFormCheckModules.btnCheckReverseClick(Sender: TObject);
+var
+  i: Integer;
+begin
+  for i := 0 to lvModules.Items.Count - 1 do
+  begin
+    lvModules.Items[i].Checked := not lvModules.Items[i].Checked;
+  end;
 end;
 
 procedure TFormCheckModules.CheckModuleIntegrity;
@@ -279,6 +316,7 @@ begin
     for i := 0 to lvModules.Items.Count - 1 do
     begin
       Item := lvModules.Items[i];
+      if not Item.Checked then Continue;
       CheckInfo := TModuleCheckInfo(Item.Data);
 
       if CheckInfo = nil then Continue;
