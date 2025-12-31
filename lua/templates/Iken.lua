@@ -68,13 +68,13 @@ function _M.GetInfo()
 
 	local json_root_key
 	if New then
-		MANGAINFO.Summary = x.XPathString('(//div[contains(@class, "xl:leading-relaxed")])[1]/string-join(p[not(contains(., "Alt title"))], "\r\n")')
 		local w = '{"series"' .. x.XPathString('//script[contains(., "totalChapterCount")]/substring-before(substring-after(., "{""series"""), "false}]}],")') .. 'false}'
-		if w == '' then w = '{"series"' .. x.XPathString('//script[contains(., "totalChapterCount")]/substring-before(substring-after(., "{""series"""), "],[")') end
+		if w == '{"series"false}' then w = '{"series"' .. x.XPathString('//script[contains(., "alternativeTitles")]/substring-before(substring-after(., "{""series"""), "]}]")') end
 		x.ParseHTML(w)
+		MANGAINFO.Summary = x.XPathString('json(*).synopsisData.cleanText')
 		json_root_key = 'series'
 	else
-		MANGAINFO.Summary = x.XPathString('//meta[@name="description"]/@content'):gsub('</p><p>', '\r\n')
+		MANGAINFO.Summary = x.XPathString('string-join(//div[@itemprop="description"]//p, "\r\n")')
 		local w = '{"post"' .. x.XPathString('//script[contains(., "postId")]/substring-before(substring-after(., "{""post"""), "}]]")') .. '}'
 		x.ParseHTML(w)
 		json_root_key = 'post'
@@ -117,7 +117,6 @@ function _M.GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
 function _M.GetPageNumber()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
@@ -125,20 +124,45 @@ function _M.GetPageNumber()
 
 	local s = HTTP.Document.ToString():gsub('\\"', '"'):gsub('"%]%)</script><script>self%.__next_f%.push%(%[1,"', '')
 	local x = CreateTXQuery(s)
-	local json_extraction
-	local prefix = ''
-	local suffix = ''
 
+	local json
 	if New then
-		json_extraction = '//script[contains(., "API_Response")]/substring-before(substring-after(., "API_Response"":"), "}],[")'
+		local raw = x.XPathString('//script[contains(., "API_Response")]/substring-after(., "API_Response"":")')
+		json = raw:match('^(.-)%}%],"%$') or raw:match('^(.-)%}%],%[')
 	else
-		json_extraction = '//script[contains(., "images")]/substring-before(substring-after(., """chapter"""), "],")'
-		prefix = '{"chapter"'
-		suffix = ']}}'
+		local extracted = x.XPathString('//script[contains(., "images")]/substring-before(substring-after(., """chapter"""), "],")')
+		json = '{"chapter"' .. extracted .. ']}}'
 	end
 
-	x.ParseHTML(prefix .. x.XPathString(json_extraction) .. suffix)
-	x.XPathStringAll('json(*).chapter.images().url', TASK.PageLinks)
+	x.ParseHTML(json)
+	local images = {}
+	local has_order = false
+
+	for v in x.XPath('json(*).chapter.images()').Get() do
+		local url = v.GetProperty('url').ToString():gsub('file/.-/', '')
+		local order_prop = v.GetProperty('order')
+
+		local order = nil
+		if order_prop then
+			order = tonumber(order_prop.ToString())
+			if order ~= nil then
+				has_order = true
+			end
+		end
+
+		images[#images + 1] = {
+			url = url,
+			order = order
+		}
+	end
+
+	if has_order then
+		table.sort(images, function(a, b) return a.order < b.order end)
+	end
+
+	for _, img in ipairs(images) do
+		TASK.PageLinks.Add(img.url)
+	end
 
 	return true
 end
