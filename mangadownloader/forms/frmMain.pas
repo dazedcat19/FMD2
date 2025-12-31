@@ -26,7 +26,7 @@ uses
   frmAccountSet, frmWebsiteOptionCustom, frmCustomColor, frmLogger, frmTransferFavorites,
   frmLuaModulesUpdater, CheckUpdate, DBDataProcess, uDarkStyleParams, uWin32WidgetSetDark,
   SimpleTranslator, httpsendthread, DateUtils, SimpleException, uCustomControls,
-  uCustomControlsMultiLog, ImageMagickManager;
+  uCustomControlsMultiLog, ImageMagickManager, frmCheckModules;
 
 type
 
@@ -212,6 +212,7 @@ type
     seOptionRetryFailedTask: TSpinEdit;
     seJPEGQuality: TSpinEdit;
     spThumb: TSplitter;
+    tsWebsiteCheckModules: TTabSheet;
     tbWebsitesSelectAll: TToolButton;
     tbWebsitesUnselectAll: TToolButton;
     tsAccounts: TTabSheet;
@@ -1339,6 +1340,9 @@ begin
 
   LuaModulesUpdaterForm := TLuaModulesUpdaterForm.Create(Self);
   EmbedForm(LuaModulesUpdaterForm, tsWebsiteModules);
+
+  FormCheckModules := TFormCheckModules.Create(Self);
+  EmbedForm(FormCheckModules, tsWebsiteCheckModules);
 
   // init vt
   vtDownload.NodeDataSize := SizeOf(TDownloadInfo);

@@ -1,15 +1,15 @@
 object AccountManagerForm: TAccountManagerForm
-  Left = 0
+  Left = 550
   Height = 316
-  Top = 0
+  Top = 160
   Width = 392
   ActiveControl = vtAccountList
   BorderStyle = bsNone
   ClientHeight = 316
   ClientWidth = 392
+  LCLVersion = '4.4.0.0'
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  LCLVersion = '3.8.0.0'
   object pnBtContainer: TPanel
     Left = 307
     Height = 316
@@ -69,8 +69,8 @@ object AccountManagerForm: TAccountManagerForm
         000000000000000000000000000000000000000000000000000001272D000175
         860055555500555555000101E42B0101E09D0101D23F0101B600
       }
-      OnClick = btEditClick
       TabOrder = 0
+      OnClick = btEditClick
     end
     object btRefresh: TBitBtn
       Left = 0
@@ -116,8 +116,8 @@ object AccountManagerForm: TAccountManagerForm
         FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
         FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00
       }
-      OnClick = btRefreshClick
       TabOrder = 1
+      OnClick = btRefreshClick
     end
   end
   object vtAccountList: TVirtualStringTree
@@ -130,7 +130,7 @@ object AccountManagerForm: TAccountManagerForm
     Colors.FocusedSelectionBorderColor = clHotLight
     Colors.SelectionRectangleBorderColor = clHotLight
     Colors.UnfocusedSelectionBorderColor = clBtnShadow
-    Header.AutoSizeIndex = 0
+    Header.AutoSizeIndex = -1
     Header.Columns = <    
       item
         MinWidth = 25
@@ -149,10 +149,11 @@ object AccountManagerForm: TAccountManagerForm
       item
         Position = 3
         Text = 'Status'
+        Width = 174
       end>
     Header.DefaultHeight = 17
     Header.Height = 23
-    Header.Options = [hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible]
+    Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible]
     NodeDataSize = 1
     TabOrder = 0
     TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScrollOnExpand, toAutoTristateTracking, toAutoDeleteMovedNodes, toDisableAutoscrollOnFocus]

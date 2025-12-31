@@ -1,0 +1,89 @@
+object FormCheckModules: TFormCheckModules
+  Left = 965
+  Height = 600
+  Top = 206
+  Width = 900
+  Caption = 'Check Modules'
+  ClientHeight = 600
+  ClientWidth = 900
+  LCLVersion = '4.4.0.0'
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnShow = FormShow
+  object pnlTop: TPanel
+    Left = 0
+    Height = 50
+    Top = 0
+    Width = 900
+    Align = alTop
+    BevelOuter = bvNone
+    ClientHeight = 50
+    ClientWidth = 900
+    TabOrder = 0
+    object btnRefreshModules: TButton
+      Left = 8
+      Height = 25
+      Top = 12
+      Width = 150
+      Caption = 'Refresh Module List'
+      TabOrder = 0
+      OnClick = btnRefreshModulesClick
+    end
+    object btnCheckIntegrity: TButton
+      Left = 168
+      Height = 25
+      Top = 12
+      Width = 180
+      Caption = 'Check Modules Integrity'
+      TabOrder = 1
+      OnClick = btnCheckIntegrityClick
+    end
+  end
+  object lvModules: TListView
+    Left = 0
+    Height = 350
+    Top = 50
+    Width = 900
+    Align = alClient
+    AutoWidthLastColumn = True
+    Columns = <>
+    TabOrder = 1
+    ViewStyle = vsReport
+  end
+  object Splitter1: TSplitter
+    Cursor = crVSplit
+    Left = 0
+    Height = 5
+    Top = 400
+    Width = 900
+    Align = alBottom
+    ResizeAnchor = akBottom
+  end
+  object Memo1: TMemo
+    Left = 0
+    Height = 174
+    Top = 405
+    Width = 900
+    Align = alBottom
+    ScrollBars = ssVertical
+    TabOrder = 2
+  end
+  object pnlBottom: TPanel
+    Left = 0
+    Height = 21
+    Top = 579
+    Width = 900
+    Align = alBottom
+    BevelOuter = bvNone
+    ClientHeight = 21
+    ClientWidth = 900
+    TabOrder = 3
+    object StatusBar: TStatusBar
+      Left = 0
+      Height = 23
+      Top = -2
+      Width = 900
+      Panels = <>
+    end
+  end
+end
