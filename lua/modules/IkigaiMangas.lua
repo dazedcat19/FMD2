@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'ds42a85566244b7e836679491ce679e8'
 	m.Name                     = 'Ikigai Mangas'
-	m.RootURL                  = 'https://viralikigai.nzvetclinics.one'
+	m.RootURL                  = 'https://viralikigai.veterinariasenperu.one'
 	m.Category                 = 'Spanish'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
@@ -66,6 +66,7 @@ function GetInfo()
 	if summary ~= 'null' then MANGAINFO.Summary = summary end
 
 	local page = 1
+	local pages = nil
 	while true do
 		if not HTTP.GET(u .. 'chapters?page=' .. tostring(page)) then return net_problem end
 		local x = CreateTXQuery(HTTP.Document)
@@ -78,8 +79,10 @@ function GetInfo()
 			MANGAINFO.ChapterLinks.Add(x.XPathString('id', v))
 			MANGAINFO.ChapterNames.Add('Capítulo ' .. chapter .. title)
 		end
+		if not pages then
+			pages = tonumber(x.XPathString('json(*).meta.last_page')) or 1
+		end
 		page = page + 1
-		local pages = tonumber(x.XPathString('json(*).meta.last_page')) or 1
 		if page > pages then
 			break
 		end
