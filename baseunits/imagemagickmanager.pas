@@ -31,7 +31,7 @@ type
     function IdentifyCommand(const QueryCommand: String): TStringList;
     procedure CacheSupportedFormats;
     procedure CacheCompressionTypes;
-    function ExecuteMagickCommand(const Params: array of String; TimeoutMS: Cardinal = 300000): Boolean;
+    function ExecuteMagickCommand(const Params: array of String; TimeoutMS: Cardinal = 600000): Boolean;
     function StreamToString(Stream: TMemoryStream): String;
     constructor CreatePrivate;
 
@@ -501,7 +501,7 @@ begin
   end;
 end;
 
-function TImageMagickManager.ExecuteMagickCommand(const Params: array of String; TimeoutMS: Cardinal = 300000): Boolean;
+function TImageMagickManager.ExecuteMagickCommand(const Params: array of String; TimeoutMS: Cardinal = 600000): Boolean;
 var
   Process: TProcess;
   Param, ErrorStreamOutput: String;
@@ -667,6 +667,20 @@ begin
     OutputFile := QuoteStr((OutputDir + '%[filename:name].' + FSaveAs), '"');
     OutputDir := QuoteStr(ExcludeTrailingPathDelimiter(OutputDir), '"');
 
+    // if FMogrify then:
+    // 'mogrify' command first
+    // 'path' command for OutputDir
+    // input directory to mogrify
+
+    // else:
+    // input file list first
+    // 'adjoin' command to treat each file in list as a seperate command
+    // 'set filename:name' command to set output file name same as input
+    // output file with directory and file name
+
+    // 'quality' command to set output image quality
+    // 'compress' command for compression type
+    // 'format' command to set output file format
     Result := ExecuteMagickCommand([
       IFThen(FMogrify, 'mogrify', InputFile),
       '-quality', GetQualityString,
