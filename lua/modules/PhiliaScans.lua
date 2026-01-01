@@ -19,8 +19,8 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-DirectoryPagination = '/page/'
-DirectoryParameters = '/?post_type=wp-manga&sort=recently_added'
+local DirectoryPagination = '/page/'
+local DirectoryParameters = '/?post_type=wp-manga&sort=recently_added'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -50,15 +50,14 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local x, v = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
+	local x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Title     = x.XPathString('//div[@class="serie-info"]/h1')
 	MANGAINFO.AltTitles = x.XPathString('//div[@class="serie-info"]/h6')
-	MANGAINFO.CoverLink = x.XPathString('//div[@class="main-cover"]/img/@src')
+	MANGAINFO.CoverLink = x.XPathString('//div[@class="main-cover"]/img/@data-src')
 	MANGAINFO.Authors   = x.XPathString('//div[@class="stat-details" and ./span="Author"]/span[2]')
 	MANGAINFO.Artists   = x.XPathString('//div[@class="stat-details" and ./span="Artist"]/span[2]')
 	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="genre-list"]//a')
@@ -80,7 +79,7 @@ function GetPageNumber()
 
 	if not HTTP.GET(u) then return false end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('//div[@id="ch-images"]//img/@src', TASK.PageLinks)
+	CreateTXQuery(HTTP.Document).XPathStringAll('//div[@id="ch-images"]//img/@data-src', TASK.PageLinks)
 
 	return true
 end
