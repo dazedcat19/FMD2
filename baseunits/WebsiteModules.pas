@@ -149,6 +149,8 @@ type
     OnAfterImageSaved: TOnAfterImageSaved;
     OnLogin: TOnLogin;
     OnAccountState: TOnAccountState;
+    Checksite: String;
+    Checkchapter: String;
     constructor Create;
     destructor Destroy; override;
   public

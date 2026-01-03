@@ -1,17 +1,17 @@
 object LuaModulesUpdaterForm: TLuaModulesUpdaterForm
-  Left = 240
-  Height = 394
-  Top = 100
-  Width = 580
+  Left = -90
+  Height = 837
+  Top = 251
+  Width = 1600
   ChildSizing.LeftRightSpacing = 4
   ChildSizing.TopBottomSpacing = 4
   ChildSizing.HorizontalSpacing = 2
   ChildSizing.VerticalSpacing = 6
-  ClientHeight = 394
-  ClientWidth = 580
+  ClientHeight = 837
+  ClientWidth = 1600
+  LCLVersion = '4.4.0.0'
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  LCLVersion = '3.8.0.0'
   object vtLuaModulesRepos: TVirtualStringTree
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = btCheckUpdate
@@ -21,11 +21,11 @@ object LuaModulesUpdaterForm: TLuaModulesUpdaterForm
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
     Left = 4
-    Height = 354
+    Height = 797
     Top = 36
-    Width = 572
+    Width = 1592
     Anchors = [akTop, akLeft, akRight, akBottom]
-    Header.AutoSizeIndex = 0
+    Header.AutoSizeIndex = 2
     Header.Columns = <    
       item
         Position = 0
@@ -40,11 +40,11 @@ object LuaModulesUpdaterForm: TLuaModulesUpdaterForm
       item
         Position = 2
         Text = 'Last message'
-        Width = 250
+        Width = 1328
       end>
     Header.DefaultHeight = 17
     Header.Height = 23
-    Header.Options = [hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible]
+    Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible]
     HintMode = hmHint
     Images = imStates
     ParentShowHint = False
@@ -104,8 +104,8 @@ object LuaModulesUpdaterForm: TLuaModulesUpdaterForm
       FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
       FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00
     }
-    OnClick = btCheckUpdateClick
     TabOrder = 0
+    OnClick = btCheckUpdateClick
   end
   object btCheckUpdateTerminate: TSpeedButton
     AnchorSideLeft.Control = btCheckUpdate
@@ -116,7 +116,7 @@ object LuaModulesUpdaterForm: TLuaModulesUpdaterForm
     Left = 125
     Height = 26
     Top = 4
-    Width = 20
+    Width = 26
     Anchors = [akTop, akLeft, akBottom]
     AutoSize = True
     Glyph.Data = {
@@ -162,7 +162,7 @@ object LuaModulesUpdaterForm: TLuaModulesUpdaterForm
     AnchorSideLeft.Side = asrBottom
     AnchorSideTop.Control = btCheckUpdate
     AnchorSideTop.Side = asrCenter
-    Left = 155
+    Left = 161
     Height = 19
     Top = 8
     Width = 133
@@ -176,7 +176,7 @@ object LuaModulesUpdaterForm: TLuaModulesUpdaterForm
     AnchorSideLeft.Control = ckShowUpdateWarning
     AnchorSideLeft.Side = asrBottom
     AnchorSideTop.Control = ckShowUpdateWarning
-    Left = 290
+    Left = 296
     Height = 19
     Top = 8
     Width = 80
