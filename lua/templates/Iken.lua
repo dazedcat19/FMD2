@@ -63,7 +63,7 @@ function _M.GetInfo()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	local s = HTTP.Document.ToString():gsub('\\"', '"'):gsub('\\\\"', ''):gsub('\\\\', '\\'):gsub('"%]%)</script><script>self%.__next_f%.push%(%[1,"', '')
+	local s = HTTP.Document.ToString():gsub('\\"', '"'):gsub('\\\\', '\\'):gsub('"%]%)</script><script>self%.__next_f%.push%(%[1,"', '')
 	local x = CreateTXQuery(s)
 
 	local json_root_key
@@ -117,18 +117,19 @@ function _M.GetInfo()
 	return no_error
 end
 
+-- Get the page count for the current chapter.
 function _M.GetPageNumber()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return false end
 
-	local s = HTTP.Document.ToString():gsub('\\"', '"'):gsub('"%]%)</script><script>self%.__next_f%.push%(%[1,"', '')
+	local s = HTTP.Document.ToString():gsub('\\"', '"'):gsub('\\\\', '\\'):gsub('"%]%)</script><script>self%.__next_f%.push%(%[1,"', '')
 	local x = CreateTXQuery(s)
 
 	local json
 	if New then
 		local raw = x.XPathString('//script[contains(., "API_Response")]/substring-after(., "API_Response"":")')
-		json = raw:match('^(.-)%}%],"%$') or raw:match('^(.-)%}%],%[')
+		json = raw:match('^(.-)%}%],%[') or raw:match('^(.-)%}%],"%$')
 	else
 		local extracted = x.XPathString('//script[contains(., "images")]/substring-before(substring-after(., """chapter"""), "],")')
 		json = '{"chapter"' .. extracted .. ']}}'
@@ -139,7 +140,7 @@ function _M.GetPageNumber()
 	local has_order = false
 
 	for v in x.XPath('json(*).chapter.images()').Get() do
-		local url = v.GetProperty('url').ToString():gsub('file/.-/', '')
+		local url = v.GetProperty('url').ToString()
 		local order_prop = v.GetProperty('order')
 
 		local order = nil

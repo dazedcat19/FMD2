@@ -61,5 +61,9 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
+	for i = 0, TASK.PageLinks.Count - 1 do
+		TASK.PageLinks[i] = TASK.PageLinks[i]:gsub('file/qiscans/', '')
+	end
+
 	return true
 end
