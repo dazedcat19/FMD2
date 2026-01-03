@@ -598,7 +598,7 @@
 | Weeb Central | [![https://weebcentral.com](https://img.shields.io/website?url=https://weebcentral.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://weebcentral.com)](https://weebcentral.com) | OK | 20.11.2025 | - |
 | WeebDex | [![https://weebdex.org](https://img.shields.io/website?url=https://weebdex.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://weebdex.org)](https://weebdex.org) | OK | 04.11.2025 | - |
 | WeiboManhua | [![http://manhua.weibo.com](https://img.shields.io/website?url=http://manhua.weibo.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://manhua.weibo.com)](http://manhua.weibo.com) | - | - | - |
-| WeLoMa | [![https://weloma.art](https://img.shields.io/website?url=https://weloma.art%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://weloma.art)](https://weloma.art) | OK | 18.01.2025 | - |
+| WeLoMa | [![https://weloma.art](https://img.shields.io/website?url=https://weloma.art%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://weloma.art)](https://weloma.art) | OK | 03.01.2026 | - |
 | WestManga | [![https://westmanga.me](https://img.shields.io/website?url=https://westmanga.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://westmanga.me)](https://westmanga.me) | OK | 18.10.2025 | - |
 | WhimSubs | [![https://whimsubs.xyz](https://img.shields.io/website?url=https://whimsubs.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://whimsubs.xyz)](https://whimsubs.xyz) | - | - | - |
 | WhiteCloudPavilion | [![https://www.whitecloudpavilion.com](https://img.shields.io/website?url=https://www.whitecloudpavilion.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.whitecloudpavilion.com)](https://www.whitecloudpavilion.com) | - | - | - |
