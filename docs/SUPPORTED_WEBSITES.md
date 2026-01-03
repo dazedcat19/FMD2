@@ -172,7 +172,7 @@
 | KissMangaIN | [![https://kissmanga.in](https://img.shields.io/website?url=https://kissmanga.in%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kissmanga.in)](https://kissmanga.in) | - | - | - |
 | KKJ | [![https://kkjscans.co](https://img.shields.io/website?url=https://kkjscans.co%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kkjscans.co)](https://kkjscans.co) | - | - | - |
 | KlikManga | [![https://klikmanga.com](https://img.shields.io/website?url=https://klikmanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://klikmanga.com)](https://klikmanga.com) | OK | 06.02.2025 | - |
-| KLManga | [![https://klz9.com](https://img.shields.io/website?url=https://klz9.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://klz9.com)](https://klz9.com) | OK | 18.01.2025 | - |
+| KLManga | [![https://klz9.com](https://img.shields.io/website?url=https://klz9.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://klz9.com)](https://klz9.com) | OK | 03.01.2026 | - |
 | KomikAV | [![https://komikav.com](https://img.shields.io/website?url=https://komikav.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikav.com)](https://komikav.com) | - | - | - |
 | KomikCast | [![https://komikcast.pics](https://img.shields.io/website?url=https://komikcast.pics%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikcast.pics)](https://komikcast.pics) | OK | 10.10.2025 | - |
 | KomikGO | [![https://komikgo.xyz](https://img.shields.io/website?url=https://komikgo.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikgo.xyz)](https://komikgo.xyz) | - | - | - |
