@@ -11,13 +11,25 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+
+	local slang = require 'fmd.env'.SelectedLanguage
+	local translations = {
+		['en'] = {
+			['force_high'] = 'Force high quality chapter images'
+		},
+		['id_ID'] = {
+			['force_high'] = 'Paksa gambar bab kualitas tinggi'
+		}
+	}
+	local lang = translations[slang] or translations.en
+	m.AddOptionCheckBox('force_high', lang.force_high, false)
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-DirectoryPagination = '/series?page='
+local DirectoryPagination = '/series?page='
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -25,12 +37,11 @@ DirectoryPagination = '/series?page='
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local v, x = nil
 	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
+	local x = CreateTXQuery(HTTP.Document)
 	if x.XPath('//div[contains(@class, "md:grid-cols-5")]/a').Count == 0 then return no_error end
 	for v in x.XPath('//div[contains(@class, "md:grid-cols-5")]/a').Get() do
 		LINKS.Add(v.GetAttribute('href'):gsub('-(%w+)$', '-'))
@@ -41,14 +52,13 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
-	local v, x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
+	local x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Title     = x.XPathString('//span[@class="text-xl font-bold"]')
 	MANGAINFO.CoverLink = x.XPathString('(//img[@alt="poster"])[1]/@src')
 	MANGAINFO.Authors   = x.XPathString('//h3[contains(., "Author")]/following-sibling::h3')
@@ -78,15 +88,32 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	local i, img = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
-	if not HTTP.GET(u) then return net_problem end
+	if not HTTP.GET(u) then return false end
 
-	img = GetBetween("push(", "])", CreateTXQuery(HTTP.Document).XPathString('(//script[contains(., "published_at")])[last()]'):gsub('\\"', '"')) .. ']'
-	for i in img:gmatch('"url":"(.-)"') do
-		TASK.PageLinks.Add(i)
+	local s = HTTP.Document.ToString():gsub('\\"', '"')
+	local x = CreateTXQuery(s)
+	local json = x.XPathString('(//script[contains(., "published_at")])[last()]/substring-before(substring-after(., """chapter"":"), "}],[")')
+
+	if MODULE.GetOption('force_high') then
+		local key = URL
+		local format_to_try = MODULE.Storage[key]
+
+		local replacement_format
+		if format_to_try == 'webp' then
+			replacement_format = '/%1.webp'
+			MODULE.Storage[key] = nil
+		else
+			replacement_format = '/%1.jpg'
+			MODULE.Storage[key] = 'webp'
+		end
+
+		json = json:gsub('/conversions/([%w%-]+)-optimized%.webp', replacement_format)
 	end
 
-	return no_error
+	x.ParseHTML(json)
+	x.XPathStringAll('json(*).pages().url', TASK.PageLinks)
+
+	return true
 end
