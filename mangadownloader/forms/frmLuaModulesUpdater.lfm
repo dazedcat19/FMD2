@@ -25,7 +25,7 @@ object LuaModulesUpdaterForm: TLuaModulesUpdaterForm
     Top = 36
     Width = 572
     Anchors = [akTop, akLeft, akRight, akBottom]
-    Header.AutoSizeIndex = 0
+    Header.AutoSizeIndex = 2
     Header.Columns = <    
       item
         Position = 0
@@ -44,7 +44,7 @@ object LuaModulesUpdaterForm: TLuaModulesUpdaterForm
       end>
     Header.DefaultHeight = 17
     Header.Height = 23
-    Header.Options = [hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible]
+    Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible]
     HintMode = hmHint
     Images = imStates
     ParentShowHint = False

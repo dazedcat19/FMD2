@@ -560,6 +560,8 @@ begin
             Module.OnLogin := @DoLogin;
           if OnAccountState <> '' then
             Module.OnAccountState := @DoAccountState;
+          Module.Checksite := LowerCase(Module.Checksite);
+          Module.Checkchapter := LowerCase(Module.Checkchapter);
         end;
       finally
         Modules.Unlock;
@@ -1002,6 +1004,8 @@ begin
     luaClassAddStringProperty(L, MetaTable, 'OnAccountState', @OnAccountState);
     luaClassAddStringProperty(L, MetaTable, 'LastUpdated', @LastUpdated);
     luaClassAddIntegerProperty(L, MetaTable, 'CurrentDirectoryIndex', @Module.CurrentDirectoryIndex);
+	luaClassAddStringProperty(L, MetaTable, 'Checksite', @Module.Checksite);
+	luaClassAddStringProperty(L, MetaTable, 'Checkchapter', @Module.Checkchapter);
 
     luaClassAddProperty(L, MetaTable, UserData, 'TotalDirectory', @lua_gettotaldirectory, @lua_settotaldirectory);
     luaClassAddProperty(L, MetaTable, UserData, 'AccountSupport', @lua_getaccountsupport, @lua_setaccountsupport);

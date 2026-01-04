@@ -55,7 +55,7 @@
           <Linking>
             <Debugging>
               <GenerateDebugInfo Value="False"/>
-              <DebugInfoType Value="dsStabs"/>
+              <DebugInfoType Value="dsDwarf3"/>
               <StripSymbols Value="True"/>
               <UseExternalDbgSyms Value="True"/>
             </Debugging>
@@ -330,6 +330,8 @@
       </Item7>
       <Item8>
         <PackageName Value="LCL"/>
+        <MaxVersion Major="3" Minor="8" Valid="True"/>
+        <MinVersion Major="3" Minor="8" Valid="True"/>
       </Item8>
       <Item9>
         <PackageName Value="virtualtreeview_package"/>
@@ -353,7 +355,7 @@
         <PackageName Value="metadarkstyledsgn"/>
       </Item15>
     </RequiredPackages>
-    <Units Count="29">
+    <Units Count="30">
       <Unit0>
         <Filename Value="md.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -523,6 +525,13 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="ImageMagickManager"/>
       </Unit28>
+      <Unit29>
+        <Filename Value="forms\frmCheckModules.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="FormCheckModules"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit29>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
