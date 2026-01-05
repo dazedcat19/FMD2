@@ -59,6 +59,7 @@ type
 
   TOnLogin = function(const AHTTP: THTTPSendThread; const AModule: TModuleContainer): Boolean;
   TOnAccountState = function(const AModule: TModuleContainer): Boolean;
+  TOnCheckSite = function(const AModule: TModuleContainer): Boolean;
 
   TModuleMethod = (MMGetDirectoryPageNumber, MMGetNameAndLink, MMGetInfo,
     MMTaskStart, MMGetPageNumber, MMGetImageURL, MMBeforeDownloadImage,
@@ -149,8 +150,7 @@ type
     OnAfterImageSaved: TOnAfterImageSaved;
     OnLogin: TOnLogin;
     OnAccountState: TOnAccountState;
-    Checksite: String;
-    Checkchapter: String;
+    OnCheckSite: TOnCheckSite;
     constructor Create;
     destructor Destroy; override;
   public

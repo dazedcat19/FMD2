@@ -344,6 +344,26 @@ type
     function Clone: TMangaInfo;
   end;
 
+  PMangaCheck = ^TMangaCheck;
+
+    { TMangaCheck }
+
+    TMangaCheck = class
+    public
+      MangaURL,
+      MangaTitle,
+      ChapterURL,
+      ChapterTitle: String;
+      Module: Pointer;
+      constructor Create;
+      destructor Destroy; override;
+      function ModuleID: String; inline;
+      function ModuleName: String; inline;
+      function ModuleFilename: String; inline;
+      procedure Clear;
+      function Clone: TMangaCheck;
+    end;
+
   PDownloadInfo = ^TDownloadInfo;
 
   { TDownloadInfo }
@@ -638,7 +658,8 @@ procedure SendLogException(const AText: String; AException: Exception); inline;
 implementation
 
 uses
-  frmMain, WebsiteModules, webp, DCPrijndael, DCPsha512, FPWriteJPEG;
+  frmMain, WebsiteModules, webp, DCPrijndael, DCPsha512, FPWriteJPEG,
+  LuaWebsiteModules;
 
 {$IFDEF WINDOWS}
 // thanks Leledumbo for the code
@@ -3010,6 +3031,50 @@ begin
   Result.NumChapter := NumChapter;
   Result.ChapterNames.AddStrings(ChapterNames);
   Result.ChapterLinks.AddStrings(ChapterLinks);
+  Result.Module := Module;
+end;
+
+{ TMangaCheck }
+
+constructor TMangaCheck.Create;
+begin
+  inherited Create;
+end;
+
+destructor TMangaCheck.Destroy;
+begin
+  inherited Destroy;
+end;
+function TMangaCheck.ModuleID: String;
+begin
+  Result := TModuleContainer(Module).ID;
+end;
+function TMangaCheck.ModuleName: String;
+begin
+  Result := TModuleContainer(Module).Name;
+end;
+function TMangaCheck.ModuleFilename: String;
+begin
+  Result := ExtractFileName(TLuaWebsiteModule(
+  TModuleContainer(Module).LuaModule).Container.FileName);
+end;
+
+procedure TMangaCheck.Clear;
+begin
+  MangaURL := '';
+  MangaTitle := '';
+  ChapterURL := '';
+  ChapterTitle := '';
+  Module := nil;
+end;
+
+function TMangaCheck.Clone: TMangaCheck;
+begin
+  Result := TMangaCheck.Create;
+  Result.MangaURL := MangaURL;
+  Result.MangaTitle := MangaTitle;
+  Result.ChapterURL := ChapterURL;
+  Result.ChapterTitle := ChapterTitle;
   Result.Module := Module;
 end;
 

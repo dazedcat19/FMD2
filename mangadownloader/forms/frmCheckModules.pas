@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, StdCtrls,
-  ComCtrls, Buttons, WebsiteModules, LuaMangaInfo, LuaHTTPSend,
+  ComCtrls, Buttons, WebsiteModules, LuaMangaInfo, LuaMangaCheck, LuaHTTPSend,
   LuaWebsiteModuleHandler, LuaWebsiteModules, uData, LuaUtils,
   uDownloadsManager, LuaDownloadTask, httpsendthread, StrUtils,
   {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
@@ -46,23 +46,12 @@ type
     procedure SelectModuleAll;
     procedure SelectModuleInverse;
     procedure SelectModuleNone;
-    procedure AddModuleToList(const AModuleName: string;
-      AModuleFilename: string; AModuleID: string; ACheckSite: string;
-      ACheckChapter: string);
-    function TestModuleFunction(const AModuleID: string; AFunctionType,
-      AURL: string; var AResultMsg: string): Boolean;
+    procedure AddModuleToList(const AMangaCheck: TMangaInformation);
+    function TestModuleFunction(const AMangaCheck: TMangaInformation;
+      AFunctionType: string; var AResultMsg: string): Boolean;
     procedure LogMessage(const AMsg: string);
     procedure ClearModulesList;
   public
-  end;
-
-type
-  TModuleCheckInfo = class
-    ModuleName: string;
-    ModuleFilename: string;
-    ModuleID: string;
-    CheckSite: string;
-    CheckChapter: string;
   end;
 
 var
@@ -163,7 +152,7 @@ var
   i: Integer;
 begin
   for i := 0 to FModulesList.Count - 1 do
-    TModuleCheckInfo(FModulesList[i]).Free;
+    TMangaInformation(FModulesList[i]).Free;
   FModulesList.Clear;
 end;
 
@@ -175,6 +164,8 @@ end;
 procedure TFormCheckModules.ScanLuaModules;
 var
   i: Integer;
+  L: TLuaWebsiteModuleHandler;
+  AMangaCheck: TMangaInformation;
   ModuleName: string;
   ModuleFilename: string;
   ModuleID: string;
@@ -200,37 +191,48 @@ begin
       begin
         for i := 0 to Modules.Count - 1 do
         begin
-          CheckSiteValue := '';
-          CheckChapterValue := '';
           HasCheckVars := False;
 
           with Modules.List[i] do
           begin
-            ModuleName := Name;
-            ModuleFilename := ExtractFileName(
-            TLuaWebsiteModule(LuaModule).Container.FileName);
-            ModuleID := ID;
-            // Try to read CheckSite and CheckChapter from the loaded module
-            if Checksite <> '' then
+            if Assigned(OnCheckSite) then
             begin
-              CheckSiteValue := Checksite;
-              HasCheckVars := True;
+              with TLuaWebsiteModule(LuaModule) do
+              try
+                L := GetLuaWebsiteModuleHandler(Modules.List[i]);
+                LuaPushNetStatus(L.Handle);
+                AMangaCheck := TMangaInformation.Create();
+                AMangaCheck.MangaCheck.Module:= Modules.List[i];
+                L.LoadObject('MANGACHECK', AMangaCheck.MangaCheck,
+                @luaMangaCheckAddMetaTable);
+                L.CallFunction(OnCheckSite);
+              except
+                on E: Exception do
+                LogMessage('LUA>DoGetInfo("' + ExtractFileName(Container.FileName)
+                + '")>,' + E.Message);
+              end;
+              with AMangaCheck.MangaCheck do
+              begin
+                //LogMessage(MangaURL);
+                //LogMessage(MangaTitle);
+                //LogMessage(ChapterURL);
+                //LogMessage(ChapterTitle);
+                //LogMessage(ModuleName);
+                //LogMessage(ModuleFilename);
+                //LogMessage(MangaURL);
+                // Try to read CheckSite and CheckChapter from the loaded module
+                if MangaURL <> '' then HasCheckVars := True;
+                if ChapterURL <> '' then HasCheckVars := True;
+                if HasCheckVars then
+                begin
+                  AddModuleToList(AMangaCheck);
+                  LogMessage('Found: ' + ModuleName +
+                ' (CheckSite: ' + BoolToStr(MangaURL <> '', 'Yes', 'No') +
+                ', CheckChapter: ' + BoolToStr(ChapterURL <> '', 'Yes',
+                'No') + ')');
+                end;
+              end;
             end;
-            if Checkchapter <> '' then
-            begin
-              CheckChapterValue  := Checkchapter;
-              HasCheckVars := True;
-            end;
-          end;
-
-          if HasCheckVars then
-          begin
-            AddModuleToList(ModuleName, ModuleFilename, ModuleID,
-            CheckSiteValue, CheckChapterValue);
-            LogMessage('Found: ' + ModuleName +
-            ' (CheckSite: ' + BoolToStr(CheckSiteValue <> '', 'Yes', 'No') +
-            ', CheckChapter: ' + BoolToStr(CheckChapterValue <> '', 'Yes',
-            'No') + ')');
           end;
         end;
       end;
@@ -244,32 +246,24 @@ begin
 
 end;
 
-procedure TFormCheckModules.AddModuleToList(const AModuleName: string;
-  AModuleFilename: string; AModuleID: string; ACheckSite: string;
-  ACheckChapter: string);
+procedure TFormCheckModules.AddModuleToList(const AMangaCheck:
+  TMangaInformation);
 var
   Item: TListItem;
-  CheckInfo: TModuleCheckInfo;
 begin
   Item := lvModules.Items.Add;
-  Item.Caption := AModuleName;
-  Item.SubItems.Add(AModuleFilename);
-  Item.SubItems.Add(BoolToStr(ACheckSite <> '', 'Yes', 'No'));
-  Item.SubItems.Add(BoolToStr(ACheckChapter <> '', 'Yes', 'No'));
+  Item.Caption := AMangaCheck.MangaCheck.ModuleName;
+  Item.SubItems.Add(AMangaCheck.MangaCheck.ModuleFilename);
+  Item.SubItems.Add(BoolToStr(AMangaCheck.MangaCheck.MangaURL <> '', 'Yes',
+  'No'));
+  Item.SubItems.Add(BoolToStr(AMangaCheck.MangaCheck.ChapterURL <> '', 'Yes',
+  'No'));
   Item.SubItems.Add('Not Checked');
   Item.SubItems.Add('');
   Item.Checked:= True;
+  FModulesList.Add(AMangaCheck);
 
-  // Store check info
-  CheckInfo := TModuleCheckInfo.Create;
-  CheckInfo.ModuleName := AModuleName;
-  CheckInfo.ModuleFilename := AModuleFilename;
-  CheckInfo.ModuleID := AModuleID;
-  CheckInfo.CheckSite := ACheckSite;
-  CheckInfo.CheckChapter := ACheckChapter;
-  FModulesList.Add(CheckInfo);
-
-  Item.Data := CheckInfo;
+  Item.Data := AMangaCheck;
 end;
 
 procedure TFormCheckModules.btnRefreshModulesClick(Sender: TObject);
@@ -331,11 +325,11 @@ procedure TFormCheckModules.CheckModuleIntegrity;
 var
   i: Integer;
   Item: TListItem;
-  CheckInfo: TModuleCheckInfo;
   FailCount, SuccessCount: Integer;
   ResultMsg, Details: string;
-  HasCheckSite, HasCheckChapter: Boolean;
+  HasMangaURL, HasChapterURL: Boolean;
   AllTestsPassed: Boolean;
+  AMangaCheck: TMangaInformation;
 begin
   if lvModules.Items.Count = 0 then
   begin
@@ -355,12 +349,12 @@ begin
     begin
       Item := lvModules.Items[i];
       if not Item.Checked then Continue;
-      CheckInfo := TModuleCheckInfo(Item.Data);
+      AMangaCheck :=  TMangaInformation(Item.Data);
 
-      if CheckInfo = nil then Continue;
+      if AMangaCheck = nil then Continue;
 
-      HasCheckSite := CheckInfo.CheckSite <> '';
-      HasCheckChapter := CheckInfo.CheckChapter <> '';
+      HasMangaURL := AMangaCheck.MangaCheck.MangaURL <> '';
+      HasChapterURL := AMangaCheck.MangaCheck.ChapterURL <> '';
       Details := '';
       AllTestsPassed := True;
 
@@ -368,15 +362,15 @@ begin
       Item.SubItems[4] := '';
       Application.ProcessMessages;
 
-      LogMessage('Checking module: ' + CheckInfo.ModuleName);
+      LogMessage('Checking module: ' + AMangaCheck.MangaCheck.ModuleName);
 
       try
         // Test GetInfo if CheckSite exists
-        if HasCheckSite then
+        if HasMangaURL then
         begin
-          LogMessage('  Testing GetInfo with: ' + CheckInfo.CheckSite);
-          if TestModuleFunction(CheckInfo.ModuleID, 'OnGetInfo',
-          CheckInfo.CheckSite, ResultMsg) then
+          LogMessage('  Testing GetInfo with: '
+          + AMangaCheck.MangaCheck.MangaURL);
+          if TestModuleFunction(AMangaCheck, 'OnGetInfo', ResultMsg) then
           begin
             Details := 'OnGetInfo: PASS';
             Inc(SuccessCount);
@@ -385,13 +379,13 @@ begin
               LogMessage('  OnGetInfo: PASS - ' + 'Success');
             end;
 
-            if CheckInfo.CheckChapter = '' then
+            if AMangaCheck.MangaCheck.ChapterURL = '' then
             begin
               LogMessage('  No chapter link was provide,' +
               ' will test first chapter link');
-              CheckInfo.CheckChapter :=  Copy(ResultMsg, 9,
+              AMangaCheck.MangaCheck.ChapterURL :=  Copy(ResultMsg, 9,
               Length(ResultMsg) - 9);
-              HasCheckChapter := True
+              HasChapterURL := True
             end;
           end
           else
@@ -404,14 +398,14 @@ begin
         end;
 
         // Test GetPageNumber if CheckChapter exists
-        if HasCheckChapter then
+        if HasChapterURL then
         begin
           if Details <> '' then
             Details := Details + ' | ';
 
-          LogMessage('  Testing GetPageNumber with: ' + CheckInfo.CheckChapter);
-          if TestModuleFunction(CheckInfo.ModuleID, 'OnGetPageNumber',
-          CheckInfo.CheckChapter, ResultMsg) then
+          LogMessage('  Testing GetPageNumber with: '
+          + AMangaCheck.MangaCheck.ChapterURL);
+          if TestModuleFunction(AMangaCheck, 'OnGetPageNumber', ResultMsg) then
           begin
             Details := Details + 'OnGetPageNumber: PASS';
             Inc(SuccessCount);
@@ -461,8 +455,8 @@ begin
   end;
 end;
 
-function TFormCheckModules.TestModuleFunction(const AModuleID: string;
-  AFunctionType, AURL: string; var AResultMsg: string): Boolean;
+function TFormCheckModules.TestModuleFunction(const AMangaCheck:
+  TMangaInformation; AFunctionType: string; var AResultMsg: string): Boolean;
 var
   L: TLuaWebsiteModuleHandler;
   ModuleCheck: TModuleContainer;
@@ -474,7 +468,7 @@ begin
   AResultMsg := 'Unknown error';
 
   ModuleCheck := nil;
-  ModuleCheck := Modules.LocateModule(AModuleID);
+  ModuleCheck := Modules.LocateModule(AMangaCheck.MangaCheck.ModuleID);
 
   if ModuleCheck = nil then
   begin
@@ -485,10 +479,10 @@ begin
   with TLuaWebsiteModule(ModuleCheck.LuaModule) do
   try
     L := GetLuaWebsiteModuleHandler(ModuleCheck);
-    luaPushStringGlobal(L.Handle, 'URL', AURL);
 
     if AFunctionType = 'OnGetInfo' then
     begin
+      luaPushStringGlobal(L.Handle, 'URL', AMangaCheck.MangaCheck.MangaURL);
       LuaPushNetStatus(L.Handle);
       // Create and initialize MangaInfo
       AMangaInfo := TMangaInformation.Create();
@@ -540,6 +534,7 @@ begin
     end;
     if AFunctionType = 'OnGetPageNumber' then
     begin
+      luaPushStringGlobal(L.Handle, 'URL', AMangaCheck.MangaCheck.ChapterURL);
       // Create and initialize ATaskThread
       ATaskContainer := TTaskContainer.Create;
       AHTTP := THTTPSendThread.Create();
