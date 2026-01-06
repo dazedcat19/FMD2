@@ -1,6 +1,5 @@
 {"version":1,"strings":[
 {"hash":196100051,"name":"tformcheckmodules.caption","sourcebytes":[67,104,101,99,107,32,77,111,100,117,108,101,115],"value":"Check Modules"},
-{"hash":106991074,"name":"tformcheckmodules.toolbar2.caption","sourcebytes":[84,111,111,108,66,97,114,50],"value":"ToolBar2"},
 {"hash":24971044,"name":"tformcheckmodules.btnrefreshmodules.caption","sourcebytes":[82,101,102,114,101,115,104,32,77,111,100,117,108,101,32,76,105,115,116],"value":"Refresh Module List"},
 {"hash":90280153,"name":"tformcheckmodules.btncheckintegrity.caption","sourcebytes":[67,104,101,99,107,32,77,111,100,117,108,101,115,32,73,110,116,101,103,114,105,116,121],"value":"Check Modules Integrity"},
 {"hash":195288076,"name":"tformcheckmodules.tbwebsitesselectall.caption","sourcebytes":[83,101,108,101,99,116,32,65,108,108],"value":"Select All"},
