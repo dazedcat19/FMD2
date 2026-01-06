@@ -520,6 +520,7 @@ begin
       LuaPushNetStatus(L.Handle);
       // Create and initialize MangaInfo
       AMangaInfo := TMangaInformation.Create();
+      AMangaInfo.MangaInfo.URL:= AMangaCheck.MangaCheck.MangaURL;
 
       L.LoadObject('MANGAINFO', AMangaInfo.MangaInfo, @luaMangaInfoAddMetaTable);
       L.LoadObject('HTTP', AMangaInfo.HTTP, @luaHTTPSendThreadAddMetaTable);
