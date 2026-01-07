@@ -415,7 +415,8 @@ begin
                   if AMangaCheck.MangaCheck.ChapterTitle = ResultChapterTMsg then
                   begin
                     Inc(SuccessCount);
-                    ExDetails := ' | Extra Test Check Chapter Title: PASS';
+                    ExDetails := ExDetails +
+                    ' | Extra Test Check Chapter Title: PASS';
                     LogMessage('  Check Chapter Title: PASS');
                   end
                   else
