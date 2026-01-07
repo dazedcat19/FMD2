@@ -12,7 +12,7 @@ function Init()
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
 	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
-	m.OnCheckSite				= 'CheckSite'
+	m.OnCheckSite			   = 'CheckSite'
 end
 
 ----------------------------------------------------------------------------------------------------
