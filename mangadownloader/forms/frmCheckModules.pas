@@ -48,7 +48,8 @@ type
     procedure SelectModuleNone;
     procedure AddModuleToList(const AMangaCheck: TMangaInformation);
     function TestModuleFunction(const AMangaCheck: TMangaInformation;
-      AFunctionType: string; var AResultMsg, AResultData: string): Boolean;
+      AFunctionType: string; var AResultMsg, AResultData, AResultMangaTMsg,
+      AResultChapterTMsg: string): Boolean;
     procedure LogMessage(const AMsg: string);
     procedure ClearModulesList;
   public
@@ -210,8 +211,16 @@ begin
               with AMangaCheck.MangaCheck do
               begin
                 // Try to read CheckSite and CheckChapter from the loaded module
-                if MangaURL <> '' then HasCheckVars := True;
-                if ChapterURL <> '' then HasCheckVars := True;
+                if MangaURL <> '' then
+                begin
+                  HasCheckVars := True;
+                  MangaURL := MaybeFillHost(RootURL, MangaURL)
+                end;
+                if ChapterURL <> '' then
+                begin
+                  HasCheckVars := True;
+                  ChapterURL := MaybeFillHost(RootURL, ChapterURL)
+                end;
                 if HasCheckVars then
                 begin
                   AddModuleToList(AMangaCheck);
@@ -319,7 +328,8 @@ var
   i: Integer;
   Item: TListItem;
   FailCount, SuccessCount: Integer;
-  ResultMsg, ResultData, Details, ExDetails: string;
+  ResultMsg, ResultData, ResultMangaTMsg, ResultChapterTMsg, Details,
+  ExDetails: string;
   HasMangaURL, HasChapterURL: Boolean;
   AllTestsPassed: Boolean;
   AMangaCheck: TMangaInformation;
@@ -345,6 +355,8 @@ begin
       AMangaCheck :=  TMangaInformation(Item.Data);
       ResultMsg := '';
       ResultData := '';
+      ResultMangaTMsg := '';
+      ResultChapterTMsg := '';
 
       if AMangaCheck = nil then Continue;
 
@@ -367,36 +379,62 @@ begin
           LogMessage('  Testing GetInfo with: '
           + AMangaCheck.MangaCheck.MangaURL);
           if TestModuleFunction(AMangaCheck, 'OnGetInfo', ResultMsg,
-          ResultData) then
+          ResultData, ResultMangaTMsg, ResultChapterTMsg) then
           begin
             Details := 'OnGetInfo: PASS';
             Inc(SuccessCount);
             LogMessage('  OnGetInfo: PASS - ' + ResultMsg);
-            if ResultMsg = 'Success' then
+            if AMangaCheck.MangaCheck.MangaTitle <> '' then
             begin
-              Inc(SuccessCount);
-              ExDetails := ' | Extra Test Check Manga Title: PASS';
-            end
-            else
-            begin
-              Inc(FailCount);
-              ExDetails := ' | Extra Test Check Manga Title: FAIL';
+              LogMessage('  Testing Manga Title with: '
+              + AMangaCheck.MangaCheck.MangaTitle);
+              if AMangaCheck.MangaCheck.MangaTitle = ResultMangaTMsg then
+              begin
+                Inc(SuccessCount);
+                ExDetails := ' | Extra Test Check Manga Title: PASS';
+                LogMessage('  Check Manga Title: PASS');
+              end
+              else
+              begin
+                Inc(FailCount);
+                ExDetails := ' | Extra Test Check Manga Title: FAIL';
+                LogMessage('  Check Manga Title: FAIL - Returned Manga Title ('
+                + ResultMangaTMsg + ') Don''t Match Checked Manga Title ('
+                + AMangaCheck.MangaCheck.MangaTitle + ')');
+              end;
             end;
             if AMangaCheck.MangaCheck.ChapterURL <> '' then
             begin
               if AMangaCheck.MangaCheck.MangaTitle <> '' then
               begin
-                if ResultData = 'Chapter match Check Title' then
+                LogMessage('  Testing Chapter Title with: '
+                + AMangaCheck.MangaCheck.ChapterTitle);
+                if not ContainsStr(ResultChapterTMsg,
+                'Don''t Match Any Chapter URL') then
                 begin
-                  Inc(SuccessCount);
-                  ExDetails := ExDetails +
-                  ' | Extra Test Check Chapter Title: PASS';
+                  if AMangaCheck.MangaCheck.ChapterTitle = ResultChapterTMsg then
+                  begin
+                    Inc(SuccessCount);
+                    ExDetails := ' | Extra Test Check Chapter Title: PASS';
+                    LogMessage('  Check Chapter Title: PASS');
+                  end
+                  else
+                  begin
+                    Inc(FailCount);
+                    ExDetails := ExDetails +
+                    ' | Extra Test Check Chapter Title: FAIL';
+                    LogMessage('  Check Manga Title: FAIL - Returned Chapter Title ('
+                    + ResultChapterTMsg + ') Don''t Match Checked Chapter Title ('
+                    + AMangaCheck.MangaCheck.ChapterTitle + ')');
+                  end;
                 end
                 else
                 begin
                   Inc(FailCount);
-                  ExDetails := ExDetails +
-                  ' | Extra Test Check Chapter Title: FAIL';
+                  ExDetails := ExDetails
+                  + ' | Extra Test Check Chapter Title: FAIL';
+                  LogMessage('  Check Chapter Title: FAIL - '
+                  + ResultChapterTMsg);
                 end;
               end;
             end
@@ -426,7 +464,7 @@ begin
           LogMessage('  Testing GetPageNumber with: '
           + AMangaCheck.MangaCheck.ChapterURL);
           if TestModuleFunction(AMangaCheck, 'OnGetPageNumber', ResultMsg,
-          ResultData) then
+          ResultData, ResultMangaTMsg, ResultChapterTMsg) then
           begin
             Details := Details + 'OnGetPageNumber: PASS';
             Inc(SuccessCount);
@@ -485,8 +523,8 @@ begin
 end;
 
 function TFormCheckModules.TestModuleFunction(const AMangaCheck:
-  TMangaInformation; AFunctionType: string; var AResultMsg, AResultData: string)
-: Boolean;
+  TMangaInformation; AFunctionType: string; var AResultMsg, AResultData,
+  AResultMangaTMsg, AResultChapterTMsg: string): Boolean;
 var
   FullChapterURL: string;
   ChapterIndex: Integer;
@@ -495,7 +533,7 @@ var
   AMangaInfo: TMangaInformation;
   ATaskContainer: TTaskContainer;
   AHTTP: THTTPSendThread;
-  HasReturnedTitle, HasCheckTitle, IsCorrectTitle, HasReturnedChapterLinks:
+  HasReturnedTitle, HasReturnedChapterLinks:
   Boolean;
 begin
   Result := False;
@@ -538,51 +576,29 @@ begin
         if Result then
         begin
           HasReturnedTitle := AMangaInfo.MangaInfo.Title <> '';
-          HasCheckTitle := AMangaCheck.MangaCheck.MangaTitle <> '';
-          IsCorrectTitle := AMangaInfo.MangaInfo.Title =
-          AMangaCheck.MangaCheck.MangaTitle;
-          HasReturnedChapterLinks := AMangaInfo.MangaInfo.ChapterLinks.Count <> 0;
+          HasReturnedChapterLinks :=
+          AMangaInfo.MangaInfo.ChapterLinks.Count <> 0;
           if HasReturnedTitle then
           begin
             if HasReturnedChapterLinks then
             begin
-              if HasCheckTitle then
-              begin
-                if IsCorrectTitle then
-                begin
-                  AResultMsg := 'Success';
-                end
-                else
-                begin
-                  AResultMsg := 'OnGetInfo returned Title and Chapter Links,'
-                  + ' but the returned Title does not match checked Title';
-                end;
-              end
-              else
-              begin
-                AResultMsg := 'Success';
-              end;
+              AResultMsg := 'Success';
+              AResultMangaTMsg := AMangaInfo.MangaInfo.Title;
               if AMangaCheck.MangaCheck.ChapterURL = '' then
               begin
                 AResultData := AMangaInfo.MangaInfo.ChapterLinks[0];
+              end;
+              ChapterIndex := AMangaInfo.MangaInfo.ChapterLinks.IndexOf(
+              AMangaCheck.MangaCheck.ChapterURL);
+              if ChapterIndex <> -1 then
+              begin
+                AResultChapterTMsg :=
+                AMangaInfo.MangaInfo.ChapterNames[ChapterIndex]
               end
               else
               begin
-                FullChapterURL := MaybeFillHost(
-                GetHostURL(AMangaCheck.MangaCheck.MangaURL),
-                AMangaCheck.MangaCheck.ChapterURL);
-                ChapterIndex := AMangaInfo.MangaInfo.ChapterLinks.IndexOf(
-                FullChapterURL);
-                if AMangaInfo.MangaInfo.ChapterNames[ChapterIndex] =
-                AMangaCheck.MangaCheck.ChapterTitle then
-                begin
-                  AResultData := 'Chapter match Check Title'
-                end
-                else
-                begin
-                  AResultData := 'Chapter Don''t match Check Title'
-                end;
-
+                AResultChapterTMsg := AMangaCheck.MangaCheck.ChapterURL +
+                ' Don''t Match Any Chapter URL'
               end;
             end
             else
@@ -638,7 +654,7 @@ begin
           else
           begin
             Result := False;
-            AResultMsg := 'OnGetInfo returned true,'
+            AResultMsg := 'OnGetPageNumber returned true,'
             + ' but was not able to get pages list';
           end;
         end

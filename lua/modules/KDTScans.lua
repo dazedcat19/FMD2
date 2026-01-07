@@ -12,6 +12,7 @@ function Init()
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
 	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
+	m.OnCheckSite				= 'CheckSite'
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -23,6 +24,13 @@ local Template = require 'templates.MangaThemesia'
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
+
+function CheckSite()
+    MANGACHECK.MangaURL     = "https://www.silentquill.net/the-rise-of-the-errand-boy-who-was-kicked-out-of-the-guild-worlds-strongest-with-ultra-versatile-living-skills/"
+    MANGACHECK.MangaTitle   = 'The Rise of the Errand Boy Who was Kicked Out of the Guild: World’s Strongest with Ultra-Versatile Living Skills'
+    MANGACHECK.ChapterURL   = "https://www.silentquill.net/the-rise-of-the-errand-boy-who-was-kicked-out-of-the-guild-worlds-strongest-with-ultra-versatile-living-skills-ch-1/"
+    MANGACHECK.ChapterTitle = 'Chapter 1'
+end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()

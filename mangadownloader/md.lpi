@@ -330,8 +330,8 @@
       </Item7>
       <Item8>
         <PackageName Value="LCL"/>
-        <MaxVersion Major="3" Minor="8" Valid="True"/>
-        <MinVersion Major="3" Minor="8" Valid="True"/>
+        <MaxVersion Major="3" Minor="8"/>
+        <MinVersion Major="3" Minor="8"/>
       </Item8>
       <Item9>
         <PackageName Value="virtualtreeview_package"/>
