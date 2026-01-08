@@ -16,6 +16,7 @@ function Init()
 	m.MaxTaskLimit             = 2
 	m.MaxConnectionLimit       = 4
 	m.SortedList               = true
+	m.OnCheckSite				= 'CheckSite'
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -28,7 +29,12 @@ local DirectoryPageLimit = 32
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
-
+function CheckSite()
+    MANGACHECK.MangaURL     = "/series/01J76XYGGM22WZP7T4TKA4ZFAF/Kagurabachi"
+    MANGACHECK.MangaTitle   = 'Kagurabachi'
+    MANGACHECK.ChapterURL   = "/chapters/01K4JBY7YN9XEZ35F5GECH6ZWP"
+    MANGACHECK.ChapterTitle = 'Chapter 92.5'
+end
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
 	local u = MODULE.RootURL .. DirectoryPagination .. 0

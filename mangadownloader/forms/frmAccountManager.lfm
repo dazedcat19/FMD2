@@ -130,7 +130,7 @@ object AccountManagerForm: TAccountManagerForm
     Colors.FocusedSelectionBorderColor = clHotLight
     Colors.SelectionRectangleBorderColor = clHotLight
     Colors.UnfocusedSelectionBorderColor = clBtnShadow
-    Header.AutoSizeIndex = 0
+    Header.AutoSizeIndex = -1
     Header.Columns = <    
       item
         MinWidth = 25
@@ -149,10 +149,11 @@ object AccountManagerForm: TAccountManagerForm
       item
         Position = 3
         Text = 'Status'
+        Width = 174
       end>
     Header.DefaultHeight = 17
     Header.Height = 23
-    Header.Options = [hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible]
+    Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible]
     NodeDataSize = 1
     TabOrder = 0
     TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScrollOnExpand, toAutoTristateTracking, toAutoDeleteMovedNodes, toDisableAutoscrollOnFocus]
