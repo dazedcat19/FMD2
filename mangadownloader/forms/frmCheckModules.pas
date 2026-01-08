@@ -21,14 +21,19 @@ type
     ChapterTitle: string;
   end;
 
+  TModuleScanThread = class;
+  TModuleCheckThread = class;
+
   { TFormCheckModules }
   TFormCheckModules = class(TForm)
     btnCheckIntegrity: TButton;
     btnRefreshModules: TButton;
+    btnStopCheck: TButton;
     ImageList1: TImageList;
     lvModules: TListView;
     pnlTop: TPanel;
     pnlBottom: TPanel;
+    ProgressBar1: TProgressBar;
     StatusBar: TStatusBar;
     Memo1: TMemo;
     Splitter1: TSplitter;
@@ -38,28 +43,86 @@ type
     ToolBar2: TToolBar;
     procedure btnCheckIntegrityClick(Sender: TObject);
     procedure btnRefreshModulesClick(Sender: TObject);
+    procedure btnStopCheckClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure tbWebsitesSelectAllClick(Sender: TObject);
     procedure tbWebsitesSelectInverseClick(Sender: TObject);
     procedure tbWebsitesSelectNoneClick(Sender: TObject);
+    procedure UpdateProgress;
   private
     FIsScanning: Boolean;
+    FIsChecking: Boolean;
+    FTotalToCheck: Integer;
+    FCheckedCount: Integer;
+    FSuccessCount: Integer;
+    FFailCount: Integer;
     FModulesList: TList;
+    FScanThread: TModuleScanThread;
+    FCheckThread: TModuleCheckThread;
     procedure InitializeListView;
     procedure ScanLuaModules;
     procedure CheckModuleIntegrity;
     procedure SetModuleSelection(AChecked: Boolean; AInverse: Boolean = False);
     procedure AddModuleToList(const AMangaCheck: TMangaInformation);
     function TestGetInfo(const AMangaCheck: TMangaInformation): TTestResult;
-    function TestGetPageNumber(const AMangaCheck:
-      TMangaInformation): TTestResult;
-    procedure LogMessage(const AMsg: string); inline;
+    function TestGetPageNumber(
+      const AMangaCheck: TMangaInformation): TTestResult;
+    procedure LogMessage(const AMsg: string);
+    procedure EnableStopCheck(const AEnable: Boolean);
     procedure ClearModulesList;
-    procedure UpdateItemStatus(AItem: TListItem; const AStatus,
-      ADetails: string);
+    procedure UpdateItemStatus(AItem: TListItem;
+      const AStatus, ADetails: string);
+    // Thread callbacks
+    procedure OnScanComplete(Sender: TObject);
+    procedure OnScanProgress(const AMsg: string;
+      AModule: TMangaInformation);
+    procedure OnCheckComplete(Sender: TObject);
+    procedure OnCheckProgress(AIndex: Integer; const AStatus, ADetails,
+      AMsg: string);
   public
+  end;
+
+  { TModuleScanThread }
+  TModuleScanThread = class(TThread)
+  private
+    FForm: TFormCheckModules;
+    FProgressMsg: string;
+    PTotalToCheck: PInteger; // Pointer to the integer
+    FProgressModule: TMangaInformation;
+    FModuleCount: Integer;
+    procedure SyncProgress;
+    procedure SyncComplete;
+  protected
+    procedure Execute; override;
+  public
+    constructor Create(AForm: TFormCheckModules);
+    procedure LinkVariable(ATotalToCheckPtr: PInteger);
+  end;
+
+  { TModuleCheckThread }
+  TModuleCheckThread = class(TThread)
+  private
+    FForm: TFormCheckModules;
+    FProgressIndex: Integer;
+    PTotalToCheck: PInteger; // Pointer to the integer
+    PCheckedCount: PInteger; // Pointer to the integer
+    FProgressStatus: string;
+    FProgressDetails: string;
+    FProgressMsg: string;
+    PSuccessCount: PInteger; // Pointer to the integer
+    PFailCount: PInteger; // Pointer to the integer
+    procedure SyncProgress;
+    procedure SyncComplete;
+  protected
+    procedure Execute; override;
+    procedure CallUpdateProgress; // Wrapper for Synchronize
+  public
+    constructor Create(AForm: TFormCheckModules);
+    procedure LinkVariable(ATotalToCheckPtr, ACheckedCountPtr, ASuccessCountPtr,
+      AFailCountPtr: PInteger);
   end;
 
 var
@@ -72,16 +135,434 @@ uses
 
 {$R *.lfm}
 
+{ TModuleScanThread }
+
+constructor TModuleScanThread.Create(AForm: TFormCheckModules);
+begin
+  inherited Create(True);
+  FForm := AForm;
+  FModuleCount := 0;
+  FreeOnTerminate := True;
+end;
+
+procedure TModuleScanThread.SyncProgress;
+begin
+  if Assigned(FProgressModule) then
+    FForm.OnScanProgress(FProgressMsg, FProgressModule);
+end;
+
+procedure TModuleScanThread.SyncComplete;
+begin
+  FForm.OnScanComplete(Self);
+end;
+
+procedure TModuleScanThread.LinkVariable(ATotalToCheckPtr : PInteger);
+begin
+   // Store the address
+  PTotalToCheck := ATotalToCheckPtr;
+end;
+
+procedure TModuleScanThread.Execute;
+var
+  i: Integer;
+  L: TLuaWebsiteModuleHandler;
+  AMangaCheck: TMangaInformation;
+begin
+  PTotalToCheck^ := 0;
+  try
+    if Modules = nil then
+    begin
+      FProgressMsg := 'Warning: No modules loaded';
+      Synchronize(@SyncProgress);
+      Exit;
+    end;
+
+    for i := 0 to Modules.Count - 1 do
+    begin
+      if Terminated then Break;
+
+      with Modules.List[i] do
+      begin
+        if not Assigned(OnCheckSite) then
+          Continue;
+
+        AMangaCheck := nil;
+        with TLuaWebsiteModule(LuaModule) do
+        try
+          begin
+            L := GetLuaWebsiteModuleHandler(Modules.List[i]);
+            LuaPushNetStatus(L.Handle);
+            AMangaCheck := TMangaInformation.Create();
+            AMangaCheck.MangaCheck.Module := Modules.List[i];
+            L.LoadObject('MANGACHECK', AMangaCheck.MangaCheck,
+              @luaMangaCheckAddMetaTable);
+            L.CallFunction(OnCheckSite);
+
+            with AMangaCheck.MangaCheck do
+            begin
+              if MangaURL <> '' then
+              begin
+                MangaURL := MaybeFillHost(RootURL, MangaURL);
+                Inc(PTotalToCheck^);
+                if MangaTitle <> '' then Inc(PTotalToCheck^);
+              end;
+              if ChapterURL <> '' then
+              begin
+                ChapterURL := MaybeFillHost(RootURL, ChapterURL);
+                Inc(PTotalToCheck^);
+                if ChapterTitle <> '' then Inc(PTotalToCheck^);
+              end;
+
+              if (MangaURL <> '') or (ChapterURL <> '') then
+              begin
+                AMangaCheck.MangaInfo.URL := MangaURL;
+                Inc(FModuleCount);
+                FProgressMsg := Format('Found: %s (CheckSite: %s, CheckChapter: %s)',
+                  [ModuleName,
+                   IfThen(MangaURL <> '', 'Yes' + IfThen(MangaTitle <> '',
+                     ' with Title', ' without Title'), 'No'),
+                   IfThen(ChapterURL <> '', 'Yes' + IfThen(ChapterTitle <> '',
+                     ' with Title', ' without Title'), 'No')]);
+                FProgressModule := AMangaCheck;
+                Synchronize(@SyncProgress);
+              end
+              else
+                AMangaCheck.Free;
+            end;
+          end;
+        except
+          on E: Exception do
+          begin
+            FProgressMsg := 'Error loading module ' +
+              ExtractFileName(Container.FileName) + ': ' + E.Message;
+            FProgressModule := nil;
+            Synchronize(@SyncProgress);
+            if Assigned(AMangaCheck) then
+              AMangaCheck.Free;
+          end;
+        end;
+      end;
+    end;
+
+    if not Terminated then
+    begin
+      FProgressMsg := Format('Scan complete: Found %d modules with check data',
+        [FModuleCount]);
+      FProgressModule := nil;
+      Synchronize(@SyncProgress);
+    end;
+  finally
+    Synchronize(@SyncComplete);
+  end;
+end;
+
+{ TModuleCheckThread }
+
+constructor TModuleCheckThread.Create(AForm: TFormCheckModules);
+begin
+  inherited Create(True);
+  FForm := AForm;
+  FreeOnTerminate := True;
+end;
+
+procedure TModuleCheckThread.SyncProgress;
+begin
+  FForm.OnCheckProgress(FProgressIndex, FProgressStatus, FProgressDetails,
+  FProgressMsg);
+end;
+
+procedure TModuleCheckThread.SyncComplete;
+begin
+  FForm.OnCheckComplete(Self);
+end;
+
+procedure TModuleCheckThread.LinkVariable(ATotalToCheckPtr, ACheckedCountPtr,
+  ASuccessCountPtr, AFailCountPtr: PInteger);
+begin
+  // Store the address
+  PTotalToCheck := ATotalToCheckPtr;
+  PCheckedCount := ACheckedCountPtr;
+  PSuccessCount := ASuccessCountPtr;
+  PFailCount := AFailCountPtr;
+end;
+
+procedure TModuleCheckThread.CallUpdateProgress;
+begin
+  FForm.UpdateProgress;;
+end;
+
+procedure TModuleCheckThread.Execute;
+var
+  i: Integer;
+  Item: TListItem;
+  AMangaCheck: TMangaInformation;
+  GetInfoResult, GetPageResult: TTestResult;
+  Details, ExtraDetails: string;
+  AllTestsPassed: Boolean;
+begin
+  try
+    FProgressMsg := '=== Starting Integrity Check ===';
+    PCheckedCount^ := 0;
+    FProgressIndex := -1;
+    PSuccessCount^ := 0;
+    PFailCount^ := 0;
+    Synchronize(@SyncProgress);
+
+    for i := 0 to FForm.lvModules.Items.Count - 1 do
+    begin
+      if Terminated then Break;
+
+      Item := FForm.lvModules.Items[i];
+      if not Item.Checked then Continue;
+
+      AMangaCheck := TMangaInformation(Item.Data);
+      if AMangaCheck = nil then Continue;
+
+      Details := '';
+      ExtraDetails := '';
+      AllTestsPassed := True;
+      FProgressIndex := i;
+
+      // Update status to "Checking..."
+      FProgressStatus := 'Checking...';
+      FProgressDetails := '';
+      FProgressMsg := 'Checking module: ' + AMangaCheck.MangaCheck.ModuleName;
+      Synchronize(@SyncProgress);
+
+      try
+        // Test GetInfo if MangaURL exists
+        if AMangaCheck.MangaCheck.MangaURL <> '' then
+        begin
+          FProgressMsg := '  Testing GetInfo with: '
+          + AMangaCheck.MangaCheck.MangaURL;
+          FProgressIndex := -1;
+          Synchronize(@SyncProgress);
+          FProgressIndex := i;
+
+          GetInfoResult := FForm.TestGetInfo(AMangaCheck);
+
+          if GetInfoResult.Success then
+          begin
+            Details := 'OnGetInfo: PASS';
+            Inc(PSuccessCount^);
+            Inc(PCheckedCount^);
+            Queue(@CallUpdateProgress);
+            FProgressMsg := '  OnGetInfo: PASS - ' + GetInfoResult.Message;
+            FProgressIndex := -1;
+            Synchronize(@SyncProgress);
+            FProgressIndex := i;
+
+            // Validate manga title if provided
+            if AMangaCheck.MangaCheck.MangaTitle <> '' then
+            begin
+              FProgressMsg := '  Testing Manga Title with: ' +
+                AMangaCheck.MangaCheck.MangaTitle;
+              FProgressIndex := -1;
+              Synchronize(@SyncProgress);
+              FProgressIndex := i;
+
+              if AMangaCheck.MangaCheck.MangaTitle
+              = GetInfoResult.MangaTitle then
+              begin
+                Inc(PSuccessCount^);
+                Inc(PCheckedCount^);
+                Queue(@CallUpdateProgress);
+                ExtraDetails := ' | Extra Test Check Manga Title: PASS';
+                FProgressMsg := '  Check Manga Title: PASS';
+              end
+              else
+              begin
+                Inc(PFailCount^);
+                Inc(PCheckedCount^);
+                Queue(@CallUpdateProgress);
+                ExtraDetails := ' | Extra Test Check Manga Title: FAIL';
+                FProgressMsg := Format('  Check Manga Title: FAIL -'
+                + ' Returned "%s" vs Expected "%s"',
+                  [GetInfoResult.MangaTitle,
+                  AMangaCheck.MangaCheck.MangaTitle]);
+              end;
+              FProgressIndex := -1;
+              Synchronize(@SyncProgress);
+              FProgressIndex := i;
+            end;
+
+            // Validate chapter title if provided
+            if (AMangaCheck.MangaCheck.ChapterURL <> '') and
+               (AMangaCheck.MangaCheck.ChapterTitle <> '') then
+            begin
+              FProgressMsg := '  Testing Chapter Title with: ' +
+                AMangaCheck.MangaCheck.ChapterTitle;
+              FProgressIndex := -1;
+              Synchronize(@SyncProgress);
+              FProgressIndex := i;
+
+              if not ContainsStr(GetInfoResult.ChapterTitle,
+              'Don''t Match Any Chapter URL') then
+              begin
+                if AMangaCheck.MangaCheck.ChapterTitle
+                = GetInfoResult.ChapterTitle then
+                begin
+                  Inc(PSuccessCount^);
+                  Inc(PCheckedCount^);
+                  Queue(@CallUpdateProgress);
+                  ExtraDetails := ExtraDetails
+                  + ' | Extra Test Check Chapter Title: PASS';
+                  FProgressMsg := '  Check Chapter Title: PASS';
+                end
+                else
+                begin
+                  Inc(PFailCount^);
+                  Inc(PCheckedCount^);
+                  Queue(@CallUpdateProgress);
+                  ExtraDetails := ExtraDetails +
+                  ' | Extra Test Check Chapter Title: FAIL';
+                  FProgressMsg := Format('  Check Chapter Title: FAIL -'
+                  + ' Returned "%s" vs Expected "%s"',
+                    [GetInfoResult.ChapterTitle,
+                    AMangaCheck.MangaCheck.ChapterTitle]);
+                end;
+              end
+              else
+              begin
+                Inc(PFailCount^);
+                Inc(PCheckedCount^);
+                Queue(@CallUpdateProgress);
+                ExtraDetails := ExtraDetails
+                + ' | Extra Test Check Chapter Title: FAIL';
+                FProgressMsg := '  Check Chapter Title: FAIL - '
+                + GetInfoResult.ChapterTitle;
+              end;
+              FProgressIndex := -1;
+              Synchronize(@SyncProgress);
+              FProgressIndex := i;
+            end
+            else if AMangaCheck.MangaCheck.ChapterURL = '' then
+            begin
+              FProgressMsg := '  No chapter link provided,'
+              + ' using first chapter link';
+              AMangaCheck.MangaCheck.ChapterURL := GetInfoResult.Data;
+              FProgressIndex := -1;
+              Inc(PTotalToCheck^);
+              Synchronize(@SyncProgress);
+              FProgressIndex := i;
+            end;
+          end
+          else
+          begin
+            Details := 'OnGetInfo: FAIL (' + GetInfoResult.Message + ')';
+            Inc(PFailCount^);
+            Inc(PCheckedCount^);
+            Queue(@CallUpdateProgress);
+            AllTestsPassed := False;
+            FProgressMsg := '  OnGetInfo: FAIL - ' + GetInfoResult.Message;
+            FProgressIndex := -1;
+            Synchronize(@SyncProgress);
+            FProgressIndex := i;
+          end;
+        end;
+
+        // Test GetPageNumber if ChapterURL exists
+        if AMangaCheck.MangaCheck.ChapterURL <> '' then
+        begin
+          if Details <> '' then
+            Details := Details + ' | ';
+
+          FProgressMsg := '  Testing GetPageNumber with: ' +
+            AMangaCheck.MangaCheck.ChapterURL;
+          FProgressIndex := -1;
+          Synchronize(@SyncProgress);
+          FProgressIndex := i;
+
+          GetPageResult := FForm.TestGetPageNumber(AMangaCheck);
+
+          if GetPageResult.Success then
+          begin
+            Details := Details + 'OnGetPageNumber: PASS';
+            Inc(PSuccessCount^);
+            Inc(PCheckedCount^);
+            Queue(@CallUpdateProgress);
+            FProgressMsg := '  OnGetPageNumber: PASS - '
+            + GetPageResult.Message;
+          end
+          else
+          begin
+            Details := Details + 'OnGetPageNumber: FAIL ('
+            + GetPageResult.Message + ')';
+            Inc(PFailCount^);
+            Inc(PCheckedCount^);
+            Queue(@CallUpdateProgress);
+            AllTestsPassed := False;
+            FProgressMsg := '  OnGetPageNumber: FAIL - '
+            + GetPageResult.Message;
+          end;
+          FProgressIndex := -1;
+          Synchronize(@SyncProgress);
+          FProgressIndex := i;
+        end;
+
+        // Update final status
+        if AllTestsPassed then
+        begin
+          if (ExtraDetails = '') or not ContainsStr(ExtraDetails, 'FAIL') then
+            FProgressStatus := 'PASSED'
+          else
+            FProgressStatus := 'PASSED (FAILED Extra Tests)';
+        end
+        else
+          FProgressStatus := 'FAILED';
+
+        FProgressDetails := Details + ExtraDetails;
+        Synchronize(@SyncProgress);
+
+      except
+        on E: Exception do
+        begin
+          FProgressStatus := 'ERROR';
+          FProgressDetails := 'Exception: ' + E.Message;
+          FProgressMsg := '  ERROR: ' + E.Message;
+          Inc(PFailCount^);
+          Inc(PCheckedCount^);
+          Queue(@CallUpdateProgress);
+          Synchronize(@SyncProgress);
+        end;
+      end;
+    end;
+
+    if not Terminated then
+    begin
+      FProgressMsg := '=== Check Complete ===';
+      FProgressIndex := -1;
+      Synchronize(@SyncProgress);
+
+      FProgressMsg := Format('Total tests passed: %d', [PSuccessCount^]);
+      Synchronize(@SyncProgress);
+
+      FProgressMsg := Format('Total tests failed: %d', [PFailCount^]);
+      Synchronize(@SyncProgress);
+    end;
+  finally
+    Synchronize(@SyncComplete);
+  end;
+end;
+
 { TFormCheckModules }
 
 procedure TFormCheckModules.FormCreate(Sender: TObject);
 begin
   FIsScanning := False;
+  FIsChecking := False;
+  FTotalToCheck := 0;
+  FCheckedCount := 0;
+  FSuccessCount := 0;
+  FFailCount := 0;
   FModulesList := TList.Create;
+  FScanThread := nil;
+  FCheckThread := nil;
   InitializeListView;
   Memo1.Clear;
   Memo1.ScrollBars := ssVertical;
   Memo1.ReadOnly := True;
+  ProgressBar1.Visible := False;
 end;
 
 procedure TFormCheckModules.InitializeListView;
@@ -132,13 +613,46 @@ end;
 
 procedure TFormCheckModules.FormShow(Sender: TObject);
 begin
-  // Removed auto-scan on show - user should explicitly click refresh
+  // User should explicitly click refresh
 end;
 
 procedure TFormCheckModules.FormDestroy(Sender: TObject);
 begin
+  // Terminate threads if running
+  if Assigned(FScanThread) then
+  begin
+    FScanThread.Terminate;
+    FScanThread.WaitFor;
+  end;
+  if Assigned(FCheckThread) then
+  begin
+    FCheckThread.Terminate;
+    FCheckThread.WaitFor;
+  end;
+
   ClearModulesList;
   FModulesList.Free;
+end;
+
+procedure TFormCheckModules.FormCloseQuery(Sender: TObject;
+  var CanClose: Boolean);
+begin
+  if FIsScanning or FIsChecking then
+  begin
+    CanClose := CenteredMessageDlg(Self,
+      'An operation is in progress. Are you sure you want to close?',
+      mtConfirmation, [mbYes, mbNo], 0) = mrYes;
+
+    if CanClose then
+    begin
+      if Assigned(FScanThread) then
+        FScanThread.Terminate;
+      if Assigned(FCheckThread) then
+        FCheckThread.Terminate;
+    end;
+  end
+  else
+    CanClose := True;
 end;
 
 procedure TFormCheckModules.tbWebsitesSelectAllClick(Sender: TObject);
@@ -170,93 +684,75 @@ begin
   Memo1.Lines.Add(FormatDateTime('hh:nn:ss', Now) + ' - ' + AMsg);
 end;
 
-procedure TFormCheckModules.ScanLuaModules;
-var
-  i: Integer;
-  L: TLuaWebsiteModuleHandler;
-  AMangaCheck: TMangaInformation;
-  ModuleCount: Integer;
+procedure TFormCheckModules.EnableStopCheck(const AEnable: Boolean);
 begin
-  if FIsScanning then Exit;
-  FIsScanning := True;
-  Screen.Cursor := crHourGlass;
-  Memo1.Clear;
-  ModuleCount := 0;
-
-  try
-    lvModules.Items.BeginUpdate;
-    try
-      lvModules.Clear;
-      ClearModulesList;
-      LogMessage('Scanning loaded modules...');
-
-      if Modules = nil then
-      begin
-        LogMessage('Warning: No modules loaded');
-        Exit;
-      end;
-
-      for i := 0 to Modules.Count - 1 do
-      begin
-        with Modules.List[i] do
-        begin
-          if not Assigned(OnCheckSite) then
-            Continue;
-          with TLuaWebsiteModule(LuaModule) do
-          try
-            L := GetLuaWebsiteModuleHandler(Modules.List[i]);
-            LuaPushNetStatus(L.Handle);
-            AMangaCheck := TMangaInformation.Create();
-            AMangaCheck.MangaCheck.Module := Modules.List[i];
-            L.LoadObject('MANGACHECK', AMangaCheck.MangaCheck,
-            @luaMangaCheckAddMetaTable);
-            L.CallFunction(OnCheckSite);
-
-            with AMangaCheck.MangaCheck do
-            begin
-              if MangaURL <> '' then
-                MangaURL := MaybeFillHost(RootURL, MangaURL);
-              if ChapterURL <> '' then
-                ChapterURL := MaybeFillHost(RootURL, ChapterURL);
-
-              if (MangaURL <> '') or (ChapterURL <> '') then
-              begin
-                AddModuleToList(AMangaCheck);
-                Inc(ModuleCount);
-                LogMessage(Format('Found: %s (CheckSite: %s, CheckChapter: %s)',
-                [ModuleName,
-                IfThen(MangaURL <> '', 'Yes' + IfThen(MangaTitle <> '',
-                ' with Title', ' without Title'), 'No'),
-                IfThen(ChapterURL <> '', 'Yes' + IfThen(ChapterTitle <> '',
-                ' with Title', ' without Title'), 'No')]));
-              end
-              else
-                AMangaCheck.Free;
-            end;
-          except
-            on E: Exception do
-            begin
-              LogMessage('Error loading module '
-              + ExtractFileName(Container.FileName) + ': ' + E.Message);
-              if Assigned(AMangaCheck) then
-                AMangaCheck.Free;
-            end;
-          end;
-        end;
-      end;
-
-      LogMessage(Format('Scan complete: Found %d modules with check data',
-      [ModuleCount]));
-    finally
-      lvModules.Items.EndUpdate;
-    end;
-  finally
-    Screen.Cursor := crDefault;
-    FIsScanning := False;
+  if AEnable then
+  begin
+    btnStopCheck.Enabled := True;
+    btnRefreshModules.Enabled := False;
+    btnCheckIntegrity.Enabled := False;
+    tbWebsitesSelectAll.Enabled := False;
+    tbWebsitesSelectInverse.Enabled := False;
+    tbWebsitesSelectNone.Enabled := False;
+  end
+  else
+  begin
+    btnStopCheck.Enabled := False;
+    btnRefreshModules.Enabled := True;
+    btnCheckIntegrity.Enabled := True;
+    tbWebsitesSelectAll.Enabled := True;
+    tbWebsitesSelectInverse.Enabled := True;
+    tbWebsitesSelectNone.Enabled := True;
   end;
 end;
 
-procedure TFormCheckModules.AddModuleToList(const AMangaCheck: TMangaInformation);
+procedure TFormCheckModules.ScanLuaModules;
+begin
+  if FIsScanning then
+  begin
+    CenteredMessageDlg(Self, 'A scan is already in progress.',
+      mtInformation, [mbOK], 0);
+    Exit;
+  end;
+
+  FIsScanning := True;
+  EnableStopCheck(True);
+  Memo1.Clear;
+
+  lvModules.Items.BeginUpdate;
+  try
+    lvModules.Clear;
+    ClearModulesList;
+  finally
+    lvModules.Items.EndUpdate;
+  end;
+
+  LogMessage('Scanning loaded modules...');
+
+  FScanThread := TModuleScanThread.Create(Self);
+  FScanThread.LinkVariable(@Self.FTotalToCheck);
+  FScanThread.Start;
+end;
+
+procedure TFormCheckModules.OnScanProgress(const AMsg: string;
+  AModule: TMangaInformation);
+begin
+  LogMessage(AMsg);
+  if Assigned(AModule) then
+    AddModuleToList(AModule);
+end;
+
+procedure TFormCheckModules.OnScanComplete(Sender: TObject);
+begin
+  FIsScanning := False;
+  FScanThread := nil;
+  EnableStopCheck(False);
+  StatusBar.SimpleText := Format('Scan complete: %d modules found',
+    [lvModules.Items.Count]);
+end;
+
+procedure TFormCheckModules.AddModuleToList(const AMangaCheck:
+  TMangaInformation);
 var
   Item: TListItem;
 begin
@@ -286,6 +782,23 @@ begin
   CheckModuleIntegrity;
 end;
 
+procedure TFormCheckModules.btnStopCheckClick(Sender: TObject);
+begin
+  if not FIsChecking then Exit;
+
+  LogMessage('Stop requested, waiting for active checks to complete...');
+  if Assigned(FScanThread) then
+  begin
+    FScanThread.Terminate;
+    FScanThread.WaitFor;
+  end;
+  if Assigned(FCheckThread) then
+  begin
+    FCheckThread.Terminate;
+    FCheckThread.WaitFor;
+  end;
+end;
+
 procedure TFormCheckModules.SetModuleSelection(AChecked: Boolean;
   AInverse: Boolean = False);
 var
@@ -310,198 +823,78 @@ end;
 procedure TFormCheckModules.CheckModuleIntegrity;
 var
   i: Integer;
-  Item: TListItem;
-  FailCount, SuccessCount: Integer;
-  AMangaCheck: TMangaInformation;
-  GetInfoResult, GetPageResult: TTestResult;
-  Details, ExtraDetails: string;
-  AllTestsPassed: Boolean;
 begin
   if lvModules.Items.Count = 0 then
   begin
     CenteredMessageDlg(Self, 'No modules to check.'
-    + ' Please refresh the module list first.', mtError, [mbOK], 0);
+    + ' Please refresh the module list first.',
+      mtError, [mbOK], 0);
     Exit;
   end;
 
-  Screen.Cursor := crHourGlass;
-  btnCheckIntegrity.Enabled := False;
-  FailCount := 0;
-  SuccessCount := 0;
+  if FIsChecking then
+  begin
+    CenteredMessageDlg(Self, 'An integrity check is already in progress.',
+      mtInformation, [mbOK], 0);
+    Exit;
+  end;
+
+  if FTotalToCheck = 0 then
+  begin
+    CenteredMessageDlg(Self,
+      'No modules selected. Please check at least one module.',
+      mtError, [mbOK], 0);
+    FIsChecking := False;
+    Exit;
+  end;
+
+  FIsChecking := True;
+  EnableStopCheck(True);
+  ProgressBar1.Visible := True;
+  ProgressBar1.Min := 0;
+  ProgressBar1.Max := FTotalToCheck;
+  ProgressBar1.Position := 0;
 
   LogMessage('=== Starting Integrity Check ===');
 
-  try
-    for i := 0 to lvModules.Items.Count - 1 do
-    begin
-      Item := lvModules.Items[i];
-      if not Item.Checked then Continue;
+  FCheckThread := TModuleCheckThread.Create(Self);
+  FCheckThread.LinkVariable(@Self.FTotalToCheck, @Self.FCheckedCount,
+  @Self.FSuccessCount, @Self.FFailCount);
+  FCheckThread.Start;
+end;
 
-      AMangaCheck := TMangaInformation(Item.Data);
-      if AMangaCheck = nil then Continue;
+procedure TFormCheckModules.OnCheckProgress(AIndex: Integer;
+  const AStatus, ADetails, AMsg: string);
+begin
+  if AMsg <> '' then
+    LogMessage(AMsg);
 
-      Details := '';
-      ExtraDetails := '';
-      AllTestsPassed := True;
+  if AIndex >= 0 then
+    UpdateItemStatus(lvModules.Items[AIndex], AStatus, ADetails);
+end;
 
-      UpdateItemStatus(Item, 'Checking...', '');
-      Application.ProcessMessages;
+procedure TFormCheckModules.UpdateProgress;
+begin
+  ProgressBar1.Position := FCheckedCount;
+  StatusBar.SimpleText := Format('Checking: %d/%d (Success: %d, Failed: %d)',
+    [FCheckedCount, FTotalToCheck, FSuccessCount, FFailCount]);
+end;
 
-      LogMessage('Checking module: ' + AMangaCheck.MangaCheck.ModuleName);
+procedure TFormCheckModules.OnCheckComplete(Sender: TObject);
+begin
+  FIsChecking := False;
+  FCheckThread := nil;
 
-      try
-        // Test GetInfo if MangaURL exists
-        if AMangaCheck.MangaCheck.MangaURL <> '' then
-        begin
-          LogMessage('  Testing GetInfo with: '
-          + AMangaCheck.MangaCheck.MangaURL);
-          GetInfoResult := TestGetInfo(AMangaCheck);
+  EnableStopCheck(False);
+  ProgressBar1.Visible := False;
 
-          if GetInfoResult.Success then
-          begin
-            Details := 'OnGetInfo: PASS';
-            Inc(SuccessCount);
-            LogMessage('  OnGetInfo: PASS - ' + GetInfoResult.Message);
+  StatusBar.SimpleText := Format('Check complete: %d tests passed, %d tests failed',
+    [FSuccessCount, FFailCount]);
 
-            // Validate manga title if provided
-            if AMangaCheck.MangaCheck.MangaTitle <> '' then
-            begin
-              LogMessage('  Testing Manga Title with: '
-              + AMangaCheck.MangaCheck.MangaTitle);
-              if AMangaCheck.MangaCheck.MangaTitle =
-              GetInfoResult.MangaTitle then
-              begin
-                Inc(SuccessCount);
-                ExtraDetails := ' | Extra Test Check Manga Title: PASS';
-                LogMessage('  Check Manga Title: PASS');
-              end
-              else
-              begin
-                Inc(FailCount);
-                ExtraDetails := ' | Extra Test Check Manga Title: FAIL';
-                LogMessage(Format('  Check Manga Title: FAIL '
-                + '- Returned "%s" vs Expected "%s"',
-                [GetInfoResult.MangaTitle, AMangaCheck.MangaCheck.MangaTitle]));
-              end;
-            end;
-
-            // Validate chapter title if provided
-            if (AMangaCheck.MangaCheck.ChapterURL <> '') and
-            (AMangaCheck.MangaCheck.ChapterTitle <> '') then
-            begin
-              LogMessage('  Testing Chapter Title with: '
-              + AMangaCheck.MangaCheck.ChapterTitle);
-              if not ContainsStr(GetInfoResult.ChapterTitle,
-              'Don''t Match Any Chapter URL') then
-              begin
-                if AMangaCheck.MangaCheck.ChapterTitle
-                = GetInfoResult.ChapterTitle then
-                begin
-                  Inc(SuccessCount);
-                  ExtraDetails := ExtraDetails
-                  + ' | Extra Test Check Chapter Title: PASS';
-                  LogMessage('  Check Chapter Title: PASS');
-                end
-                else
-                begin
-                  Inc(FailCount);
-                  ExtraDetails := ExtraDetails
-                  + ' | Extra Test Check Chapter Title: FAIL';
-                  LogMessage(Format('  Check Chapter Title: FAIL '
-                  + '- Returned "%s" vs Expected "%s"',
-                  [GetInfoResult.ChapterTitle,
-                  AMangaCheck.MangaCheck.ChapterTitle]));
-                end;
-              end
-              else
-              begin
-                Inc(FailCount);
-                ExtraDetails := ExtraDetails
-                + ' | Extra Test Check Chapter Title: FAIL';
-                LogMessage('  Check Chapter Title: FAIL - '
-                + GetInfoResult.ChapterTitle);
-              end;
-            end
-            else if AMangaCheck.MangaCheck.ChapterURL = '' then
-            begin
-              LogMessage('  No chapter link provided, using first chapter link');
-              AMangaCheck.MangaCheck.ChapterURL := GetInfoResult.Data;
-            end;
-          end
-          else
-          begin
-            Details := 'OnGetInfo: FAIL (' + GetInfoResult.Message + ')';
-            Inc(FailCount);
-            AllTestsPassed := False;
-            LogMessage('  OnGetInfo: FAIL - ' + GetInfoResult.Message);
-          end;
-        end;
-
-        // Test GetPageNumber if ChapterURL exists
-        if AMangaCheck.MangaCheck.ChapterURL <> '' then
-        begin
-          if Details <> '' then
-            Details := Details + ' | ';
-
-          LogMessage('  Testing GetPageNumber with: '
-          + AMangaCheck.MangaCheck.ChapterURL);
-          GetPageResult := TestGetPageNumber(AMangaCheck);
-
-          if GetPageResult.Success then
-          begin
-            Details := Details + 'OnGetPageNumber: PASS';
-            Inc(SuccessCount);
-            LogMessage('  OnGetPageNumber: PASS - ' + GetPageResult.Message);
-          end
-          else
-          begin
-            Details := Details + 'OnGetPageNumber: FAIL ('
-            + GetPageResult.Message + ')';
-            Inc(FailCount);
-            AllTestsPassed := False;
-            LogMessage('  OnGetPageNumber: FAIL - ' + GetPageResult.Message);
-          end;
-        end;
-
-        // Update final status
-        if AllTestsPassed then
-        begin
-          if (ExtraDetails = '') or not ContainsStr(ExtraDetails, 'FAIL') then
-            UpdateItemStatus(Item, 'PASSED', Details + ExtraDetails)
-          else
-            UpdateItemStatus(Item, 'PASSED (FAILED Extra Tests)', Details
-            + ExtraDetails);
-        end
-        else
-          UpdateItemStatus(Item, 'FAILED', Details + ExtraDetails);
-
-      except
-        on E: Exception do
-        begin
-          UpdateItemStatus(Item, 'ERROR', 'Exception: ' + E.Message);
-          LogMessage('  ERROR: ' + E.Message);
-          Inc(FailCount);
-        end;
-      end;
-
-      Application.ProcessMessages;
-    end;
-
-    LogMessage('=== Check Complete ===');
-    LogMessage(Format('Total tests passed: %d', [SuccessCount]));
-    LogMessage(Format('Total tests failed: %d', [FailCount]));
-
-    StatusBar.SimpleText := Format('Check complete: %d tests passed,'
-    + ' %d tests failed', [SuccessCount, FailCount]);
-
-    CenteredMessageDlg(Self, Format('Integrity check complete.'#13#10 +
-      'Tests Passed: %d'#13#10 +
-      'Tests Failed: %d', [SuccessCount, FailCount]),
-      mtInformation, [mbOK], 0);
-  finally
-    Screen.Cursor := crDefault;
-    btnCheckIntegrity.Enabled := True;
-  end;
+  CenteredMessageDlg(Self, Format('Integrity check complete.'#13#10 +
+    'Tests Passed: %d'#13#10 +
+    'Tests Failed: %d', [FSuccessCount, FFailCount]),
+    mtInformation, [mbOK], 0);
 end;
 
 function TFormCheckModules.TestGetInfo(const AMangaCheck:
@@ -509,7 +902,6 @@ function TFormCheckModules.TestGetInfo(const AMangaCheck:
 var
   L: TLuaWebsiteModuleHandler;
   ModuleCheck: TModuleContainer;
-  AMangaInfo: TMangaInformation;
   ChapterIndex: Integer;
 begin
   Result.Success := False;
@@ -525,7 +917,6 @@ begin
     Exit;
   end;
 
-  AMangaInfo := nil;
   try
     with TLuaWebsiteModule(ModuleCheck.LuaModule) do
     begin
@@ -533,11 +924,8 @@ begin
       luaPushStringGlobal(L.Handle, 'URL', AMangaCheck.MangaCheck.MangaURL);
       LuaPushNetStatus(L.Handle);
 
-      AMangaInfo := TMangaInformation.Create();
-      AMangaInfo.MangaInfo.URL := AMangaCheck.MangaCheck.MangaURL;
-
-      L.LoadObject('MANGAINFO', AMangaInfo.MangaInfo, @luaMangaInfoAddMetaTable);
-      L.LoadObject('HTTP', AMangaInfo.HTTP, @luaHTTPSendThreadAddMetaTable);
+      L.LoadObject('MANGAINFO', AMangaCheck.MangaInfo, @luaMangaInfoAddMetaTable);
+      L.LoadObject('HTTP', AMangaCheck.HTTP, @luaHTTPSendThreadAddMetaTable);
 
       L.CallFunction(OnGetInfo);
 
@@ -550,13 +938,13 @@ begin
 
       if lua_isboolean(L, -1) and lua_toboolean(L, -1) then
       begin
-        if AMangaInfo.MangaInfo.Title = '' then
+        if AMangaCheck.MangaInfo.Title = '' then
         begin
           Result.Message := 'OnGetInfo returned true, but no title found';
           Exit;
         end;
 
-        if AMangaInfo.MangaInfo.ChapterLinks.Count = 0 then
+        if AMangaCheck.MangaInfo.ChapterLinks.Count = 0 then
         begin
           Result.Message := 'OnGetInfo returned true, but no chapters found';
           Exit;
@@ -564,20 +952,19 @@ begin
 
         Result.Success := True;
         Result.Message := 'Success';
-        Result.MangaTitle := AMangaInfo.MangaInfo.Title;
+        Result.MangaTitle := AMangaCheck.MangaInfo.Title;
 
         if AMangaCheck.MangaCheck.ChapterURL = '' then
-          Result.Data := AMangaInfo.MangaInfo.ChapterLinks[0]
+          Result.Data := AMangaCheck.MangaInfo.ChapterLinks[0]
         else
         begin
-          ChapterIndex := AMangaInfo.MangaInfo.ChapterLinks.IndexOf(
-          AMangaCheck.MangaCheck.ChapterURL);
+          ChapterIndex := AMangaCheck.MangaInfo.ChapterLinks.IndexOf(
+            AMangaCheck.MangaCheck.ChapterURL);
           if ChapterIndex <> -1 then
-            Result.ChapterTitle :=
-            AMangaInfo.MangaInfo.ChapterNames[ChapterIndex]
+            Result.ChapterTitle := AMangaCheck.MangaInfo.ChapterNames[ChapterIndex]
           else
-            Result.ChapterTitle := AMangaCheck.MangaCheck.ChapterURL
-            + ' Don''t Match Any Chapter URL';
+            Result.ChapterTitle := AMangaCheck.MangaCheck.ChapterURL +
+              ' Don''t Match Any Chapter URL';
         end;
       end
       else
@@ -587,9 +974,6 @@ begin
     on E: Exception do
       Result.Message := 'Exception: ' + E.Message;
   end;
-
-  //if Assigned(AMangaInfo) then
-  //  AMangaInfo.Free;
 end;
 
 function TFormCheckModules.TestGetPageNumber(const AMangaCheck:
@@ -598,7 +982,6 @@ var
   L: TLuaWebsiteModuleHandler;
   ModuleCheck: TModuleContainer;
   ATaskContainer: TTaskContainer;
-  AHTTP: THTTPSendThread;
 begin
   Result.Success := False;
   Result.Message := 'Unknown error';
@@ -611,7 +994,6 @@ begin
   end;
 
   ATaskContainer := nil;
-  AHTTP := nil;
   try
     with TLuaWebsiteModule(ModuleCheck.LuaModule) do
     begin
@@ -619,10 +1001,9 @@ begin
       luaPushStringGlobal(L.Handle, 'URL', AMangaCheck.MangaCheck.ChapterURL);
 
       ATaskContainer := TTaskContainer.Create;
-      AHTTP := THTTPSendThread.Create();
 
       L.LoadObject('TASK', ATaskContainer, @luaDownloadTaskMetaTable);
-      L.LoadObject('HTTP', AHTTP, @luaHTTPSendThreadAddMetaTable);
+      L.LoadObject('HTTP', AMangaCheck.HTTP, @luaHTTPSendThreadAddMetaTable);
 
       L.CallFunction(OnGetPageNumber);
 
@@ -654,8 +1035,6 @@ begin
 
   if Assigned(ATaskContainer) then
     ATaskContainer.Free;
-  if Assigned(AHTTP) then
-    AHTTP.Free;
 end;
 
 end.

@@ -12,8 +12,8 @@ object FormCheckModules: TFormCheckModules
   OnShow = FormShow
   object lvModules: TListView
     Left = 0
-    Height = 376
-    Top = 24
+    Height = 345
+    Top = 55
     Width = 900
     Align = alClient
     AutoWidthLastColumn = True
@@ -24,12 +24,12 @@ object FormCheckModules: TFormCheckModules
   end
   object pnlTop: TPanel
     Left = 0
-    Height = 24
+    Height = 55
     Top = 0
     Width = 900
     Align = alTop
     BevelOuter = bvNone
-    ClientHeight = 24
+    ClientHeight = 55
     ClientWidth = 900
     TabOrder = 0
     object ToolBar2: TToolBar
@@ -59,8 +59,18 @@ object FormCheckModules: TFormCheckModules
         TabOrder = 1
         OnClick = btnCheckIntegrityClick
       end
-      object tbWebsitesSelectAll: TToolButton
+      object btnStopCheck: TButton
         Left = 331
+        Height = 22
+        Top = 2
+        Width = 100
+        Caption = 'Stop Check'
+        Enabled = False
+        TabOrder = 2
+        OnClick = btnStopCheckClick
+      end
+      object tbWebsitesSelectAll: TToolButton
+        Left = 431
         Top = 2
         AutoSize = True
         Caption = 'Select All'
@@ -68,7 +78,7 @@ object FormCheckModules: TFormCheckModules
         OnClick = tbWebsitesSelectAllClick
       end
       object tbWebsitesSelectInverse: TToolButton
-        Left = 408
+        Left = 508
         Top = 2
         AutoSize = True
         Caption = 'Inverse Selection'
@@ -76,13 +86,22 @@ object FormCheckModules: TFormCheckModules
         OnClick = tbWebsitesSelectInverseClick
       end
       object tbWebsitesSelectNone: TToolButton
-        Left = 525
+        Left = 625
         Top = 2
         AutoSize = True
         Caption = 'Select None'
         ImageIndex = 2
         OnClick = tbWebsitesSelectNoneClick
       end
+    end
+    object ProgressBar1: TProgressBar
+      Left = 8
+      Height = 20
+      Top = 30
+      Width = 884
+      Anchors = [akTop, akLeft, akRight]
+      TabOrder = 1
+      Visible = False
     end
   end
   object Splitter1: TSplitter
@@ -100,6 +119,7 @@ object FormCheckModules: TFormCheckModules
     Top = 405
     Width = 900
     Align = alBottom
+    ReadOnly = True
     ScrollBars = ssVertical
     TabOrder = 2
   end
@@ -122,6 +142,7 @@ object FormCheckModules: TFormCheckModules
     end
   end
   object ImageList1: TImageList
+    Left = 856
     Top = 576
     Bitmap = {
       4C7A030000001000000010000000A80300000000000078DAEDD5514C53571CC7

@@ -2,6 +2,7 @@
 {"hash":196100051,"name":"tformcheckmodules.caption","sourcebytes":[67,104,101,99,107,32,77,111,100,117,108,101,115],"value":"Check Modules"},
 {"hash":24971044,"name":"tformcheckmodules.btnrefreshmodules.caption","sourcebytes":[82,101,102,114,101,115,104,32,77,111,100,117,108,101,32,76,105,115,116],"value":"Refresh Module List"},
 {"hash":90280153,"name":"tformcheckmodules.btncheckintegrity.caption","sourcebytes":[67,104,101,99,107,32,77,111,100,117,108,101,115,32,73,110,116,101,103,114,105,116,121],"value":"Check Modules Integrity"},
+{"hash":38551803,"name":"tformcheckmodules.btnstopcheck.caption","sourcebytes":[83,116,111,112,32,67,104,101,99,107],"value":"Stop Check"},
 {"hash":195288076,"name":"tformcheckmodules.tbwebsitesselectall.caption","sourcebytes":[83,101,108,101,99,116,32,65,108,108],"value":"Select All"},
 {"hash":192785374,"name":"tformcheckmodules.tbwebsitesselectinverse.caption","sourcebytes":[73,110,118,101,114,115,101,32,83,101,108,101,99,116,105,111,110],"value":"Inverse Selection"},
 {"hash":171874549,"name":"tformcheckmodules.tbwebsitesselectnone.caption","sourcebytes":[83,101,108,101,99,116,32,78,111,110,101],"value":"Select None"}
