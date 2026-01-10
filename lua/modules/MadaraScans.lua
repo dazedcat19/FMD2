@@ -33,14 +33,20 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	Template.GetInfo()
+	local u = MaybeFillHost(MODULE.RootURL, URL)
 
-	local v, x = nil
+	if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
-	for v in x.XPath('//div[@id="chapterlist"]//li/a[not(@data-bs-target="#lockedChapterModal")]').Get() do
+	local x = CreateTXQuery(HTTP.Document)
+	MANGAINFO.Title     = x.XPathString('//h1[@class="lh-title"]')
+	MANGAINFO.CoverLink = x.XPathString('//div[@class="lh-poster"]/img/@src')
+	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="lh-genres"]/a')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//span[contains(@class, "status-badge-lux")]'))
+	MANGAINFO.Summary   = x.XPathString('//div[@class="lh-story-content"]')
+
+	for v in x.XPath('//div[@class="ch-item  free"]/a').Get() do
 		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
-		MANGAINFO.ChapterNames.Add(x.XPathString('.//span[@class="chapternum"]/normalize-space(.)', v))
+		MANGAINFO.ChapterNames.Add(x.XPathString('div[1]/span[1]', v))
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
