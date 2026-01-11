@@ -511,6 +511,7 @@ begin
         end;
 
         // Update final status
+        FProgressMsg := ''; //clear FProgressMsg befoer Update final status
         if AllTestsPassed then
         begin
           if (ExtraDetails = '') or not ContainsStr(ExtraDetails, 'FAIL') then
