@@ -354,6 +354,7 @@ type
       MangaTitle,
       ChapterURL,
       ChapterTitle: String;
+      TestToCheck: Integer;
       Module: Pointer;
       constructor Create;
       destructor Destroy; override;

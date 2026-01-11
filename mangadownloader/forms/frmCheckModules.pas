@@ -54,7 +54,6 @@ type
   private
     FIsScanning: Boolean;
     FIsChecking: Boolean;
-    FTotalToCheck: Integer;
     FCheckedCount: Integer;
     FSuccessCount: Integer;
     FFailCount: Integer;
@@ -64,6 +63,7 @@ type
     procedure InitializeListView;
     procedure ScanLuaModules;
     procedure CheckModuleIntegrity;
+    function CalcTotalToCheck: Integer;
     procedure SetModuleSelection(AChecked: Boolean; AInverse: Boolean = False);
     procedure AddModuleToList(const AMangaCheck: TMangaInformation);
     function TestGetInfo(const AMangaCheck: TMangaInformation): TTestResult;
@@ -89,7 +89,6 @@ type
   private
     FForm: TFormCheckModules;
     FProgressMsg: string;
-    PTotalToCheck: PInteger; // Pointer to the integer
     FProgressModule: TMangaInformation;
     FModuleCount: Integer;
     procedure SyncProgress;
@@ -98,7 +97,6 @@ type
     procedure Execute; override;
   public
     constructor Create(AForm: TFormCheckModules);
-    procedure LinkVariable(ATotalToCheckPtr: PInteger);
   end;
 
   { TModuleCheckThread }
@@ -106,7 +104,6 @@ type
   private
     FForm: TFormCheckModules;
     FProgressIndex: Integer;
-    PTotalToCheck: PInteger; // Pointer to the integer
     PCheckedCount: PInteger; // Pointer to the integer
     FProgressStatus: string;
     FProgressDetails: string;
@@ -120,7 +117,7 @@ type
     procedure CallUpdateProgress; // Wrapper for Synchronize
   public
     constructor Create(AForm: TFormCheckModules);
-    procedure LinkVariable(ATotalToCheckPtr, ACheckedCountPtr, ASuccessCountPtr,
+    procedure LinkVariable(ACheckedCountPtr, ASuccessCountPtr,
       AFailCountPtr: PInteger);
   end;
 
@@ -155,19 +152,12 @@ begin
   FForm.OnScanComplete(Self);
 end;
 
-procedure TModuleScanThread.LinkVariable(ATotalToCheckPtr : PInteger);
-begin
-   // Store the address
-  PTotalToCheck := ATotalToCheckPtr;
-end;
-
 procedure TModuleScanThread.Execute;
 var
   i: Integer;
   L: TLuaWebsiteModuleHandler;
   AMangaCheck: TMangaInformation;
 begin
-  PTotalToCheck^ := 0;
   try
     if Modules = nil then
     begin
@@ -192,6 +182,7 @@ begin
             L := GetLuaWebsiteModuleHandler(Modules.List[i]);
             LuaPushNetStatus(L.Handle);
             AMangaCheck := TMangaInformation.Create();
+            AMangaCheck.MangaCheck.TestToCheck := 0;
             AMangaCheck.MangaCheck.Module := Modules.List[i];
             L.LoadObject('MANGACHECK', AMangaCheck.MangaCheck,
               @luaMangaCheckAddMetaTable);
@@ -202,14 +193,20 @@ begin
               if MangaURL <> '' then
               begin
                 MangaURL := MaybeFillHost(RootURL, MangaURL);
-                Inc(PTotalToCheck^);
-                if MangaTitle <> '' then Inc(PTotalToCheck^);
+                Inc(AMangaCheck.MangaCheck.TestToCheck);
+                if MangaTitle <> '' then
+                begin
+                  Inc(AMangaCheck.MangaCheck.TestToCheck);
+                end;
               end;
               if ChapterURL <> '' then
               begin
                 ChapterURL := MaybeFillHost(RootURL, ChapterURL);
-                Inc(PTotalToCheck^);
-                if ChapterTitle <> '' then Inc(PTotalToCheck^);
+                Inc(AMangaCheck.MangaCheck.TestToCheck);
+                if ChapterTitle <> '' then
+                begin
+                  Inc(AMangaCheck.MangaCheck.TestToCheck);
+                end;
               end;
 
               if (MangaURL <> '') or (ChapterURL <> '') then
@@ -265,10 +262,24 @@ begin
 end;
 
 procedure TModuleCheckThread.SyncProgress;
+var
+  i, TotalToCheck: Integer;
+  Item: TListItem;
+  AMangaCheck: TMangaInformation;
 begin
+  TotalToCheck := 0;
+  for i := 0 to FForm.lvModules.Items.Count - 1 do
+  begin
+      Item := FForm.lvModules.Items[i];
+      if not Item.Checked then Continue;
+
+      AMangaCheck := TMangaInformation(Item.Data);
+      TotalToCheck := TotalToCheck + AMangaCheck.MangaCheck.TestToCheck;
+  end;
+
   FForm.OnCheckProgress(FProgressIndex, FProgressStatus, FProgressDetails,
   FProgressMsg);
-  UpdateProgressBar(PCheckedCount^ ,PTotalToCheck^)
+  UpdateProgressBar(PCheckedCount^ ,TotalToCheck)
 end;
 
 procedure TModuleCheckThread.SyncComplete;
@@ -276,11 +287,10 @@ begin
   FForm.OnCheckComplete(Self);
 end;
 
-procedure TModuleCheckThread.LinkVariable(ATotalToCheckPtr, ACheckedCountPtr,
+procedure TModuleCheckThread.LinkVariable(ACheckedCountPtr,
   ASuccessCountPtr, AFailCountPtr: PInteger);
 begin
   // Store the address
-  PTotalToCheck := ATotalToCheckPtr;
   PCheckedCount := ACheckedCountPtr;
   PSuccessCount := ASuccessCountPtr;
   PFailCount := AFailCountPtr;
@@ -442,7 +452,7 @@ begin
               + ' using first chapter link';
               AMangaCheck.MangaCheck.ChapterURL := GetInfoResult.Data;
               FProgressIndex := -1;
-              Inc(PTotalToCheck^);
+              Inc(AMangaCheck.MangaCheck.TestToCheck);
               Synchronize(@SyncProgress);
               FProgressIndex := i;
             end;
@@ -551,7 +561,6 @@ procedure TFormCheckModules.FormCreate(Sender: TObject);
 begin
   FIsScanning := False;
   FIsChecking := False;
-  FTotalToCheck := 0;
   FCheckedCount := 0;
   FSuccessCount := 0;
   FFailCount := 0;
@@ -729,7 +738,6 @@ begin
   LogMessage('Scanning loaded modules...');
 
   FScanThread := TModuleScanThread.Create(Self);
-  FScanThread.LinkVariable(@Self.FTotalToCheck);
   FScanThread.Start;
 end;
 
@@ -837,8 +845,7 @@ begin
       mtInformation, [mbOK], 0);
     Exit;
   end;
-
-  if FTotalToCheck = 0 then
+  if CalcTotalToCheck = 0 then
   begin
     CenteredMessageDlg(frmMain.MainForm,
       'No modules selected. Please check at least one module.',
@@ -850,10 +857,8 @@ begin
   FIsChecking := True;
   EnableStopCheck(True);
 
-  //LogMessage('=== Starting Integrity Check ===0');
-
   FCheckThread := TModuleCheckThread.Create(Self);
-  FCheckThread.LinkVariable(@Self.FTotalToCheck, @Self.FCheckedCount,
+  FCheckThread.LinkVariable(@Self.FCheckedCount,
   @Self.FSuccessCount, @Self.FFailCount);
   FCheckThread.Start;
 end;
@@ -872,7 +877,7 @@ procedure TFormCheckModules.UpdateProgress;
 begin
   // Progress bar is handled by TStatusBarDownload base class
   StatusBar.SimpleText := Format('Checking: %d/%d (Success: %d, Failed: %d)',
-    [FCheckedCount, FTotalToCheck, FSuccessCount, FFailCount]);
+  [FCheckedCount, CalcTotalToCheck, FSuccessCount, FFailCount]);
 end;
 
 procedure TFormCheckModules.OnCheckComplete(Sender: TObject);
@@ -889,6 +894,23 @@ begin
     'Tests Passed: %d'#13#10 +
     'Tests Failed: %d', [FSuccessCount, FFailCount]),
     mtInformation, [mbOK], 0);
+end;
+
+function TFormCheckModules.CalcTotalToCheck: Integer;
+var
+  i: Integer;
+  Item: TListItem;
+  AMangaCheck: TMangaInformation;
+begin
+  Result := 0;
+  for i := 0 to lvModules.Items.Count - 1 do
+  begin
+      Item := lvModules.Items[i];
+      if not Item.Checked then Continue;
+
+      AMangaCheck := TMangaInformation(Item.Data);
+      Result := Result + AMangaCheck.MangaCheck.TestToCheck;
+  end;
 end;
 
 function TFormCheckModules.TestGetInfo(const AMangaCheck:
