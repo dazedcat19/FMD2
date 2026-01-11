@@ -9,7 +9,7 @@ uses
   ComCtrls, Buttons, WebsiteModules, LuaMangaInfo, LuaMangaCheck, LuaHTTPSend,
   LuaWebsiteModuleHandler, LuaWebsiteModules, uData, LuaUtils, uBaseUnit,
   uDownloadsManager, LuaDownloadTask, httpsendthread, StrUtils,
-  frmCustomMessageDlg,
+  frmCustomMessageDlg, StatusBarDownload,
   {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 type
@@ -131,7 +131,7 @@ var
 implementation
 
 uses
-  FileUtil, LazUTF8, LazFileUtils;
+  FileUtil, LazUTF8, LazFileUtils, frmMain;
 
 {$R *.lfm}
 
@@ -639,9 +639,10 @@ procedure TFormCheckModules.FormCloseQuery(Sender: TObject;
 begin
   if FIsScanning or FIsChecking then
   begin
-    CanClose := CenteredMessageDlg(Self,
+    CanClose := CenteredMessageDlg(frmMain.MainForm,
       'An operation is in progress. Are you sure you want to close?',
       mtConfirmation, [mbYes, mbNo], 0) = mrYes;
+
 
     if CanClose then
     begin
@@ -710,7 +711,7 @@ procedure TFormCheckModules.ScanLuaModules;
 begin
   if FIsScanning then
   begin
-    CenteredMessageDlg(Self, 'A scan is already in progress.',
+    CenteredMessageDlg(frmMain.MainForm, 'A scan is already in progress.',
       mtInformation, [mbOK], 0);
     Exit;
   end;
@@ -824,9 +825,10 @@ procedure TFormCheckModules.CheckModuleIntegrity;
 var
   i: Integer;
 begin
+  MainStatusBar.Create();
   if lvModules.Items.Count = 0 then
   begin
-    CenteredMessageDlg(Self, 'No modules to check.'
+    CenteredMessageDlg(frmMain.MainForm, 'No modules to check.'
     + ' Please refresh the module list first.',
       mtError, [mbOK], 0);
     Exit;
@@ -834,14 +836,14 @@ begin
 
   if FIsChecking then
   begin
-    CenteredMessageDlg(Self, 'An integrity check is already in progress.',
+    CenteredMessageDlg(frmMain.MainForm, 'An integrity check is already in progress.',
       mtInformation, [mbOK], 0);
     Exit;
   end;
 
   if FTotalToCheck = 0 then
   begin
-    CenteredMessageDlg(Self,
+    CenteredMessageDlg(frmMain.MainForm,
       'No modules selected. Please check at least one module.',
       mtError, [mbOK], 0);
     FIsChecking := False;
@@ -855,7 +857,7 @@ begin
   ProgressBar1.Max := FTotalToCheck;
   ProgressBar1.Position := 0;
 
-  LogMessage('=== Starting Integrity Check ===');
+  //LogMessage('=== Starting Integrity Check ===0');
 
   FCheckThread := TModuleCheckThread.Create(Self);
   FCheckThread.LinkVariable(@Self.FTotalToCheck, @Self.FCheckedCount,
@@ -891,7 +893,7 @@ begin
   StatusBar.SimpleText := Format('Check complete: %d tests passed, %d tests failed',
     [FSuccessCount, FFailCount]);
 
-  CenteredMessageDlg(Self, Format('Integrity check complete.'#13#10 +
+  CenteredMessageDlg(frmMain.MainForm, Format('Integrity check complete.'#13#10 +
     'Tests Passed: %d'#13#10 +
     'Tests Failed: %d', [FSuccessCount, FFailCount]),
     mtInformation, [mbOK], 0);
