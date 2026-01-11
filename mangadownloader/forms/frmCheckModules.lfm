@@ -12,8 +12,8 @@ object FormCheckModules: TFormCheckModules
   OnShow = FormShow
   object lvModules: TListView
     Left = 0
-    Height = 345
-    Top = 55
+    Height = 376
+    Top = 24
     Width = 900
     Align = alClient
     AutoWidthLastColumn = True
@@ -24,12 +24,12 @@ object FormCheckModules: TFormCheckModules
   end
   object pnlTop: TPanel
     Left = 0
-    Height = 55
+    Height = 24
     Top = 0
     Width = 900
     Align = alTop
     BevelOuter = bvNone
-    ClientHeight = 55
+    ClientHeight = 24
     ClientWidth = 900
     TabOrder = 0
     object ToolBar2: TToolBar
@@ -93,15 +93,6 @@ object FormCheckModules: TFormCheckModules
         ImageIndex = 2
         OnClick = tbWebsitesSelectNoneClick
       end
-    end
-    object ProgressBar1: TProgressBar
-      Left = 8
-      Height = 20
-      Top = 30
-      Width = 884
-      Anchors = [akTop, akLeft, akRight]
-      TabOrder = 1
-      Visible = False
     end
   end
   object Splitter1: TSplitter

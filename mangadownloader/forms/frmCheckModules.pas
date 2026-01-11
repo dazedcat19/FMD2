@@ -33,7 +33,6 @@ type
     lvModules: TListView;
     pnlTop: TPanel;
     pnlBottom: TPanel;
-    ProgressBar1: TProgressBar;
     StatusBar: TStatusBar;
     Memo1: TMemo;
     Splitter1: TSplitter;
@@ -103,7 +102,7 @@ type
   end;
 
   { TModuleCheckThread }
-  TModuleCheckThread = class(TThread)
+  TModuleCheckThread = class(TStatusBarDownload)
   private
     FForm: TFormCheckModules;
     FProgressIndex: Integer;
@@ -260,7 +259,7 @@ end;
 
 constructor TModuleCheckThread.Create(AForm: TFormCheckModules);
 begin
-  inherited Create(True);
+  inherited Create(False, AForm, AForm.ImageList1, 16);
   FForm := AForm;
   FreeOnTerminate := True;
 end;
@@ -269,6 +268,7 @@ procedure TModuleCheckThread.SyncProgress;
 begin
   FForm.OnCheckProgress(FProgressIndex, FProgressStatus, FProgressDetails,
   FProgressMsg);
+  UpdateProgressBar(PCheckedCount^ ,PTotalToCheck^)
 end;
 
 procedure TModuleCheckThread.SyncComplete;
@@ -288,7 +288,7 @@ end;
 
 procedure TModuleCheckThread.CallUpdateProgress;
 begin
-  FForm.UpdateProgress;;
+  FForm.UpdateProgress;
 end;
 
 procedure TModuleCheckThread.Execute;
@@ -562,7 +562,6 @@ begin
   Memo1.Clear;
   Memo1.ScrollBars := ssVertical;
   Memo1.ReadOnly := True;
-  ProgressBar1.Visible := False;
 end;
 
 procedure TFormCheckModules.InitializeListView;
@@ -642,7 +641,6 @@ begin
     CanClose := CenteredMessageDlg(frmMain.MainForm,
       'An operation is in progress. Are you sure you want to close?',
       mtConfirmation, [mbYes, mbNo], 0) = mrYes;
-
 
     if CanClose then
     begin
@@ -825,7 +823,6 @@ procedure TFormCheckModules.CheckModuleIntegrity;
 var
   i: Integer;
 begin
-  MainStatusBar.Create();
   if lvModules.Items.Count = 0 then
   begin
     CenteredMessageDlg(frmMain.MainForm, 'No modules to check.'
@@ -852,10 +849,6 @@ begin
 
   FIsChecking := True;
   EnableStopCheck(True);
-  ProgressBar1.Visible := True;
-  ProgressBar1.Min := 0;
-  ProgressBar1.Max := FTotalToCheck;
-  ProgressBar1.Position := 0;
 
   //LogMessage('=== Starting Integrity Check ===0');
 
@@ -877,7 +870,7 @@ end;
 
 procedure TFormCheckModules.UpdateProgress;
 begin
-  ProgressBar1.Position := FCheckedCount;
+  // Progress bar is handled by TStatusBarDownload base class
   StatusBar.SimpleText := Format('Checking: %d/%d (Success: %d, Failed: %d)',
     [FCheckedCount, FTotalToCheck, FSuccessCount, FFailCount]);
 end;
@@ -888,7 +881,6 @@ begin
   FCheckThread := nil;
 
   EnableStopCheck(False);
-  ProgressBar1.Visible := False;
 
   StatusBar.SimpleText := Format('Check complete: %d tests passed, %d tests failed',
     [FSuccessCount, FFailCount]);
