@@ -547,6 +547,7 @@
 | Swat Manga | [![https://meshmanga.com](https://img.shields.io/website?url=https://meshmanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://meshmanga.com)](https://meshmanga.com) | OK | 12.11.2025 | - |
 | Taadd | [![https://www.taadd.com](https://img.shields.io/website?url=https://www.taadd.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.taadd.com)](https://www.taadd.com) | OK | 09.02.2025 | - |
 | Tapas | [![https://tapas.io](https://img.shields.io/website?url=https://tapas.io%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://tapas.io)](https://tapas.io) | - | - | - |
+| TaurusManga | [![https://lectortaurus.com](https://img.shields.io/website?url=https://lectortaurus.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lectortaurus.com)](https://lectortaurus.com) | OK | 11.01.2026 | - |
 | TCB Scans | [![https://tcbonepiecechapters.com](https://img.shields.io/website?url=https://tcbonepiecechapters.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://tcbonepiecechapters.com)](https://tcbonepiecechapters.com) | OK | 24.04.2025 | - |
 | TeamX | [![https://olympustaff.com](https://img.shields.io/website?url=https://olympustaff.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://olympustaff.com)](https://olympustaff.com) | - | - | - |
 | Temple Scan | [![https://templetoons.com](https://img.shields.io/website?url=https://templetoons.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://templetoons.com)](https://templetoons.com) | - | - | - |

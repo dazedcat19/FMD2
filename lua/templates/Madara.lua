@@ -52,8 +52,8 @@ function _M.GetNameAndLink()
 	if not HTTP.POST(u, s) then return net_problem end
 
 	local x = CreateTXQuery(HTTP.Document)
-	if x.XPathCount('//div[contains(@class, "post-title")]/*[self::h5 or self::h3]/a') == 0 then return no_error end
-	x.XPathHREFAll('//div[contains(@class, "post-title")]/*[self::h5 or self::h3]/a', LINKS, NAMES)
+	if x.XPathCount('//div[contains(@class, "post-title")]/*[self::h5 or self::h3 or self::h2]/a') == 0 then return no_error end
+	x.XPathHREFAll('//div[contains(@class, "post-title")]/*[self::h5 or self::h3 or self::h2]/a', LINKS, NAMES)
 	UPDATELIST.CurrentDirectoryPageNumber = UPDATELIST.CurrentDirectoryPageNumber + 1
 
 	return no_error
@@ -147,7 +147,7 @@ function _M.GetPageNumber()
 		end
 
 		if script ~= '' then
-			local img = require 'fmd.duktape'.ExecJS(script .. [[
+			local images = require 'fmd.duktape'.ExecJS(script .. [[
 
 			var CryptoJS = require("utils/crypto-js.min.js");
 			var CryptoJSAesJson = require("utils/cryptojs-aes-format.js");
@@ -155,8 +155,8 @@ function _M.GetPageNumber()
 
 			]]):gsub('\\/', '/'):gsub('%[', ''):gsub('%]', '')
 
-			for v in img:gmatch('"([^",]+)') do
-				TASK.PageLinks.Add(v)
+			for image in images:gmatch('"([^",]+)') do
+				TASK.PageLinks.Add(image)
 			end
 		end
 	end
