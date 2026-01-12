@@ -6,10 +6,10 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, StdCtrls,
-  ComCtrls, Buttons, WebsiteModules, LuaMangaInfo, LuaMangaCheck, LuaHTTPSend,
-  LuaWebsiteModuleHandler, LuaWebsiteModules, uData, LuaUtils, uBaseUnit,
-  uDownloadsManager, LuaDownloadTask, httpsendthread, StrUtils,
-  frmCustomMessageDlg, StatusBarDownload,
+  ComCtrls, Buttons, uCustomControls, WebsiteModules, LuaMangaInfo,
+  LuaMangaCheck, LuaHTTPSend, LuaWebsiteModuleHandler, LuaWebsiteModules, uData,
+  LuaUtils, uBaseUnit, uDownloadsManager, LuaDownloadTask, httpsendthread,
+  StrUtils, frmCustomMessageDlg, StatusBarDownload,
   {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 type
@@ -26,12 +26,14 @@ type
 
   { TFormCheckModules }
   TFormCheckModules = class(TForm)
-    btnCheckIntegrity: TButton;
-    btnRefreshModules: TButton;
-    btnStopCheck: TButton;
+    btnCheckIntegrity: TToolButton;
+    btnRefreshModules: TToolButton;
+    btnStopCheck: TToolButton;
+    edtFilter: TCustomEditButton;
     ImageList1: TImageList;
     lvModules: TListView;
     pnlTop: TPanel;
+    pnlFilter: TPanel; // Add this line
     pnlBottom: TPanel;
     StatusBar: TStatusBar;
     Memo1: TMemo;
@@ -51,6 +53,8 @@ type
     procedure tbWebsitesSelectInverseClick(Sender: TObject);
     procedure tbWebsitesSelectNoneClick(Sender: TObject);
     procedure UpdateProgress;
+    procedure edtFilterChange(Sender: TObject); // Add this line
+    procedure edtFilterButtonClick(Sender: TObject);
   private
     FIsScanning: Boolean;
     FIsChecking: Boolean;
@@ -60,6 +64,8 @@ type
     FModulesList: TList;
     FScanThread: TModuleScanThread;
     FCheckThread: TModuleCheckThread;
+    FFilterText: string;
+    procedure FilterModules;
     procedure InitializeListView;
     procedure ScanLuaModules;
     procedure CheckModuleIntegrity;
@@ -279,7 +285,9 @@ begin
 
   FForm.OnCheckProgress(FProgressIndex, FProgressStatus, FProgressDetails,
   FProgressMsg);
-  UpdateProgressBar(PCheckedCount^ ,TotalToCheck)
+  UpdateProgressBar(PCheckedCount^ ,TotalToCheck);
+  UpdateStatusText(Format('Checking: %d/%d (Success: %d, Failed: %d)',
+  [PCheckedCount^ ,TotalToCheck, PSuccessCount^, PFailCount^]));
 end;
 
 procedure TModuleCheckThread.SyncComplete;
@@ -565,6 +573,7 @@ begin
   FCheckedCount := 0;
   FSuccessCount := 0;
   FFailCount := 0;
+  FFilterText := ''; // Add this line
   FModulesList := TList.Create;
   FScanThread := nil;
   FCheckThread := nil;
@@ -778,6 +787,7 @@ begin
   Item.Checked := True;
   Item.Data := AMangaCheck;
   FModulesList.Add(AMangaCheck);
+  FilterModules; // Refilter to show the new module if it matches
 end;
 
 procedure TFormCheckModules.btnRefreshModulesClick(Sender: TObject);
@@ -1054,4 +1064,62 @@ begin
     ATaskContainer.Free;
 end;
 
+procedure TFormCheckModules.FilterModules;
+var
+  i: Integer;
+  Item: TListItem;
+  AMangaCheck: TMangaInformation;
+  FilterLower: string;
+  ModuleName: string;
+begin
+  if FModulesList.Count = 0 then Exit;
+
+  FilterLower := LowerCase(Trim(FFilterText));
+
+  lvModules.Items.BeginUpdate;
+  try
+    lvModules.Clear;
+
+    for i := 0 to FModulesList.Count - 1 do
+    begin
+      AMangaCheck := TMangaInformation(FModulesList[i]);
+      ModuleName := LowerCase(AMangaCheck.MangaCheck.ModuleName);
+
+      // If filter is empty or module name contains filter text
+      if (FilterLower = '') or (Pos(FilterLower, ModuleName) > 0) then
+      begin
+        Item := lvModules.Items.Add;
+        Item.Caption := AMangaCheck.MangaCheck.ModuleName;
+        Item.SubItems.Add(AMangaCheck.MangaCheck.ModuleFilename);
+        Item.SubItems.Add(IfThen(AMangaCheck.MangaCheck.MangaURL <> '',
+          'Yes' + IfThen(AMangaCheck.MangaCheck.MangaTitle <> '', ' with Title',
+          ' without Title'), 'No'));
+        Item.SubItems.Add(IfThen(AMangaCheck.MangaCheck.ChapterURL <> '',
+          'Yes' + IfThen(AMangaCheck.MangaCheck.ChapterTitle <> '', ' with Title',
+          ' without Title'), 'No'));
+        Item.SubItems.Add('Not Checked');
+        Item.SubItems.Add('');
+        Item.Checked := True;
+        Item.Data := AMangaCheck;
+      end;
+    end;
+  finally
+    lvModules.Items.EndUpdate;
+  end;
+
+  StatusBar.SimpleText := Format('Showing %d of %d modules',
+    [lvModules.Items.Count, FModulesList.Count]);
+end;
+
+// Add event handler for the filter edit box:
+procedure TFormCheckModules.edtFilterChange(Sender: TObject);
+begin
+  FFilterText := TEdit(Sender).Text;
+  FilterModules;
+end;
+
+procedure TFormCheckModules.edtFilterButtonClick(Sender: TObject);
+begin
+  edtFilter.Clear;
+end;
 end.
