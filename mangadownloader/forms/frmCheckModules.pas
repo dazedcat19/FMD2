@@ -929,7 +929,7 @@ function TFormCheckModules.TestGetInfo(const AMangaCheck:
 var
   L: TLuaWebsiteModuleHandler;
   ModuleCheck: TModuleContainer;
-  ChapterIndex: Integer;
+  ChapterIndex, i: Integer;
 begin
   Result.Success := False;
   Result.Message := 'Unknown error';
@@ -975,6 +975,15 @@ begin
         begin
           Result.Message := 'OnGetInfo returned true, but no chapters found';
           Exit;
+        end
+        else
+        begin
+          for i := 0 to AMangaCheck.MangaInfo.ChapterLinks.Count - 1 do
+          begin
+            AMangaCheck.MangaInfo.ChapterLinks[i] :=
+              MaybeFillHost(GetHostURL(AMangaCheck.MangaInfo.URL),
+              AMangaCheck.MangaInfo.ChapterLinks[i]);
+          end;
         end;
 
         Result.Success := True;
