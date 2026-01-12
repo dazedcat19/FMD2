@@ -256,7 +256,7 @@ end;
 
 constructor TModuleCheckThread.Create(AForm: TFormCheckModules);
 begin
-  inherited Create(False, AForm, AForm.ImageList1, 16);
+  inherited Create(False, frmMain.MainForm, AForm.ImageList1, 16);
   FForm := AForm;
   FreeOnTerminate := True;
 end;
