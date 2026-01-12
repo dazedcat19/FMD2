@@ -37,7 +37,7 @@
 | Atsumaru | [![https://atsu.moe](https://img.shields.io/website?url=https://atsu.moe%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://atsu.moe)](https://atsu.moe) | OK | 07.11.2025 | - |
 | Aurora Scans | [![https://aurorascans.com](https://img.shields.io/website?url=https://aurorascans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://aurorascans.com)](https://aurorascans.com) | OK | 29.06.2025 | Paid chapters are hidden by default |
 | AzComix | [![https://azcomix.me](https://img.shields.io/website?url=https://azcomix.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://azcomix.me)](https://azcomix.me) | - | - | - |
-| Azora Manga | [![https://azoramoon.com](https://img.shields.io/website?url=https://azoramoon.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://azoramoon.com)](https://azoramoon.com) | - | - | - |
+| Azora Manga | [![https://azoramoon.com](https://img.shields.io/website?url=https://azoramoon.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://azoramoon.com)](https://azoramoon.com) | OK | 12.01.2026 | - |
 | BacaKomik | [![https://bacakomik.net](https://img.shields.io/website?url=https://bacakomik.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://bacakomik.net)](https://bacakomik.net) | - | - | - |
 | Baek 100 Scans | [![https://baektoons.com](https://img.shields.io/website?url=https://baektoons.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://baektoons.com)](https://baektoons.com) | OK | 20.09.2025 | - |
 | Bato.To | [![https://bato.to](https://img.shields.io/website?url=https://bato.to%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://bato.to)](https://bato.to) | OK | 15.12.2024 | - |

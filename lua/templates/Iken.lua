@@ -74,26 +74,35 @@ function _M.GetInfo()
 		MANGAINFO.Summary = x.XPathString('json(*).synopsisData.cleanText')
 		json_root_key = 'series'
 	else
-		MANGAINFO.Summary = x.XPathString('string-join(//div[@itemprop="description"]//p, "\r\n")')
+		local summary = x.XPathString('string-join(//div[@itemprop="description"]//p, "\r\n")')
 		local w = '{"post"' .. x.XPathString('//script[contains(., "postId")]/substring-before(substring-after(., "{""post"""), "}]]")') .. '}'
 		x.ParseHTML(w)
+		if summary == '' then summary = x.XPathString('json(*).post.postContent') end
+		MANGAINFO.Summary = summary
 		json_root_key = 'post'
 	end
 
 	local json = x.XPath('json(*).' .. json_root_key)
 	MANGAINFO.Title     = x.XPathString('postTitle', json)
-	MANGAINFO.AltTitles = x.XPathString('alternativeTitles', json)
 	MANGAINFO.CoverLink = x.XPathString('featuredImage', json)
-	MANGAINFO.Authors   = x.XPathString('author', json)
-	MANGAINFO.Artists   = x.XPathString('artist', json)
-	MANGAINFO.Genres    = x.XPathStringAll('json(*).' .. json_root_key .. '.genres().name')
+	MANGAINFO.Genres    = x.XPathString('string-join(genres?*/name, ", ")', json)
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('seriesStatus', json), 'COMING_SOON|MASS_RELEASED|ONGOING', 'COMPLETED', 'HIATUS', 'CANCELLED|DROPPED')
 
+	local alttitles = x.XPathString('alternativeTitles', json)
+	MANGAINFO.AltTitles = alttitles ~= 'null' and alttitles
+
+	local authors = x.XPathString('author', json)
+	MANGAINFO.Authors = authors ~= 'null' and authors
+
+	local artists = x.XPathString('artist', json)
+	MANGAINFO.Artists = artists ~= 'null' and artists
+
 	local type = x.XPathString('seriesType', json):gsub("^(%u)(%u*)", function(first, rest) return first .. rest:lower() end)
-	local genres = {}
-	if MANGAINFO.Genres and MANGAINFO.Genres ~= '' then table.insert(genres, MANGAINFO.Genres) end
-	if type and type ~= '' then table.insert(genres, type) end
-	MANGAINFO.Genres = table.concat(genres, ', ')
+	if MANGAINFO.Genres ~= '' then
+		MANGAINFO.Genres = MANGAINFO.Genres .. ', ' .. type
+	else
+		MANGAINFO.Genres = type
+	end
 
 	if not HTTP.GET(API_URL .. '/api/chapters?take=999&order=asc&postId=' .. x.XPathString('id', json)) then return net_problem end
 

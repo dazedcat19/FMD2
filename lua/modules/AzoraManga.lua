@@ -11,17 +11,15 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnCheckSite              = 'CheckSite'
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.Madara'
--- XPathTokenAuthors = 'Author(s)'
--- XPathTokenArtists = 'Artist(s)'
--- XPathTokenGenres  = 'Genre(s)'
--- XPathTokenStatus  = 'Status'
+local Template = require 'templates.Iken'
+API_URL = 'https://api.azoramoon.com'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -34,7 +32,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
 
@@ -45,5 +43,13 @@ end
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
+end
+
+-- Verify the module's functionality by checking a specific manga and chapter.
+function CheckSite()
+    MANGACHECK.MangaURL     = '/series/the-little-tyrant-is-making-a-scene'
+    MANGACHECK.MangaTitle   = 'The Little Tyrant Is Making a Scene!'
+    MANGACHECK.ChapterURL   = '/series/the-little-tyrant-is-making-a-scene/chapter-26'
+    MANGACHECK.ChapterTitle = 'Chapter 26'
 end
