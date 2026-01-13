@@ -355,6 +355,7 @@ type
       ChapterURL,
       ChapterTitle: String;
       TestToCheck: Integer;
+      AddRootHost: Boolean;
       Module: Pointer;
       constructor Create;
       destructor Destroy; override;
@@ -3040,6 +3041,7 @@ end;
 constructor TMangaCheck.Create;
 begin
   inherited Create;
+  AddRootHost := True;
 end;
 
 destructor TMangaCheck.Destroy;

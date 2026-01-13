@@ -207,7 +207,8 @@ begin
               end;
               if ChapterURL <> '' then
               begin
-                ChapterURL := MaybeFillHost(RootURL, ChapterURL);
+                if AMangaCheck.MangaCheck.AddRootHost then
+                  ChapterURL := MaybeFillHost(RootURL, ChapterURL);
                 Inc(AMangaCheck.MangaCheck.TestToCheck);
                 if ChapterTitle <> '' then
                 begin
@@ -978,11 +979,14 @@ begin
         end
         else
         begin
-          for i := 0 to AMangaCheck.MangaInfo.ChapterLinks.Count - 1 do
+          if AMangaCheck.MangaCheck.AddRootHost then
           begin
-            AMangaCheck.MangaInfo.ChapterLinks[i] :=
-              MaybeFillHost(GetHostURL(AMangaCheck.MangaInfo.URL),
-              AMangaCheck.MangaInfo.ChapterLinks[i]);
+            for i := 0 to AMangaCheck.MangaInfo.ChapterLinks.Count - 1 do
+            begin
+              AMangaCheck.MangaInfo.ChapterLinks[i] :=
+                MaybeFillHost(GetHostURL(AMangaCheck.MangaInfo.URL),
+                AMangaCheck.MangaInfo.ChapterLinks[i]);
+            end;
           end;
         end;
 

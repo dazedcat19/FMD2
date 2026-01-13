@@ -67,8 +67,8 @@ object FormCheckModules: TFormCheckModules
       PasswordChar = #0
       TabOrder = 0
       TextHint = 'Type to filter modules...'
-      OnChange = edtFilterChange
       OnButtonClick = edtFilterButtonClick
+      OnChange = edtFilterChange
     end
   end
   object lvModules: TListView
