@@ -696,7 +696,7 @@ begin
       end
       else
       begin
-        FilePath := AppendPathDelim(ExpandFileName(TempPath)) + '*' + ExtractFileExt(FilePath);
+        FilePath := AppendPathDelim(ExpandFileName(TempPath)) + '*';
       end;
 
       Result := ImageMagick.ConvertImage(FilePath, CurrentWorkingDir);
@@ -791,12 +791,18 @@ var
 begin
   if FCurrentWorkingDir = AValue then Exit;
   FCurrentWorkingDir := CorrectPathSys(AValue);
+
   {$IFDEF Windows}
   s := UTF8Decode(FCurrentWorkingDir);
+
   if MainForm.cbOptionEnableLongNamePaths.Checked then
-    FCurrentMaxFileNameLength := FMDMaxImageFilePath + Length(s)
+  begin
+    FCurrentMaxFileNameLength := FMDMaxImageFilePath + Length(s);
+  end
   else
+  begin
     FCurrentMaxFileNameLength := FMDMaxImageFilePath - Length(s);
+  end;
   {$ENDIF}
 end;
 
