@@ -1089,14 +1089,18 @@ begin
 end;
 
 function TFormCheckModules.MaybeFillPrefix(const Prefix, URL: String): String;
+var
+  UrlHost, UrlPath: string;
 begin
-  if ContainsStr(URL, Prefix) then
+  UrlHost := GetHostURL(URL);
+  UrlPath := RemoveHostFromURL(URL);
+  if ContainsStr(UrlPath, Prefix) then
   begin
-    Result := URL;
+    Result := UrlHost + UrlPath;
   end
   else
   begin
-    Result := Prefix + URL;
+    Result := UrlHost + Prefix + UrlPath;
   end;
 end;
 
