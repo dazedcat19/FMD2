@@ -353,9 +353,11 @@ type
       MangaURL,
       MangaTitle,
       ChapterURL,
-      ChapterTitle: String;
+      ChapterTitle,
+      ChapterURLPrefix: String;
       TestToCheck: Integer;
-      AddRootHost: Boolean;
+      MangaURLAddRootHost: Boolean;
+      ChapterURLAddRootHost: Boolean;
       Module: Pointer;
       constructor Create;
       destructor Destroy; override;
@@ -3041,7 +3043,9 @@ end;
 constructor TMangaCheck.Create;
 begin
   inherited Create;
-  AddRootHost := True;
+  ChapterURLPrefix := '';
+  MangaURLAddRootHost := True;
+  ChapterURLAddRootHost := True;
 end;
 
 destructor TMangaCheck.Destroy;

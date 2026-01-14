@@ -75,6 +75,7 @@ type
     function TestGetInfo(const AMangaCheck: TMangaInformation): TTestResult;
     function TestGetPageNumber(
       const AMangaCheck: TMangaInformation): TTestResult;
+    function MaybeFillPrefix(const Prefix, URL: String): String;
     procedure LogMessage(const AMsg: string);
     procedure EnableStopCheck(const AEnable: Boolean);
     procedure ClearModulesList;
@@ -198,7 +199,8 @@ begin
             begin
               if MangaURL <> '' then
               begin
-                MangaURL := MaybeFillHost(RootURL, MangaURL);
+                if AMangaCheck.MangaCheck.MangaURLAddRootHost then
+                  MangaURL := MaybeFillHost(RootURL, MangaURL);
                 Inc(AMangaCheck.MangaCheck.TestToCheck);
                 if MangaTitle <> '' then
                 begin
@@ -207,7 +209,9 @@ begin
               end;
               if ChapterURL <> '' then
               begin
-                if AMangaCheck.MangaCheck.AddRootHost then
+                ChapterURL := FForm.MaybeFillPrefix(
+                  AMangaCheck.MangaCheck.ChapterURLPrefix, ChapterURL);
+                if AMangaCheck.MangaCheck.ChapterURLAddRootHost then
                   ChapterURL := MaybeFillHost(RootURL, ChapterURL);
                 Inc(AMangaCheck.MangaCheck.TestToCheck);
                 if ChapterTitle <> '' then
@@ -979,7 +983,14 @@ begin
         end
         else
         begin
-          if AMangaCheck.MangaCheck.AddRootHost then
+          if AMangaCheck.MangaCheck.ChapterURLPrefix <> '' then
+            for i := 0 to AMangaCheck.MangaInfo.ChapterLinks.Count - 1 do
+            begin
+              AMangaCheck.MangaInfo.ChapterLinks[i] :=
+                MaybeFillPrefix(AMangaCheck.MangaCheck.ChapterURLPrefix,
+                AMangaCheck.MangaInfo.ChapterLinks[i])
+            end;
+          if AMangaCheck.MangaCheck.ChapterURLAddRootHost then
           begin
             for i := 0 to AMangaCheck.MangaInfo.ChapterLinks.Count - 1 do
             begin
@@ -1075,6 +1086,18 @@ begin
 
   if Assigned(ATaskContainer) then
     ATaskContainer.Free;
+end;
+
+function TFormCheckModules.MaybeFillPrefix(const Prefix, URL: String): String;
+begin
+  if ContainsStr(URL, Prefix) then
+  begin
+    Result := URL;
+  end
+  else
+  begin
+    Result := Prefix + URL;
+  end;
 end;
 
 procedure TFormCheckModules.FilterModules;

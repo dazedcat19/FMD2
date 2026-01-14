@@ -23,8 +23,13 @@ begin
     luaClassAddStringProperty(L, MetaTable, 'MangaURL', @MangaURL);
     luaClassAddStringProperty(L, MetaTable, 'MangaTitle', @MangaTitle);
     luaClassAddStringProperty(L, MetaTable, 'ChapterURL', @ChapterURL);
+    luaClassAddStringProperty(L, MetaTable, 'ChapterURLPrefix',
+    @ChapterURLPrefix);
     luaClassAddStringProperty(L, MetaTable, 'ChapterTitle', @ChapterTitle);
-    luaClassAddBooleanProperty(L, MetaTable, 'AddRootHost', @AddRootHost);
+    luaClassAddBooleanProperty(L, MetaTable, 'MangaURLAddRootHost',
+    @MangaURLAddRootHost);
+    luaClassAddBooleanProperty(L, MetaTable, 'ChapterURLAddRootHost',
+    @ChapterURLAddRootHost);
   end;
 end;
 
