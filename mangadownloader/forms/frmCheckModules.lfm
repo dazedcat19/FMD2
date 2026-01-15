@@ -93,12 +93,12 @@ object FormCheckModules: TFormCheckModules
     ClientHeight = 24
     ClientWidth = 900
     TabOrder = 0
-    object ToolBar2: TToolBar
+    object tbCheckModules: TToolBar
       Left = 0
       Height = 26
       Top = 0
       Width = 900
-      Images = ImageList1
+      Images = imlCheckModules
       List = True
       ShowCaptions = True
       TabOrder = 0
@@ -153,7 +153,7 @@ object FormCheckModules: TFormCheckModules
       end
     end
   end
-  object Splitter1: TSplitter
+  object sptCheckModules: TSplitter
     Cursor = crVSplit
     Left = 0
     Height = 5
@@ -162,7 +162,7 @@ object FormCheckModules: TFormCheckModules
     Align = alBottom
     ResizeAnchor = akBottom
   end
-  object Memo1: TMemo
+  object memCheckModules: TMemo
     Left = 0
     Height = 174
     Top = 405
@@ -190,7 +190,7 @@ object FormCheckModules: TFormCheckModules
       Panels = <>
     end
   end
-  object ImageList1: TImageList
+  object imlCheckModules: TImageList
     Left = 856
     Top = 576
     Bitmap = {

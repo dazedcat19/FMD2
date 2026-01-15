@@ -30,18 +30,18 @@ type
     btnRefreshModules: TToolButton;
     btnStopCheck: TToolButton;
     edtFilter: TCustomEditButton;
-    ImageList1: TImageList;
+    imlCheckModules: TImageList;
     lvModules: TListView;
     pnlTop: TPanel;
     pnlFilter: TPanel; // Add this line
     pnlBottom: TPanel;
     StatusBar: TStatusBar;
-    Memo1: TMemo;
-    Splitter1: TSplitter;
+    memCheckModules: TMemo;
+    sptCheckModules: TSplitter;
     tbWebsitesSelectAll: TToolButton;
     tbWebsitesSelectInverse: TToolButton;
     tbWebsitesSelectNone: TToolButton;
-    ToolBar2: TToolBar;
+    tbCheckModules: TToolBar;
     procedure btnCheckIntegrityClick(Sender: TObject);
     procedure btnRefreshModulesClick(Sender: TObject);
     procedure btnStopCheckClick(Sender: TObject);
@@ -271,7 +271,7 @@ end;
 
 constructor TModuleCheckThread.Create(AForm: TFormCheckModules);
 begin
-  inherited Create(False, frmMain.MainForm, AForm.ImageList1, 16);
+  inherited Create(False, frmMain.MainForm, AForm.imlCheckModules, 16);
   FForm := AForm;
   FreeOnTerminate := True;
 end;
@@ -587,9 +587,9 @@ begin
   FScanThread := nil;
   FCheckThread := nil;
   InitializeListView;
-  Memo1.Clear;
-  Memo1.ScrollBars := ssVertical;
-  Memo1.ReadOnly := True;
+  memCheckModules.Clear;
+  memCheckModules.ScrollBars := ssVertical;
+  memCheckModules.ReadOnly := True;
 end;
 
 procedure TFormCheckModules.InitializeListView;
@@ -708,7 +708,7 @@ end;
 
 procedure TFormCheckModules.LogMessage(const AMsg: string);
 begin
-  Memo1.Lines.Add(FormatDateTime('hh:nn:ss', Now) + ' - ' + AMsg);
+  memCheckModules.Lines.Add(FormatDateTime('hh:nn:ss', Now) + ' - ' + AMsg);
 end;
 
 procedure TFormCheckModules.EnableStopCheck(const AEnable: Boolean);
@@ -744,7 +744,7 @@ begin
 
   FIsScanning := True;
   EnableStopCheck(True);
-  Memo1.Clear;
+  memCheckModules.Clear;
 
   lvModules.Items.BeginUpdate;
   try
