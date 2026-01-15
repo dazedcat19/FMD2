@@ -40,9 +40,9 @@ var
   image, result: TPicture;
   memStream: TMemoryStream;
   tmpMemBitmap: TMemBitmap;
-  y: Integer;
   blockWidth, blockHeight: Double;
-  iBlockWidth, iBaseHeight, iRemainder: Integer;
+  imgWidth, imgHeight: Integer;
+  baseBlockHeight, remainder: Integer;
   destY, destH, srcY, srcH: Integer;
   i, row, col: Integer;
   x1, y1, x2, y2: Integer;
@@ -64,8 +64,8 @@ begin
       ext := 'png';
       image.Bitmap.SetSize(tmpMemBitmap.Width, tmpMemBitmap.Height);
       image.Bitmap.PixelFormat := pf32bit;
-      for y := 0 to tmpMemBitmap.Height - 1 do
-        Move(tmpMemBitmap.ScanLine[y]^, image.Bitmap.ScanLine[y]^, tmpMemBitmap.Width * 4);
+      for i := 0 to tmpMemBitmap.Height - 1 do
+        Move(tmpMemBitmap.ScanLine[i]^, image.Bitmap.ScanLine[i]^, tmpMemBitmap.Width * 4);
       tmpMemBitmap.Free;
     end
     else
@@ -78,48 +78,39 @@ begin
     result.Bitmap.SetSize(image.Width, image.Height);
     if HorBlock = 1 then
     begin
-      iBlockWidth := image.Width;
-      iBaseHeight := image.Height div VerBlock;
-      iRemainder := image.Height mod VerBlock;
-      for i := 0 to VerBlock - 1 do 
+      imgHeight := image.Height;
+      imgWidth := image.Width;
+      baseBlockHeight := imgHeight div VerBlock;
+      remainder := imgHeight mod VerBlock;
+      for i := 0 to VerBlock - 1 do
       begin
+        destH := baseBlockHeight;
+        destY := baseBlockHeight * i;
         if i = 0 then
-        begin
-           destH := iBaseHeight + iRemainder;
-           destY := 0;
-        end
+          destH := destH + remainder
         else
-        begin
-           destH := iBaseHeight;
-           destY := (iBaseHeight + iRemainder) + (i - 1) * iBaseHeight;
-        end;
-        dstrect := Rect(0, destY, iBlockWidth, destY + destH);
-        row := Matrix[i];
-        if row = VerBlock - 1 then
-        begin
-           srcH := iBaseHeight + iRemainder;
-           srcY := image.Height - srcH;
-        end
-        else
-        begin
-           srcH := iBaseHeight;
-           srcY := row * iBaseHeight;
-        end;
-        srcrect := Rect(0, srcY, iBlockWidth, srcY + srcH);
+          destY := destY + remainder;
+        dstrect := Rect(0, destY, imgWidth, destY + destH);
+        srcY := imgHeight - (baseBlockHeight * (i + 1)) - remainder;
+        srcH := destH;
+        srcrect := Rect(0, srcY, imgWidth, srcY + srcH);
         result.Bitmap.Canvas.CopyRect(dstrect, image.Bitmap.Canvas, srcrect);
       end;
     end
     else
     begin
-      if Multiply <= 1 then begin
+      if Multiply <= 1 then
+      begin
         blockWidth := image.Width / HorBlock;
         blockHeight := image.Height / VerBlock;
       end
-      else begin
+      else
+      begin
         blockWidth := Trunc(image.Width / (HorBlock * Multiply)) * Multiply;
         blockHeight := Trunc(image.Height / (VerBlock * Multiply)) * Multiply;
       end;
-      for i := 0 to HorBlock * VerBlock - 1 do begin
+      for i := 0 to HorBlock * VerBlock - 1 do
+      begin
         row := Matrix[i] div HorBlock;
         col := Matrix[i] mod HorBlock;
         x1 := Trunc(col * blockWidth);
