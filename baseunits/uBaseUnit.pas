@@ -3043,7 +3043,7 @@ end;
 constructor TMangaCheck.Create;
 begin
   inherited Create;
-  ChapterURLPrefix := '/';
+  ChapterURLPrefix := '';
   MangaURLAddRootHost := True;
   ChapterURLAddRootHost := True;
 end;

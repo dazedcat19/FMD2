@@ -209,8 +209,12 @@ begin
               end;
               if ChapterURL <> '' then
               begin
-                ChapterURL := FForm.MaybeFillPrefix(
-                  AMangaCheck.MangaCheck.ChapterURLPrefix, ChapterURL);
+                if AMangaCheck.MangaCheck.ChapterURLPrefix <> '' then
+                  ChapterURL := FForm.MaybeFillPrefix(
+                    AMangaCheck.MangaCheck.ChapterURLPrefix, ChapterURL)
+                else
+                  ChapterURL := AppendURLDelimLeft(ChapterURL);
+
                 if AMangaCheck.MangaCheck.ChapterURLAddRootHost then
                   ChapterURL := MaybeFillHost(RootURL, ChapterURL);
                 Inc(AMangaCheck.MangaCheck.TestToCheck);
@@ -984,12 +988,22 @@ begin
         else
         begin
           if AMangaCheck.MangaCheck.ChapterURLPrefix <> '' then
+          begin
             for i := 0 to AMangaCheck.MangaInfo.ChapterLinks.Count - 1 do
             begin
               AMangaCheck.MangaInfo.ChapterLinks[i] :=
                 MaybeFillPrefix(AMangaCheck.MangaCheck.ChapterURLPrefix,
                 AMangaCheck.MangaInfo.ChapterLinks[i])
             end;
+          end
+          else
+          begin
+            for i := 0 to AMangaCheck.MangaInfo.ChapterLinks.Count - 1 do
+            begin
+              AMangaCheck.MangaInfo.ChapterLinks[i] := AppendURLDelimLeft(
+                AMangaCheck.MangaInfo.ChapterLinks[i])
+            end;
+          end;
           if AMangaCheck.MangaCheck.ChapterURLAddRootHost then
           begin
             for i := 0 to AMangaCheck.MangaInfo.ChapterLinks.Count - 1 do
