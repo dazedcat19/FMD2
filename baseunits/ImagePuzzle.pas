@@ -61,12 +61,15 @@ begin
     tmpMemBitmap := WebPToMemBitmap(memStream);
     if Assigned(tmpMemBitmap) then
     begin
-      ext := 'png';
-      image.Bitmap.SetSize(tmpMemBitmap.Width, tmpMemBitmap.Height);
-      image.Bitmap.PixelFormat := pf32bit;
-      for i := 0 to tmpMemBitmap.Height - 1 do
-        Move(tmpMemBitmap.ScanLine[i]^, image.Bitmap.ScanLine[i]^, tmpMemBitmap.Width * 4);
-      tmpMemBitmap.Free;
+      try
+        ext := 'png';
+        image.Bitmap.SetSize(tmpMemBitmap.Width, tmpMemBitmap.Height);
+        image.Bitmap.PixelFormat := pf32bit;
+        for i := 0 to tmpMemBitmap.Height - 1 do
+          Move(tmpMemBitmap.ScanLine[i]^, image.Bitmap.ScanLine[i]^, tmpMemBitmap.Width * 4);
+      finally
+        tmpMemBitmap.Free;
+      end;
     end
     else
     begin
