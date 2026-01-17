@@ -38,12 +38,11 @@ end
 
 -- Get info and chapter list for the current manga.
 function _M.GetInfo()
-	local x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
+	local x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Title     = x.XPathString('//ul[@class="manga-info-text"]//h1')
 	MANGAINFO.AltTitles = x.XPathString('//ul[@class="manga-info-text"]//h2/substring-after(., "Alternative :")')
 	MANGAINFO.CoverLink = x.XPathString('//div[@class="manga-info-pic"]/img/@src')
@@ -52,7 +51,14 @@ function _M.GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//ul[@class="manga-info-text"]/li[contains(., "Status")]'))
 	MANGAINFO.Summary   = x.XPathStringAll('//div[@id="contentBox"]/substring-after(., "your bookmark.")')
 
-	x.XPathHREFAll('//div[@class="chapter-list"]//a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+	local slug = URL:match('/([^/]+)$')
+
+	if not HTTP.GET(MODULE.RootURL .. '/api/manga/' .. slug .. '/chapters?limit=10000&offset=0') then return net_problem end
+
+	for v in CreateTXQuery(HTTP.Document).XPath('json(*).data.chapters()').Get() do
+		MANGAINFO.ChapterLinks.Add('manga/' .. slug .. '/' .. v.GetProperty('chapter_slug').ToString())
+		MANGAINFO.ChapterNames.Add(v.GetProperty('chapter_name').ToString())
+	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	HTTP.Reset()
@@ -61,15 +67,15 @@ function _M.GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function _M.GetPageNumber()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
-	if not HTTP.GET(u) then return net_problem end
+	if not HTTP.GET(u) then return false end
 
 	CreateTXQuery(HTTP.Document).XPathStringAll('//div[@class="container-chapter-reader"]/img[@title]/@src', TASK.PageLinks)
 
-	return no_error
+	return true
 end
 
 -- Prepare the URL, http header and/or http cookies before downloading an image.
