@@ -26,7 +26,7 @@ uses
   frmAccountSet, frmWebsiteOptionCustom, frmCustomColor, frmLogger, frmTransferFavorites,
   frmLuaModulesUpdater, CheckUpdate, DBDataProcess, uDarkStyleParams, uWin32WidgetSetDark,
   SimpleTranslator, httpsendthread, DateUtils, SimpleException, uCustomControls,
-  uCustomControlsMultiLog, ImageMagickManager;
+  uCustomControlsMultiLog, ImageMagickManager, frmCheckModules;
 
 type
 
@@ -78,6 +78,7 @@ type
     cbUseRegExpr: TCheckBox;
     cbOptionProxyType: TComboBox;
     cbOptionOneInstanceOnly: TCheckBox;
+    ckEnableModuleDebug: TCheckBox;
     ckImageMagick: TCheckBox;
     ckPNGSaveAsJPEG: TCheckBox;
     ckOptionsAlwaysStartTaskFromFailedChapters: TCheckBox;
@@ -212,6 +213,7 @@ type
     seOptionRetryFailedTask: TSpinEdit;
     seJPEGQuality: TSpinEdit;
     spThumb: TSplitter;
+    tsWebsiteCheckModules: TTabSheet;
     tbWebsitesSelectAll: TToolButton;
     tbWebsitesUnselectAll: TToolButton;
     tsAccounts: TTabSheet;
@@ -495,6 +497,7 @@ type
       Shift: TShiftState);
     procedure cbSelectMangaMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure ckEnableModuleDebugChange(Sender: TObject);
     procedure ckImageMagickChange(Sender: TObject);
     procedure clbChapterListBeforeCellPaint(Sender: TBaseVirtualTree;
       TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
@@ -1339,6 +1342,9 @@ begin
 
   LuaModulesUpdaterForm := TLuaModulesUpdaterForm.Create(Self);
   EmbedForm(LuaModulesUpdaterForm, tsWebsiteModules);
+
+  FormCheckModules := TFormCheckModules.Create(Self);
+  EmbedForm(FormCheckModules, tsWebsiteCheckModules);
 
   // init vt
   vtDownload.NodeDataSize := SizeOf(TDownloadInfo);
@@ -3002,6 +3008,18 @@ procedure TMainForm.cbSelectMangaMouseDown(Sender: TObject;
 begin
   if Button = mbMiddle then
     cbSelectMangaEditingDone(Sender);
+end;
+
+procedure TMainForm.ckEnableModuleDebugChange(Sender: TObject);
+begin
+  if ckEnableModuleDebug.Checked then
+  begin
+    tsWebsiteCheckModules.TabVisible:= True;
+  end
+  else
+  begin
+    tsWebsiteCheckModules.TabVisible:= False;
+  end;
 end;
 
 procedure TMainForm.ckImageMagickChange(Sender: TObject);
@@ -5863,6 +5881,7 @@ begin
     // misc
     frmCustomColor.LoadFromIniFile(settingsfile);
     ckEnableLogging.Checked := ReadBool('logger', 'Enabled', False);
+    ckEnableModuleDebug.Checked := ReadBool('Modules', 'Debug', False);
     edLogFileName.Text := ReadString('logger', 'LogFileName', '');
     if edLogFileName.Text = '' then
     begin
@@ -6045,6 +6064,7 @@ begin
       // misc
       frmCustomColor.SaveToIniFile(settingsfile);
       WriteBool('logger', 'Enabled', ckEnableLogging.Checked);
+      WriteBool('Modules', 'Debug', ckEnableModuleDebug.Checked);
 
       if edLogFileName.Text = '' then
       begin
@@ -6260,6 +6280,15 @@ begin
       end;
 
       Logger.Enabled := False;
+    end;
+
+    if ckEnableModuleDebug.Checked then
+    begin
+      tsWebsiteCheckModules.TabVisible:= True;
+    end
+    else
+    begin
+      tsWebsiteCheckModules.TabVisible:= False;
     end;
 
     //languages

@@ -24,8 +24,9 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="2"/>
-      <RevisionNr Value="34"/>
-      <BuildNr Value="5"/>
+      <MinorVersionNr Value="1"/>
+      <RevisionNr Value="35"/>
+      <BuildNr Value="1"/>
       <Attributes pvaPrivateBuild="True"/>
       <StringTable Comments="https://github.com/dazedcat19/FMD2" FileDescription="Free Manga Downloader" LegalCopyright="©2015-2025" OriginalFilename="fmd.exe" ProductName="Free Manga Downloader" ProductVersion="$BuildMode()"/>
     </VersionInfo>
@@ -55,7 +56,7 @@
           <Linking>
             <Debugging>
               <GenerateDebugInfo Value="False"/>
-              <DebugInfoType Value="dsStabs"/>
+              <DebugInfoType Value="dsDwarf3"/>
               <StripSymbols Value="True"/>
               <UseExternalDbgSyms Value="True"/>
             </Debugging>
@@ -330,6 +331,8 @@
       </Item7>
       <Item8>
         <PackageName Value="LCL"/>
+        <MaxVersion Major="3" Minor="8"/>
+        <MinVersion Major="3" Minor="8"/>
       </Item8>
       <Item9>
         <PackageName Value="virtualtreeview_package"/>
@@ -353,7 +356,7 @@
         <PackageName Value="metadarkstyledsgn"/>
       </Item15>
     </RequiredPackages>
-    <Units Count="29">
+    <Units Count="30">
       <Unit0>
         <Filename Value="md.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -523,6 +526,13 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="ImageMagickManager"/>
       </Unit28>
+      <Unit29>
+        <Filename Value="forms\frmCheckModules.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="FormCheckModules"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit29>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
