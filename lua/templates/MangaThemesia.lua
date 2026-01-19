@@ -102,21 +102,20 @@ function _M.GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function _M.GetPageNumber()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return false end
 
 	local x = CreateTXQuery(HTTP.Document)
-	x.ParseHTML(GetBetween('run(', ');', x.XPathString('//script[contains(., "ts_reader")]')))
+	x.ParseHTML(x.XPathString('//script[contains(., "ts_reader")]'):match('run%((.-)%)'):gsub('!0', 'true'):gsub('!1', 'false'))
 	x.XPathStringAll('json(*).sources()[1].images()', TASK.PageLinks)
 	for i = 0, TASK.PageLinks.Count - 1 do
 		TASK.PageLinks[i] = TASK.PageLinks[i]:gsub('i%d.wp.com/', '')
 		if string.find(TASK.PageLinks[i], 'blogger') or string.find(TASK.PageLinks[i], 'blogspot') then
 			TASK.PageLinks[i] = TASK.PageLinks[i]:gsub('/s1600/', '/s0/')
 		end
-		i = i + 1
 	end
 
 	return true
