@@ -80,6 +80,7 @@ object FormCheckModules: TFormCheckModules
     AutoWidthLastColumn = True
     Checkboxes = True
     Columns = <>
+    SortType = stText
     TabOrder = 1
     ViewStyle = vsReport
   end
