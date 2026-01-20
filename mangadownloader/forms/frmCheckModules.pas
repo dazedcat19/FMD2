@@ -939,6 +939,7 @@ var
   L: TLuaWebsiteModuleHandler;
   ModuleCheck: TModuleContainer;
   ChapterIndex, i: Integer;
+  http: THTTPSendThread;
 begin
   Result.Success := False;
   Result.Message := 'Unknown error';
@@ -956,12 +957,13 @@ begin
   try
     with TLuaWebsiteModule(ModuleCheck.LuaModule) do
     begin
+      http := ModuleCheck.CreateHTTP();
       L := GetLuaWebsiteModuleHandler(ModuleCheck);
       luaPushStringGlobal(L.Handle, 'URL', AMangaCheck.MangaCheck.MangaURL);
       LuaPushNetStatus(L.Handle);
 
       L.LoadObject('MANGAINFO', AMangaCheck.MangaInfo, @luaMangaInfoAddMetaTable);
-      L.LoadObject('HTTP', AMangaCheck.HTTP, @luaHTTPSendThreadAddMetaTable);
+      L.LoadObject('HTTP', http, @luaHTTPSendThreadAddMetaTable);
 
       L.CallFunction(OnGetInfo);
 
@@ -1000,8 +1002,9 @@ begin
           begin
             for i := 0 to AMangaCheck.MangaInfo.ChapterLinks.Count - 1 do
             begin
-              AMangaCheck.MangaInfo.ChapterLinks[i] := AppendURLDelimLeft(
-                AMangaCheck.MangaInfo.ChapterLinks[i])
+              if copy(AMangaCheck.MangaInfo.ChapterLinks[i],1,4) <> 'http' then
+                AMangaCheck.MangaInfo.ChapterLinks[i] := AppendURLDelimLeft(
+                  AMangaCheck.MangaInfo.ChapterLinks[i]);
             end;
           end;
           if AMangaCheck.MangaCheck.ChapterURLAddRootHost then
@@ -1047,6 +1050,7 @@ var
   L: TLuaWebsiteModuleHandler;
   ModuleCheck: TModuleContainer;
   ATaskContainer: TTaskContainer;
+  http: THTTPSendThread;
 begin
   Result.Success := False;
   Result.Message := 'Unknown error';
@@ -1062,13 +1066,14 @@ begin
   try
     with TLuaWebsiteModule(ModuleCheck.LuaModule) do
     begin
+      http := ModuleCheck.CreateHTTP();
       L := GetLuaWebsiteModuleHandler(ModuleCheck);
       luaPushStringGlobal(L.Handle, 'URL', AMangaCheck.MangaCheck.ChapterURL);
 
       ATaskContainer := TTaskContainer.Create;
 
       L.LoadObject('TASK', ATaskContainer, @luaDownloadTaskMetaTable);
-      L.LoadObject('HTTP', AMangaCheck.HTTP, @luaHTTPSendThreadAddMetaTable);
+      L.LoadObject('HTTP', http, @luaHTTPSendThreadAddMetaTable);
 
       L.CallFunction(OnGetPageNumber);
 
