@@ -40,7 +40,6 @@
 | Azora Manga | [![https://azoramoon.com](https://img.shields.io/website?url=https://azoramoon.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://azoramoon.com)](https://azoramoon.com) | OK | 12.01.2026 | - |
 | BacaKomik | [![https://bacakomik.net](https://img.shields.io/website?url=https://bacakomik.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://bacakomik.net)](https://bacakomik.net) | - | - | - |
 | Baek 100 Scans | [![https://baektoons.com](https://img.shields.io/website?url=https://baektoons.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://baektoons.com)](https://baektoons.com) | OK | 19.01.2026 | - |
-| Bato.To | [![https://bato.to](https://img.shields.io/website?url=https://bato.to%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://bato.to)](https://bato.to) | OK | 15.12.2024 | - |
 | BeeHentai | [![https://beehentai.com](https://img.shields.io/website?url=https://beehentai.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://beehentai.com)](https://beehentai.com) | OK | 09.07.2025 | - |
 | BiliBiliComics | [![https://www.bilibilicomics.com](https://img.shields.io/website?url=https://www.bilibilicomics.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.bilibilicomics.com)](https://www.bilibilicomics.com) | - | - | - |
 | BiliBiliManhua | [![https://manga.bilibili.com](https://img.shields.io/website?url=https://manga.bilibili.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga.bilibili.com)](https://manga.bilibili.com) | - | - | - |
@@ -612,6 +611,7 @@
 | Wnacg | [![https://www.wnacg.org](https://img.shields.io/website?url=https://www.wnacg.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.wnacg.org)](https://www.wnacg.org) | - | - | - |
 | WoweScans | [![http://wowescans.co](https://img.shields.io/website?url=http://wowescans.co%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://wowescans.co)](http://wowescans.co) | - | - | - |
 | WuxiaWorld | [![https://wuxiaworld.site](https://img.shields.io/website?url=https://wuxiaworld.site%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://wuxiaworld.site)](https://wuxiaworld.site) | - | - | - |
+| XBatCat | [![https://xbat.app](https://img.shields.io/website?url=https://xbat.app%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://xbat.app)](https://xbat.app) | OK | 21.01.2026 | - |
 | xCaliBRScans | [![https://xcalibrscans.com](https://img.shields.io/website?url=https://xcalibrscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://xcalibrscans.com)](https://xcalibrscans.com) | - | - | - |
 | XlecX | [![https://xlecx.one](https://img.shields.io/website?url=https://xlecx.one%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://xlecx.one)](https://xlecx.one) | OK | 28.04.2025 | - |
 | Xmanhwa | [![https://www.xmanhwa.me](https://img.shields.io/website?url=https://www.xmanhwa.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.xmanhwa.me)](https://www.xmanhwa.me) | - | - | - |
