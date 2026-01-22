@@ -148,8 +148,13 @@ function GetInfo()
 	MANGAINFO.Summary   = x.XPathString('summary', json)
 
 	local genres = {}
+	local seen = {}
 	for genre in x.XPath('genres?*', json).Get() do
-		table.insert(genres, GetGenre(genre.ToString()))
+		local key = genre.ToString()
+		if not seen[key] then
+			table.insert(genres, GetGenre(key))
+			seen[key] = true
+		end
 	end
 	MANGAINFO.Genres = table.concat(genres, ', ')
 
