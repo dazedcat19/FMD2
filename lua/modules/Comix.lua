@@ -91,6 +91,7 @@ function GetInfo()
 	local optgroup     = MODULE.GetOption('showscangroup')
 	local chapter_map  = {}
 	local chapter_list = {}
+	local has_integer  = {}
 
 	local page = 1
 	local pages = nil
@@ -107,6 +108,10 @@ function GetInfo()
 			local votes = tonumber(v.GetProperty('votes').ToString()) or 0
 			local updated_at = tonumber(v.GetProperty('updated_at').ToString()) or 0
 			local official = tonumber(v.GetProperty('is_official').ToString()) or 0
+
+			if not number:find('%.') then
+				has_integer[number] = true
+			end
 
 			if not deduplicate then
 				local volume = (vol_num ~= '0') and ('Vol. ' .. vol_num .. ' ') or ''
@@ -126,7 +131,9 @@ function GetInfo()
 				MANGAINFO.ChapterLinks.Add(id)
 				MANGAINFO.ChapterNames.Add(volume .. chapter .. title .. scanlator)
 			else
-				local current = chapter_map[number]
+				local base = number:match('^(%d+)')
+				local key = (base and has_integer[base]) and base or number
+				local current = chapter_map[key]
 				local ch_data = {
 					id = id, name = name, vol_num = vol_num, number = number,
 					scan_group_id = scan_group_id, scan_group_name = scan_group_name,
@@ -134,8 +141,8 @@ function GetInfo()
 				}
 
 				if not current then
-					chapter_map[number] = ch_data
-					table.insert(chapter_list, number)
+					chapter_map[key] = ch_data
+					table.insert(chapter_list, key)
 				else
 					local official_new = (ch_data.scan_group_id == 9275 or ch_data.official == 1)
 					local official_current = (current.scan_group_id == 9275 or current.official == 1)
