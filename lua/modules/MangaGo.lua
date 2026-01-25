@@ -322,9 +322,6 @@ function GetSearchNameAndLink()
     local u = MODULE.RootURL .. '/r/l_search/?name=' .. HTTP.URLEncode(SEARCHNAME)
     if not HTTP.GET(u) then return net_problem end
 
-    -- CETTE LIGNE SAUVEGARDE LA PAGE POUR QU'ON PUISSE L'ANALYSER :
-    HTTP.Document.SaveToFile("C:\\mangago_test.html")
-
     CreateTXQuery(HTTP.Document).XPathHREFAll('//span[@class="title"]/a', LINKS, NAMES)
     return no_error
 end
