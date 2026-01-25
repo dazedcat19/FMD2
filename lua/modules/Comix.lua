@@ -163,7 +163,7 @@ function GetInfo()
 					end
 
 					if better then
-						chapter_map[number] = ch_data
+						chapter_map[key] = ch_data
 					end
 				end
 			end
