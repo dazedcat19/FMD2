@@ -19,8 +19,6 @@ end
 
 local Template = require 'templates.MangaThemesia'
 DirectoryPagination = '/comics/list-mode/'
--- XPathTokenAuthors   = 'Author'
--- XPathTokenArtists   = 'Artist'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -33,13 +31,11 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
 
-	local v, x = nil
-
-	x = CreateTXQuery(HTTP.Document)
+	local x = CreateTXQuery(HTTP.Document)
 	for v in x.XPath('//div[@id="chapterlist"]//li/a').Get() do
 		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
 		MANGAINFO.ChapterNames.Add(x.XPathString('.//span[@class="chapternum"]/normalize-space(.)', v))
@@ -49,9 +45,9 @@ function GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
 end

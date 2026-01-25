@@ -109,7 +109,7 @@ function _M.GetPageNumber()
 	if not HTTP.GET(u) then return false end
 
 	local x = CreateTXQuery(HTTP.Document)
-	x.ParseHTML(x.XPathString('//script[contains(., "ts_reader")]'):match('run%((.-)%)'):gsub('!0', 'true'):gsub('!1', 'false'))
+	x.ParseHTML(x.XPathString('//script[contains(., "ts_reader")]'):match('run%((.-)%);'):gsub('!0', 'true'):gsub('!1', 'false'))
 	x.XPathStringAll('json(*).sources()[1].images()', TASK.PageLinks)
 	for i = 0, TASK.PageLinks.Count - 1 do
 		TASK.PageLinks[i] = TASK.PageLinks[i]:gsub('i%d.wp.com/', '')
