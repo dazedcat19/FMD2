@@ -49,12 +49,19 @@ type
     procedure FormShow(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure lvModulesColumnClick(Sender: TObject; Column: TListColumn);
+    procedure lvModulesCompare(Sender: TObject; Item1, Item2: TListItem;
+      Data: Integer; var Compare: Integer);
+    procedure lvModulesCustomDrawItem(Sender: TCustomListView; Item: TListItem;
+      State: TCustomDrawState; var DefaultDraw: Boolean);
     procedure tbWebsitesSelectAllClick(Sender: TObject);
     procedure tbWebsitesSelectInverseClick(Sender: TObject);
     procedure tbWebsitesSelectNoneClick(Sender: TObject);
     procedure UpdateProgress;
     procedure edtFilterChange(Sender: TObject); // Add this line
     procedure edtFilterButtonClick(Sender: TObject);
+    procedure SortlvModules(AColumnIndex: Integer;
+      ASortDirection: TSortDirection = sdAscending);
   private
     FIsScanning: Boolean;
     FIsChecking: Boolean;
@@ -264,6 +271,7 @@ begin
     end;
   finally
     Synchronize(@SyncComplete);
+    FForm.SortlvModules(0);
   end;
 end;
 
@@ -680,6 +688,62 @@ begin
   end
   else
     CanClose := True;
+end;
+
+procedure TFormCheckModules.lvModulesColumnClick(Sender: TObject;
+  Column: TListColumn);
+var
+  i: Integer;
+begin
+  for i := 0 to lvModules.Columns.Count - 1 do
+    if lvModules.Columns[i] <> Column then
+      lvModules.Columns[i].SortIndicator := siNone;
+
+  if Column.Index in [0, 1, 4] then
+  begin
+    if lvModules.SortColumn = Column.Index then
+    begin
+      if lvModules.SortDirection = sdAscending then
+      begin
+        Column.SortIndicator := siDescending;
+        lvModules.SortDirection := sdDescending;
+      end
+      else
+      begin
+        Column.SortIndicator := siAscending;
+        lvModules.SortDirection := sdAscending;
+      end;
+    end
+    else
+    begin
+      lvModules.SortColumn := Column.Index;
+      Column.SortIndicator := siAscending;
+      lvModules.SortDirection := sdAscending;
+    end;
+    lvModules.CustomSort(nil, 0);
+  end;
+end;
+
+procedure TFormCheckModules.lvModulesCompare(Sender: TObject; Item1,
+  Item2: TListItem; Data: Integer; var Compare: Integer);
+begin
+  case lvModules.SortColumn of
+    0: Compare := CompareText(Item1.Caption, Item2.Caption);
+    1: Compare := CompareText(Item1.SubItems[0], Item2.SubItems[0]);
+    4: Compare := CompareText(Item1.SubItems[3], Item2.SubItems[3]);
+    else Compare := 0;
+  end;
+  if lvModules.SortDirection = sdDescending then
+    Compare := -Compare;
+end;
+
+procedure TFormCheckModules.lvModulesCustomDrawItem(Sender: TCustomListView;
+  Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
+begin
+  if Odd(Item.Index) then
+    lvModules.Canvas.Brush.Color := clWindow
+  else
+    lvModules.Canvas.Brush.Color := clForm;
 end;
 
 procedure TFormCheckModules.tbWebsitesSelectAllClick(Sender: TObject);
@@ -1180,5 +1244,20 @@ end;
 procedure TFormCheckModules.edtFilterButtonClick(Sender: TObject);
 begin
   edtFilter.Clear;
+end;
+
+procedure TFormCheckModules.SortlvModules(AColumnIndex: Integer;
+  ASortDirection: TSortDirection);
+begin
+  if AColumnIndex in [0, 1, 4] then
+  begin
+    lvModules.SortColumn := AColumnIndex;
+    lvModules.SortDirection := ASortDirection;
+    if ASortDirection = sdAscending then
+      lvModules.Column[AColumnIndex].SortIndicator := siAscending
+    else
+      lvModules.Column[AColumnIndex].SortIndicator := siDescending;
+    lvModules.CustomSort(nil, 0);
+  end;
 end;
 end.

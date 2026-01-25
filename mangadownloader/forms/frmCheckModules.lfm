@@ -80,9 +80,11 @@ object FormCheckModules: TFormCheckModules
     AutoWidthLastColumn = True
     Checkboxes = True
     Columns = <>
-    SortType = stText
     TabOrder = 1
     ViewStyle = vsReport
+    OnColumnClick = lvModulesColumnClick
+    OnCompare = lvModulesCompare
+    OnCustomDrawItem = lvModulesCustomDrawItem
   end
   object pnlTop: TPanel
     Left = 0
