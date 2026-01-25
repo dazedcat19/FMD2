@@ -316,12 +316,3 @@ function DownloadImage()
 
 	return true
 end
-
--- Search for manga on the website
-function GetSearchNameAndLink()
-    local u = MODULE.RootURL .. '/r/l_search/?name=' .. HTTP.URLEncode(SEARCHNAME)
-    if not HTTP.GET(u) then return net_problem end
-
-    CreateTXQuery(HTTP.Document).XPathHREFAll('//span[@class="title"]/a', LINKS, NAMES)
-    return no_error
-end
