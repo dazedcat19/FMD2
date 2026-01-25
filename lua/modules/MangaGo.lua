@@ -14,13 +14,25 @@ function Init()
 	m.OnGetPageNumber          = 'GetPageNumber'
 	m.OnDownloadImage          = 'DownloadImage'
 	m.SortedList               = true
+	m.OnGetSearchNameAndLink   = 'GetSearchNameAndLink'
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local DirectoryPagination = '/genre/All/%s/?sortby=create_date'
+local Genres = {
+    'Webtoons', 'Comedy', 'Shounen Ai', 'Shoujo', 'Yuri', 'Josei', 
+    'Fantasy', 'School Life', 'Romance', 'Smut', 
+    'Adult', 'Mystery', 'Ecchi', 'Shounen', 
+    'Martial Arts', 'Shoujo Ai', 'Supernatural', 'Drama', 
+    'Action','One Shot', 'Doujinshi', 'Adventure', 'Harem', 'Historical', 'Horror', 
+    'Mature', 'Mecha', 'Psychological', 'Sci-fi', 'Seinen', 
+    'Slice Of Life', 'Sports', 'Gender Bender', 'Tragedy', 
+    'Bara', 'Yaoi'
+}
+local CurrentGenreIndex = 1
+local DirectoryPagination = '/genre/%s/%s/?f=1&o=1&sortby=update_date&e='
 local duktape = require('fmd.duktape')
 
 ----------------------------------------------------------------------------------------------------
@@ -165,26 +177,42 @@ end
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
--- Get the page count of the manga list of the current website.
+-- Define the average page count per genre to help FMD2 navigate
+-- (Even if exceeded, the safety check in GetNameAndLink will take over)
+local PagesPerGenre = 450 
+
 function GetDirectoryPageNumber()
-	local u = MODULE.RootURL .. DirectoryPagination:format(1)
-
-	if not HTTP.GET(u) then return net_problem end
-
-	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//div[@class="pagination"]//li[last()-1]//span')) or 1
-
-	return no_error
+    -- Provide FMD2 with a high estimate: Number of genres * Average pages
+    PAGENUMBER = #Genres * PagesPerGenre
+    return no_error
 end
 
--- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local u = MODULE.RootURL .. DirectoryPagination:format(URL + 1)
+    -- URL here represents the global page number in FMD2
+    -- Calculate which genre corresponds to this page
+    local genreIndex = math.floor(URL / PagesPerGenre) + 1
+    local pageInGenre = (URL % PagesPerGenre) + 1
+    
+    -- Safety check: return if all genres have been processed
+    if genreIndex > #Genres then return no_error end
+    
+    local currentGenre = Genres[genreIndex]
+	
+    -- Replace spaces with %20 for valid URL encoding
+    local encodedGenre = currentGenre:gsub(" ", "%%20")
+    local u = MODULE.RootURL .. DirectoryPagination:format(encodedGenre, pageInGenre)
 
-	if not HTTP.GET(u) then return net_problem end
+    if not HTTP.GET(u) then return net_problem end
 
-	CreateTXQuery(HTTP.Document).XPathHREFAll('//span[@class="title"]/a', LINKS, NAMES)
-
-	return no_error
+    local x = CreateTXQuery(HTTP.Document)
+    local beforeCount = LINKS.Count
+    x.XPathHREFAll('//span[@class="title"]/a', LINKS, NAMES)
+    
+    -- If the page is empty (reached the actual end of the genre before page 450)
+    -- We could technically skip to the next genre, but FMD2 prefers to 
+    -- continue its incrementation. The list will simply remain empty for these pages.
+    
+    return no_error
 end
 
 -- Get info and chapter list for the current manga.
@@ -198,11 +226,11 @@ function GetInfo()
 	MANGAINFO.AltTitles = x.XPathString('//td[./label="Alternative:"]/normalize-space(text())')
 	MANGAINFO.CoverLink = x.XPathString('//div[@class="left cover"]/img/@src')
 	MANGAINFO.Authors   = x.XPathStringAll('//td[./label="Author:"]/a')
-	MANGAINFO.Genres    = x.XPathStringAll('//td[./label="Genre(s):"]/a')
+	MANGAINFO.Genres    = x.XPathStringAll('//td[contains(., "Genre")]/a | //a[contains(@href, "genre/Webtoons")] | //ul[@class="l_tag"]//a')
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//td[./label="Status:"]/span'))
 	MANGAINFO.Summary   = x.XPathString('//div[@class="manga_summary"]/string-join(text(), "\r\n")')
 
-	x.XPathHREFAll('//table[@id="chapter_table"]//a[not(@style)]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+	x.XPathHREFAll('//table[contains(@id, "chapter")]//a | //ul[contains(@class, "chapter")]//a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
@@ -287,4 +315,16 @@ function DownloadImage()
 	end
 
 	return true
+end
+
+-- Search for manga on the website
+function GetSearchNameAndLink()
+    local u = MODULE.RootURL .. '/r/l_search/?name=' .. HTTP.URLEncode(SEARCHNAME)
+    if not HTTP.GET(u) then return net_problem end
+
+    -- CETTE LIGNE SAUVEGARDE LA PAGE POUR QU'ON PUISSE L'ANALYSER :
+    HTTP.Document.SaveToFile("C:\\mangago_test.html")
+
+    CreateTXQuery(HTTP.Document).XPathHREFAll('//span[@class="title"]/a', LINKS, NAMES)
+    return no_error
 end
