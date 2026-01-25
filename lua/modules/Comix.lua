@@ -178,8 +178,8 @@ function GetInfo()
 	end
 
 	if deduplicate then
-		for _, number in ipairs(chapter_list) do
-			local ch = chapter_map[number]
+		for _, key in ipairs(chapter_list) do
+			local ch = chapter_map[key]
 
 			local volume = (ch.vol_num ~= '0') and ('Vol. ' .. ch.vol_num .. ' ') or ''
 			local chapter = (ch.number ~= '') and ('Ch. ' .. ch.number) or ''
