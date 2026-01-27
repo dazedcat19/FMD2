@@ -78,7 +78,6 @@ type
     cbUseRegExpr: TCheckBox;
     cbOptionProxyType: TComboBox;
     cbOptionOneInstanceOnly: TCheckBox;
-    ckEnableModuleDebug: TCheckBox;
     ckImageMagick: TCheckBox;
     ckPNGSaveAsJPEG: TCheckBox;
     ckOptionsAlwaysStartTaskFromFailedChapters: TCheckBox;
@@ -497,7 +496,6 @@ type
       Shift: TShiftState);
     procedure cbSelectMangaMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure ckEnableModuleDebugChange(Sender: TObject);
     procedure ckImageMagickChange(Sender: TObject);
     procedure clbChapterListBeforeCellPaint(Sender: TBaseVirtualTree;
       TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
@@ -3008,18 +3006,6 @@ procedure TMainForm.cbSelectMangaMouseDown(Sender: TObject;
 begin
   if Button = mbMiddle then
     cbSelectMangaEditingDone(Sender);
-end;
-
-procedure TMainForm.ckEnableModuleDebugChange(Sender: TObject);
-begin
-  if ckEnableModuleDebug.Checked then
-  begin
-    tsWebsiteCheckModules.TabVisible:= True;
-  end
-  else
-  begin
-    tsWebsiteCheckModules.TabVisible:= False;
-  end;
 end;
 
 procedure TMainForm.ckImageMagickChange(Sender: TObject);
@@ -5881,7 +5867,8 @@ begin
     // misc
     frmCustomColor.LoadFromIniFile(settingsfile);
     ckEnableLogging.Checked := ReadBool('logger', 'Enabled', False);
-    ckEnableModuleDebug.Checked := ReadBool('Modules', 'Debug', False);
+    frmLuaModulesUpdater.LuaModulesUpdaterForm.ckEnableModuleDebug.Checked :=
+      ReadBool('Modules', 'Debug', False);
     edLogFileName.Text := ReadString('logger', 'LogFileName', '');
     if edLogFileName.Text = '' then
     begin
@@ -6064,7 +6051,8 @@ begin
       // misc
       frmCustomColor.SaveToIniFile(settingsfile);
       WriteBool('logger', 'Enabled', ckEnableLogging.Checked);
-      WriteBool('Modules', 'Debug', ckEnableModuleDebug.Checked);
+      WriteBool('Modules', 'Debug',
+        frmLuaModulesUpdater.LuaModulesUpdaterForm.ckEnableModuleDebug.Checked);
 
       if edLogFileName.Text = '' then
       begin
@@ -6282,7 +6270,7 @@ begin
       Logger.Enabled := False;
     end;
 
-    if ckEnableModuleDebug.Checked then
+    if frmLuaModulesUpdater.LuaModulesUpdaterForm.ckEnableModuleDebug.Checked then
     begin
       tsWebsiteCheckModules.TabVisible:= True;
     end

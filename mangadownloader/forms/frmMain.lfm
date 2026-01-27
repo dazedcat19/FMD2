@@ -5201,15 +5201,6 @@ object MainForm: TMainForm
                 TabOrder = 1
                 OnButtonClick = edLogFileNameButtonClick
               end
-              object ckEnableModuleDebug: TCheckBox
-                Left = 4
-                Height = 19
-                Top = 136
-                Width = 135
-                Caption = 'Enable Module Debug'
-                TabOrder = 4
-                OnChange = ckEnableModuleDebugChange
-              end
             end
           end
         end

@@ -9,9 +9,9 @@ object LuaModulesUpdaterForm: TLuaModulesUpdaterForm
   ChildSizing.VerticalSpacing = 6
   ClientHeight = 394
   ClientWidth = 580
+  LCLVersion = '4.4.0.0'
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  LCLVersion = '3.8.0.0'
   object vtLuaModulesRepos: TVirtualStringTree
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = btCheckUpdate
@@ -182,6 +182,15 @@ object LuaModulesUpdaterForm: TLuaModulesUpdaterForm
     Width = 80
     Caption = 'Auto restart'
     TabOrder = 2
+  end
+  object ckEnableModuleDebug: TCheckBox
+    Left = 384
+    Height = 19
+    Top = 8
+    Width = 135
+    Caption = 'Enable Module Debug'
+    TabOrder = 4
+    OnChange = ckEnableModuleDebugChange
   end
   object imStates: TImageList
     Left = 200

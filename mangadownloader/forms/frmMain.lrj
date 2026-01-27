@@ -292,7 +292,6 @@
 {"hash":120491445,"name":"tmainform.btclearlogfile.caption","sourcebytes":[67,108,101,97,114,32,108,111,103,32,102,105,108,101],"value":"Clear log file"},
 {"hash":158118362,"name":"tmainform.lblogfilename.caption","sourcebytes":[76,111,103,32,102,105,108,101,58],"value":"Log file:"},
 {"hash":113276983,"name":"tmainform.btopenlog.caption","sourcebytes":[79,112,101,110,32,108,111,103],"value":"Open log"},
-{"hash":248026023,"name":"tmainform.ckenablemoduledebug.caption","sourcebytes":[69,110,97,98,108,101,32,77,111,100,117,108,101,32,68,101,98,117,103],"value":"Enable Module Debug"},
 {"hash":4749113,"name":"tmainform.btoptionapply.caption","sourcebytes":[65,112,112,108,121],"value":"Apply"},
 {"hash":4691652,"name":"tmainform.tsabout.caption","sourcebytes":[65,98,111,117,116],"value":"About"},
 {"hash":101464798,"name":"tmainform.btchecklatestversion.caption","sourcebytes":[67,104,101,99,107,32,102,111,114,32,108,97,116,101,115,116,32,118,101,114,115,105,111,110],"value":"Check for latest version"},

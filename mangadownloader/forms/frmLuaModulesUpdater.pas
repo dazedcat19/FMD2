@@ -60,6 +60,7 @@ type
 
   TLuaModulesUpdaterForm = class(TForm)
     btCheckUpdate: TBitBtn;
+    ckEnableModuleDebug: TCheckBox;
     ckShowUpdateWarning: TCheckBox;
     ckAutoRestart: TCheckBox;
     imStates: TImageList;
@@ -67,6 +68,7 @@ type
     tmRepaintList: TTimer;
     vtLuaModulesRepos: TVirtualStringTree;
     procedure btCheckUpdateClick(Sender: TObject);
+    procedure ckEnableModuleDebugChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure btCheckUpdateTerminateClick(Sender: TObject);
@@ -953,6 +955,18 @@ begin
   if ThreadCheck = nil then
   begin
     ThreadCheck := TCheckUpdateThread.Create(Self);
+  end;
+end;
+
+procedure TLuaModulesUpdaterForm.ckEnableModuleDebugChange(Sender: TObject);
+begin
+  if ckEnableModuleDebug.Checked then
+  begin
+    frmMain.MainForm.tsWebsiteCheckModules.TabVisible:= True;
+  end
+  else
+  begin
+    frmMain.MainForm.tsWebsiteCheckModules.TabVisible:= False;
   end;
 end;
 
