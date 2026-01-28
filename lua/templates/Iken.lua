@@ -75,7 +75,8 @@ function _M.GetInfo()
 		json_root_key = 'series'
 	else
 		local summary = x.XPathString('string-join(//div[@itemprop="description"]//p, "\r\n")')
-		local w = '{"post"' .. x.XPathString('//script[contains(., "postId")]/substring-before(substring-after(., "{""post"""), "}]]")') .. '}'
+		local w = '{"post"' .. x.XPathString('//script[contains(., "postId")]/substring-before(substring-after(., "{""post"""), "globalCommentsEnabled"":true}]\\n")') .. 'globalCommentsEnabled":true}'
+		if w == '{"post"globalCommentsEnabled":true}' then w = '{"post"' .. x.XPathString('//script[contains(., "postId")]/substring-before(substring-after(., "{""post"""), "}]]")') .. '}' end
 		x.ParseHTML(w)
 		if summary == '' then summary = x.XPathString('json(*).post.postContent') end
 		MANGAINFO.Summary = summary
@@ -126,7 +127,7 @@ function _M.GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function _M.GetPageNumber()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
