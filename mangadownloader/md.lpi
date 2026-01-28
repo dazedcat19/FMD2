@@ -24,9 +24,8 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="2"/>
-      <MinorVersionNr Value="1"/>
-      <RevisionNr Value="35"/>
-      <BuildNr Value="1"/>
+      <RevisionNr Value="34"/>
+      <BuildNr Value="5"/>
       <Attributes pvaPrivateBuild="True"/>
       <StringTable Comments="https://github.com/dazedcat19/FMD2" FileDescription="Free Manga Downloader" LegalCopyright="©2015-2025" OriginalFilename="fmd.exe" ProductName="Free Manga Downloader" ProductVersion="$BuildMode()"/>
     </VersionInfo>

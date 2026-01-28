@@ -6042,6 +6042,8 @@ begin
       // modules updater
       WriteBool('modulesupdater', 'ShowUpdateWarning', LuaModulesUpdaterForm.ckShowUpdateWarning.Checked);
       WriteBool('modulesupdater', 'AutoRestart', LuaModulesUpdaterForm.ckAutoRestart.Checked);
+      WriteBool('Modules', 'Debug',
+        frmLuaModulesUpdater.LuaModulesUpdaterForm.ckEnableModuleDebug.Checked);
 
       // dialogs
       WriteBool('dialogs', 'ShowQuitDialog', cbOptionShowQuitDialog.Checked);
@@ -6051,8 +6053,6 @@ begin
       // misc
       frmCustomColor.SaveToIniFile(settingsfile);
       WriteBool('logger', 'Enabled', ckEnableLogging.Checked);
-      WriteBool('Modules', 'Debug',
-        frmLuaModulesUpdater.LuaModulesUpdaterForm.ckEnableModuleDebug.Checked);
 
       if edLogFileName.Text = '' then
       begin
@@ -6237,6 +6237,14 @@ begin
     // modules updater
     OptionModulesUpdaterShowUpdateWarning := LuaModulesUpdaterForm.ckShowUpdateWarning.Checked;
     OptionModulesUpdaterAutoRestart := LuaModulesUpdaterForm.ckAutoRestart.Checked;
+    if frmLuaModulesUpdater.LuaModulesUpdaterForm.ckEnableModuleDebug.Checked then
+    begin
+      tsWebsiteCheckModules.TabVisible:= True;
+    end
+    else
+    begin
+      tsWebsiteCheckModules.TabVisible:= False;
+    end;
 
     //misc
     frmCustomColor.Apply;
@@ -6268,15 +6276,6 @@ begin
       end;
 
       Logger.Enabled := False;
-    end;
-
-    if frmLuaModulesUpdater.LuaModulesUpdaterForm.ckEnableModuleDebug.Checked then
-    begin
-      tsWebsiteCheckModules.TabVisible:= True;
-    end
-    else
-    begin
-      tsWebsiteCheckModules.TabVisible:= False;
     end;
 
     //languages

@@ -185,12 +185,15 @@ object LuaModulesUpdaterForm: TLuaModulesUpdaterForm
   end
   object ckEnableModuleDebug: TCheckBox
     Left = 384
+    AnchorSideLeft.Control = ckAutoRestart
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = ckShowUpdateWarning
     Height = 19
     Top = 8
     Width = 135
+    BorderSpacing.Left = 10
     Caption = 'Enable Module Debug'
     TabOrder = 4
-    OnChange = ckEnableModuleDebugChange
   end
   object imStates: TImageList
     Left = 200
