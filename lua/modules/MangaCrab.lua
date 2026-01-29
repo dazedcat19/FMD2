@@ -12,6 +12,7 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 	m.SortedList               = true
 end
 
@@ -59,15 +60,24 @@ function GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return false end
 
-	for v in CreateTXQuery(HTTP.Document).XPath('//div[contains(@class, "page-break")]/img/@*[contains(name(), "zdk-")]').Get() do
+	local x = CreateTXQuery(HTTP.Document)
+	MODULE.Storage['Img-Key'] = x.XPathString('//script[contains(., "Img-Key")]/substring-before(substring-after(., "\'Img-Key\': \'"), "\'")')
+	for v in x.XPath('//div[contains(@class, "page-break")]/img/@*[contains(name(), "zdk")]').Get() do
 		TASK.PageLinks.Add(MaybeFillHost(MODULE.RootURL, v.ToString()))
 	end
+
+	return true
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	HTTP.Headers.Values['Img-Key'] = MODULE.Storage['Img-Key']
 
 	return true
 end
