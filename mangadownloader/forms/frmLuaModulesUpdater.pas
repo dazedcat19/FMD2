@@ -137,6 +137,7 @@ type
     procedure SyncFinishDownload;
     procedure SyncFinal;
     procedure SyncGitHubConnectFail;
+    procedure SyncGitHubRateLimited;
     function SyncRepos(const ARepos, AReposUp: TLuaModulesRepos): Boolean;
     procedure Download;
     procedure DoSync;
@@ -151,7 +152,8 @@ var
   LuaModulesUpdaterForm: TLuaModulesUpdaterForm;
 
 resourcestring
-  RS_GitHubConnectFail = 'Failed to connect to GitHub API for latest module updates.'#13#10'Please try again later.';
+  RS_GitHubConnectFail = 'Failed to connect to GitHub API.'#13#10'Please check your internet connection or try again later.';
+  RS_GitHubRateLimited = 'Failed to connect to GitHub API for latest module updates.'#13#10'Change the network or try again after 15 minutes';
   RS_GitHubRateStats = 'GitHub API core rate - call limit: %d, remaining calls: %d, used calls: %d, limit refresh: %s';
   RS_CheckLocalModules = 'Checking local modules...';
   RS_AwaitingProceed = 'Awaiting permission to proceed...';
@@ -584,6 +586,11 @@ begin
   CenteredMessageDlg(MainForm, RS_GitHubConnectFail, mtError, [mbOk], 0);
 end;
 
+procedure TCheckUpdateThread.SyncGitHubRateLimited;
+begin
+  CenteredMessageDlg(MainForm, RS_GitHubRateLimited, mtError, [mbOk], 0);
+end;
+
 function TCheckUpdateThread.SyncRepos(const ARepos, AReposUp: TLuaModulesRepos): Boolean;
 var
   i, j, imax, jmax, k, inew, iupdate: Integer;
@@ -777,9 +784,14 @@ begin
   LoadingProgressBar;
   UpdateStatusText(RS_GitHubConnecting);
 
-  if FGitHubRepo.CheckRateLimited then
+  if not FGitHubRepo.CheckConnection then
   begin
     Synchronize(@SyncGitHubConnectFail);
+  end;
+
+  if FGitHubRepo.CheckRateLimited then
+  begin
+    Synchronize(@SyncGitHubRateLimited);
   end;
 
   if FGitHubRepo.GetUpdate then

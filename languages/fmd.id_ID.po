@@ -189,9 +189,13 @@ msgid "Finish download"
 msgstr "Selesai mengunduh"
 
 #: frmluamodulesupdater.rs_githubconnectfail
+#, fuzzy
+#| msgid ""
+#| "Failed to connect to GitHub API for latest module updates.\n"
+#| "Please try again later."
 msgid ""
-"Failed to connect to GitHub API for latest module updates.\n"
-"Please try again later."
+"Failed to connect to GitHub API.\n"
+"Please check your internet connection or try again later."
 msgstr ""
 "Gagal menyambung ke GitHub API untuk pemutakhiran modul terbaru.\n"
 "Silakan coba lagi nanti."
@@ -199,6 +203,12 @@ msgstr ""
 #: frmluamodulesupdater.rs_githubconnecting
 msgid "Connecting to GitHub..."
 msgstr "Menyambungkan GitHub..."
+
+#: frmluamodulesupdater.rs_githubratelimited
+msgid ""
+"Failed to connect to GitHub API for latest module updates.\n"
+"Change the network or try again after 15 minutes"
+msgstr ""
 
 #: frmluamodulesupdater.rs_githubratestats
 #, object-pascal-format
