@@ -26,7 +26,7 @@ uses
   frmAccountSet, frmWebsiteOptionCustom, frmCustomColor, frmLogger, frmTransferFavorites,
   frmLuaModulesUpdater, CheckUpdate, DBDataProcess, uDarkStyleParams, uWin32WidgetSetDark,
   SimpleTranslator, httpsendthread, DateUtils, SimpleException, uCustomControls,
-  uCustomControlsMultiLog, ImageMagickManager;
+  uCustomControlsMultiLog, ImageMagickManager, frmCheckModules;
 
 type
 
@@ -212,6 +212,7 @@ type
     seOptionRetryFailedTask: TSpinEdit;
     seJPEGQuality: TSpinEdit;
     spThumb: TSplitter;
+    tsWebsiteCheckModules: TTabSheet;
     tbWebsitesSelectAll: TToolButton;
     tbWebsitesUnselectAll: TToolButton;
     tsAccounts: TTabSheet;
@@ -1339,6 +1340,9 @@ begin
 
   LuaModulesUpdaterForm := TLuaModulesUpdaterForm.Create(Self);
   EmbedForm(LuaModulesUpdaterForm, tsWebsiteModules);
+
+  FormCheckModules := TFormCheckModules.Create(Self);
+  EmbedForm(FormCheckModules, tsWebsiteCheckModules);
 
   // init vt
   vtDownload.NodeDataSize := SizeOf(TDownloadInfo);
@@ -5863,6 +5867,8 @@ begin
     // misc
     frmCustomColor.LoadFromIniFile(settingsfile);
     ckEnableLogging.Checked := ReadBool('logger', 'Enabled', False);
+    frmLuaModulesUpdater.LuaModulesUpdaterForm.ckEnableModuleDebug.Checked :=
+      ReadBool('Modules', 'Debug', False);
     edLogFileName.Text := ReadString('logger', 'LogFileName', '');
     if edLogFileName.Text = '' then
     begin
@@ -6036,6 +6042,8 @@ begin
       // modules updater
       WriteBool('modulesupdater', 'ShowUpdateWarning', LuaModulesUpdaterForm.ckShowUpdateWarning.Checked);
       WriteBool('modulesupdater', 'AutoRestart', LuaModulesUpdaterForm.ckAutoRestart.Checked);
+      WriteBool('Modules', 'Debug',
+        frmLuaModulesUpdater.LuaModulesUpdaterForm.ckEnableModuleDebug.Checked);
 
       // dialogs
       WriteBool('dialogs', 'ShowQuitDialog', cbOptionShowQuitDialog.Checked);
@@ -6229,6 +6237,14 @@ begin
     // modules updater
     OptionModulesUpdaterShowUpdateWarning := LuaModulesUpdaterForm.ckShowUpdateWarning.Checked;
     OptionModulesUpdaterAutoRestart := LuaModulesUpdaterForm.ckAutoRestart.Checked;
+    if frmLuaModulesUpdater.LuaModulesUpdaterForm.ckEnableModuleDebug.Checked then
+    begin
+      tsWebsiteCheckModules.TabVisible:= True;
+    end
+    else
+    begin
+      tsWebsiteCheckModules.TabVisible:= False;
+    end;
 
     //misc
     frmCustomColor.Apply;

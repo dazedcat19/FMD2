@@ -11,11 +11,11 @@ uses
   windows,
  {$endif}
   Interfaces, // this includes the LCL widgetset
-  Forms, LazFileUtils, jsonini, simpleipc, sqlite3dyn, uBaseUnit,
-  FMDVars, webp, CheckUpdate, DBUpdater, SelfUpdater, uDownloadsManager,
-  LuaWebsiteModules, LuaBase, SimpleException, Classes, sysutils, frmMain,
-  uDarkStyle, uMetaDarkStyle, uDarkStyleSchemes, uDarkStyleParams,
-  MultiLog, FileChannel, ssl_openssl3_lib, blcksock, ssl_openssl3, SQLiteData;
+  Forms, LazFileUtils, jsonini, simpleipc, sqlite3dyn, uBaseUnit, FMDVars, webp,
+  CheckUpdate, DBUpdater, SelfUpdater, uDownloadsManager, LuaWebsiteModules,
+  LuaBase, SimpleException, Classes, sysutils, frmMain, frmCheckModules,
+  uDarkStyle, uMetaDarkStyle, uDarkStyleSchemes, uDarkStyleParams, MultiLog,
+  FileChannel, ssl_openssl3_lib, blcksock, ssl_openssl3, SQLiteData;
 
 var
   CheckInstance: Boolean = True;
@@ -196,7 +196,7 @@ begin
   windows.SetEnvironmentVariable('PATH', pchar(evpath));
   {$endif}
 
-  Application.Title := 'Free Manga Downloader';
+  Application.Title:='Free Manga Downloader';
   RequireDerivedFormResource := True;
   //Logger.ThreadSafe := True; //Automatically uses safe thread code
   Logger.Enabled := EnableLogging;
@@ -266,10 +266,11 @@ begin
      2:  PreferredAppMode := pamForceLight;
   end;
 
-  Application.Scaled := True;
+  Application.Scaled:=True;
   uMetaDarkStyle.ApplyMetaDarkStyle(DefaultDark);
   Application.Initialize;
   Application.CreateForm(TMainForm, MainForm);
   MainForm.winBuildNumber := g_buildNumber;
+  Application.CreateForm(TFormCheckModules, FormCheckModules);
   Application.Run;
 end.

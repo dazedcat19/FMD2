@@ -4996,6 +4996,9 @@ object MainForm: TMainForm
             object tsWebsiteModules: TTabSheet
               Caption = 'Modules'
             end
+            object tsWebsiteCheckModules: TTabSheet
+              Caption = 'Check Modules'
+            end
           end
         end
         object tsMisc: TTabSheet
@@ -5196,6 +5199,7 @@ object MainForm: TMainForm
                 OnButtonClick = edLogFileNameButtonClick
                 PasswordChar = #0
                 TabOrder = 1
+                OnButtonClick = edLogFileNameButtonClick
               end
             end
           end
