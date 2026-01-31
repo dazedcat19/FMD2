@@ -174,7 +174,7 @@
 | KlikManga | [![https://klikmanga.com](https://img.shields.io/website?url=https://klikmanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://klikmanga.com)](https://klikmanga.com) | OK | 06.02.2025 | - |
 | KLManga | [![https://klz9.com](https://img.shields.io/website?url=https://klz9.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://klz9.com)](https://klz9.com) | OK | 03.01.2026 | - |
 | KomikAV | [![https://komikav.com](https://img.shields.io/website?url=https://komikav.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikav.com)](https://komikav.com) | - | - | - |
-| KomikCast | [![https://komikcast05.com](https://img.shields.io/website?url=https://komikcast05.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikcast05.com)](https://komikcast05.com) | OK | 22.01.2026 | - |
+| KomikCast | [![https://v1.komikcast.fit](https://img.shields.io/website?url=https://v1.komikcast.fit%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://v1.komikcast.fit)](https://v1.komikcast.fit) | OK | 31.01.2026 | - |
 | KomikGO | [![https://komikgo.xyz](https://img.shields.io/website?url=https://komikgo.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikgo.xyz)](https://komikgo.xyz) | - | - | - |
 | KomikGue | [![http://www.komikgue.com](https://img.shields.io/website?url=http://www.komikgue.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.komikgue.com)](http://www.komikgue.com) | - | - | - |
 | Komikid | [![https://www.komikid.com](https://img.shields.io/website?url=https://www.komikid.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.komikid.com)](https://www.komikid.com) | - | - | - |
