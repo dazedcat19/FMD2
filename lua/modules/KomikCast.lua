@@ -40,7 +40,8 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local u = API_URL .. URL
+	local slug = URL:match('/([^/]+)$')
+	local u = API_URL .. '/series/' .. slug
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -56,12 +57,12 @@ function GetInfo()
 
 	if not HTTP.GET(u .. '/chapters') then return net_problem end
 
-	for v in CreateTXQuery(HTTP.Document).XPath('json(*).data()').Get() do
-		local title = v.GetProperty('data').GetProperty('title').ToString()
+	for v in CreateTXQuery(HTTP.Document).XPath('json(*).data().data').Get() do
+		local title = v.GetProperty('title').ToString()
 		title = (title ~= 'null' and title ~= '') and (' - ' .. title) or ''
 
-		MANGAINFO.ChapterLinks.Add(u .. '/chapters/' .. v.GetProperty('data').GetProperty('index').ToString())
-		MANGAINFO.ChapterNames.Add('Chapter ' .. v.GetProperty('data').GetProperty('index').ToString() .. title)
+		MANGAINFO.ChapterLinks.Add('series/' .. slug .. '/chapters/' .. v.GetProperty('index').ToString())
+		MANGAINFO.ChapterNames.Add('Chapter ' .. v.GetProperty('index').ToString() .. title)
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
