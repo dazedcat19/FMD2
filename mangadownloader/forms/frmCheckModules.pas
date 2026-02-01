@@ -158,7 +158,9 @@ end;
 procedure TModuleScanThread.SyncProgress;
 begin
   if Assigned(FProgressModule) then
+  begin
     FForm.OnScanProgress(FProgressMsg, FProgressModule);
+  end;
 end;
 
 procedure TModuleScanThread.SyncComplete;
@@ -182,12 +184,17 @@ begin
 
     for i := 0 to Modules.Count - 1 do
     begin
-      if Terminated then Break;
+      if Terminated then
+      begin
+        Break;
+      end;
 
       with Modules.List[i] do
       begin
         if not Assigned(OnCheckSite) then
-          Continue;
+        begin
+          Continue
+        end;
 
         AMangaCheck := nil;
         with TLuaWebsiteModule(LuaModule) do
@@ -207,7 +214,9 @@ begin
               if MangaURL <> '' then
               begin
                 if AMangaCheck.MangaCheck.MangaURLAddRootHost then
+                begin
                   MangaURL := MaybeFillHost(RootURL, MangaURL);
+                end;
                 Inc(AMangaCheck.MangaCheck.TestToCheck);
                 if MangaTitle <> '' then
                 begin
@@ -216,14 +225,26 @@ begin
               end;
               if ChapterURL <> '' then
               begin
+                FForm.LogMessage(ChapterURL);
+                FForm.LogMessage(AMangaCheck.MangaCheck.ChapterURLPrefix);
                 if AMangaCheck.MangaCheck.ChapterURLPrefix <> '' then
+                begin
                   ChapterURL := FForm.MaybeFillPrefix(
                     AMangaCheck.MangaCheck.ChapterURLPrefix, ChapterURL)
+                end
                 else
-                  ChapterURL := AppendURLDelimLeft(ChapterURL);
-
+                begin
+                  if copy(ChapterURL,1,4) <> 'http' then
+                  begin
+                    ChapterURL := AppendURLDelimLeft(ChapterURL);
+                  end;
+                end;
+                FForm.LogMessage(ChapterURL);
                 if AMangaCheck.MangaCheck.ChapterURLAddRootHost then
+                begin
                   ChapterURL := MaybeFillHost(RootURL, ChapterURL);
+                end;
+                FForm.LogMessage(ChapterURL);
                 Inc(AMangaCheck.MangaCheck.TestToCheck);
                 if ChapterTitle <> '' then
                 begin
@@ -256,7 +277,9 @@ begin
             FProgressModule := nil;
             Synchronize(@SyncProgress);
             if Assigned(AMangaCheck) then
+            begin
               AMangaCheck.Free;
+            end;
           end;
         end;
       end;
@@ -294,7 +317,10 @@ begin
   for i := 0 to FForm.lvModules.Items.Count - 1 do
   begin
       Item := FForm.lvModules.Items[i];
-      if not Item.Checked then Continue;
+      if not Item.Checked then
+      begin
+        Continue;
+      end;
 
       AMangaCheck := TMangaInformation(Item.Data);
       TotalToCheck := TotalToCheck + AMangaCheck.MangaCheck.TestToCheck;
@@ -345,13 +371,22 @@ begin
 
     for i := 0 to FForm.lvModules.Items.Count - 1 do
     begin
-      if Terminated then Break;
+      if Terminated then
+      begin
+        Break;
+      end;
 
       Item := FForm.lvModules.Items[i];
-      if not Item.Checked then Continue;
+      if not Item.Checked then
+      begin
+        Continue;
+      end;
 
       AMangaCheck := TMangaInformation(Item.Data);
-      if AMangaCheck = nil then Continue;
+      if AMangaCheck = nil then
+      begin
+        Continue;
+      end;
 
       Details := '';
       ExtraDetails := '';
@@ -540,12 +575,18 @@ begin
         if AllTestsPassed then
         begin
           if (ExtraDetails = '') or not ContainsStr(ExtraDetails, 'FAIL') then
+          begin
             FProgressStatus := 'PASSED'
+          end
           else
+          begin
             FProgressStatus := 'PASSED (FAILED Extra Tests)';
+          end;
         end
         else
+        begin
           FProgressStatus := 'FAILED';
+        end;
 
         FProgressDetails := Details + ExtraDetails;
         Synchronize(@SyncProgress);
@@ -687,7 +728,9 @@ begin
     end;
   end
   else
+  begin
     CanClose := True;
+  end;
 end;
 
 procedure TFormCheckModules.lvModulesColumnClick(Sender: TObject;
@@ -697,7 +740,9 @@ var
 begin
   for i := 0 to lvModules.Columns.Count - 1 do
     if lvModules.Columns[i] <> Column then
+    begin
       lvModules.Columns[i].SortIndicator := siNone;
+    end;
 
   if Column.Index in [0, 1, 4] then
   begin
@@ -734,16 +779,22 @@ begin
     else Compare := 0;
   end;
   if lvModules.SortDirection = sdDescending then
+  begin
     Compare := -Compare;
+  end;
 end;
 
 procedure TFormCheckModules.lvModulesCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 begin
   if Odd(Item.Index) then
+  begin
     lvModules.Canvas.Brush.Color := clWindow
+  end
   else
+  begin
     lvModules.Canvas.Brush.Color := clForm;
+  end;
 end;
 
 procedure TFormCheckModules.tbWebsitesSelectAllClick(Sender: TObject);
@@ -829,7 +880,9 @@ procedure TFormCheckModules.OnScanProgress(const AMsg: string;
 begin
   LogMessage(AMsg);
   if Assigned(AModule) then
+  begin
     AddModuleToList(AModule);
+  end;
 end;
 
 procedure TFormCheckModules.OnScanComplete(Sender: TObject);
@@ -875,7 +928,10 @@ end;
 
 procedure TFormCheckModules.btnStopCheckClick(Sender: TObject);
 begin
-  if not FIsChecking then Exit;
+  if not FIsChecking then
+  begin
+    Exit;
+  end;
 
   LogMessage('Stop requested, waiting for active checks to complete...');
   if Assigned(FScanThread) then
@@ -898,9 +954,13 @@ begin
   for i := 0 to lvModules.Items.Count - 1 do
   begin
     if AInverse then
+    begin
       lvModules.Items[i].Checked := not lvModules.Items[i].Checked
+    end
     else
+    begin
       lvModules.Items[i].Checked := AChecked;
+    end;
   end;
 end;
 
@@ -951,10 +1011,14 @@ procedure TFormCheckModules.OnCheckProgress(AIndex: Integer;
   const AStatus, ADetails, AMsg: string);
 begin
   if AMsg <> '' then
+  begin
     LogMessage(AMsg);
+  end;
 
   if AIndex >= 0 then
+  begin
     UpdateItemStatus(lvModules.Items[AIndex], AStatus, ADetails);
+  end;
 end;
 
 procedure TFormCheckModules.UpdateProgress;
@@ -990,7 +1054,10 @@ begin
   for i := 0 to lvModules.Items.Count - 1 do
   begin
       Item := lvModules.Items[i];
-      if not Item.Checked then Continue;
+      if not Item.Checked then
+      begin
+        Continue;
+      end;
 
       AMangaCheck := TMangaInformation(Item.Data);
       Result := Result + AMangaCheck.MangaCheck.TestToCheck;
@@ -1067,8 +1134,10 @@ begin
             for i := 0 to AMangaCheck.MangaInfo.ChapterLinks.Count - 1 do
             begin
               if copy(AMangaCheck.MangaInfo.ChapterLinks[i],1,4) <> 'http' then
+              begin
                 AMangaCheck.MangaInfo.ChapterLinks[i] := AppendURLDelimLeft(
                   AMangaCheck.MangaInfo.ChapterLinks[i]);
+              end;
             end;
           end;
           if AMangaCheck.MangaCheck.ChapterURLAddRootHost then
@@ -1087,16 +1156,22 @@ begin
         Result.MangaTitle := AMangaCheck.MangaInfo.Title;
 
         if AMangaCheck.MangaCheck.ChapterURL = '' then
+        begin
           Result.Data := AMangaCheck.MangaInfo.ChapterLinks[0]
+        end
         else
         begin
           ChapterIndex := AMangaCheck.MangaInfo.ChapterLinks.IndexOf(
             AMangaCheck.MangaCheck.ChapterURL);
           if ChapterIndex <> -1 then
+          begin
             Result.ChapterTitle := AMangaCheck.MangaInfo.ChapterNames[ChapterIndex]
+          end
           else
+          begin
             Result.ChapterTitle := AMangaCheck.MangaCheck.ChapterURL +
               ' Don''t Match Any Chapter URL';
+          end;
         end;
       end
       else
@@ -1168,7 +1243,9 @@ begin
   end;
 
   if Assigned(ATaskContainer) then
+  begin
     ATaskContainer.Free;
+  end;
 end;
 
 function TFormCheckModules.MaybeFillPrefix(const Prefix, URL: String): String;
@@ -1195,7 +1272,10 @@ var
   FilterLower: string;
   ModuleName: string;
 begin
-  if FModulesList.Count = 0 then Exit;
+  if FModulesList.Count = 0 then
+  begin
+    Exit;
+  end;
 
   FilterLower := LowerCase(Trim(FFilterText));
 
@@ -1254,9 +1334,13 @@ begin
     lvModules.SortColumn := AColumnIndex;
     lvModules.SortDirection := ASortDirection;
     if ASortDirection = sdAscending then
+    begin
       lvModules.Column[AColumnIndex].SortIndicator := siAscending
+    end
     else
+    begin
       lvModules.Column[AColumnIndex].SortIndicator := siDescending;
+    end;
     lvModules.CustomSort(nil, 0);
   end;
 end;

@@ -5199,7 +5199,6 @@ object MainForm: TMainForm
                 OnButtonClick = edLogFileNameButtonClick
                 PasswordChar = #0
                 TabOrder = 1
-                OnButtonClick = edLogFileNameButtonClick
               end
             end
           end
