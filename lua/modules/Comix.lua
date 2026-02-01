@@ -107,7 +107,8 @@ function GetInfo()
 			local scan_group_name = v.GetProperty('scanlation_group').GetProperty('name').ToString()
 			local votes = tonumber(v.GetProperty('votes').ToString()) or 0
 			local updated_at = tonumber(v.GetProperty('updated_at').ToString()) or 0
-			local official = tonumber(v.GetProperty('is_official').ToString()) or 0
+			local official_str = v.GetProperty('is_official').ToString()
+			local official = (official_str == '1' or official_str == 'true') and 1 or 0
 
 			if not number:find('%.') then
 				has_integer[number] = true
