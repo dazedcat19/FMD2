@@ -263,7 +263,7 @@
 | MangaFull | [![https://mangafull.org](https://img.shields.io/website?url=https://mangafull.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangafull.org)](https://mangafull.org) | - | - | - |
 | MangaGeko | [![https://www.mgeko.cc](https://img.shields.io/website?url=https://www.mgeko.cc%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mgeko.cc)](https://www.mgeko.cc) | OK | 30.09.2025 | - |
 | MangaGG | [![https://mangagg.com](https://img.shields.io/website?url=https://mangagg.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangagg.com)](https://mangagg.com) | OK | 29.03.2025 | - |
-| MangaGo | [![https://www.mangago.me](https://img.shields.io/website?url=https://www.mangago.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangago.me)](https://www.mangago.me) | OK | 16.08.2025 | - |
+| MangaGo | [![https://www.mangago.me](https://img.shields.io/website?url=https://www.mangago.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangago.me)](https://www.mangago.me) | OK | 01.02.2026 | - |
 | MangaHasu | [![https://mangahasu.se](https://img.shields.io/website?url=https://mangahasu.se%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangahasu.se)](https://mangahasu.se) | - | - | - |
 | MangaHentai | [![https://mangahentai.me](https://img.shields.io/website?url=https://mangahentai.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangahentai.me)](https://mangahentai.me) | OK | 25.07.2025 | - |
 | MangaHere | [![https://www.mangahere.cc](https://img.shields.io/website?url=https://www.mangahere.cc%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangahere.cc)](https://www.mangahere.cc) | OK | 12.12.2024 | - |
