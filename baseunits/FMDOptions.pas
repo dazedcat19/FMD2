@@ -103,6 +103,7 @@ var
   OptionLetFMDDo: TFMDDo = DO_NOTHING;
   OptionDeleteCompletedTasksOnClose: Boolean = False;
   OptionSortDownloadsOnNewTasks: Boolean = False;
+  OptionLongNamePaths: Boolean = False;
 
   // saveto
   OptionChangeUnicodeCharacter: Boolean = False;

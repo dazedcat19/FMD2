@@ -1462,7 +1462,7 @@ begin
   if Length(s) > MAX_PATHDIR then
   begin
     s := MainForm.CheckLongNamePaths(s);
-    if not MainForm.cbOptionEnableLongNamePaths.Checked then
+    if not OptionLongNamePaths then
     begin
       SetLength(s, MAX_PATHDIR);
     end;
@@ -1793,10 +1793,13 @@ begin
   Result := AString;
 
   // for rename chapter only
-  if AChapter <> '' then begin
+  if AChapter <> '' then
+  begin
     // numbering/index
     if (Pos(CR_NUMBERING, Result) = 0) and (Pos(CR_CHAPTER, Result) = 0) then
+    begin
       Result := ANumbering + Result;
+    end;
     Result := StringReplaceBrackets(Result, CR_NUMBERING, ANumbering, [rfReplaceAll]);
 
     // pad number
@@ -1804,20 +1807,27 @@ begin
     if OptionConvertDigitVolume then
     begin
       if OptionConvertDigitChapter then
-        VolumeChapterPadZero(fchapter, OptionConvertDigitVolumeLength, OptionConvertDigitChapterLength)
+      begin
+        VolumeChapterPadZero(fchapter, OptionConvertDigitVolumeLength, OptionConvertDigitChapterLength);
+      end
       else
+      begin
         VolumeChapterPadZero(fchapter, OptionConvertDigitVolumeLength, 0);
+      end;
     end
-    else
-    if OptionConvertDigitChapter then
+    else if OptionConvertDigitChapter then
+    begin
       VolumeChapterPadZero(fchapter, 0, OptionConvertDigitChapterLength);
+    end;
 
     fchapter := FixStringLocal(fchapter);
 
     Result := StringReplaceBrackets(Result, CR_CHAPTER, fchapter, [rfReplaceAll]);
 
     if Result = '' then
+    begin
       Result := ANumbering;
+    end;
   end;
 
   Result := StringReplaceBrackets(Result, CR_WEBSITE, FixStringLocal(AWebsite), [rfReplaceAll]);
@@ -1825,9 +1835,17 @@ begin
   Result := StringReplaceBrackets(Result, CR_AUTHOR, FixStringLocal(AAuthor), [rfReplaceAll]);
   Result := StringReplaceBrackets(Result, CR_ARTIST, FixStringLocal(AArtist), [rfReplaceAll]);
   Result := StringReplaceBrackets(Result, CR_FILENAME, FixStringLocal(AFileName), [rfReplaceAll]);
-  if Result = '' then Result := FixStringLocal(AMangaName);
+  if Result = '' then
+  begin
+    Result := FixStringLocal(AMangaName);
+  end;
 
-  if Result = '' then Exit;
+  if Result = '' then
+  begin
+    Exit;
+  end;
+
+  Result := MainForm.CheckSingularCharacterLimit(Result);
 
   // remove pathdelim
   Result := TrimChar(Result, AllowDirectorySeparators);

@@ -536,9 +536,15 @@ begin
   Result := '';
   if (Container.FileNames.Count = Container.PageLinks.Count) and
     (AWorkId < Container.FileNames.Count) then
+  begin
     Result := Container.FileNames[AWorkId];
+  end;
+
   if Result = '' then
+  begin
     Result := Format('%.3d', [AWorkId + 1]);
+  end;
+
   Result := StringReplace(CurrentCustomFileName, CR_FILENAME, Result, [rfReplaceAll]);
   {$IFDEF WINDOWS}
   s := UTF8Decode(Result);
@@ -766,7 +772,7 @@ begin
   {$IFDEF Windows}
   s := UTF8Decode(FCurrentWorkingDir);
 
-  if MainForm.cbOptionEnableLongNamePaths.Checked then
+  if OptionLongNamePaths then
   begin
     FCurrentMaxFileNameLength := FMDMaxImageFilePath + Length(s);
   end

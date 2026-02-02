@@ -21,7 +21,7 @@ uses
   ExtCtrls, ComCtrls, Buttons, Spin, Menus, VirtualTrees, RichMemo, simpleipc, process,
   lclproc, types, LCLIntf, EditBtn, GroupedEdit, PairSplitter, MultiLog,
   FileChannel, FileUtil, LazStringUtils, TAGraph, TASources, TASeries, TATools,
-  AnimatedGif, uBaseUnit, uDownloadsManager, uFavoritesManager,
+  AnimatedGif, uBaseUnit, uDownloadsManager, uFavoritesManager, StrUtils,
   uSilentThread, uMisc, uGetMangaInfosThread, frmDropTarget, frmAccountManager,
   frmAccountSet, frmWebsiteOptionCustom, frmCustomColor, frmLogger, frmTransferFavorites,
   frmLuaModulesUpdater, CheckUpdate, DBDataProcess, uDarkStyleParams, uWin32WidgetSetDark,
@@ -772,6 +772,9 @@ type
     procedure vtFavoritesFilterCountChange;
 
     procedure AddChapterNameToList;
+
+    // Check and trim to max 255 character limit per folder/file
+    function CheckSingularCharacterLimit(APath: String; ALimit: Integer = 255): String;
 
     // Check and set path for long path compatibilty
     function CheckLongNamePaths(APath: String): String;
@@ -5375,18 +5378,53 @@ begin
 
   AddSilentThread(URL, mt);
 end;
+     
+function TMainForm.CheckSingularCharacterLimit(APath: String; ALimit: Integer = 255): String;
+var
+  TruncLength: Integer;
+  FileNamePos: Integer = 0;
+  HasFileName: Boolean = False;
+  CharsToTrim: Set of Char;
+begin
+  ALimit := Min(Alimit, 255);
+  CharsToTrim := [' ', '.'];
+  HasFileName := APath.Contains(CR_FILENAME);
+
+  if HasFileName then
+  begin
+    FileNamePos := Pos(CR_FILENAME, APath);
+    ALimit := ALimit - 3 - 5;
+  end;
+
+  if Length(APath) >= ALimit then
+  begin
+    TruncLength := LastDelimiter(' ', Copy(APath, 1, ALimit));
+    APath := Copy(APath, 1, TruncLength);
+    APath := TrimRightSet(APath, CharsToTrim);
+  end;
+
+  if HasFileName then
+  begin
+    if FileNamePos > Alimit then
+    begin
+      APath := APath + CR_FILENAME;
+    end;
+  end;
+
+  Result := APath;
+end;
 
 function TMainForm.CheckLongNamePaths(APath: String): String;
 begin
-  if cbOptionEnableLongNamePaths.Checked then
+  if OptionLongNamePaths then
   begin
     if Pos('\\?\', APath) = 0 then
     begin
       APath := '\\?\' + APath;
     end;
-  end;
 
-  Result := APath;
+    Result := APath;
+  end;
 end;
 
 function TMainForm.TrimPath(APath: String): String;
@@ -6136,6 +6174,7 @@ begin
     OptionEnableLoadCover := cbOptionEnableLoadCover.Checked;
     OptionDeleteCompletedTasksOnClose := cbOptionDeleteCompletedTasksOnClose.Checked;
     OptionSortDownloadsOnNewTasks := cbOptionSortDownloadsOnNewTasks.Checked;
+    OptionLongNamePaths := cbOptionEnableLongNamePaths.Checked;
     DLManager.DB.AutoVacuum:=cbOptionVacuumDatabasesOnExit.Checked;
     FavoriteManager.DB.AutoVacuum:=cbOptionVacuumDatabasesOnExit.Checked;
 
