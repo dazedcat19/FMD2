@@ -225,8 +225,6 @@ begin
               end;
               if ChapterURL <> '' then
               begin
-                FForm.LogMessage(ChapterURL);
-                FForm.LogMessage(AMangaCheck.MangaCheck.ChapterURLPrefix);
                 if AMangaCheck.MangaCheck.ChapterURLPrefix <> '' then
                 begin
                   ChapterURL := FForm.MaybeFillPrefix(
@@ -239,12 +237,10 @@ begin
                     ChapterURL := AppendURLDelimLeft(ChapterURL);
                   end;
                 end;
-                FForm.LogMessage(ChapterURL);
                 if AMangaCheck.MangaCheck.ChapterURLAddRootHost then
                 begin
                   ChapterURL := MaybeFillHost(RootURL, ChapterURL);
                 end;
-                FForm.LogMessage(ChapterURL);
                 Inc(AMangaCheck.MangaCheck.TestToCheck);
                 if ChapterTitle <> '' then
                 begin
@@ -1105,14 +1101,13 @@ begin
         Exit;
       end;
 
-      if lua_isboolean(L, -1) and lua_toboolean(L, -1) then
+      if lua_toboolean(L, -1) then
       begin
         if AMangaCheck.MangaInfo.Title = '' then
         begin
           Result.Message := 'OnGetInfo returned true, but no title found';
           Exit;
         end;
-
         if AMangaCheck.MangaInfo.ChapterLinks.Count = 0 then
         begin
           Result.Message := 'OnGetInfo returned true, but no chapters found';
@@ -1175,7 +1170,9 @@ begin
         end;
       end
       else
+      begin
         Result.Message := 'OnGetInfo returned false or unexpected type';
+      end;
     end;
   except
     on E: Exception do
@@ -1223,7 +1220,8 @@ begin
         Exit;
       end;
 
-      if lua_isboolean(L, -1) and lua_toboolean(L, -1) then
+      //if lua_isboolean(L, -1) and lua_toboolean(L, -1) then
+      if lua_toboolean(L, -1) then
       begin
         if ATaskContainer.PageLinks.Count = 0 then
         begin
