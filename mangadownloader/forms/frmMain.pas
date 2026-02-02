@@ -4376,12 +4376,21 @@ begin
       miDownloadDelete.Enabled := True;
       miDownloadDeleteTask.Enabled := True;
       miDownloadDeleteTaskData.Enabled := True;
-      miDownloadOpenWith.Enabled := vtDownload.SelectedCount = 1;
-      miDownloadOpenFolder.Enabled := miDownloadOpenWith.Enabled;
-      miDownloadViewMangaInfo.Enabled := miDownloadOpenFolder.Enabled and
-        (DLManager[vtDownload.FocusedNode^.Index].DownloadInfo.Link <> '');
       miDownloadEnable.Enabled := iEnable;
       miDownloadDisable.Enabled := iDisable;
+
+      if (vtDownload.SelectedCount = 1) and Assigned(vtDownload.FocusedNode) then
+      begin
+        miDownloadOpenFolder.Enabled := DirectoryExistsUTF8(DLManager.Items[vtDownload.FocusedNode^.Index].DownloadInfo.SaveTo);
+        miDownloadOpenWith.Enabled := miDownloadOpenFolder.Enabled;
+        miDownloadViewMangaInfo.Enabled := (DLManager[vtDownload.FocusedNode^.Index].DownloadInfo.Link <> '');
+      end
+      else
+      begin
+        miDownloadOpenFolder.Enabled := False;
+        miDownloadOpenWith.Enabled := False;
+        miDownloadViewMangaInfo.Enabled := False;
+      end;
     end;
   end;
 end;
