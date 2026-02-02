@@ -4324,12 +4324,16 @@ var
     iEnable := False;
     iDisable := False;
     Node := vtDownload.GetFirstSelected();
+
     while Assigned(Node) do
     begin
       if DLManager[Node^.Index].Enabled then
       begin
         if not iDisable then
+        begin
           iDisable := True;
+        end;
+
         case DLManager[Node^.Index].Status of
           STATUS_DOWNLOAD,
           STATUS_PREPARE,
@@ -4342,9 +4346,15 @@ var
         end;
       end
       else if not iEnable then
+      begin
         iEnable := True;
+      end;
+
       if iStop and iResume and iRedownload and iEnable and iDisable then
+      begin
         Break;
+      end;
+
       Node := vtDownload.GetNextSelected(Node);
     end;
   end;
@@ -4352,6 +4362,7 @@ var
 begin
   miDownloadDeleteCompleted.Enabled := DLManager.Count > 0;
   miDownloadMergeCompleted.Enabled := miDownloadDeleteCompleted.Enabled;
+
   with DLManager do begin
     if (vtDownload.SelectedCount = 0) or (vtDownload.FocusedNode = nil) then
     begin
@@ -4423,12 +4434,16 @@ var
     iEnable := False;
     iDisable := False;
     Node := vtFavorites.GetFirstSelected();
+
     while Assigned(Node) do
     begin
       if FavoriteManager[Node^.Index].Enabled then
       begin
         if not iDisable then
+        begin
           iDisable := True;
+        end;
+
         case FavoriteManager[Node^.Index].Status of
           STATUS_IDLE      : if not iCheck then iCheck := True;
           STATUS_CHECK,
@@ -4437,9 +4452,15 @@ var
         end;
       end
       else if not iEnable then
+      begin
         iEnable := True;
+      end;
+
       if iEnable and iDisable and iCheck and iStop then
+      begin
         Break;
+      end;
+
       Node := vtFavorites.GetNextSelected(Node);
     end;
   end;
@@ -4466,6 +4487,7 @@ begin
     miFavoritesEnable.Enabled := iEnable;
     miFavoritesDisable.Enabled := iDisable;
     miFavoritesTransferWebsite.Enabled := True;
+
     if (vtFavorites.SelectedCount = 1) and Assigned(vtFavorites.FocusedNode) then
     begin
       miFavoritesViewInfos.Enabled := True;
@@ -4487,6 +4509,7 @@ begin
       miFavoritesRename.Enabled := False;
     end;
   end;
+
   if FavoriteManager.isRunning then
   begin
     miFavoritesDelete.Enabled := False;
@@ -4503,8 +4526,7 @@ begin
     pmMangaList.Items[1].Enabled := True;
     pmMangaList.Items[2].Enabled := True;
   end
-  else
-  if vtMangaList.SelectedCount > 1 then
+  else if vtMangaList.SelectedCount > 1 then
   begin
     pmMangaList.Items[0].Enabled := False;
     pmMangaList.Items[1].Enabled := True;
@@ -4518,10 +4540,14 @@ begin
   if Assigned(SilentThreadManager) then
   begin
     if SilentThreadManager.Count = 0 then
+    begin
       Abort;
+    end;
   end
   else
+  begin
     Abort;
+  end;
 end;
 
 procedure TMainForm.pmTrayPopup(Sender: TObject);
@@ -4529,20 +4555,25 @@ var
   i: Integer;
 begin
   with miTrayAfterDownloadFinish do
+  begin
     for i := 0 to Count - 1 do
+    begin
       if Items[i].Tag = Integer(OptionLetFMDDo) then
       begin
         Items[i].Checked := True;
         Break;
       end;
+    end;
+  end;
+
   miTrayShowDropBox.Checked := Assigned(FormDropTarget);
 end;
 
 procedure TMainForm.rgOptionCompressSelectionChanged(Sender: TObject);
 begin
-  seOptionPDFQuality.Enabled:=rgOptionCompress.ItemIndex=3;
-  lbOptionPDFQuality.Enabled:=seOptionPDFQuality.Enabled;
-  lbOptionPDFQualityHint.Enabled:=seOptionPDFQuality.Enabled;
+  seOptionPDFQuality.Enabled := rgOptionCompress.ItemIndex = 3;
+  lbOptionPDFQuality.Enabled := seOptionPDFQuality.Enabled;
+  lbOptionPDFQualityHint.Enabled := seOptionPDFQuality.Enabled;
 end;
 
 procedure TMainForm.seOptionAutoCheckFavIntervalMinutesChange(Sender: TObject);
@@ -4559,7 +4590,9 @@ end;
 procedure TMainForm.tbDownloadDeleteCompletedClick(Sender: TObject);
 begin
   if DLManager.TaskStatusPresent([STATUS_FINISH]) then
+  begin
     miDownloadDeleteCompletedClick(miDownloadDeleteCompleted);
+  end;
 end;
 
 procedure TMainForm.tbDownloadResumeAllClick(Sender: TObject);
@@ -4578,7 +4611,9 @@ procedure TMainForm.tbDropTargetOpacityChange(Sender: TObject);
 begin
   frmDropTarget.FAlphaBlendValue := tbDropTargetOpacity.Position;
   if Assigned(FormDropTarget) then
+  begin
     FormDropTarget.AlphaBlendValue := frmDropTarget.FAlphaBlendValue;
+  end;
 end;
 
 procedure TMainForm.tbWebsitesCollapseAllClick(Sender: TObject);
@@ -4600,7 +4635,9 @@ begin
     Show;
   end
   else
+  begin
     Application.BringToFront;
+  end;
 end;
 
 procedure TMainForm.tvDownloadFilterSelectionChanged(Sender: TObject);
@@ -4628,21 +4665,30 @@ var
   Percents: double;
   ww, hh: Integer;
 begin
-  if Column <> 2 then Exit;
+  if Column <> 2 then
+  begin
+    Exit;
+  end;
+
   with DLManager.Items[Node^.Index], TargetCanvas do
   begin
     if Status in [STATUS_FINISH, STATUS_COMPRESS, STATUS_FAILED] then
-      Percents := 1
-    else
-    if (DLManager.Items[Node^.Index].DownCounter = 0) or
+    begin
+      Percents := 1;
+    end
+    else if (DLManager.Items[Node^.Index].DownCounter = 0) or
       (DLManager.Items[Node^.Index].PageNumber = 0) then
-      Percents := 0
+    begin
+      Percents := 0;
+    end
     else
+    begin
       Percents := DLManager.Items[Node^.Index].DownCounter / DLManager.Items[Node^.Index].PageNumber;
+    end;
 
     // base bar
     BarRect := CellRect;
-    BarRect.Inflate(-2,-2);
+    BarRect.Inflate(-2, -2);
     BarRect.Right -= 1;
     Pen.Style := psSolid;
     Brush.Style := bsSolid;
@@ -4702,9 +4748,13 @@ procedure TMainForm.vtDownloadColumnDblClick(Sender: TBaseVirtualTree;
   Column: TColumnIndex; Shift: TShiftState);
 begin
   if Column = 5 then
-    miDownloadOpenFolderClick(Sender)
+  begin
+    miDownloadOpenFolderClick(Sender);
+  end
   else
+  begin
     miDownloadOpenWithClick(Sender);
+  end;
 end;
 
 procedure TMainForm.vtDownloadDragAllowed(Sender : TBaseVirtualTree;
@@ -4719,58 +4769,84 @@ var
   cNode: PVirtualNode;
   ConTemp: TTaskContainers;
 begin
-  if vtDownload.SelectedCount=0 then Exit;
-  nIndex:=NextIndex;
+  if vtDownload.SelectedCount = 0 then
+  begin
+    Exit;
+  end;
+
+  nIndex := NextIndex;
   vtDownload.BeginUpdate;
-  ConTemp:=TTaskContainers.Create;
+  ConTemp := TTaskContainers.Create;
   DLManager.Lock;
+
   try
-    i:=0;
-    cNode:=vtDownload.GetFirstSelected();
-    while cNode<>nil do
+    i := 0;
+    cNode := vtDownload.GetFirstSelected();
+    while cNode <> nil do
     begin
-      vtDownload.Selected[cNode]:=False;
-      ConTemp.Add(DLManager.Items[cNode^.Index-i]);
-      DLManager.Items.Delete(cNode^.Index-i);
-      if (nIndex>0) and (cNode^.Index<nIndex) then
+      vtDownload.Selected[cNode] := False;
+      ConTemp.Add(DLManager.Items[cNode^.Index - i]);
+      DLManager.Items.Delete(cNode^.Index - i);
+
+      if (nIndex > 0) and (cNode^.Index < nIndex) then
+      begin
         Dec(nIndex);
+      end;
+
       Inc(i);
-      cNode:=vtDownload.GetNextSelected(cNode);
+      cNode := vtDownload.GetNextSelected(cNode);
     end;
 
-    for i:=0 to ConTemp.Count-1 do
+    for i := 0 to ConTemp.Count - 1 do
     begin
-      if (i=0) and (Mode in [dmBelow,dmNowhere]) then
+      if (i = 0) and (Mode in [dmBelow, dmNowhere]) then
+      begin
         Inc(nIndex)
-      else if (i>0) and (nIndex<DLManager.Count) then
+      end
+      else if (i > 0) and (nIndex < DLManager.Count) then
+      begin
         Inc(nIndex);
-      if nIndex>DLManager.Count then
-        nIndex:=DLManager.Count;
+      end;
+
+      if nIndex > DLManager.Count then
+      begin
+        nIndex := DLManager.Count;
+      end;
+
       DLManager.Items.Insert(nIndex, ConTemp[i]);
     end;
 
-    cNode:=vtDownload.GetFirst;
-    while cNode^.Index<nIndex do
-      cNode:=vtDownload.GetNext(cNode);
-
-    if Mode in [dmBelow,dmNowhere] then
-      vtDownload.FocusedNode:=cNode;
-
-    for i:=0 to ConTemp.Count-1 do
+    cNode := vtDownload.GetFirst;
+    while cNode^.Index < nIndex do
     begin
-      vtDownload.Selected[cNode]:=True;
-      if i<ConTemp.Count-1 then
-        cNode:=vtDownload.GetPrevious(cNode);
+      cNode := vtDownload.GetNext(cNode);
     end;
 
-    if Mode=dmAbove then
-      vtDownload.FocusedNode:=cNode;
+    if Mode in [dmBelow,dmNowhere] then
+    begin
+      vtDownload.FocusedNode := cNode;
+    end;
+
+    for i := 0 to ConTemp.Count - 1 do
+    begin
+      vtDownload.Selected[cNode] := True;
+      if i < ConTemp.Count - 1 then
+      begin
+        cNode := vtDownload.GetPrevious(cNode);
+      end;
+    end;
+
+    if Mode = dmAbove then
+    begin
+      vtDownload.FocusedNode := cNode;
+    end;
 
     // todo: consider dbupdateorder queue in timer
     DLManager.UpdateOrder;
   finally
     DLManager.UnLock;
   end;
+
   ConTemp.Free;
   vtDownload.EndUpdate;
   vtDownloadUpdateFilters;
@@ -4781,12 +4857,16 @@ procedure TMainForm.vtDownloadDragDrop(Sender : TBaseVirtualTree;
   Shift : TShiftState; const Pt : TPoint; var Effect : LongWord;
   Mode : TDropMode);
 begin
-  if (Source=vtDownload) and (vtDownload.RootNodeCount>1) then
+  if (Source = vtDownload) and (vtDownload.RootNodeCount > 1) then
   begin
     if Mode = dmNowhere then
-      vtDownloadMoveItems(vtDownload.GetLast^.Index, Mode)
+    begin
+      vtDownloadMoveItems(vtDownload.GetLast^.Index, Mode);
+    end
     else
+    begin
       vtDownloadMoveItems(vtDownload.DropTargetNode^.Index, Mode);
+    end;
   end
   else
   begin
@@ -4798,7 +4878,7 @@ procedure TMainForm.vtDownloadDragOver(Sender : TBaseVirtualTree;
   Source : TObject; Shift : TShiftState; State : TDragState; const Pt : TPoint;
   Mode : TDropMode; var Effect : LongWord; var Accept : Boolean);
 begin
-  Accept:=True;
+  Accept := True;
 end;
 
 procedure TMainForm.vtDownloadFocusChanged(Sender: TBaseVirtualTree;
@@ -4816,38 +4896,55 @@ var
   l, i: Cardinal;
 begin
   with DLManager.Items[Node^.Index],DLManager.Items[Node^.Index].DownloadInfo do
+  begin
     case Column of
       0: begin
            l := ChapterLinks.Count;
-           if l>0 then
+           if l > 0 then
            begin
              HintText:='';
-             if l<30 then
-               for i:=0 to l-1 do begin
-                 if HintText<>'' then HintText+=LineEnding;
-                 HintText+=ChapterNames.Strings[i]
+             if l < 30 then
+             begin
+               for i := 0 to l - 1 do
+               begin
+                 if HintText <> '' then
+                 begin
+                   HintText += LineEnding;
+                 end;
+                 HintText += ChapterNames.Strings[i]
                end
+             end
              else
              begin
-               for i:=0 to 14 do begin
-                 if HintText<>'' then HintText+=LineEnding;
-                 HintText+=ChapterNames.Strings[i]
+               for i := 0 to 14 do
+               begin
+                 if HintText <> '' then
+                 begin
+                   HintText += LineEnding;
+                 end;
+                 HintText += ChapterNames.Strings[i]
                end;
-               HintText+=LineEnding+'...';
-               for i:=l-15 to l-1 do begin
-                 if HintText<>'' then HintText+=LineEnding;
-                 HintText+=ChapterNames.Strings[i]
+
+               HintText += LineEnding+'...';
+               for i := l - 15 to l - 1 do
+               begin
+                 if HintText <> '' then
+                 begin
+                   HintText += LineEnding;
+                 end;
+                 HintText += ChapterNames.Strings[i]
                end;
              end;
            end;
          end;
-      1: HintText:=Status;
-      2: HintText:=Progress;
-      4: HintText:=Website;
-      5: HintText:=SaveTo;
-      6: HintText:=DateTimeToStr(DateAdded);
-      7: HintText:=DateTimeToStr(DateLastDownloaded);
+      1: HintText := Status;
+      2: HintText := Progress;
+      4: HintText := Website;
+      5: HintText := SaveTo;
+      6: HintText := DateTimeToStr(DateAdded);
+      7: HintText := DateTimeToStr(DateLastDownloaded);
     end;
+  end;
 end;
 
 procedure TMainForm.vtDownloadGetImageIndex(Sender: TBaseVirtualTree;
@@ -4855,10 +4952,16 @@ procedure TMainForm.vtDownloadGetImageIndex(Sender: TBaseVirtualTree;
   var Ghosted: Boolean; var ImageIndex: Integer);
 begin
   if vtDownload.Header.Columns[Column].Position = 0 then
+  begin
     if not DLManager[Node^.Index].Enabled then
-      ImageIndex := 8
+    begin
+      ImageIndex := 8;
+    end
     else
+    begin
       ImageIndex := Integer(DLManager[Node^.Index].Status);
+    end;
+  end;
 end;
 
 procedure TMainForm.vtDownloadGetText(Sender: TBaseVirtualTree;
@@ -4866,42 +4969,67 @@ procedure TMainForm.vtDownloadGetText(Sender: TBaseVirtualTree;
   var CellText: String);
 begin
   with DLManager[Node^.Index].DownloadInfo do
+  begin
     case Column of
-      0: CellText:=Title;
-      1: CellText:=Status;
+      0: CellText := Title;
+      1: CellText := Status;
       2: begin
-           if Progress='' then CellText:='Empty'
-           else CellText:=Progress;
+           if Progress = '' then
+           begin
+             CellText := 'Empty'
+           end
+           else
+           begin
+             CellText := Progress;
+           end;
          end;
-      3: CellText:=TransferRate;
-      4: CellText:=Website;
-      5: CellText:=SaveTo;
-      6: CellText:=DateTimeToStr(DateAdded);
-      7: CellText:=DateTimeToStr(DateLastDownloaded);
+      3: CellText := TransferRate;
+      4: CellText := Website;
+      5: CellText := SaveTo;
+      6: CellText := DateTimeToStr(DateAdded);
+      7: CellText := DateTimeToStr(DateLastDownloaded);
     end;
+  end;
 end;
 
 procedure TMainForm.vtDownloadHeaderClick(Sender: TVTHeader; HitInfo: TVTHeaderHitInfo);
 begin
-  if HitInfo.Button <> mbLeft then Exit;
-  if (HitInfo.Column = 2) or (HitInfo.Column = 3) then Exit;
+  if HitInfo.Button <> mbLeft then
+  begin
+    Exit;
+  end;
+  if (HitInfo.Column = 2) or (HitInfo.Column = 3) then
+  begin
+    Exit;
+  end;
+
   if DLManager.SortColumn = HitInfo.Column then
+  begin
     DLManager.SortDirection := not DLManager.SortDirection;
+  end;
+
   DLManager.SortColumn := HitInfo.Column;
   vtDownload.Header.SortDirection := TSortDirection(DLManager.SortDirection);
-  vtDownload.Header.SortColumn := HitInfo.Column;
+  vtDownload.Header.SortColumn := HitInfo.Column
+
   if DLManager.Count > 1 then
+  begin
     DLManager.Sort(HitInfo.Column);
+  end;
+
   UpdateVtDownload;
 end;
 
 procedure TMainForm.vtDownloadKeyAction(Sender: TBaseVirtualTree;
   var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
 begin
-  if (ssCtrl in Shift) then begin
-    if (Sender.SelectedCount>0) and
-      (CharCode in [VK_UP,VK_DOWN,VK_HOME,VK_END]) then
-      DoDefault:=False;
+  if (ssCtrl in Shift) then
+  begin
+    if (Sender.SelectedCount > 0) and
+      (CharCode in [VK_UP, VK_DOWN, VK_HOME, VK_END]) then
+    begin
+      DoDefault := False;
+    end;
   end;
 end;
 
@@ -4910,21 +5038,30 @@ procedure TMainForm.vtDownloadKeyDown(Sender : TObject; var Key : Word;
 var
   p: Cardinal;
 begin
-  if not (ssCtrl in Shift) then Exit;
-  if vtDownload.SelectedCount=0 then Exit;
-  p:=vtDownload.GetFirstSelected()^.Index;
+  if not (ssCtrl in Shift) then
+  begin
+    Exit;
+  end;
+  if vtDownload.SelectedCount = 0 then
+  begin
+    Exit;
+  end;
+
+  p := vtDownload.GetFirstSelected()^.Index;
   case Key of
-    VK_UP   : if p>0 then vtDownloadMoveItems(p-1,dmAbove);
-    VK_DOWN : vtDownloadMoveItems(p,dmBelow);
-    VK_HOME : vtDownloadMoveItems(0,dmAbove);
-    VK_END  : vtDownloadMoveItems(vtDownload.RootNodeCount-1,dmBelow);
+    VK_UP   : if p > 0 then vtDownloadMoveItems(p - 1, dmAbove);
+    VK_DOWN : vtDownloadMoveItems(p, dmBelow);
+    VK_HOME : vtDownloadMoveItems(0, dmAbove);
+    VK_END  : vtDownloadMoveItems(vtDownload.RootNodeCount - 1, dmBelow);
   end;
 end;
 
 procedure TMainForm.vtDownloadKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   if Key = VK_DELETE then
+  begin
     miDownloadDeleteTaskClick(miDownloadDeleteTask);
+  end;
 end;
 
 procedure TMainForm.vtDownloadPaintText(Sender: TBaseVirtualTree;
@@ -4932,7 +5069,9 @@ procedure TMainForm.vtDownloadPaintText(Sender: TBaseVirtualTree;
   TextType: TVSTTextType);
 begin
   if not DLManager[Node^.Index].Enabled then
+  begin
     TargetCanvas.Font.Color := TVirtualStringTree(Sender).Colors.DisabledColor;
+  end;
 end;
 
 procedure TMainForm.vtFavoritesBeforeCellPaint(Sender: TBaseVirtualTree;
