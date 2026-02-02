@@ -529,6 +529,8 @@ type
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
 
+    procedure SetCaption;
+
     procedure btDownloadClick(Sender: TObject);
     procedure btFavoritesCheckNewChapterClick(Sender: TObject);
     procedure btOptionApplyClick(Sender: TObject);
@@ -1415,9 +1417,21 @@ begin
     AddToAboutStatus(RS_Revision, REVISION_NUMBER+' ('+REVISION_SHA+')', pnAboutVersion);
   end;
 
-  if AlwaysLoadLuaFromFile then
+procedure TMainForm.SetCaption;
+var
+  i: Integer;
+begin
+  if not ContainsText(Caption, FMD_VERSION_STRING) then
   begin
-    Caption := Caption + ' --lua-dofile';
+    Caption := Caption + ' v' + FMD_VERSION_STRING;
+  end;
+
+  for i := 0 to AppParams.Count - 1 do
+  begin
+    if not ContainsText(Caption, AppParams[i]) then
+    begin
+      Caption := Caption + ' ' + AppParams[i];
+    end;
   end;
 end;
 
@@ -6887,7 +6901,8 @@ begin
       cbWebPSaveAs.ItemIndex := idxOptionWebPConvertTo;
       cbPNGCompressionLevel.ItemIndex := idxOptionWebPPNGLevel;
       Self.Repaint;
-      Self.Caption := Self.Caption + ' v' + FMD_VERSION_STRING;
+      SetCaption;
+
       vtMangaList.Repaint;
       tvDownloadFilterRefresh(True);
 
