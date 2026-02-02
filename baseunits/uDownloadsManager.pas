@@ -501,7 +501,7 @@ begin
            (CurrentDownloadChapterPtr >= ChapterLinks.Count) and
            (not FailedChaptersExist) then
         begin
-          DownloadInfo.Status := Format('[%d/%d] %s',[Container.ChapterLinks.Count,Container.ChapterLinks.Count,RS_Finish]);
+          DownloadInfo.Status := Format('[%d/%d] %s', [Container.ChapterLinks.Count, Container.ChapterLinks.Count, RS_Finish]);
           DownloadInfo.Progress := '';
           Status := STATUS_FINISH;
         end

@@ -2349,26 +2349,30 @@ var
 begin
   DLManager.Lock;
   try
-    i:=DLManager.Count-1;
-    while i>0 do begin
-      ic:=DLManager.Items[i];
-      if ic.Status=STATUS_FINISH then
+    i := DLManager.Count - 1;
+    while i > 0 do
+    begin
+      ic := DLManager.Items[i];
+      if ic.Status = STATUS_FINISH then
       begin
-        j:=i-1;
-        while j>0 do begin
-          jc:=DLManager.Items[j];
-          if (i<>j) and
+        j := i - 1;
+        while j >= 0 do
+        begin
+          jc := DLManager.Items[j];
+          if (i <> j) and
             (jc.Status = STATUS_FINISH) and
-            SameText(ic.DownloadInfo.title,jc.DownloadInfo.title) and
-            SameText(ic.DownloadInfo.ModuleID,jc.DownloadInfo.ModuleID) and
-            SameText(ic.DownloadInfo.saveTo,jc.DownloadInfo.saveTo) then
+            SameText(ic.DownloadInfo.title, jc.DownloadInfo.title) and
+            SameText(ic.DownloadInfo.ModuleID, jc.DownloadInfo.ModuleID) and
+            SameText(ic.DownloadInfo.saveTo, jc.DownloadInfo.saveTo) then
           begin
-            ic.ChapterLinks.Text:=jc.ChapterLinks.Text+ic.ChapterLinks.Text;
-            ic.ChapterNames.Text:=jc.ChapterNames.Text+ic.ChapterNames.Text;
-            ic.DownloadInfo.DateAdded:=jc.DownloadInfo.DateAdded;
+            ic.ChapterLinks.Text := jc.ChapterLinks.Text + ic.ChapterLinks.Text;
+            ic.ChapterNames.Text := jc.ChapterNames.Text + ic.ChapterNames.Text;
+            ic.DownloadInfo.DateAdded := jc.DownloadInfo.DateAdded;
+            ic.DownloadInfo.Status := Format('[%d/%d] %s', [ic.ChapterLinks.Count, ic.ChapterLinks.Count, RS_Finish]);
             DLManager.Delete(j);
             Dec(i);
           end;
+
           Dec(j);
         end;
       end;
@@ -2377,6 +2381,7 @@ begin
   finally
     DLManager.UnLock;
   end;
+
   UpdateVtDownload;
 end;
 
