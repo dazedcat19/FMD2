@@ -1414,8 +1414,9 @@ begin
   AddToAboutStatus(RS_Version, FMD_VERSION_STRING, pnAboutVersion);
   if REVISION_NUMBER <> '' then
   begin
-    AddToAboutStatus(RS_Revision, REVISION_NUMBER+' ('+REVISION_SHA+')', pnAboutVersion);
+    AddToAboutStatus(RS_Revision, REVISION_NUMBER + ' (' + REVISION_SHA + ')', pnAboutVersion);
   end;
+end;
 
 procedure TMainForm.SetCaption;
 var
@@ -1437,17 +1438,18 @@ end;
 
 procedure TMainForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
-  if (END_SESSION=False) and
+  if (END_SESSION = False) and
     (cbOptionShowQuitDialog.Checked and (DoAfterFMD = DO_NOTHING) and (not OptionRestartFMD)) then
   begin
     if CenteredMessageDlg(Self, RS_DlgQuit, mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
     begin
-      Logger.Send(Self.ClassName+'.FormClose aborted!');
+      Logger.Send(Self.ClassName + '.FormClose aborted!');
       CloseAction := caNone;
       Exit;
     end;
   end;
-  Logger.Send(Self.ClassName+'.FormClose');
+
+  Logger.Send(Self.ClassName + '.FormClose');
   Hide;
   CloseNow;
   CloseAction := caFree;
@@ -1456,38 +1458,94 @@ end;
 procedure TMainForm.CloseNow;
 begin
   if OptionDeleteCompletedTasksOnClose then
+  begin
     miDownloadDeleteCompletedClick(nil);
+  end;
 
   isExiting := True;
 
   {$ifdef windows}
   if Assigned(PrevWndProc) then
+  begin
     windows.SetWindowLongPtr(Self.Handle, GWL_WNDPROC, PtrInt(PrevWndProc));
+  end;
   {$endif}
 
   if FavoriteManager.isRunning then
+  begin
     FavoriteManager.StopChekForNewChapter(True);
+  end;
+
   if SilentThreadManager.Count > 0 then
+  begin
     SilentThreadManager.StopAll(True);
-  if DLManager.ItemsActiveTask.Count > 0 then
+  end;
+
+  if DLManager.ItemsActiveTask.Count > 0 then begin
     DLManager.StopAllDownloadTasksForExit;
+  end;
 
   //Terminating all threads and wait for it
-  if Assigned(CheckUpdateThread) then CheckUpdateThread.Terminate;
-  if Assigned(SearchDBThread) then SearchDBThread.Terminate;
-  if Assigned(OpenDBThread) then OpenDBThread.Terminate;
-  if Assigned(GetInfosThread) then try GetInfosThread.Terminate; except end;
-  if isUpdating then updateList.Terminate;
-  if Assigned(DBUpdaterThread) then DBUpdaterThread.Terminate;
-  if Assigned(SelfUpdaterThread) then SelfUpdaterThread.Terminate;
+  if Assigned(CheckUpdateThread) then
+  begin
+    CheckUpdateThread.Terminate;
+  end;
+  if Assigned(SearchDBThread) then
+  begin
+    SearchDBThread.Terminate;
+  end;
+  if Assigned(OpenDBThread) then
+  begin
+    OpenDBThread.Terminate;
+  end;
+  if Assigned(GetInfosThread) then
+  begin
+    try
+      GetInfosThread.Terminate;
+    except
+    end;
+  end;
+  if isUpdating then
+  begin
+    updateList.Terminate;
+  end;
+  if Assigned(DBUpdaterThread) then
+  begin
+    DBUpdaterThread.Terminate;
+  end;
+  if Assigned(SelfUpdaterThread) then
+  begin
+    SelfUpdaterThread.Terminate;
+  end;
 
-  if Assigned(CheckUpdateThread) then CheckUpdateThread.WaitFor;
-  if Assigned(SearchDBThread) then SearchDBThread.WaitFor;
-  if Assigned(OpenDBThread) then OpenDBThread.WaitFor;
-  if Assigned(GetInfosThread) then GetInfosThread.WaitFor;
-  if isUpdating then updateList.WaitFor;
-  if Assigned(DBUpdaterThread) then DBUpdaterThread.WaitFor;
-  if Assigned(SelfUpdaterThread) then SelfUpdaterThread.WaitFor;
+  if Assigned(CheckUpdateThread) then
+  begin
+    CheckUpdateThread.WaitFor;
+  end;
+  if Assigned(SearchDBThread) then
+  begin
+    SearchDBThread.WaitFor;
+  end;
+  if Assigned(OpenDBThread) then
+  begin
+    OpenDBThread.WaitFor;
+  end;
+  if Assigned(GetInfosThread) then
+  begin
+    GetInfosThread.WaitFor;
+  end;
+  if isUpdating then
+  begin
+    updateList.WaitFor;
+  end;
+  if Assigned(DBUpdaterThread) then
+  begin
+    DBUpdaterThread.WaitFor;
+  end;
+  if Assigned(SelfUpdaterThread) then
+  begin
+    SelfUpdaterThread.WaitFor;
+  end;
 
   Timer1Hour.Enabled := False;
   TimerBackup.Enabled := False;
@@ -1504,10 +1562,14 @@ begin
 
   //embed form
   if Assigned(AccountManagerForm) then
+  begin
     AccountManagerForm.Close;
+  end;
 
   if Assigned(FormDropTarget) then
+  begin
     FormDropTarget.Close;
+  end;
 
   if FMDInstance <> nil then
   begin
@@ -1644,14 +1706,21 @@ procedure TMainForm.miFavoritesEnableClick(Sender: TObject);
 var
   Node: PVirtualNode;
 begin
-  if vtFavorites.SelectedCount = 0 then Exit;
+  if vtFavorites.SelectedCount = 0 then
+  begin
+    Exit;
+  end;
+
   FavoriteManager.Lock;
   try
     Node := vtFavorites.GetFirstSelected();
     while Assigned(Node) do
     begin
       if Sender = miFavoritesDisable then
+      begin
         FavoriteManager.StopChekForNewChapter(False, Node^.Index);
+      end;
+
       FavoriteManager[Node^.Index].Enabled := (Sender = miFavoritesEnable);
       Node := vtFavorites.GetNextSelected(Node);
     end;
@@ -1673,6 +1742,7 @@ begin
   begin
     t := FavoriteManager.Items[node^.Index];
     tt := t.FavoriteInfo.Title;
+
     if InputQuery('', RS_InfoTitle, tt) then
     begin
       t.FavoriteInfo.Title := tt;
@@ -1688,37 +1758,46 @@ var
   Data: PFavContainer;
 begin
   with TTransferFavoritesForm.Create(nil) do
-  try
-    FavoriteManager.isRunning := True;
-    sm := mrNone;
+  begin
     try
-      Node := vtFavorites.GetFirstSelected();
-      while Assigned(Node) do
-      begin
-        AddFav(FavoriteManager.Items[Node^.Index]);
-        Node := vtFavorites.GetNextSelected(Node);
-      end;
-      sm := ShowModal;
-    finally
-      FavoriteManager.isRunning := False;
-    end;
-    if sm = mrOK then
-    begin
-      UpdateVtFavorites;
-      if ckClearDownloadedChapters.Checked then
-      begin
-        Node := vtFavs.GetFirst();
+      FavoriteManager.isRunning := True;
+      sm := mrNone;
+      try
+        Node := vtFavorites.GetFirstSelected();
+
         while Assigned(Node) do
         begin
-          Data := vtFavs.GetNodeData(Node);
-          if Data^.NewLink <> '' then
-            FavoriteManager.CheckForNewChapter(FavoriteManager.Items.IndexOf(Data^.Fav));
-          Node := vtFavs.GetNext(Node);
+          AddFav(FavoriteManager.Items[Node^.Index]);
+          Node := vtFavorites.GetNextSelected(Node);
+        end;
+
+        sm := ShowModal;
+      finally
+        FavoriteManager.isRunning := False;
+      end;
+
+      if sm = mrOK then
+      begin
+        UpdateVtFavorites;
+        if ckClearDownloadedChapters.Checked then
+        begin
+          Node := vtFavs.GetFirst();
+
+          while Assigned(Node) do
+          begin
+            Data := vtFavs.GetNodeData(Node);
+            if Data^.NewLink <> '' then
+            begin
+              FavoriteManager.CheckForNewChapter(FavoriteManager.Items.IndexOf(Data^.Fav));
+            end;
+
+            Node := vtFavs.GetNext(Node);
+          end;
         end;
       end;
+    finally
+      Free;
     end;
-  finally
-    Free;
   end;
 end;
 
@@ -1726,8 +1805,15 @@ procedure TMainForm.rbFavoritesShowAllChange(Sender: TObject);
 var
   xNode: PVirtualNode;
 begin
-  if rbFavoritesShowAll.Checked = False then Exit;
-  if vtFavorites.RootNodeCount = 0 then Exit;
+  if rbFavoritesShowAll.Checked = False then
+  begin
+    Exit;
+  end;
+  if vtFavorites.RootNodeCount = 0 then
+  begin
+    Exit;
+  end;
+
   vtFavorites.BeginUpdate;
   try
     xNode := vtFavorites.GetFirst();
@@ -1745,8 +1831,15 @@ procedure TMainForm.rbFavoritesShowDisabledChange(Sender: TObject);
 var
   xNode: PVirtualNode;
 begin
-  if rbFavoritesShowDisabled.Checked = False then Exit;
-  if vtFavorites.RootNodeCount = 0 then Exit;
+  if rbFavoritesShowDisabled.Checked = False then
+  begin
+    Exit;
+  end;
+  if vtFavorites.RootNodeCount = 0 then
+  begin
+    Exit;
+  end;
+
   vtFavorites.BeginUpdate;
   try
     xNode := vtFavorites.GetFirst();
@@ -1764,8 +1857,15 @@ procedure TMainForm.rbFavoritesShowEnabledChange(Sender: TObject);
 var
   xNode: PVirtualNode;
 begin
-  if rbFavoritesShowEnabled.Checked = False then Exit;
-  if vtFavorites.RootNodeCount = 0 then Exit;
+  if rbFavoritesShowEnabled.Checked = False then
+  begin
+    Exit;
+  end;
+  if vtFavorites.RootNodeCount = 0 then
+  begin
+    Exit;
+  end;
+
   vtFavorites.BeginUpdate;
   try
     xNode := vtFavorites.GetFirst();
@@ -1781,7 +1881,11 @@ end;
 
 procedure TMainForm.tbmiDownloadMoveTopClick(Sender: TObject);
 begin
-  if vtDownload.SelectedCount = 0 then Exit;
+  if vtDownload.SelectedCount = 0 then
+  begin
+    Exit;
+  end;
+
   vtDownloadMoveItems(0, dmAbove);
 end;
 
@@ -1789,10 +1893,16 @@ procedure TMainForm.tbmiDownloadMoveUpClick(Sender: TObject);
 var
   p: Cardinal;
 begin
-  if vtDownload.SelectedCount = 0 then Exit;
+  if vtDownload.SelectedCount = 0 then
+  begin
+    Exit;
+  end;
+
   p := vtDownload.GetFirstSelected()^.Index;
   if p > 0 then
+  begin
     vtDownloadMoveItems(p - 1, dmAbove);
+  end;
 end;
 
 procedure TMainForm.tbWebsitesSelectAllClick(Sender: TObject);
@@ -1802,7 +1912,7 @@ var
 begin
   { Check if any top level entries are expanded }
   node := vtOptionMangaSiteSelection.GetFirstVisible();
-  while node<>nil do
+  while node <> nil do
   begin
     if node^.ChildCount = 0 then
     begin
@@ -1810,22 +1920,28 @@ begin
       // If at least one element without child elements is visible, we don't have to expand all elements:
       break;
     end;
+
     node := vtOptionMangaSiteSelection.GetNextVisible(node);
   end;
 
   // If all top level entries are collapsed, expand all:
-  if b = False then vtOptionMangaSiteSelection.FullExpand;
+  if b = False then
+  begin
+    vtOptionMangaSiteSelection.FullExpand;
+  end;
 
   { Set all visible elements to checked state }
   node := vtOptionMangaSiteSelection.GetFirstVisible();
-  while node<>nil do
+  while node <> nil do
   begin
     if node^.ChildCount = 0 then
     begin
       node^.CheckState := csCheckedNormal;
     end;
+
     node := vtOptionMangaSiteSelection.GetNextVisible(node);
   end;
+
   vtOptionMangaSiteSelection.Refresh();
 end;
 
@@ -1836,7 +1952,7 @@ var
 begin
   { Check if any top level entries are expanded }
   node := vtOptionMangaSiteSelection.GetFirstVisible();
-  while node<>nil do
+  while node <> nil do
   begin
     if node^.ChildCount = 0 then
     begin
@@ -1848,16 +1964,20 @@ begin
   end;
 
   // If all top level entries are collapsed, expand all:
-  if b = False then vtOptionMangaSiteSelection.FullExpand;
+  if b = False then
+  begin
+    vtOptionMangaSiteSelection.FullExpand;
+  end;
 
   { Set all visible elements to unchecked state }
   node := vtOptionMangaSiteSelection.GetFirstVisible();
-  while node<>nil do
+  while node <> nil do
   begin
     if node^.ChildCount = 0 then
     begin
       node^.CheckState := csUncheckedNormal;
     end;
+
     node := vtOptionMangaSiteSelection.GetNextVisible(node);
   end;
   vtOptionMangaSiteSelection.Refresh();
@@ -1865,14 +1985,22 @@ end;
 
 procedure TMainForm.tbmiDownloadMoveDownClick(Sender: TObject);
 begin
-  if vtDownload.SelectedCount = 0 then Exit;
+  if vtDownload.SelectedCount = 0 then
+  begin
+    Exit;
+  end;
+
   vtDownloadMoveItems(vtDownload.GetFirstSelected()^.Index, dmBelow);
 end;
 
 procedure TMainForm.tbmiDownloadMoveBottomClick(Sender: TObject);
 begin
-  if vtDownload.SelectedCount = 0 then Exit;
-    vtDownloadMoveItems(vtDownload.RootNodeCount - 1, dmBelow);
+  if vtDownload.SelectedCount = 0 then
+  begin
+    Exit;
+  end;
+
+  vtDownloadMoveItems(vtDownload.RootNodeCount - 1, dmBelow);
 end;
 
 procedure TMainForm.tmAnimateMangaInfoTimer(Sender: TObject);
@@ -1882,13 +2010,18 @@ end;
 
 procedure TMainForm.tmCheckFavoritesTimer(Sender: TObject);
 begin
-  if IsDlgCounter then Exit;
+  if IsDlgCounter then
+  begin
+    Exit;
+  end;
+
   tmCheckFavorites.Enabled := False;
   if OptionAutoCheckLatestVersion then
   begin
     btCheckLatestVersionClick(btCheckLatestVersion);
     LuaModulesUpdaterForm.btCheckUpdateClick(LuaModulesUpdaterForm.btCheckUpdate);
   end;
+
   FavoriteManager.isAuto := True;
   FavoriteManager.CheckForNewChapter;
 end;
@@ -1896,43 +2029,52 @@ end;
 function TMainForm.ShowExitCounter: Boolean;
 begin
   IsDlgCounter := True;
-  with TShutdownCounterForm.Create(nil) do try
-    case DoAfterFMD of
-      DO_POWEROFF:
-        begin
-          WaitTimeout := 60;
-          LabelMessage := RS_LblMessageShutdown;
-        end;
-      DO_HIBERNATE:
-        begin
-          WaitTimeout := 30;
-          LabelMessage := RS_LblMessageHibernate;
-        end;
-      DO_EXIT:
-        begin
-          WaitTimeout := 5;
-          LabelMessage := RS_LblMessageExit;
-        end;
-      else;
+
+  with TShutdownCounterForm.Create(nil) do
+  begin
+    try
+      case DoAfterFMD of
+        DO_POWEROFF:
+          begin
+            WaitTimeout := 60;
+            LabelMessage := RS_LblMessageShutdown;
+          end;
+        DO_HIBERNATE:
+          begin
+            WaitTimeout := 30;
+            LabelMessage := RS_LblMessageHibernate;
+          end;
+        DO_EXIT:
+          begin
+            WaitTimeout := 5;
+            LabelMessage := RS_LblMessageExit;
+          end;
+        else;
+      end;
+      Result := (ShowModal = mrOK);
+    finally
+      Free;
     end;
-    Result := (ShowModal = mrOK);
-  finally
-    Free;
   end;
-  isPendingExitCounter:=False;
+
+  isPendingExitCounter := False;
   IsDlgCounter := False;
 end;
 
 procedure TMainForm.OpenDataDB(const AWebsite: String);
 begin
   if OpenDBThread = nil then
+  begin
     OpenDBThread := TOpenDBThread.Create(AWebsite);
+  end;
 end;
 
 procedure TMainForm.SearchDataDB(const ATitle: String);
 begin
   if SearchDBThread = nil then
-    SearchDBThread := TSearchDBThread.Create(ATitle)
+  begin
+    SearchDBThread := TSearchDBThread.Create(ATitle);
+  end
   else
   begin
     SearchDBThread.NewSearch(ATitle);
@@ -1944,8 +2086,12 @@ var
   i: Integer;
 begin
   for i := 0 to pnGenres.ControlCount - 1 do
+  begin
     if pnGenres.Controls[i] is TCheckBox then
+    begin
       TCheckBox(pnGenres.Controls[i]).State := AState;
+    end;
+  end;
 end;
 
 procedure TMainForm.FilterChapterList(const SearchStr: String;
@@ -1955,30 +2101,44 @@ var
   S: String;
   isShow: Boolean;
 begin
-  if clbChapterList.RootNodeCount = 0 then Exit;
+  if clbChapterList.RootNodeCount = 0 then
+  begin
+    Exit;
+  end;
+
   with clbChapterList do
+  begin
     try
       BeginUpdate;
       S := AnsiUpperCase(SearchStr);
       Node := GetFirst();
+
       while Assigned(Node) do
       begin
         isShow := True;
         if HideDownloaded then
+        begin
           isShow := not ChapterList[Node^.Index].Downloaded;
+        end;
+
         if isShow and (S <> '') then
+        begin
           isShow := Pos(S, AnsiUpperCase(ChapterList[Node^.Index].Title)) <> 0;
+        end;
+
         IsVisible[Node] := isShow;
         Node := GetNext(Node);
       end;
     finally
       EndUpdate;
     end;
+  end;
 end;
 
 procedure TMainForm.tmExitCommandTimer(Sender: TObject);
 begin
   tmExitCommand.Enabled := False;
+
   if DoAfterFMD <> DO_NOTHING then
   begin
     if DoAfterFMD in [DO_POWEROFF, DO_HIBERNATE, DO_EXIT] then
@@ -1987,19 +2147,23 @@ begin
       begin
         Self.CloseNow;
         if DoAfterFMD = DO_POWEROFF then
-          fmdPowerOff
-        else
-        if DoAfterFMD = DO_HIBERNATE then
+        begin
+          fmdPowerOff;
+        end
+        else if DoAfterFMD = DO_HIBERNATE then
+        begin
           fmdHibernate;
+        end;
+
         Self.Close;
       end;
     end
-    else
-    if DoAfterFMD = DO_UPDATE then
+    else if DoAfterFMD = DO_UPDATE then
     begin
       Self.CloseNow;
       Self.Close;
     end;
+
     DoAfterFMD := DO_NOTHING;
   end;
 end;
@@ -2008,14 +2172,16 @@ procedure TMainForm.tmRefreshDownloadsInfoStartTimer(Sender: TObject);
 begin
   if Assigned(DLManager) then
   begin
-    TransferRateGraphInit(round(TransferRateGraph.Width/4)+1);
+    TransferRateGraphInit(round(TransferRateGraph.Width / 4) + 1);
     TransferRateGraph.Visible := True;
     {$ifdef windows}
     StandbyCounter := 0;
     {$endif}
   end
   else
+  begin
     tmRefreshDownloadsInfo.Enabled := False;
+  end;
 end;
 
 procedure TMainForm.tmRefreshDownloadsInfoStopTimer(Sender: TObject);
@@ -2044,24 +2210,33 @@ var
   i: Integer;
   s: string;
 begin
-  s:=#10;
-  for i:=0 to Modules.Count-1 do
-    if Modules.Count<>0 then
-      s+=Modules[i].ID+' '+Modules[i].Name+#10;
-  Logger.Send('loaded modules: '+IntToStr(Modules.Count),s);
+  s := #10;
+  for i := 0 to Modules.Count - 1 do
+  begin
+    if Modules.Count <> 0 then
+    begin
+      s += Modules[i].ID + ' ' + Modules[i].Name + #10;
+    end;
+  end;
+
+  Logger.Send('loaded modules: ' + IntToStr(Modules.Count), s);
 end;
 
 procedure TMainForm.tmStartupTimer(Sender: TObject);
 begin
   try
-    if Sender=tmStartup then
+    if Sender = tmStartup then
+    begin
       FreeAndNil(tmStartup);
+    end;
 
     //load lua modules
     ScanLuaWebsiteModulesFile;
     AddToAboutStatus('Modules', IntToStr(Modules.Count));
     if AppParams.IndexOf('--dump-loaded-modules') <> -1 then
+    begin
       DumpLoadedModules;
+    end;
 
     Modules.LoadFromFile;
     WebsiteOptionCustomForm.CreateWebsiteOption;
@@ -2080,7 +2255,6 @@ begin
     on E: Exception do
       Logger.SendException('tmStartup Error!', E);
   end;
-
 
   if OptionAutoCheckLatestVersion then
   begin
@@ -2102,7 +2276,9 @@ begin
   UpdateVtFavorites;
 
   if cbSelectManga.ItemIndex <> -1 then
+  begin
     OpenDataDB(TModuleContainer(currentWebsite).ID);
+  end;
 end;
 
 procedure TMainForm.medURLCutClick(Sender: TObject);
@@ -4427,7 +4603,10 @@ procedure TMainForm.UniqueInstanceFMDOtherInstance(Sender: TObject;
   ParamCount: Integer; Parameters: array of String);
 begin
   if WindowState = wsMinimized then
+  begin
     WindowState := wsNormal;
+  end;
+
   Show;
   BringToFront;
 end;
@@ -6854,10 +7033,27 @@ var
   idxOptionWebPConvertTo,
   idxOptionWebPPNGLevel: Integer;
 begin
-  if AvailableLanguages.Count = 0 then Exit;
-  if cbLanguages.ItemIndex < 0 then Exit;
-  if cbLanguages.ItemIndex >= AvailableLanguages.Count then Exit;
-  if winBuildNumber < 17763 then cbDarkmode.Enabled := False else cbDarkmode.Enabled := True;
+  if AvailableLanguages.Count = 0 then
+  begin
+    Exit;
+  end;
+  if cbLanguages.ItemIndex < 0 then
+  begin
+    Exit;
+  end;
+  if cbLanguages.ItemIndex >= AvailableLanguages.Count then
+  begin
+    Exit;
+  end;
+  if winBuildNumber < 17763 then
+  begin
+    cbDarkmode.Enabled := False
+  end
+  else
+  begin
+    cbDarkmode.Enabled := True;
+  end;
+
   if SimpleTranslator.LastSelected <> AvailableLanguages.Names[cbLanguages.ItemIndex] then
   begin
     // TCombobox.Items will be cleared upon changing language,
@@ -6890,7 +7086,7 @@ begin
       cbPNGCompressionLevel.Items.Text := RS_WebPPNGLevel;
 
       // restore ItemIndex
-      cbSelectManga.ItemIndex:=idxSelectManga;
+      cbSelectManga.ItemIndex := idxSelectManga;
       cbLanguages.ItemIndex := idxLanguages;
       cbDarkmode.ItemIndex := idxDarkmode;
       cbFilterStatus.ItemIndex := idxFilterStatus;

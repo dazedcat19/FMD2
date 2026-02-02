@@ -605,9 +605,13 @@ begin
         Break;
       end
       else if s = '-q' then
-        _NoError := True
+      begin
+        _NoError := True;
+      end
       else if s = '-x' then
-        _Extract := True
+      begin
+        _Extract := True;
+      end
       else if i + 1 <= Paramcount then
       begin
         //**Update Mode
@@ -618,11 +622,17 @@ begin
         end
         //**Max Retry
         else if s = '-r' then
-          _MaxRetry := StrToIntDef(ParamStrUTF8(i + 1), 1)
+        begin
+          _MaxRetry := StrToIntDef(ParamStrUTF8(i + 1), 1);
+        end
         else if s = '-l' then
-          _LaunchApp := ParamStrUTF8(i + 1)
+        begin
+          _LaunchApp := ParamStrUTF8(i + 1);
+        end
         else if (LowerCase(s) = '--lang') then
+        begin
           SimpleTranslator.SetLang(ParamStrUTF8(i + 1), 'updater');
+        end;
       end;
     end;
   end;
@@ -634,20 +644,26 @@ begin
     frmMessage.ShowModal;
     Self.Close;
   end
-  else
-  if (_URL <> '') then
+  else if (_URL <> '') then
   begin
     if Pos('://', _URL) = 0 then
+    begin
       _URL := 'http://' + _URL;
+    end;
     if ExecRegExpr('^\w+?\://[^/]*\w+\.\w+(\:\d+)?(/|\Z).*$', _URL) then
     begin
       dl := TDownloadThread.Create;
       dl.URL := _URL;
       dl.MaxRetry := _MaxRetry;
       if _UpdApp then
-        dl.DirPath := FMD_DIR
+      begin
+        dl.DirPath := FMD_DIR;
+      end
       else
+      begin
         dl.DirPath := FMD_DIR + 'data' + PathDelim;
+      end;
+
       dl.Extract := _Extract;
       dl.Start;
       itMonitor.Enabled := True;
