@@ -5003,7 +5003,7 @@ end;
 procedure TMainForm.vtFavoritesColumnDblClick(Sender: TBaseVirtualTree;
   Column: TColumnIndex; Shift: TShiftState);
 begin
-  if Column = 4 then
+  if Column = 5 then
   begin
     miFavoritesOpenFolderClick(Sender)
   end
