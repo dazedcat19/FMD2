@@ -1220,6 +1220,8 @@ end;
 { TMainForm }
 
 procedure TMainForm.FormCreate(Sender: TObject);
+var
+  WaitingGif: String = 'waiting.gif';
 begin
   Randomize;
   FormMain := Self;
@@ -1243,7 +1245,8 @@ begin
   ForceDirectoriesUTF8(DATA_FOLDER);
 
   if IsDarkModeEnabled then
-  begin
+  begin 
+    WaitingGif := 'waiting-dark.gif';
     TryEnforceDarkStyleForCtrl(rmAbout);
     TryEnforceDarkStyleForCtrl(rmInformation);
   end;
@@ -1313,9 +1316,9 @@ begin
   btAddToFavorites.Enabled := False;
 
   // waiting gif
-  if FileExistsUTF8(IMAGE_FOLDER + 'waiting.gif') then
+  if FileExistsUTF8(IMAGE_FOLDER + WaitingGif) then
     try
-      gifWaiting := TAnimatedGif.Create(IMAGE_FOLDER + 'waiting.gif');
+      gifWaiting := TAnimatedGif.Create(IMAGE_FOLDER + WaitingGif);
       gifWaiting.EraseColor := Self.Color;
       gifWaiting.BackgroundMode := gbmSaveBackgroundOnce;
       gifWaitingRect.Left := 53;
@@ -1323,7 +1326,7 @@ begin
       gifWaitingRect.Right := 101;
       gifWaitingRect.Bottom := 131;
     except
-    end;
+  end;
 
   mangaCover := TPicture.Create;
 
