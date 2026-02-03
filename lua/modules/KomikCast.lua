@@ -57,7 +57,7 @@ function GetInfo()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	local x = CreateTXQuery(HTTP.Document)
+	local x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
 	local json = x.XPath('parse-json(.)?data?data')
 	MANGAINFO.Title     = x.XPathString('?title', json)
 	MANGAINFO.AltTitles = x.XPathString('?nativeTitle', json)
@@ -72,9 +72,10 @@ function GetInfo()
 
 	if not HTTP.GET(u .. '/chapters') then return net_problem end
 
-	for v in CreateTXQuery(HTTP.Document).XPath('parse-json(.)?data?data?*').Get()do
-		local idx = v.GetProperty('index').ToString()
-		local title = v.GetProperty('title').ToString()
+	for v in CreateTXQuery(HTTP.Document).XPath('parse-json(.)?data?*').Get() do
+		local data = v.GetProperty('data')
+		local idx = data.GetProperty('index').ToString()
+		local title = data.GetProperty('title').ToString()
 		title = (title ~= 'null' and title ~= '') and (' - ' .. title) or ''
 
 		MANGAINFO.ChapterLinks.Add('series/' .. slug .. '/chapters/' .. idx)
