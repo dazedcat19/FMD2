@@ -196,10 +196,30 @@ msgstr ""
 msgid "Connecting to GitHub..."
 msgstr ""
 
-#: frmluamodulesupdater.rs_githubratelimited
+#: frmluamodulesupdater.rs_githubdownloadfailed
 msgid ""
-"Failed to connect to GitHub API for latest module updates.\n"
-"Change the network or try again after 15 minutes"
+"Modules update failed to download modules from GitHub.\n"
+"Please try update again."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githuberrormessage
+msgid ""
+"GitHub returned an error.\n"
+"Check log for more information."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubnoerrormessage
+#, object-pascal-format
+msgid ""
+"GitHub API didn't return a valid response.\n"
+"Try checking %s in your browser."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubratelimited
+#, object-pascal-format
+msgid ""
+"GitHub API is rate limited.\n"
+"Change the network or try again after %d minute(s)"
 msgstr ""
 
 #: frmluamodulesupdater.rs_githubratestats

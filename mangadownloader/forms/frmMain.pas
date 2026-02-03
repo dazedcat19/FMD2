@@ -5010,7 +5010,7 @@ begin
 
   DLManager.SortColumn := HitInfo.Column;
   vtDownload.Header.SortDirection := TSortDirection(DLManager.SortDirection);
-  vtDownload.Header.SortColumn := HitInfo.Column
+  vtDownload.Header.SortColumn := HitInfo.Column;
 
   if DLManager.Count > 1 then
   begin

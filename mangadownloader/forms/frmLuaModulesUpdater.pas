@@ -138,6 +138,9 @@ type
     procedure SyncFinal;
     procedure SyncGitHubConnectFail;
     procedure SyncGitHubRateLimited;
+    procedure SyncGitHubErrorMessage;
+    procedure SyncGitHubNoErrorMessage;
+    procedure SyncGitHubDownloadFailed;
     function SyncRepos(const ARepos, AReposUp: TLuaModulesRepos): Boolean;
     procedure Download;
     procedure DoSync;
@@ -146,6 +149,9 @@ type
     constructor Create(const AOwner: TLuaModulesUpdaterForm);
     destructor Destroy; override;
     procedure AddStatus(const S: String);
+    procedure DoSyncGitHubConnectFail;
+    procedure DoSyncGitHubRateLimited;
+    procedure DoSyncGitHubErrorMessage(AError: Boolean = True);
   end;
 
 var
@@ -153,8 +159,11 @@ var
 
 resourcestring
   RS_GitHubConnectFail = 'Failed to connect to GitHub API.'#13#10'Please check your internet connection or try again later.';
-  RS_GitHubRateLimited = 'Failed to connect to GitHub API for latest module updates.'#13#10'Change the network or try again after 15 minutes';
+  RS_GitHubRateLimited = 'GitHub API is rate limited.'#13#10'Change the network or try again after %d minute(s)';
   RS_GitHubRateStats = 'GitHub API core rate - call limit: %d, remaining calls: %d, used calls: %d, limit refresh: %s';
+  RS_GitHubErrorMessage = 'GitHub returned an error.'#13#10'Check log for more information.';
+  RS_GitHubNoErrorMessage = 'GitHub API didn''t return a valid response.'#13#10'Try checking %s in your browser.';
+  RS_GitHubDownloadFailed = 'Modules update failed to download modules from GitHub.'#13#10'Please try update again.';
   RS_CheckLocalModules = 'Checking local modules...';
   RS_AwaitingProceed = 'Awaiting permission to proceed...';
   RS_DeletingFlaggedModules = 'Deleting flagged modules...';
@@ -403,6 +412,7 @@ begin
   FOwner.FOwner.ListDirty;
   FOwner.UpdateProgressBar(FOwner.FDownloadedCount, FOwner.FDownloadTotalCount);
   FOwner.UpdateStatusText(Format(RS_DownloadingModule, [ExtractFileName(FModule.name)]));
+
   if FHTTP.GET(FOwner.FGitHubRepo.GetDownloadURL(FModule.name)) then
   begin
     if ForceDirectories(LUA_REPO_FOLDER) then
@@ -419,6 +429,7 @@ begin
       if c then
       begin
         FHTTP.SaveDocumentToFile(f, False, FModule.last_modified);
+
         if FileExists(f) then
         begin
           case FModule.oflag of
@@ -427,6 +438,7 @@ begin
             fFailedDownload: FOwner.AddStatus(Format(RS_StatusRedownloaded, [FModule.name]));
           else;
           end;
+
           FModule.flag := fDownloaded;
           InterLockedIncrement(FOwner.FDownloadedCount);
         end;
@@ -438,6 +450,7 @@ begin
     FOwner.AddStatus(Format(RS_StatusFailed, [FModule.name]));
     FModule.flag := fFailedDownload;
   end;
+
   FOwner.FOwner.ListDirty;
 end;
 
@@ -586,9 +599,54 @@ begin
   CenteredMessageDlg(MainForm, RS_GitHubConnectFail, mtError, [mbOk], 0);
 end;
 
-procedure TCheckUpdateThread.SyncGitHubRateLimited;
+procedure TCheckUpdateThread.DoSyncGitHubConnectFail;
 begin
-  CenteredMessageDlg(MainForm, RS_GitHubRateLimited, mtError, [mbOk], 0);
+  Synchronize(@SyncGitHubConnectFail);
+end;
+
+procedure TCheckUpdateThread.SyncGitHubRateLimited;
+var
+  resetMinutesLeft: Integer;
+begin
+  resetMinutesLeft := Round((FGitHubRepo.APIResetTime - Now) * 24 * 60);
+  if resetMinutesLeft <= 0 then
+  begin
+    resetMinutesLeft := 15;
+  end;
+
+  CenteredMessageDlg(MainForm, Format(RS_GitHubRateLimited, [resetMinutesLeft]), mtError, [mbOk], 0);
+end;
+
+procedure TCheckUpdateThread.DoSyncGitHubRateLimited;
+begin
+  Synchronize(@SyncGitHubRateLimited);
+end; 
+
+procedure TCheckUpdateThread.SyncGitHubNoErrorMessage;
+begin
+  CenteredMessageDlg(MainForm, Format(RS_GitHubNoErrorMessage, [FGitHubRepo.api_url + 'rate_limit']), mtError, [mbOk], 0);
+end;
+
+procedure TCheckUpdateThread.SyncGitHubErrorMessage;
+begin
+  CenteredMessageDlg(MainForm, RS_GitHubErrorMessage, mtError, [mbOk], 0);
+end;
+
+procedure TCheckUpdateThread.DoSyncGitHubErrorMessage(AError: Boolean = True);
+begin
+  if AError then
+  begin
+    Synchronize(@SyncGitHubErrorMessage);
+  end
+  else
+  begin
+    Synchronize(@SyncGitHubNoErrorMessage);
+  end;
+end;
+
+procedure TCheckUpdateThread.SyncGitHubDownloadFailed;
+begin
+  CenteredMessageDlg(MainForm, RS_GitHubDownloadFailed, mtError, [mbOk], 0);
 end;
 
 function TCheckUpdateThread.SyncRepos(const ARepos, AReposUp: TLuaModulesRepos): Boolean;
@@ -774,7 +832,7 @@ end;
 
 procedure TCheckUpdateThread.DoSync;
 var
-  foundupdate: Boolean;
+  foundUpdate, downloadFailed: Boolean;
   i, imax: Integer;
   m: TLuaModuleRepo;
   trepos: TLuaModulesRepos;
@@ -784,15 +842,7 @@ begin
   LoadingProgressBar;
   UpdateStatusText(RS_GitHubConnecting);
 
-  if not FGitHubRepo.CheckConnection then
-  begin
-    Synchronize(@SyncGitHubConnectFail);
-  end;
-
-  if FGitHubRepo.CheckRateLimited then
-  begin
-    Synchronize(@SyncGitHubRateLimited);
-  end;
+  FGitHubRepo.CheckRateLimited(Self);
 
   if FGitHubRepo.GetUpdate then
   begin
@@ -812,7 +862,7 @@ begin
   if (FReposUp.Count <> 0) and not Terminated then
   begin
     // check
-    foundupdate := SyncRepos(FRepos, FReposUp);
+    foundUpdate := SyncRepos(FRepos, FReposUp);
 
     // look for missing local files and previously failed download
     for i := 0 to FRepos.Items.Count - 1 do
@@ -823,15 +873,15 @@ begin
 
       if m.flag = fFailedDownload then
       begin
-         foundupdate := True
+         foundUpdate := True
       end
       else if (not (m.flag in [fNew, fUpdate])) and
         (not FileExists(LUA_REPO_FOLDER + TrimFilename(m.name))) then
       begin
         m.flag := fFailedDownload;
-        if not foundupdate then
+        if not foundUpdate then
         begin
-          foundupdate := True;
+          foundUpdate := True;
         end;
       end;
       case m.flag of
@@ -844,12 +894,12 @@ begin
     end;
 
     // get properties
-    //if foundupdate and (not Terminated) then
+    //if foundUpdate and (not Terminated) then
       //LoadReposProps;
 
     Synchronize(@SyncFinishChecking);
 
-    if foundupdate and (not Terminated) then
+    if foundUpdate and (not Terminated) then
     begin
       if OptionModulesUpdaterShowUpdateWarning then
       begin
@@ -870,6 +920,7 @@ begin
     end;
 
     // cleanup
+    downloadFailed := False;
     i := 0;
     imax := FRepos.Items.Count;
     while i < imax do
@@ -885,14 +936,22 @@ begin
         if m.flag in [fNew, fUpdate, fFailedDownload] then
         begin
           m.flag := fFailedDownload;
+          downloadFailed := True;
         end
         else
         begin
           m.flag := fNone;
         end;
+
         Inc(i);
       end;
     end;
+
+    if downloadFailed and FProceed then
+    begin
+      Synchronize(@SyncGitHubDownloadFailed);
+    end;
+
     trepos := FMainRepos;
     FMainRepos := FRepos;
     FRepos := trepos;
@@ -995,6 +1054,7 @@ procedure TLuaModulesUpdaterForm.btCheckUpdateTerminateClick(Sender: TObject);
 begin
   if ThreadCheck <> nil then
   begin
+    ThreadCheck.FProceed := False;
     ThreadCheck.Terminate;
   end;
 end;
