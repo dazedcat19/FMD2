@@ -41,7 +41,7 @@ function GetNameAndLink()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	for v in CreateTXQuery(HTTP.Document).XPath('parse-json(.)?data?data?*').Get() do
+	for v in CreateTXQuery(HTTP.Document).XPath('parse-json(.)?data?*?data').Get() do
 		LINKS.Add('series/' .. v.GetProperty('slug').ToString())
 		NAMES.Add(v.GetProperty('title').ToString())
 	end
@@ -62,8 +62,8 @@ function GetInfo()
 	MANGAINFO.Title     = x.XPathString('?title', json)
 	MANGAINFO.AltTitles = x.XPathString('?nativeTitle', json)
 	MANGAINFO.CoverLink = x.XPathString('?coverImage', json)
-	MANGAINFO.Authors   = x.XPathString('string(?author)', json)
-	MANGAINFO.Genres    = x.XPathString('string-join((?genres?*/data/name, concat(upper-case(substring(?format, 1, 1)), lower-case(substring(?format, 2)))), ", ")', json)
+	MANGAINFO.Authors   = x.XPathString('?author', json)
+	MANGAINFO.Genres    = x.XPathString('string-join((?genres?*?data?name, concat(upper-case(substring(?format, 1, 1)), lower-case(substring(?format, 2)))), ", ")', json)
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('?status', json))
 	MANGAINFO.Summary   = x.XPathString('?synopsis', json)
 
@@ -72,11 +72,10 @@ function GetInfo()
 
 	if not HTTP.GET(u .. '/chapters') then return net_problem end
 
-	for v in CreateTXQuery(HTTP.Document).XPath('parse-json(.)?data?*').Get() do
-		local data = v.GetProperty('data')
-		local idx = data.GetProperty('index').ToString()
-		local title = data.GetProperty('title').ToString()
-		title = (title ~= 'null' and title ~= '') and (' - ' .. title) or ''
+	for v in CreateTXQuery(HTTP.Document).XPath('parse-json(.)?data?*?data').Get() do
+		local idx = v.GetProperty('index').ToString()
+		local title = v.GetProperty('title').ToString()
+		title = (title ~= '') and (' - ' .. title) or ''
 
 		MANGAINFO.ChapterLinks.Add('series/' .. slug .. '/chapters/' .. idx)
 		MANGAINFO.ChapterNames.Add('Chapter ' .. idx .. title)
