@@ -58,14 +58,15 @@ function GetInfo()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	local x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('parse-json(.)?title')
-	MANGAINFO.AltTitles = x.XPathString('parse-json(.)?title_alt')
-	MANGAINFO.CoverLink = 'https://softkomik.com/_next/image?url=https://cover.softdevices.my.id/softkomik-cover/' .. x.XPathString('parse-json(.)?gambar') .. '&w=256&q=100'
-	MANGAINFO.Authors   = x.XPathString('parse-json(.)?author')
-	MANGAINFO.Genres    = x.XPathStringAll('(parse-json(.)?Genre?*, concat(upper-case(substring(parse-json(.)?type, 1, 1)), lower-case(substring(parse-json(.)?type, 2))))')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('parse-json(.)?status'))
-	MANGAINFO.Summary   = x.XPathString('parse-json(.)?sinopsis')
+	local x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
+	local json = x.XPath('parse-json(.)')
+	MANGAINFO.Title     = x.XPathString('?title', json)
+	MANGAINFO.AltTitles = x.XPathString('?title_alt', json)
+	MANGAINFO.CoverLink = 'https://softkomik.com/_next/image?url=https://cover.softdevices.my.id/softkomik-cover/' .. x.XPathString('?gambar', json) .. '&w=256&q=100'
+	MANGAINFO.Authors   = x.XPathString('?author', json)
+	MANGAINFO.Genres    = x.XPathString('string-join((?Genre?*, concat(upper-case(substring(?type, 1, 1)), lower-case(substring(?type, 2)))), ", ")', json)
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('?status', json))
+	MANGAINFO.Summary   = x.XPathString('?sinopsis', json)
 
 	if not HTTP.GET(u .. '/chapter?limit=9999999') then return net_problem end
 
