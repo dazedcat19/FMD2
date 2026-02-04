@@ -40,6 +40,7 @@ var
   image, result: TPicture;
   memStream: TMemoryStream;
   tmpMemBitmap: TMemBitmap;
+  reversalMatrix: Boolean;
   blockWidth, blockHeight: Double;
   imgWidth, imgHeight: Integer;
   baseBlockHeight, remainder: Integer;
@@ -79,7 +80,19 @@ begin
         ext := 'png';
     end;
     result.Bitmap.SetSize(image.Width, image.Height);
-    if HorBlock = 1 then
+    reversalMatrix := (HorBlock = 1) and (VerBlock > 0) and (Length(Matrix) >= VerBlock);
+    if reversalMatrix then
+    begin
+      for i := 0 to VerBlock - 1 do
+      begin
+        if Matrix[i] <> (VerBlock - 1 - i) then
+        begin
+          reversalMatrix := False;
+          Break;
+        end;
+      end;
+    end;
+    if reversalMatrix then
     begin
       imgHeight := image.Height;
       imgWidth := image.Width;
