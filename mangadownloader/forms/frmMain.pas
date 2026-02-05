@@ -5772,9 +5772,9 @@ begin
     begin
       APath := '\\?\' + APath;
     end;
-
-    Result := APath;
   end;
+
+  Result := APath;
 end;
 
 function TMainForm.TrimPath(APath: String): String;
