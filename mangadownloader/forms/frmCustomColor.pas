@@ -1019,7 +1019,7 @@ begin
     VTBasicList.CI[18] := clWindowText;
     VTBasicList.CI[19] := clBtnFace;
     VTBasicList.CI[20] := clWindow;
-    VTBasicList.CI[21] := $F8E6D6;
+    VTBasicList.CI[21] := $F0F0F0;
     VTBasicList.CI[22] := clYellow;
   end
   else if SelectedColorList = VTMangaList then

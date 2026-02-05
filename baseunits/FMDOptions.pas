@@ -177,7 +177,7 @@ var
   CL_BSUnfocesedSelectionText: TColor = clWindowText;
   CL_BSOdd: TColor = clBtnFace;
   CL_BSEven: TColor = clWindow;
-  CL_BSSortedColumn: TColor = $F8E6D6;
+  CL_BSSortedColumn: TColor = $F0F0F0;
   CL_BSEnabledWebsiteSettings: TColor = clYellow;
 
   // mangalist color
@@ -199,7 +199,7 @@ var
 
   // custom color darkmode
   // basiclist
-  CL_BSSortedColumnDark: TColor = $E19650;
+  CL_BSSortedColumnDark: TColor = $202020;
   CL_BSEnabledWebsiteSettingsDark: TColor = $009696;
 
   // mangalist color
