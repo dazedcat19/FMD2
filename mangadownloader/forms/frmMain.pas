@@ -1010,6 +1010,7 @@ resourcestring
   RS_InfoStatus_Unknown = 'Unknown';
   RS_InfoSummary = 'Summary:';
   RS_FMDAlreadyRunning = 'Free Manga Downloader already running!';
+  RS_FMDUnicodePathError = 'UnicodePathError: Application can''t run in a folder path with unicode characters.';
   RS_ModeSearching = 'Mode: Searching...';
   RS_FavoritesShowAll = 'All';
   RS_FavoritesShowEnabled = 'Enabled';

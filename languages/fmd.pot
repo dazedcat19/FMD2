@@ -384,6 +384,10 @@ msgstr ""
 msgid "Free Manga Downloader already running!"
 msgstr ""
 
+#: frmmain.rs_fmdunicodepatherror
+msgid "UnicodePathError: Application can't run in a folder path with unicode characters."
+msgstr ""
+
 #: frmmain.rs_hintfavoriteproblem
 msgid ""
 "There is a problem with this data!\n"
