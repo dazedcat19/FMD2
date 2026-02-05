@@ -83,12 +83,13 @@ function GetInfo()
 	if not HTTP.GET(u) then return net_problem end
 
 	local x = CreateTXQuery(HTTP.Document)
-	local json = x.XPath('json(*).manga')
+	local json = x.XPath('parse-json(.)?manga')
 	MANGAINFO.Title     = x.XPathString('title', json)
 	MANGAINFO.AltTitles = x.XPathString('string-join(json(alternative_titles), ", ")', json)
 	MANGAINFO.CoverLink = x.XPathString('cover_url', json)
 	MANGAINFO.Authors   = x.XPathString('author', json)
-	MANGAINFO.Genres    = x.XPathString('string-join((json(genres), json(themes), concat(upper-case(substring(demographic, 1, 1)), lower-case(substring(demographic, 2)))), ", ")', json)
+	MANGAINFO.Artists   = x.XPathString('artist', json)
+	MANGAINFO.Genres    = x.XPathString('string-join((json(genres), json(themes), concat(upper-case(substring(demographic, 1, 1)), lower-case(substring(demographic, 2))))[string-length(.) > 0], ", ")', json)
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('publication_status', json))
 	MANGAINFO.Summary   = x.XPathString('description', json)
 
