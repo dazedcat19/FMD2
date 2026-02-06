@@ -16,8 +16,8 @@ unit uGetMangaInfosThread;
 interface
 
 uses
-  SysUtils, Graphics, Dialogs, uBaseUnit, uData, FMDOptions, BaseThread,
-  ImgInfos, webp, MultiLog, MemBitmap, VirtualTrees;
+  SysUtils, LazFileUtils, Graphics, Dialogs, uBaseUnit, uData, FMDOptions,
+  BaseThread, ImgInfos, webp, MultiLog, MemBitmap, VirtualTrees;
 
 type
 
@@ -32,6 +32,7 @@ type
     FInfo: TMangaInformation;
     FNumChapter: Cardinal;
     FIsHasMangaCover: Boolean;
+    FFillSaveTo: Boolean;
   protected
     procedure Execute; override;
     procedure MainThreadSyncInfos;
@@ -43,6 +44,7 @@ type
     constructor Create(const AModule: Pointer; const ALink: String; const ANode: PVirtualNode);
     destructor Destroy; override;
     property Title: String read FTitle write FTitle;
+    property FillSaveTo: Boolean read FFillSaveTo write FFillSaveTo;
   end;
 
 implementation
@@ -70,11 +72,14 @@ var
       FInfo.MangaInfo.Link := FLink;
       FInfo.MangaInfo.Title := FTitle;
       data := MainForm.vtMangaList.GetNodeData(FNode);
-      if Assigned(data) and (MainForm.cbSelectManga.ItemIndex<>-1) and
+      if Assigned(data) and (MainForm.cbSelectManga.ItemIndex <> -1) and
         (m = TModuleContainer(MainForm.cbSelectManga.Items.Objects[MainForm.cbSelectManga.ItemIndex])) then
       begin
         if FInfo.MangaInfo.Title = '' then
+        begin
           FInfo.MangaInfo.Title := data^.Title;
+        end;
+
         FInfo.MangaInfo.AltTitles := data^.AltTitles;
         FInfo.MangaInfo.Link := data^.Link;
         FInfo.MangaInfo.Authors := data^.Authors;
@@ -92,33 +97,75 @@ var
 
       infob := FInfo.GetInfoFromURL(FLink);
 
-      if Terminated or isExiting then Exit;
-      if infob <> NO_ERROR then Exit;
+      if Terminated or isExiting then
+      begin
+        Exit;
+      end;
+
+      if infob <> NO_ERROR then
+      begin
+        Exit;
+      end;
 
       //set back if title changed
       if (FInfo.MangaInfo.Title <> '') and (FInfo.MangaInfo.Title <> FTitle) then
+      begin
         FTitle := FInfo.MangaInfo.Title;
+      end;
 
       data := MainForm.vtMangaList.GetNodeData(FNode);
       if Assigned(data) and dataProcess.WebsiteLoaded(m.ID) then //todo: use tmodulecontainer
+      begin
+        if not(m.InformationAvailable) then
         begin
-          if not(m.InformationAvailable) then
+          if FInfo.MangaInfo.AltTitles = '' then
           begin
-            if FInfo.MangaInfo.AltTitles = '' then
-              FInfo.MangaInfo.AltTitles := data^.AltTitles;
-            if FInfo.MangaInfo.Authors = '' then
-              FInfo.MangaInfo.Authors := data^.Authors;
-            if FInfo.MangaInfo.Artists = '' then
-              FInfo.MangaInfo.Artists := data^.Artists;
-            if FInfo.MangaInfo.Genres = '' then
-              FInfo.MangaInfo.Genres := data^.Genres;
-            if FInfo.MangaInfo.Summary = '' then
-              FInfo.MangaInfo.Summary := data^.Summary;
+            FInfo.MangaInfo.AltTitles := data^.AltTitles;
           end;
 
-          if not (Terminated or isExiting) then
-            Synchronize(MainThreadSyncInfos);
+          if FInfo.MangaInfo.Authors = '' then
+          begin
+            FInfo.MangaInfo.Authors := data^.Authors;
+          end;
+
+          if FInfo.MangaInfo.Artists = '' then
+          begin
+            FInfo.MangaInfo.Artists := data^.Artists;
+          end;
+
+          if FInfo.MangaInfo.Genres = '' then
+          begin
+            FInfo.MangaInfo.Genres := data^.Genres;
+          end;
+
+          if FInfo.MangaInfo.Summary = '' then
+          begin
+            FInfo.MangaInfo.Summary := data^.Summary;
+          end;
         end;
+
+        if not (Terminated or isExiting) then
+        begin
+          Synchronize(MainThreadSyncInfos);
+        end;
+      end;
+      
+      if FFillSaveTo and OptionGenerateMangaFolder then
+      begin
+        MainForm.edSaveTo.Text := AppendPathDelim(MainForm.edSaveTo.Text) +
+          CustomRename(
+            OptionMangaCustomRename,
+            FInfo.MangaInfo.Website,
+            FInfo.MangaInfo.Title,
+            FInfo.MangaInfo.Authors,
+            FInfo.MangaInfo.Artists,
+            '',
+            '',
+            OptionChangeUnicodeCharacter,
+            OptionChangeUnicodeCharacterStr
+          );
+      end;
+
       Result := True;
     except
       on E: Exception do
@@ -132,23 +179,35 @@ begin
     if not GetMangaInfo then
     begin
       if not (Terminated or isExiting) then
+      begin
         Synchronize(MainThreadShowCannotGetInfo);
+      end;
     end
     else
     begin
-      if Terminated or isExiting then Exit;
+      if Terminated or isExiting then
+      begin
+        Exit;
+      end;
+
       Synchronize(MainThreadShowInfos);
       FCover.Clear;
       // If there's cover then we will load it to the TPicture component.
       if OptionEnableLoadCover and (Trim(FInfo.MangaInfo.CoverLink) <> '') then
+      begin
         try
           FInfo.HTTP.Document.Clear;
           if FInfo.HTTP.GET(FInfo.MangaInfo.CoverLink) then
+          begin
             LoadCover;
+          end;
         except
         end;
+      end;
       if not (Terminated or isExiting) then
+      begin
         Synchronize(MainThreadShowCover);
+      end;
     end;
   except
     on E: Exception do
@@ -167,54 +226,73 @@ end;
 
 procedure TGetMangaInfosThread.LoadCover;
 var
-  bmp:TMemBitmap;
+  bmp: TMemBitmap;
 begin
-  FIsHasMangaCover:=false;
+  FIsHasMangaCover := False;
+
   with FInfo.HTTP do
-  if GetImageStreamExt(Document)='webp' then
   begin
-    bmp:=nil;
-    bmp:=WebPToMemBitmap(Document);
-    if Assigned(bmp) then
-     try
-       FCover.Bitmap:=bmp.Bitmap;
-     finally
-       FreeAndNil(bmp);
-     end
+    if GetImageStreamExt(Document) = 'webp' then
+    begin
+      bmp := nil;
+      bmp := WebPToMemBitmap(Document);
+      if Assigned(bmp) then
+      begin
+        try
+          FCover.Bitmap := bmp.Bitmap;
+        finally
+          FreeAndNil(bmp);
+        end
+      end
+      else
+      begin
+        Exit;
+      end;
+    end
     else
-      Exit;
-  end
-  else
-    FCover.LoadFromStream(FInfo.HTTP.Document);
-  FIsHasMangaCover:=True;
+    begin
+      FCover.LoadFromStream(Document);
+    end;
+  end;
+
+  FIsHasMangaCover := True;
 end;
 
 procedure TGetMangaInfosThread.MainThreadShowInfos;
 var node: PVirtualNode;
 begin
   TransferMangaInfo(mangaInfo, FInfo.MangaInfo);
+
   with MainForm do
-  try
-    if Assigned(FNode) and dataProcess.WebsiteLoaded(TModuleContainer(FInfo.Module).ID) then   //todo: use tmodulecontainer
+  begin
+    try
+      if Assigned(FNode) and dataProcess.WebsiteLoaded(TModuleContainer(FInfo.Module).ID) then   //todo: use tmodulecontainer
       begin
         vtMangaList.BeginUpdate;
         dataProcess.Refresh(dataProcess.Filtered);
         vtMangaList.ReinitNode(FNode, False);
-        if dataProcess.Filtered then begin
+
+        if dataProcess.Filtered then
+        begin
           node := vtMangaList.GetNextVisible(FNode, False);
-          while Assigned(node) do begin
+          while Assigned(node) do
+          begin
             vtMangaList.ReinitNode(node, False);
             node := vtMangaList.GetNextVisible(node, False);
           end;
+
           vtMangaList.RootNodeCount := dataProcess.RecordCount;
           MainForm.UpdateVtMangaListFilterStatus;
         end;
+
         vtMangaList.EndUpdate;
       end;
-    ShowInformation;
-  except
-    on E: Exception do
-      Logger.SendException(Self.ClassName+'.MainThreadShowInfos error!', E);
+
+      ShowInformation;
+    except
+      on E: Exception do
+        Logger.SendException(Self.ClassName+'.MainThreadShowInfos error!', E);
+    end;
   end;
 end;
 
@@ -222,6 +300,7 @@ procedure TGetMangaInfosThread.MainThreadShowCover;
 begin
   MainForm.tmAnimateMangaInfo.Enabled := False;
   MainForm.pbWait.Visible := False;
+
   if FIsHasMangaCover then
   begin
     try
@@ -229,6 +308,7 @@ begin
     except
       on E: Exception do ;
     end;
+
     FCover.Clear;
   end;
 end;
@@ -239,6 +319,7 @@ begin
   inherited Create(True);
   FCover := MainForm.mangaCover;
   FIsHasMangaCover := False;
+  FFillSaveTo := False;
   FInfo := TMangaInformation.Create(Self);
   FInfo.Module := AModule;
   FLink := ALink;

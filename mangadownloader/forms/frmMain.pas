@@ -724,8 +724,6 @@ type
   public
     LastSearchStr: String;
     LastSearchWeb: Pointer;
-    LastUserPickedSaveTo: String;
-    LastViewMangaInfoSender: TObject;
 
     CurrentFormLeft: Integer;
     CurrentFormTop: Integer;
@@ -795,8 +793,8 @@ type
     procedure AddTextToInfo(const ATitle, AValue: String);
 
     // fill edSaveTo with default path
-    procedure FillSaveTo;
-    procedure OverrideSaveTo(const AModule: Pointer);
+    procedure FillSaveTo(const AModule: Pointer);
+    function OverrideSaveTo(const AModule: Pointer): String;
 
     // View manga information
     procedure ViewMangaInfo(const AModule: Pointer; const ALink, ATitle, ASaveTo: String;
@@ -2379,9 +2377,15 @@ end;
 
 procedure TMainForm.miDownloadViewMangaInfoClick(Sender: TObject);
 begin
-  if Assigned(vtDownload.FocusedNode) then
-    with DLManager.Items[vtDownload.FocusedNode^.Index].DownloadInfo do
-      ViewMangaInfo(Module, Link, Title, SaveTo, miDownloadViewMangaInfo);
+  if not Assigned(vtDownload.FocusedNode) then
+  begin
+    Exit;
+  end;
+
+  with DLManager.Items[vtDownload.FocusedNode^.Index].DownloadInfo do
+  begin
+    ViewMangaInfo(Module, Link, Title, SaveTo, miDownloadViewMangaInfo);
+  end;
 end;
 
 procedure TMainForm.miChapterListHighlightClick(Sender: TObject);
@@ -2391,12 +2395,21 @@ begin
     miChapterListHighlight.Checked := not miChapterListHighlight.Checked;
     settingsfile.WriteBool('general', 'HighlightDownloadedChapters', miChapterListHighlight.Checked);
   end;
-  if Length(ChapterList) = 0 then Exit;
+
+  if Length(ChapterList) = 0 then
+  begin
+    Exit;
+  end;
+
   if miChapterListHighlight.Checked then
-    DLManager.GetDownloadedChaptersState(mangaInfo.ModuleID, mangaInfo.Link,
-      ChapterList)
+  begin
+    DLManager.GetDownloadedChaptersState(mangaInfo.ModuleID, mangaInfo.Link, ChapterList);
+  end
   else
+  begin
     ClearChapterListState;
+  end;
+
   clbChapterList.Repaint;
 end;
 
@@ -2411,10 +2424,12 @@ begin
   begin
     Exit;
   end;
+
   if DLManager.Count = 0 then
   begin
     Exit;
   end;
+
   if cbOptionShowDeleteTaskDialog.Checked then
   begin
     if CenteredMessageDlg(Self, RS_DlgRemoveTask, mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
@@ -2621,21 +2636,32 @@ procedure TMainForm.miFavoritesStopCheckNewChapterClick(Sender: TObject);
 var
   xNode: PVirtualNode;
 begin
-  if vtFavorites.SelectedCount = 0 then Exit;
+  if vtFavorites.SelectedCount = 0 then
+  begin
+    Exit;
+  end;
+
   xNode := vtFavorites.GetFirstSelected;
   while Assigned(xNode) do
   begin
     FavoriteManager.StopChekForNewChapter(False, xNode^.Index);
     xNode := vtFavorites.GetNextSelected(xNode);
   end;
+
   UpdateVtFavorites;
 end;
 
 procedure TMainForm.miFavoritesViewInfosClick(Sender: TObject);
 begin
-  if Assigned(vtFavorites.FocusedNode) then
-    with FavoriteManager.Items[vtFavorites.FocusedNode^.Index].FavoriteInfo do
-      ViewMangaInfo(Module, Link, Title, SaveTo, miFavoritesViewInfos);
+  if not Assigned(vtFavorites.FocusedNode) then
+  begin
+    Exit;
+  end;
+
+  with FavoriteManager.Items[vtFavorites.FocusedNode^.Index].FavoriteInfo do
+  begin
+    ViewMangaInfo(Module, Link, Title, SaveTo, miFavoritesViewInfos);
+  end;
 end;
 
 procedure TMainForm.miHighlightNewMangaClick(Sender: TObject);
@@ -2652,7 +2678,8 @@ var
   _OpenSSSL_version: function(t: integer): PAnsiChar; cdecl;
 begin
   // load readme.rtf
-  if FileExistsUTF8(README_FILE) then begin
+  if FileExistsUTF8(README_FILE) then
+  begin
     fs := TFileStream.Create(README_FILE, fmOpenRead or fmShareDenyNone);
     try
       rmAbout.LoadRichText(fs);
@@ -2664,7 +2691,10 @@ begin
   SetAboutTextAttributes;
 
   // load changelog.txt
-  if FileExistsUTF8(CHANGELOG_FILE) then mmChangelog.Lines.LoadFromFile(CHANGELOG_FILE);
+  if FileExistsUTF8(CHANGELOG_FILE) then
+  begin
+    mmChangelog.Lines.LoadFromFile(CHANGELOG_FILE);
+  end;
 
   // compiler info
   AddToAboutStatus('FPC Version', GetFPCVersion);
@@ -2672,8 +2702,19 @@ begin
   AddToAboutStatus('WidgetSet', GetWidgetSetName);
   AddToAboutStatus('Target CPU-OS', GetTargetCPU_OS);
   AddToAboutStatus('Build Time', GetBuildTime);
-  if SQLiteLibraryHandle = 0 then InitializeSqlite();
-  if SQLiteLibraryHandle <> 0 then try AddToAboutStatus('SQLite Version', sqlite3_version()); except end;
+
+  if SQLiteLibraryHandle = 0 then
+  begin
+    InitializeSqlite();
+  end;
+  if SQLiteLibraryHandle <> 0 then
+  begin
+    try
+      AddToAboutStatus('SQLite Version', sqlite3_version());
+    except
+
+    end;
+  end;
 
   if IsSSLloaded then
   begin
@@ -2687,11 +2728,24 @@ begin
         _OpenSSSL_version := nil;
       end;
     end;
+
     AddToAboutStatus('OpenSSL Version', s);
   end;
 
-  if WebPLibHandle = 0 then InitWebPModule;
-  if WebPLibHandle <> 0 then try AddToAboutStatus('WebP Version', WebPGetVersion); except end;
+  if WebPLibHandle = 0 then
+  begin
+    InitWebPModule;
+  end;
+
+  if WebPLibHandle <> 0 then
+  begin
+    try
+      AddToAboutStatus('WebP Version', WebPGetVersion);
+    except
+
+    end;
+  end;
+
   AddToAboutStatus('PCRE Version', pcre2.Version);
 end;
 
@@ -2701,10 +2755,16 @@ procedure TMainForm.AddToAboutStatus(const ACaption, AValue: String;
   function addaboutcomplbl(const ACaption: String): TLabel;
   begin
     Result := TLabel.Create(Self);
+
     if APanel = nil then
-      Result.Parent := pnAboutComp
+    begin
+      Result.Parent := pnAboutComp;
+    end
     else
+    begin
       Result.Parent := APanel;
+    end;
+
     Result.Caption := ACaption;
   end;
 
@@ -2830,7 +2890,7 @@ begin
   links := TStringList.Create;
   names := TStringList.Create;
   try
-    node:=clbChapterList.GetFirstChecked();
+    node := clbChapterList.GetFirstChecked();
     while Assigned(node) do
     begin
       if (vsVisible in node^.States) then
@@ -2851,33 +2911,35 @@ begin
       end;
       node := clbChapterList.GetNextChecked(node);
     end;
+
     clbChapterList.Repaint;
     if links.Count <> 0 then
     begin
       // save to
       if edSaveTo.Text = '' then
       begin
-        FillSaveTo;
-        OverrideSaveTo(Modules.LocateModule(mangaInfo.ModuleID));
-      end;
-      s := TrimPath(edSaveTo.Text);
-      if OptionGenerateMangaFolder then
-      begin
-        sRename := CustomRename(
-            OptionMangaCustomRename,
-            mangaInfo.Website,
-            mangaInfo.Title,
-            mangaInfo.Authors,
-            mangaInfo.Artists,
-            '',
-            '',
-            OptionChangeUnicodeCharacter,
-            OptionChangeUnicodeCharacterStr);
+        FillSaveTo(Modules.LocateModule(mangaInfo.ModuleID));
+        s := TrimPath(edSaveTo.Text);
 
-        if Pos(sRename, s) = 0 then
+        if OptionGenerateMangaFolder then
         begin
+          sRename := CustomRename(
+              OptionMangaCustomRename,
+              mangaInfo.Website,
+              mangaInfo.Title,
+              mangaInfo.Authors,
+              mangaInfo.Artists,
+              '',
+              '',
+              OptionChangeUnicodeCharacter,
+              OptionChangeUnicodeCharacterStr);
+
           s := AppendPathDelim(s) + sRename;
         end;
+      end
+      else
+      begin
+        s := TrimPath(edSaveTo.Text);
       end;
 
       s := ReplaceRegExpr('\.*$', s, '', False);
@@ -2970,15 +3032,17 @@ procedure TMainForm.btAddToFavoritesClick(Sender: TObject);
 var
   s, sRename: String;
 begin
-  if mangaInfo.Title <> '' then
+  if mangaInfo.Title = '' then
   begin
-    // save to
-    if edSaveTo.Text = '' then
-    begin
-      FillSaveTo;
-      OverrideSaveTo(Modules.LocateModule(mangaInfo.ModuleID));
-    end;
+    Exit;
+  end;
+
+  // save to
+  if edSaveTo.Text = '' then
+  begin
+    FillSaveTo(Modules.LocateModule(mangaInfo.ModuleID));
     s := TrimPath(edSaveTo.Text);
+
     if OptionGenerateMangaFolder then
     begin
       sRename := CustomRename(
@@ -2992,28 +3056,30 @@ begin
           OptionChangeUnicodeCharacter,
           OptionChangeUnicodeCharacterStr);
 
-      if Pos(sRename, s) = 0 then
-      begin
-        s := AppendPathDelim(s) + sRename;
-      end;
+      s := AppendPathDelim(s) + sRename;
     end;
+  end
+  else
+  begin
+    s := TrimPath(edSaveTo.Text);
+  end;
 
-    FavoriteManager.Add(
-      mangaInfo.Module,
-      mangaInfo.Title,
-      MangaInfo.Status,
-      IntToStr(mangaInfo.NumChapter),
-      mangaInfo.ChapterLinks.Text,
-      s,
-      mangaInfo.Link);
-    UpdateVtFavorites;
-    vtFavoritesFilterCountChange;
-    btAddToFavorites.Enabled := False;
-    if OptionShowFavoritesTabOnNewManga then
-    begin
-      edFavoritesSearch.Text := mangaInfo.Title;
-      pcMain.ActivePage := tsFavorites;
-    end;
+  FavoriteManager.Add(
+    mangaInfo.Module,
+    mangaInfo.Title,
+    MangaInfo.Status,
+    IntToStr(mangaInfo.NumChapter),
+    mangaInfo.ChapterLinks.Text,
+    s,
+    mangaInfo.Link);
+  UpdateVtFavorites;
+  vtFavoritesFilterCountChange;
+  btAddToFavorites.Enabled := False;
+
+  if OptionShowFavoritesTabOnNewManga then
+  begin
+    edFavoritesSearch.Text := mangaInfo.Title;
+    pcMain.ActivePage := tsFavorites;
   end;
 end;
 
@@ -3638,15 +3704,18 @@ var
   xNode: PVirtualNode;
   data: PMangaInfoData;
 begin
-  if vtMangaList.SelectedCount = 0 then Exit;
-  LastUserPickedSaveTo := '';
-  FillSaveTo;
+  if vtMangaList.SelectedCount = 0 then
+  begin
+    Exit;
+  end;
+
   SilentThreadManager.BeginAdd;
   try
     xNode := vtMangaList.GetFirstSelected;
     while Assigned(xNode) do
     begin
       data := vtMangaList.GetNodeData(xNode);
+      FillSaveTo(data^.Module);
       SilentThreadManager.Add(MD_AddToFavorites, TModuleContainer(data^.Module), data^.Title, data^.Link);
       xNode := vtMangaList.GetNextSelected(xNode);
     end;
@@ -4231,40 +4300,63 @@ end;
 
 procedure TMainForm.miMangaListViewInfosClick(Sender: TObject);
 begin
-  if Assigned(vtMangaList.FocusedNode) then begin
-    with PMangaInfoData(vtMangaList.GetNodeData(vtMangaList.FocusedNode))^ do
-      ViewMangaInfo(Module, Link, Title, '', miMangaListViewInfos, vtMangaList.FocusedNode);
-    if pcInfo.ActivePage <> tsInfoManga then
-      pcInfo.ActivePage := tsInfoManga;
+  if not Assigned(vtMangaList.FocusedNode) then
+  begin
+    Exit;
+  end;
+
+  with PMangaInfoData(vtMangaList.GetNodeData(vtMangaList.FocusedNode))^ do
+  begin
+    ViewMangaInfo(Module, Link, Title, '', miMangaListViewInfos, vtMangaList.FocusedNode);
+  end;
+
+  if pcInfo.ActivePage <> tsInfoManga then
+  begin
+    pcInfo.ActivePage := tsInfoManga;
   end;
 end;
 
 procedure TMainForm.miFavoritesOpenFolderClick(Sender: TObject);
 begin
-  if Assigned(vtFavorites.FocusedNode) then
-    OpenDocument(CorrectPathSys(
-      FavoriteManager.Items[vtFavorites.FocusedNode^.Index].FavoriteInfo.SaveTo));
+  if not Assigned(vtFavorites.FocusedNode) then
+  begin
+    Exit;
+  end;
+
+  OpenDocument(CorrectPathSys(FavoriteManager.Items[vtFavorites.FocusedNode^.Index].FavoriteInfo.SaveTo));
 end;
 
 procedure TMainForm.miDownloadOpenFolderClick(Sender: TObject);
 begin
-  if Assigned(vtDownload.FocusedNode) then
-    OpenDocument(CorrectPathSys(
-      DLManager.Items[vtDownload.FocusedNode^.Index].DownloadInfo.SaveTo));
+  if not Assigned(vtDownload.FocusedNode) then
+  begin
+    Exit;
+  end;
+
+  OpenDocument(CorrectPathSys(DLManager.Items[vtDownload.FocusedNode^.Index].DownloadInfo.SaveTo));
 end;
 
 procedure TMainForm.miFavoritesOpenWithClick(Sender: TObject);
 begin
-  if Assigned(vtFavorites.FocusedNode) then
-     OpenWithExternalProgramChapters(
-       FavoriteManager.Items[vtFavorites.FocusedNode^.Index].FavoriteInfo.SaveTo);
+  if not Assigned(vtFavorites.FocusedNode) then
+  begin
+    Exit;
+  end;
+
+  OpenWithExternalProgramChapters(FavoriteManager.Items[vtFavorites.FocusedNode^.Index].FavoriteInfo.SaveTo);
 end;
 
 procedure TMainForm.miDownloadOpenWithClick(Sender: TObject);
 begin
-  if Assigned(vtDownload.FocusedNode) then
-    with DLManager.Items[vtDownload.FocusedNode^.Index] do
-      OpenWithExternalProgramChapters(DownloadInfo.SaveTo, ChapterNames);
+  if not Assigned(vtDownload.FocusedNode) then
+  begin
+    Exit;
+  end;
+
+  with DLManager.Items[vtDownload.FocusedNode^.Index] do
+  begin
+    OpenWithExternalProgramChapters(DownloadInfo.SaveTo, ChapterNames);
+  end;
 end;
 
 procedure TMainForm.miTrayExitClick(Sender: TObject);
@@ -4274,11 +4366,13 @@ end;
 
 procedure TMainForm.miTrayFinishNothingClick(Sender: TObject);
 begin
-  if Sender is TMenuItem then
+  if not (Sender is TMenuItem) then
   begin
-    OptionLetFMDDo := TFMDDo(TMenuItem(Sender).Tag);
-    settingsfile.WriteInteger('general', 'LetFMDDo', Integer(OptionLetFMDDo));
+    Exit;
   end;
+
+  OptionLetFMDDo := TFMDDo(TMenuItem(Sender).Tag);
+  settingsfile.WriteInteger('general', 'LetFMDDo', Integer(OptionLetFMDDo));
 end;
 
 procedure TMainForm.miTrayShowDropBoxClick(Sender: TObject);
@@ -5895,33 +5989,41 @@ begin
   end;
 end;
 
-procedure TMainForm.FillSaveTo;
+procedure TMainForm.FillSaveTo(const AModule: Pointer);
+var
+  saveToPath, saveToPathOverride: String;
 begin
-  if LastUserPickedSaveTo = '' then
+  saveToPath := Trim(settingsfile.ReadString('saveto', 'SaveTo', DEFAULT_PATH));
+
+  saveToPathOverride := OverrideSaveTo(AModule);
+  if saveToPathOverride <> '' then
   begin
-    LastUserPickedSaveTo := Trim(settingsfile.ReadString('saveto', 'SaveTo', DEFAULT_PATH));
+    saveToPath := saveToPathOverride;
   end;
 
-  if LastUserPickedSaveTo = '' then
+  if saveToPath = '' then
   begin
-    LastUserPickedSaveTo := DEFAULT_PATH;
+    saveToPath := DEFAULT_PATH;
   end;
 
-  edSaveTo.Text := LastUserPickedSaveTo;
+  edSaveTo.Text := saveToPath;
 end;
 
-procedure TMainForm.OverrideSaveTo(const AModule: Pointer);
-var
-  s: String;
+function TMainForm.OverrideSaveTo(const AModule: Pointer): String;
 begin
-  if Assigned(AModule) then
+  Result := '';
+
+  if not Assigned(AModule) then
   begin
-    s := TModuleContainer(AModule).Settings.OverrideSettings.SaveToPath;
-    if s <> '' then
-    begin
-      edSaveTo.Text := s;
-    end;
+    Exit;
   end;
+
+  if not TModuleContainer(AModule).Settings.Enabled then
+  begin
+    Exit;
+  end;
+
+  Result := TModuleContainer(AModule).Settings.OverrideSettings.SaveToPath;
 end;
 
 procedure TMainForm.ViewMangaInfo(const AModule: Pointer; const ALink, ATitle,
@@ -5967,26 +6069,12 @@ begin
   btDownloadSplit.Enabled := btDownload.Enabled;
   btReadOnline.Enabled := True;
 
-  // set saveto
-  edSaveTo.Text := ASaveTo;
-  LastViewMangaInfoSender := ASender;
-  if edSaveTo.Text = '' then
-  begin
-    FillSaveTo;
-    OverrideSaveTo(AModule);
-  end;
-
   DisableAddToFavorites(AModule);
   //check if manga already in FavoriteManager list
   fav := FavoriteManager.LocateMangaByLink(TModuleContainer(AModule).ID, ALink);
   if fav <> nil then
   begin
     btAddToFavorites.Enabled := False;
-    if LastViewMangaInfoSender <> miDownloadViewMangaInfo then
-    begin
-      edSaveTo.Text := fav.FavoriteInfo.SaveTo;
-      LastViewMangaInfoSender := miFavoritesViewInfos;
-    end;
   end;
 
   // start the thread
@@ -5998,6 +6086,14 @@ begin
   else
   begin
     GetInfosThread.Title := ATitle;
+  end;
+
+  // set saveto
+  edSaveTo.Text := ASaveTo;
+  if edSaveTo.Text = '' then
+  begin
+    FillSaveTo(AModule);
+    GetInfosThread.FillSaveTo := True;
   end;
 
   GetInfosThread.Start;
@@ -6012,6 +6108,7 @@ begin
   imCover.Picture.Assign(nil);
 
   with rmInformation do
+  begin
     try
       Lines.BeginUpdate;
       Lines.Clear;
@@ -6037,6 +6134,7 @@ begin
     finally
       Lines.EndUpdate;
     end;
+  end;
 
   SetLength(ChapterList, mangaInfo.ChapterNames.Count);
   if Length(ChapterList) <> 0 then
@@ -6794,9 +6892,10 @@ begin
     edMangaListSearch.Tag := 1;
     edMangaListSearchChange(edMangaListSearch);
   end
-  else
-  if edMangaListSearch.Tag <> 0 then
+  else if edMangaListSearch.Tag <> 0 then
+  begin
     edMangaListSearch.Tag := 0;
+  end;
 end;
 
 procedure TMainForm.edOptionDefaultPathButtonClick(Sender: TObject);
@@ -6805,6 +6904,7 @@ begin
   begin
     try
       InitialDir := TrimPath(edOptionDefaultPath.Text);
+
       if Execute then
       begin
         edOptionDefaultPath.Text := FileName;
@@ -6821,6 +6921,7 @@ begin
   begin
     try
       InitialDir := ExtractFileDir(edOptionExternalPath.Text);
+
       if Execute then
       begin
         edOptionExternalPath.Text := FileName;
@@ -6837,6 +6938,7 @@ begin
   begin
     try
       InitialDir := TrimPath(edSaveTo.Text);
+
       if Execute then
       begin
         edSaveTo.Text := FileName;
