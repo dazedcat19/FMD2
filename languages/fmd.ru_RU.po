@@ -1192,6 +1192,10 @@ msgstr "Поиск по всем сайтам манги"
 msgid "For more manga sites, please go to Options->Manga sites"
 msgstr "Для получения дополнительных сайтов с мангой откройте Настройки->Сайты с мангой"
 
+#: tmainform.cbservercreationtime.caption
+msgid "Use server creation time over local time"
+msgstr ""
+
 #: tmainform.cbuseregexpr.caption
 msgid "Regular Expression"
 msgstr "Регулярное выражение (regexp)"
@@ -1660,6 +1664,10 @@ msgstr "Конвертация изображений"
 
 #: tmainform.gbimagemagick.caption
 msgid "Image Magick"
+msgstr ""
+
+#: tmainform.gbimageproperties.caption
+msgid "Image Properties"
 msgstr ""
 
 #: tmainform.gboptionexternal.caption

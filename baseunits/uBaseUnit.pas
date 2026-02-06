@@ -2463,14 +2463,20 @@ begin
     if FileExists(FilePath) then
     begin
       Result := FilePath;
-      if Age > 0 then
-      begin
-        try
-          FileSetDateUTF8(FilePath, Age);
-        except
-          on E: Exception do
-            SendLogException('SaveImageStreamToFile.FileSetDate Error! ' + FilePath, E);
+
+      try
+        if not OptionImageServerTime then
+        begin
+          Age := DateTimeToFileDate(Now);
         end;
+
+        if Age > 0 then
+        begin
+          FileSetDateUTF8(FilePath, Age);
+        end;
+      except
+        on E: Exception do
+          SendLogException('SaveImageStreamToFile.FileSetDate Error! ' + FilePath, E);
       end;
     end;
   end;
@@ -2482,11 +2488,18 @@ var
   lastmodified: LongInt;
 begin
   Result := '';
-  if AHTTP = nil then Exit;
-  s := Trim(AHTTP.Headers.Values['last-modified']);
+  if AHTTP = nil then
+  begin
+    Exit;
+  end;
+                                     
   lastmodified := 0;
+  s := Trim(AHTTP.Headers.Values['last-modified']);
   if s <> '' then
+  begin
     lastmodified := DateTimeToFileDate(DecodeRfcDateTime(s));
+  end;
+
   Result := SaveImageStreamToFile(AHTTP.Document, Path, FileName, lastmodified);
 end;
 

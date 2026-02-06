@@ -126,6 +126,9 @@ var
   OptionPNGCompressionLevel: Integer = 1;
   OptionJPEGQuality: Integer = 80;
 
+  // image properties
+  OptionImageServerTime: Boolean = False;
+
   // connections
   OptionConnectionTimeout: Integer = 30;
   OptionMaxFavoriteThreads: Integer = 1;

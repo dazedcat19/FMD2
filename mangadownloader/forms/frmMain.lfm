@@ -4589,6 +4589,32 @@ object MainForm: TMainForm
               ShowHint = True
               Visible = False
             end
+            object gbImageProperties: TGroupBox
+              AnchorSideLeft.Control = sbSaveTo
+              AnchorSideTop.Control = gbImageConversion
+              AnchorSideTop.Side = asrBottom
+              AnchorSideRight.Control = sbSaveTo
+              AnchorSideRight.Side = asrBottom
+              AnchorSideBottom.Control = gbOptionRenaming
+              Left = 4
+              Height = 50
+              Top = 271
+              Width = 812
+              Anchors = [akTop, akLeft, akRight]
+              Caption = 'Image Properties'
+              ClientHeight = 30
+              ClientWidth = 808
+              ParentBackground = False
+              TabOrder = 7
+              object cbServerCreationTime: TCheckBox
+                Left = 4
+                Height = 19
+                Top = 4
+                Width = 225
+                Caption = 'Use server creation time over local time'
+                TabOrder = 0
+              end
+            end
           end
         end
         object tsUpdate: TTabSheet

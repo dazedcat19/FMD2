@@ -1202,6 +1202,10 @@ msgstr "Cari di semua situs komik"
 msgid "For more manga sites, please go to Options->Manga sites"
 msgstr "Untuk situs yang lain, silakan pilih di Pengaturan->Situs->Situs"
 
+#: tmainform.cbservercreationtime.caption
+msgid "Use server creation time over local time"
+msgstr ""
+
 #: tmainform.cbuseregexpr.caption
 msgid "Regular Expression"
 msgstr "Persamaan reguler"
@@ -1670,6 +1674,10 @@ msgstr "Konversi gambar"
 
 #: tmainform.gbimagemagick.caption
 msgid "Image Magick"
+msgstr ""
+
+#: tmainform.gbimageproperties.caption
+msgid "Image Properties"
 msgstr ""
 
 #: tmainform.gboptionexternal.caption

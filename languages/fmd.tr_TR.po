@@ -1194,6 +1194,10 @@ msgstr "Tüm manga sitelerinde ara"
 msgid "For more manga sites, please go to Options->Manga sites"
 msgstr "Daha fazla manga sitesi için, lütfen Ayarlar->Manga siteleri'ne gidin"
 
+#: tmainform.cbservercreationtime.caption
+msgid "Use server creation time over local time"
+msgstr ""
+
 #: tmainform.cbuseregexpr.caption
 msgid "Regular Expression"
 msgstr "Düzenli İfadeler"
@@ -1661,6 +1665,10 @@ msgstr "Resim Dönüştürme"
 
 #: tmainform.gbimagemagick.caption
 msgid "Image Magick"
+msgstr ""
+
+#: tmainform.gbimageproperties.caption
+msgid "Image Properties"
 msgstr ""
 
 #: tmainform.gboptionexternal.caption

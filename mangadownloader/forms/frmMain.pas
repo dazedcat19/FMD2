@@ -78,6 +78,7 @@ type
     cbUseRegExpr: TCheckBox;
     cbOptionProxyType: TComboBox;
     cbOptionOneInstanceOnly: TCheckBox;
+    cbServerCreationTime: TCheckBox;
     ckImageMagick: TCheckBox;
     ckPNGSaveAsJPEG: TCheckBox;
     ckOptionsAlwaysStartTaskFromFailedChapters: TCheckBox;
@@ -117,6 +118,7 @@ type
     gbOptionsConnectiosMiscellaneous: TGroupBox;
     gbOptionsConnectionsGeneral: TGroupBox;
     gbImageMagick: TGroupBox;
+    gbImageProperties: TGroupBox;
     IconDLLeft: TImageList;
     lbImageConversionHint: TLabel;
     lbImageMagickSaveAs: TLabel;
@@ -6300,6 +6302,7 @@ begin
     cbWebPSaveAs.ItemIndex := ReadInteger('saveto', 'ConvertWebP', OptionWebPSaveAs);
     cbPNGCompressionLevel.ItemIndex := ReadInteger('saveto', 'PNGCompressionLevel', OptionPNGCompressionLevel);
     seJPEGQuality.Value := ReadInteger('saveto', 'JPEGQuality', OptionJPEGQuality);
+    cbServerCreationTime.Checked := ReadBool('saveto', 'ImageServerTime', OptionImageServerTime);
 
     // imagemagick
     if TImageMagickManager.Instance.PathFound then
@@ -6492,6 +6495,7 @@ begin
       WriteInteger('saveto', 'ConvertWebP', cbWebPSaveAs.ItemIndex);
       WriteInteger('saveto', 'PNGCompressionLevel', cbPNGCompressionLevel.ItemIndex);
       WriteInteger('saveto', 'JPEGQuality', seJPEGQuality.Value);
+      WriteBool('saveto', 'ImageServerTime', cbServerCreationTime.Checked);
 
       // imagemagick
       WriteBool('imagemagick', 'ImageMagickEnabled', ckImageMagick.Checked);
@@ -6691,6 +6695,7 @@ begin
     OptionWebPSaveAs := cbWebPSaveAs.ItemIndex;
     OptionPNGCompressionLevel := cbPNGCompressionLevel.ItemIndex;
     OptionJPEGQuality := seJPEGQuality.Value;
+    OptionImageServerTime := cbServerCreationTime.Checked;
 
     // imagemagick
     TImageMagickManager.Instance.Enabled := ckImageMagick.Checked;

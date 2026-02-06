@@ -1125,6 +1125,10 @@ msgstr ""
 msgid "For more manga sites, please go to Options->Manga sites"
 msgstr ""
 
+#: tmainform.cbservercreationtime.caption
+msgid "Use server creation time over local time"
+msgstr ""
+
 #: tmainform.cbuseregexpr.caption
 msgid "Regular Expression"
 msgstr ""
@@ -1581,6 +1585,10 @@ msgstr ""
 
 #: tmainform.gbimagemagick.caption
 msgid "Image Magick"
+msgstr ""
+
+#: tmainform.gbimageproperties.caption
+msgid "Image Properties"
 msgstr ""
 
 #: tmainform.gboptionexternal.caption
