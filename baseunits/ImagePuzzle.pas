@@ -67,7 +67,9 @@ begin
         image.Bitmap.SetSize(tmpMemBitmap.Width, tmpMemBitmap.Height);
         image.Bitmap.PixelFormat := pf32bit;
         for i := 0 to tmpMemBitmap.Height - 1 do
+        begin
           Move(tmpMemBitmap.ScanLine[i]^, image.Bitmap.ScanLine[i]^, tmpMemBitmap.Width * 4);
+        end;
       finally
         tmpMemBitmap.Free;
       end;
@@ -77,7 +79,9 @@ begin
       memStream.Position := 0;
       image.LoadFromStream(memStream);
       if image.Graphic is TPortableNetworkGraphic then
+      begin
         ext := 'png';
+      end;
     end;
     result.Bitmap.SetSize(image.Width, image.Height);
     reversalMatrix := (HorBlock = 1) and (VerBlock > 0) and (Length(Matrix) >= VerBlock);
@@ -103,9 +107,13 @@ begin
         destH := baseBlockHeight;
         destY := baseBlockHeight * i;
         if i = 0 then
-          destH := destH + remainder
+        begin
+          destH := destH + remainder;
+        end
         else
+        begin
           destY := destY + remainder;
+        end;
         dstrect := Rect(0, destY, imgWidth, destY + destH);
         srcY := imgHeight - (baseBlockHeight * (i + 1)) - remainder;
         srcH := destH;
