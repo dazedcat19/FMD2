@@ -3923,7 +3923,7 @@ object MainForm: TMainForm
             end
             object gbOptionRenaming: TGroupBox
               AnchorSideLeft.Control = lbDefaultDownloadPath
-              AnchorSideTop.Control = gbImageConversion
+              AnchorSideTop.Control = gbImageProperties
               AnchorSideTop.Side = asrBottom
               AnchorSideRight.Control = lbDefaultDownloadPath
               AnchorSideRight.Side = asrBottom
@@ -4597,20 +4597,23 @@ object MainForm: TMainForm
               AnchorSideRight.Side = asrBottom
               AnchorSideBottom.Control = gbOptionRenaming
               Left = 4
-              Height = 50
+              Height = 39
               Top = 271
               Width = 812
               Anchors = [akTop, akLeft, akRight]
+              AutoSize = True
+              BorderSpacing.Top = 4
               Caption = 'Image Properties'
-              ClientHeight = 30
+              ClientHeight = 19
               ClientWidth = 808
               ParentBackground = False
               TabOrder = 7
               object cbServerCreationTime: TCheckBox
                 Left = 4
                 Height = 19
-                Top = 4
+                Top = 0
                 Width = 225
+                BorderSpacing.Left = 4
                 Caption = 'Use server creation time over local time'
                 TabOrder = 0
               end
