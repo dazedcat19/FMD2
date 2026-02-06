@@ -1772,6 +1772,133 @@ begin
   end;
 end;
 
+function NormalizeKoreanText1(const S: String): String;
+var
+  ws, res: UnicodeString;
+  i, len: Integer;
+  c1, c2, c3: Word;
+  L, V, T: Integer;
+  Syllable: Word;
+begin
+  Result := S;
+  if S = '' then Exit;
+
+  // Convert to UTF-16 to process characters safely
+  ws := UTF8Decode(S);
+  len := Length(ws);
+  res := '';
+
+  i := 1;
+  while i <= len do
+  begin
+    c1 := Ord(ws[i]);
+
+    // Check Leading Consonant (L/Choseong) [0x1100 - 0x1112]
+    if (c1 >= $1100) and (c1 <= $1112) then
+    begin
+      // Look ahead for Vowel (V/Jungseong)
+      if i < len then
+      begin
+        c2 := Ord(ws[i + 1]);
+        // Check Vowel [0x1161 - 0x1175]
+        if (c2 >= $1161) and (c2 <= $1175) then
+        begin
+          L := c1 - $1100;
+          V := c2 - $1161;
+          T := 0; // Default to no tail
+
+          // Look ahead for Trailing Consonant (T/Jongseong)
+          if i + 1 < len then
+          begin
+            c3 := Ord(ws[i + 2]);
+            // Check Trailing [0x11A8 - 0x11C2]
+            if (c3 >= $11A8) and (c3 <= $11C2) then
+            begin
+              T := c3 - $11A7; // 0x11A8 is index 1
+              
+              // Compose L+V+T
+              Syllable := $AC00 + (L * 588) + (V * 28) + T;
+              res := res + WideChar(Syllable);
+              
+              Inc(i, 3); // Consumed L, V, T
+              Continue;
+            end;
+          end;
+
+          // Compose L+V (No T)
+          Syllable := $AC00 + (L * 588) + (V * 28);
+          res := res + WideChar(Syllable);
+          
+          Inc(i, 2); // Consumed L, V
+          Continue;
+        end;
+      end;
+    end;
+
+    // If no composition happened, append the original character
+    res := res + ws[i];
+    Inc(i);
+  end;
+
+  // Convert back to UTF-8
+  Result := UTF8Encode(res);
+end;
+
+function NormalizeKoreanText2(const S: String): String;
+var
+  ws, res: UnicodeString;
+  i, len: Integer;
+  L, V, T: Integer;
+  c1, c2, c3: Word;
+begin
+  if S = '' then Exit;
+
+  ws := UTF8Decode(S);
+  len := Length(ws);
+  res := '';
+  i := 1;
+
+  while i <= len do
+  begin
+    c1 := Ord(ws[i]);
+
+    // Check Choseong (L)
+    if (c1 >= $1100) and (c1 <= $1112) and (i < len) then
+    begin
+      c2 := Ord(ws[i + 1]);
+
+      // Check Jungseong (V)
+      if (c2 >= $1161) and (c2 <= $1175) then
+      begin
+        L := c1 - $1100;
+        V := c2 - $1161;
+        T := 0;
+
+        // Optional Jongseong (T)
+        if (i + 1 < len) then
+        begin
+          c3 := Ord(ws[i + 2]);
+          if (c3 >= $11A8) and (c3 <= $11C2) then
+          begin
+            T := c3 - $11A7;
+            Inc(i);
+          end;
+        end;
+
+        res := res + WideChar($AC00 + L * 588 + V * 28 + T);
+        Inc(i, 2);
+        Continue;
+      end;
+    end;
+
+    // Fallback: copy character as-is
+    res := res + ws[i];
+    Inc(i);
+  end;
+
+  Result := UTF8Encode(res);
+end;
+
 function CustomRename(const AString, AWebsite, AMangaName, AAuthor, AArtist, AChapter,
   ANumbering: String;
   const AReplaceUnicode: Boolean;
@@ -2097,7 +2224,7 @@ function CommonStringFilter(const Source: String): String;
 begin
   Result := Source;
   if Source = '' then Exit;
-  Result := Trim(HTMLEntitiesFilter(StringFilter(Trim(Source))));
+  Result := Trim(NormalizeKoreanText(HTMLEntitiesFilter(StringFilter(Trim(Source)))));
 end;
 
 function StringBreaks(const Source: String): String;
