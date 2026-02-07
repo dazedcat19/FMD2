@@ -1117,13 +1117,17 @@ begin
   if dataProcess <> nil then
   begin
     Synchronize(@SyncBeforeSearch);
+
     while FNewSearch do
     begin
       FNewSearch := False;
       dataProcess.Search(FSearchStr);
     end;
+
     if not Terminated then
+    begin
       Synchronize(@SyncAfterSearch);
+    end;
   end;
 end;
 
@@ -1181,10 +1185,16 @@ begin
   begin
     LastSearchStr := upcase(edMangaListSearch.Text);
     LastSearchWeb := currentWebsite;
+
     if dataProcess.Filtered then
-      lbMode.Caption := Format(RS_ModeFiltered, [dataProcess.RecordCount])
+    begin
+      lbMode.Caption := Format(RS_ModeFiltered, [dataProcess.RecordCount]);
+    end
     else
+    begin
       lbMode.Caption := Format(RS_ModeAll, [dataProcess.RecordCount]);
+    end;
+
     SetControlEnabled(True);
     vtMangaList.RootNodeCount := dataProcess.RecordCount;
     ChangeAllCursor(pssInfoList, crDefault);
@@ -1196,14 +1206,20 @@ begin
   if (FWebsite <> '') and (dataProcess <> nil) then
   begin
     Synchronize(@SyncOpenStart);
+
     if dataProcess <> nil then
     begin
       dataProcess.Open(FWebsite);
       if FormMain.edMangaListSearch.Text <> '' then
+      begin
         dataProcess.Search(MainForm.edMangaListSearch.Text);
+      end;
     end;
+
     if not Terminated then
+    begin
       Synchronize(@SyncOpenFinish);
+    end;
   end;
 end;
 
@@ -3239,23 +3255,35 @@ end;
 
 procedure TMainForm.cbSelectMangaEditingDone(Sender: TObject);
 begin
-  if cbSelectManga.ItemIndex < 0 then Exit;
+  if cbSelectManga.ItemIndex < 0 then
+  begin
+    Exit;
+  end;
+
   if currentWebsite <> Pointer(cbSelectManga.Items.Objects[cbSelectManga.ItemIndex]) then
   begin
     currentWebsite := cbSelectManga.Items.Objects[cbSelectManga.ItemIndex];
     settingsfile.WriteString('form', 'SelectManga', TModuleContainer(currentWebsite).ID);
     vtMangaList.Clear;
+
     if dataProcess = nil then
-      dataProcess := TDBDataProcess.Create
-    else
-    if dataProcess.Connected then
+    begin
+      dataProcess := TDBDataProcess.Create;
+    end
+    else if dataProcess.Connected then
+    begin
       dataProcess.Close;
+    end;
+
     lbMode.Caption := Format(RS_ModeAll, [0]);
     if DBDataFileExist(TModuleContainer(currentWebsite).ID) then
-      OpenDataDB(TModuleContainer(currentWebsite).ID)
-    else
-    if cbOptionShowDownloadMangalistDialog.Checked then
+    begin
+      OpenDataDB(TModuleContainer(currentWebsite).ID);
+    end
+    else if cbOptionShowDownloadMangalistDialog.Checked then
+    begin
       mnUpdateDownFromServerClick(mnUpdateDownFromServer);
+    end;
   end;
 end;
 
@@ -3263,14 +3291,18 @@ procedure TMainForm.cbSelectMangaKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if not (Key in [VK_RETURN, VK_TAB]) then
-    cbSelectManga.DroppedDown:=True;
+  begin
+    cbSelectManga.DroppedDown := True;
+  end;
 end;
 
 procedure TMainForm.cbSelectMangaMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   if Button = mbMiddle then
+  begin
     cbSelectMangaEditingDone(Sender);
+  end;
 end;
 
 procedure TMainForm.ckImageMagickChange(Sender: TObject);
@@ -3581,6 +3613,7 @@ begin
   begin
     vtMangaList.Clear;
     Screen.Cursor := crHourGlass;
+
     try
       dataProcess.RemoveFilter;
       vtMangaList.RootNodeCount := dataProcess.RecordCount;
@@ -3591,6 +3624,7 @@ begin
       on E: Exception do
         ExceptionHandler(Self, E);
     end;
+
     Screen.Cursor := crDefault;
   end;
 end;
@@ -3607,35 +3641,52 @@ begin
   Screen.Cursor := crHourGlass;
   checkGenres := TStringList.Create;
   uncheckGenres := TStringList.Create;
+
   try
     edCustomGenres.Text := Trim(edCustomGenres.Text);
     if cbUseRegExpr.Checked and (edCustomGenres.Text <> '') then
-      checkGenres.Add(edCustomGenres.Text)
+    begin
+      checkGenres.Add(edCustomGenres.Text);
+    end
     else
     begin
       ExtractStrings([','], [], PChar(edCustomGenres.Text), checkGenres);
       TrimStrings(checkGenres);
+
       i := 0;
-      while i < checkGenres.Count do begin
+      while i < checkGenres.Count do
+      begin
         s := Trim(checkGenres.Strings[i]);
-        if (s <> '') and (s[1] = '-') or (s[1] = '!') then begin
+        if (s <> '') and (s[1] = '-') or (s[1] = '!') then
+        begin
           Delete(s, 1, 1);
           uncheckGenres.Add(s);
           checkGenres.Delete(i);
         end
-        else Inc(i);
+        else
+        begin
+          Inc(i);
+        end;
       end;
     end;
 
     if pnGenres.ControlCount > 0 then
+    begin
       for i := 0 to pnGenres.ControlCount - 1 do
-        if pnGenres.Controls[i] is TCheckBox then begin
+      begin
+        if pnGenres.Controls[i] is TCheckBox then
+        begin
           if TCheckBox(pnGenres.Controls[i]).State = cbChecked then
-            checkGenres.Add(TCheckBox(pnGenres.Controls[i]).Caption)
-          else
-          if TCheckBox(pnGenres.Controls[i]).State = cbUnchecked then
+          begin
+            checkGenres.Add(TCheckBox(pnGenres.Controls[i]).Caption);
+          end
+          else if TCheckBox(pnGenres.Controls[i]).State = cbUnchecked then
+          begin
             uncheckGenres.Add(TCheckBox(pnGenres.Controls[i]).Caption);
+          end;
         end;
+      end;
+    end;
 
     if dataProcess.CanFilter(
       checkGenres,
@@ -3651,7 +3702,9 @@ begin
     begin
       dataProcess.FilterAllSites := cbSearchFromAllSites.Checked;
       if cbSearchFromAllSites.Checked then
+      begin
         dataProcess.SitesList.Assign(cbSelectManga.Items);
+      end;
 
       edMangaListSearch.Tag := -1;
       edMangaListSearch.Clear;
@@ -3680,9 +3733,13 @@ begin
 
   vtMangaList.RootNodeCount := dataProcess.RecordCount;
   if dataProcess.Filtered then
-    lbMode.Caption := Format(RS_ModeFiltered, [vtMangaList.RootNodeCount])
+  begin
+    lbMode.Caption := Format(RS_ModeFiltered, [vtMangaList.RootNodeCount]);
+  end
   else
-    lbMode.Caption := Format(RS_ModeAll, [vtMangaList.RootNodeCount])
+  begin
+    lbMode.Caption := Format(RS_ModeAll, [vtMangaList.RootNodeCount]);
+  end;
 end;
 
 procedure TMainForm.btFilterResetClick(Sender: TObject);
@@ -3690,7 +3747,10 @@ var
   i: Cardinal;
 begin
   for i := 0 to 37 do
+  begin
     TCheckBox(pnGenres.Controls[i]).State := cbGrayed;
+  end;
+
   edFilterTitle.Caption := '';
   edFilterAuthors.Caption := '';
   edFilterArtists.Caption := '';
@@ -4056,6 +4116,7 @@ begin
   begin
     Exit;
   end;
+
   m := TModuleContainer(cbSelectManga.Items.Objects[cbSelectManga.ItemIndex]);
   if (not isUpdating) then
   begin
@@ -4189,9 +4250,14 @@ begin
     while Assigned(xNode) do
     begin
       if dataProcess.DeleteData(xNode^.Index) then
-        deleteNode := xNode
+      begin
+        deleteNode := xNode;
+      end
       else
+      begin
         deleteNode := nil;
+      end;
+
       xNode := vtMangaList.GetPreviousSelected(xNode);
       if Assigned(deleteNode) then
       begin
@@ -4199,12 +4265,13 @@ begin
         Inc(deleteCount);
       end;
     end;
+
     if deleteCount > 0 then
     begin
       dataProcess.Table.ApplyUpdates;
       dataProcess.Table.SQLTransaction.CommitRetaining;
       vtMangaList.ClearSelection;
-      UpdateVtMangaListFilterStatus
+      UpdateVtMangaListFilterStatus;
     end;
   finally
     vtMangaList.EndUpdate;
@@ -5410,7 +5477,9 @@ procedure TMainForm.vtFavoritesPaintText(Sender: TBaseVirtualTree;
   TextType: TVSTTextType);
 begin
   if not FavoriteManager[Node^.Index].Enabled then
+  begin
     TargetCanvas.Font.Color := TVirtualStringTree(Sender).Colors.DisabledColor;
+  end;
 end;
 
 procedure TMainForm.vtMangaListChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
@@ -6872,11 +6941,21 @@ begin
     LastSearchStr := UpCase(edMangaListSearch.Text);
     Exit;
   end;
-  if (not cbOptionLiveSearch.Checked) and (edMangaListSearch.Tag = 0) then Exit;
-  if edMangaListSearch.Tag <> 0 then
-    edMangaListSearch.Tag := 0;
-  if (upcase(edMangaListSearch.Text) = LastSearchStr) and (currentWebsite = LastSearchWeb) then
+
+  if (not cbOptionLiveSearch.Checked) and (edMangaListSearch.Tag = 0) then
+  begin
     Exit;
+  end;
+
+  if edMangaListSearch.Tag <> 0 then
+  begin
+    edMangaListSearch.Tag := 0;
+  end;
+
+  if (upcase(edMangaListSearch.Text) = LastSearchStr) and (currentWebsite = LastSearchWeb) then
+  begin
+    Exit;
+  end;
 
   SearchDataDB(edMangaListSearch.Text);
 
@@ -7267,10 +7346,14 @@ begin
   SimpleTranslator.LangDir := FMD_DIRECTORY + 'languages';
   SimpleTranslator.LangAppName := 'fmd';
   SimpleTranslator.CollectLanguagesFiles;
+
   if SimpleTranslator.AvailableLanguages.Count > 0 then
   begin
     for i := 0 to AvailableLanguages.Count - 1 do
+    begin
       cbLanguages.Items.Add(SimpleTranslator.AvailableLanguages.ValueFromIndex[i]);
+    end;
+
     cbLanguages.ItemIndex := SimpleTranslator.AvailableLanguages.IndexOfName(
     settingsfile.ReadString('languages', 'Selected', 'en'));
   end;

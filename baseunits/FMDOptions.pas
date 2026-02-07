@@ -127,7 +127,7 @@ var
   OptionJPEGQuality: Integer = 80;
 
   // image properties
-  OptionImageServerTime: Boolean = False;
+  OptionImageServerTime: Boolean = True;
 
   // connections
   OptionConnectionTimeout: Integer = 30;

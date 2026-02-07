@@ -16,8 +16,8 @@ unit uGetMangaInfosThread;
 interface
 
 uses
-  SysUtils, LazFileUtils, Graphics, Dialogs, uBaseUnit, uData, FMDOptions,
-  BaseThread, ImgInfos, webp, MultiLog, MemBitmap, VirtualTrees;
+  SysUtils, LazFileUtils, StrUtils, Graphics, Dialogs, uBaseUnit, uData,
+  FMDOptions, BaseThread, ImgInfos, webp, MultiLog, MemBitmap, VirtualTrees;
 
 type
 
@@ -66,6 +66,7 @@ var
   var
     infob: byte;
     data: PMangaInfoData;
+    oldModuleID, searchText: String;
   begin
     Result := False;
     try
@@ -149,7 +150,41 @@ var
           Synchronize(MainThreadSyncInfos);
         end;
       end;
-      
+
+      if (FInfo.MangaInfo.Title <> '') and (FInfo.MangaInfo.Link <> '') then
+      begin
+        oldModuleID := dataProcess.Website;
+        if (oldModuleID <> m.ID) and dataProcess.Connected then
+        begin
+          dataProcess.Close;
+        end;
+
+        if dataProcess.Connect(m.ID) then
+        begin
+          FInfo.AddInfoToData(FInfo.MangaInfo.Title, FInfo.MangaInfo.Link, dataProcess);
+          dataProcess.Commit;
+          dataProcess.Sort;
+
+          if oldModuleID = m.ID then
+          begin 
+            dataProcess.Refresh(dataProcess.Filtered);
+
+            searchText := MainForm.edMangaListSearch.Text;
+            if ContainsText(FInfo.MangaInfo.Title, searchText) or (searchText = '') then
+            begin
+              MainForm.OpenDataDB(m.ID);
+              MainForm.UpdateVtMangaListFilterStatus;
+            end;
+          end
+          else
+          begin   
+            dataProcess.Close;
+            dataProcess.Connect(oldModuleID);
+            dataProcess.Refresh(dataProcess.Filtered);
+          end;
+        end;
+      end;
+
       if FFillSaveTo and OptionGenerateMangaFolder then
       begin
         MainForm.edSaveTo.Text := AppendPathDelim(MainForm.edSaveTo.Text) +
