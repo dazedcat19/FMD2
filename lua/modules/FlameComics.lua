@@ -37,7 +37,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
@@ -46,29 +46,31 @@ function GetInfo()
 	local x = CreateTXQuery(HTTP.Document)
 	local json = x.XPath('json(//script[@id="__NEXT_DATA__"]).props.pageProps.series')
 	MANGAINFO.Title     = x.XPathString('title', json)
-	MANGAINFO.AltTitles = x.XPathString('altTitles', json):gsub('%[', ''):gsub('%]', ''):gsub('"', ''):gsub('%s+%,%s+', ', ')
+	MANGAINFO.AltTitles = x.XPathString('string-join(altTitles?*, ", ")', json)
 	MANGAINFO.CoverLink = MODULE.RootURL .. x.XPathString('//img[@alt="Cover"]/@src')
 	MANGAINFO.Authors   = x.XPathString('author', json)
 	MANGAINFO.Artists   = x.XPathString('artist', json)
 	MANGAINFO.Genres    = x.XPathString('string-join(tags?*, ", ")', json)
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status', json), 'Ongoing', 'Completed', 'Hiatus', 'Dropped')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status', json), 'Ongoing', 'Completed', 'Hiatus', 'Cancelled|Dropped')
 	MANGAINFO.Summary   = x.XPathString('description', json)
 
+	local mid = x.XPathString('series_id', json)
+
 	for v in x.XPath('json(//script[@id="__NEXT_DATA__"]).props.pageProps.chapters()').Get() do
-		local chapter = v.GetProperty('chapter').ToString():gsub('%.0', '')
+		local chapter = math.floor(v.GetProperty('chapter').ToString())
 		local title   = v.GetProperty('title').ToString()
 
-		title = title ~= 'null' and title ~= '' and string.format(' - %s', title) or ''
+		title = (title ~= 'null' and title ~= '') and (' - ' .. title) or ''
 
-		MANGAINFO.ChapterLinks.Add('series/' .. v.GetProperty('series_id').ToString() .. '/' .. v.GetProperty('token').ToString())
-		MANGAINFO.ChapterNames.Add(chapter .. title)
+		MANGAINFO.ChapterLinks.Add('series/' .. mid .. '/' .. v.GetProperty('token').ToString())
+		MANGAINFO.ChapterNames.Add('Chapter ' .. chapter .. title)
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
