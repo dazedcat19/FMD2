@@ -82,7 +82,10 @@ function _M.GetInfo()
 
 	local id = x.XPathString('//div[contains(@id, "manga-chapters-holder")]/@data-id')
 
-	x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#") and not(@class="reward_ads")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+	x.XPathHREFAll('//div[@class="li__text"]/a[not(@href="#") and not(@class="reward_ads")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+	if MANGAINFO.ChapterLinks.Count == 0 then
+		x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#") and not(@class="reward_ads")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+	end
 	if MANGAINFO.ChapterLinks.Count == 0 then
 		local page = 1
 		local pages = nil
