@@ -25,8 +25,8 @@ uses
   uSilentThread, uMisc, uGetMangaInfosThread, frmDropTarget, frmAccountManager,
   frmAccountSet, frmWebsiteOptionCustom, frmCustomColor, frmLogger, frmTransferFavorites,
   frmLuaModulesUpdater, CheckUpdate, DBDataProcess, uDarkStyleParams, uWin32WidgetSetDark,
-  SimpleTranslator, httpsendthread, DateUtils, SimpleException, uCustomControls,
-  uCustomControlsMultiLog, ImageMagickManager;
+  SimpleTranslator, httpsendthread, DateUtils, SimpleException, WebsiteModules,
+  uCustomControls, uCustomControlsMultiLog, ImageMagickManager;
 
 type
 
@@ -708,6 +708,7 @@ type
       Column: TColumnIndex; TextType: TVSTTextType; var CellText: String);
     procedure vtMangaListInitNode(Sender: TBaseVirtualTree; ParentNode,
       Node: PVirtualNode; var InitialStates: TVirtualNodeInitStates);
+    procedure vtMangaListResetList(ANodeIndex: Integer; ALink, AModuleID: String);
     procedure vtOptionMangaSiteSelectionFreeNode(Sender : TBaseVirtualTree;
       Node : PVirtualNode);
     procedure vtOptionMangaSiteSelectionGetText(Sender: TBaseVirtualTree;
@@ -845,6 +846,8 @@ type
 
     // open db with thread
     procedure OpenDataDB(const AWebsite: String);
+    procedure CloseOpenDataDB;
+    procedure WaitForOpenDataDB;
 
     // search db with thread
     procedure SearchDataDB(const ATitle: String);
@@ -1028,7 +1031,7 @@ uses
   WinAPI,
   {$endif}
   frmImportFavorites, frmShutdownCounter, frmSelectDirectory,
-  frmWebsiteSettings, WebsiteModules, uUpdateThread, FMDVars, RegExpr, sqlite3dyn, Clipbrd,
+  frmWebsiteSettings, uUpdateThread, FMDVars, RegExpr, sqlite3dyn, Clipbrd,
   ssl_openssl3_lib, LazFileUtils, LazUTF8, webp, DBUpdater, pcre2, pcre2lib, dynlibs,
   LuaWebsiteModules, LuaBase, uBackupSettings, frmCustomMessageDlg;
 
@@ -1203,23 +1206,29 @@ end;
 
 procedure TOpenDBThread.Execute;
 begin
-  if (FWebsite <> '') and (dataProcess <> nil) then
+  if (FWebsite = '') or (dataProcess = nil) then
   begin
-    Synchronize(@SyncOpenStart);
+    Exit;
+  end;
 
-    if dataProcess <> nil then
+  Synchronize(@SyncOpenStart);
+
+  if dataProcess <> nil then
+  begin
+    if dataProcess.Website <> FWebsite then
     begin
       dataProcess.Open(FWebsite);
-      if FormMain.edMangaListSearch.Text <> '' then
-      begin
-        dataProcess.Search(MainForm.edMangaListSearch.Text);
-      end;
     end;
 
-    if not Terminated then
+    if FormMain.edMangaListSearch.Text <> '' then
     begin
-      Synchronize(@SyncOpenFinish);
+      dataProcess.Search(MainForm.edMangaListSearch.Text);
     end;
+  end;
+
+  if not Terminated then
+  begin
+    Synchronize(@SyncOpenFinish);
   end;
 end;
 
@@ -2084,6 +2093,26 @@ begin
   begin
     OpenDBThread := TOpenDBThread.Create(AWebsite);
   end;
+end;
+
+procedure TMainForm.CloseOpenDataDB;
+begin
+  if not Assigned(OpenDBThread) then
+  begin
+    Exit;
+  end;
+
+  OpenDBThread.Destroy;
+end;
+
+procedure TMainForm.WaitForOpenDataDB;
+begin
+  if not Assigned(OpenDBThread) then
+  begin
+    Exit;
+  end;
+
+  OpenDBThread.WaitFor;
 end;
 
 procedure TMainForm.SearchDataDB(const ATitle: String);
@@ -7579,30 +7608,127 @@ procedure TMainForm.vtMangaListInitNode(Sender: TBaseVirtualTree; ParentNode,
   Node: PVirtualNode; var InitialStates: TVirtualNodeInitStates);
 var
   data: PMangaInfoData;
+  nodeRecIndex: Integer;
 begin
   data := Sender.GetNodeData(Node);
-  if dataProcess.GoToRecNo(Node^.Index) then
+  nodeRecIndex := Node^.Index;
+
+  if not dataProcess.GoToRecNo(nodeRecIndex) then
+  begin
+    Exit;
+  end;
+
   with data^ do
   begin
-    Link := dataProcess.Value[Node^.Index, DATA_PARAM_LINK];
-    Title := dataProcess.Value[Node^.Index, DATA_PARAM_TITLE];
-    AltTitles := dataProcess.Value[Node^.Index, DATA_PARAM_ALTTITLES];
-    Authors := dataProcess.Value[Node^.Index, DATA_PARAM_AUTHORS];
-    Artists := dataProcess.Value[Node^.Index, DATA_PARAM_ARTISTS];
-    Genres := dataProcess.Value[Node^.Index, DATA_PARAM_GENRES];
-    Status := dataProcess.Value[Node^.Index, DATA_PARAM_STATUS];
-    NumChapter := dataProcess.ValueInt[Node^.Index, DATA_PARAM_NUMCHAPTER];
-    JDN := dataProcess.ValueInt[Node^.Index, DATA_PARAM_JDN];
-    Summary := dataProcess.Value[Node^.Index, DATA_PARAM_SUMMARY];
+    Link := dataProcess.Value[nodeRecIndex, DATA_PARAM_LINK];
+    Title := dataProcess.Value[nodeRecIndex, DATA_PARAM_TITLE];
+    AltTitles := dataProcess.Value[nodeRecIndex, DATA_PARAM_ALTTITLES];
+    Authors := dataProcess.Value[nodeRecIndex, DATA_PARAM_AUTHORS];
+    Artists := dataProcess.Value[nodeRecIndex, DATA_PARAM_ARTISTS];
+    Genres := dataProcess.Value[nodeRecIndex, DATA_PARAM_GENRES];
+    Status := dataProcess.Value[nodeRecIndex, DATA_PARAM_STATUS];
+    NumChapter := dataProcess.ValueInt[nodeRecIndex, DATA_PARAM_NUMCHAPTER];
+    JDN := dataProcess.ValueInt[nodeRecIndex, DATA_PARAM_JDN];
+    Summary := dataProcess.Value[nodeRecIndex, DATA_PARAM_SUMMARY];
     TitleFormat := Title + ' (' + IntToStr(NumChapter) + ')';
+
     if dataProcess.FilterAllSites then
     begin
-      Module := dataProcess.GetModule(Node^.Index);
+      Module := dataProcess.GetModule(nodeRecIndex);
       TitleFormat += ' [' + TModuleContainer(Module).Name + ']';
     end
     else
+    begin
       Module := dataProcess.Module;
+    end;
   end;
+end;
+
+procedure TMainForm.vtMangaListResetList(ANodeIndex: Integer; ALink, AModuleID: String);
+var
+  i, totalNodes: Integer;
+  nextNode, newNode: PVirtualNode;
+
+  procedure CheckNode(var AOldNode, ANewNode: PVirtualNode; ALink: String);
+  var
+    newData: PMangaInfoData;
+  begin
+    newData := vtMangaList.GetNodeData(AOldNode);
+
+    if ALink = newData^.Link then
+    begin
+      ANewNode := AOldNode;
+    end;
+  end;
+
+begin
+  newNode := nil;
+  CloseOpenDataDB;
+  OpenDataDB(AModuleID);
+
+  WaitForOpenDataDB;
+  UpdateVtMangaListFilterStatus;
+   
+  if (ANodeIndex < 0) or (ALink = '') then
+  begin
+    Exit;
+  end;
+
+  vtMangaList.BeginUpdate;
+  totalNodes := vtMangaList.RootNodeCount;
+
+  if (ANodeIndex < totalNodes) then
+  begin
+    // Smart traversal
+    if ANodeIndex < totalNodes div 2 then
+    begin
+      // Near beginning - go forward
+      nextNode := vtMangaList.GetFirst;
+      CheckNode(nextNode, newNode, ALink);
+
+      for i := 0 to Min(totalNodes - 1, ANodeIndex) do
+      begin
+        if not Assigned(nextNode) then
+        begin
+          Break;
+        end;
+
+        nextNode := vtMangaList.GetNext(nextNode);
+        CheckNode(nextNode, newNode, ALink);
+      end;
+    end
+    else
+    begin
+      // Near end - go backward
+      nextNode := vtMangaList.GetLast;
+      CheckNode(nextNode, newNode, ALink);
+
+      for i := 0 to (totalNodes - ANodeIndex) do
+      begin
+        if not Assigned(nextNode) then
+        begin
+          Break;
+        end;
+
+        nextNode := vtMangaList.GetPrevious(nextNode);
+        CheckNode(nextNode, newNode, ALink);
+      end;
+    end;
+
+  end
+  else
+  begin
+    newNode := vtMangaList.GetLast
+  end;
+      
+  if Assigned(newNode) then
+  begin
+    vtMangaList.Selected[newNode] := True;
+    vtMangaList.FocusedNode := newNode;
+    vtMangaList.ScrollIntoView(newNode, True);
+  end;
+
+  vtMangaList.EndUpdate;
 end;
 
 procedure TMainForm.vtOptionMangaSiteSelectionFreeNode(

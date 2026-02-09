@@ -1736,19 +1736,30 @@ procedure TDownloadManager.DBUpdateOrder;
 var
   i: Integer;
 begin
-  if FUpdateOrderCount=0 then Exit;
-  for i := 0 to Items.Count-1 do
-  with Items[i] do begin
-    if i<>Order then
+  if FUpdateOrderCount = 0 then
+  begin
+    Exit;
+  end;
+
+  for i := 0 to Items.Count - 1 do
+  begin
+    with Items[i] do
     begin
-      Order:=i;
-      FDownloadsDB.tempSQL+='UPDATE "downloads" SET "order"='+PrepSQLValue(Order)+' WHERE "id"='''+DlId+''';';
-      Inc(FDownloadsDB.tempSQLcount);
-      if FDownloadsDB.tempSQLcount>=MAX_BIG_SQL_FLUSH_QUEUE then
-        FDownloadsDB.FlushSQL(False);
+      if i <> Order then
+      begin
+        Order := i;
+        FDownloadsDB.tempSQL += 'UPDATE "downloads" SET "order"=' + PrepSQLValue(Order) + ' WHERE "id"=''' + DlId + ''';';
+        Inc(FDownloadsDB.tempSQLcount);
+
+        if FDownloadsDB.tempSQLcount >= MAX_BIG_SQL_FLUSH_QUEUE then
+        begin
+          FDownloadsDB.FlushSQL(False);
+        end;
+      end;
     end;
   end;
-  FUpdateOrderCount:=0;
+
+  FUpdateOrderCount := 0;
 end;
 
 procedure TDownloadManager.UpdateOrder;

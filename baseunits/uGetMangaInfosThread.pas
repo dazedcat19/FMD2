@@ -16,8 +16,9 @@ unit uGetMangaInfosThread;
 interface
 
 uses
-  SysUtils, LazFileUtils, StrUtils, Graphics, Dialogs, uBaseUnit, uData,
-  FMDOptions, BaseThread, ImgInfos, webp, MultiLog, MemBitmap, VirtualTrees;
+  SysUtils, LazFileUtils, StrUtils, Graphics, Dialogs, uBaseUnit, uData, Forms,
+  FMDOptions, BaseThread, ImgInfos, webp, MultiLog, MemBitmap, VirtualTrees,
+  DBDataProcess;
 
 type
 
@@ -65,8 +66,11 @@ var
   function GetMangaInfo: Boolean;
   var
     infob: byte;
+    tempDataProcess: TDBDataProcess;
     data: PMangaInfoData;
-    oldModuleID, searchText: String;
+    oldModuleID, dataLink: String;
+    nodeIndex: Integer;
+    infoAlreadyExists: Boolean;
   begin
     Result := False;
     try
@@ -153,34 +157,40 @@ var
 
       if (FInfo.MangaInfo.Title <> '') and (FInfo.MangaInfo.Link <> '') then
       begin
+        tempDataProcess := dataProcess;
         oldModuleID := dataProcess.Website;
-        if (oldModuleID <> m.ID) and dataProcess.Connected then
+        if oldModuleID <> m.ID then
         begin
-          dataProcess.Close;
+          tempDataProcess := TDBDataProcess.Create;
         end;
 
-        if dataProcess.Connect(m.ID) then
+        if not Assigned(FNode) then
         begin
-          FInfo.AddInfoToData(FInfo.MangaInfo.Title, FInfo.MangaInfo.Link, dataProcess);
-          dataProcess.Commit;
-          dataProcess.Sort;
+          FNode := MainForm.vtMangaList.FocusedNode;
+        end;
+
+        data := MainForm.vtMangaList.GetNodeData(FNode);
+        dataLink := '';
+        if Assigned(data) then
+        begin
+          dataLink := data^.Link;
+        end;
+        nodeIndex := MainForm.vtMangaList.AbsoluteIndex(FNode);
+
+        if tempDataProcess.Connect(m.ID) then
+        begin
+          FInfo.AddInfoToData(FInfo.MangaInfo.Title, FInfo.MangaInfo.Link, tempDataProcess);
+          tempDataProcess.Sort;
 
           if oldModuleID = m.ID then
-          begin 
-            dataProcess.Refresh(dataProcess.Filtered);
-
-            searchText := MainForm.edMangaListSearch.Text;
-            if ContainsText(FInfo.MangaInfo.Title, searchText) or (searchText = '') then
-            begin
-              MainForm.OpenDataDB(m.ID);
-              MainForm.UpdateVtMangaListFilterStatus;
-            end;
+          begin      
+            MainForm.vtMangaList.Clear;
+            tempDataProcess.Refresh(tempDataProcess.Filtered);
+            MainForm.vtMangaListResetList(nodeIndex, dataLink, m.ID);
           end
           else
-          begin   
-            dataProcess.Close;
-            dataProcess.Connect(oldModuleID);
-            dataProcess.Refresh(dataProcess.Filtered);
+          begin
+            tempDataProcess.Free;
           end;
         end;
       end;
@@ -210,6 +220,7 @@ var
 
 begin
   m := TModuleContainer(FInfo.Module);
+
   try
     if not GetMangaInfo then
     begin
@@ -239,6 +250,7 @@ begin
         except
         end;
       end;
+
       if not (Terminated or isExiting) then
       begin
         Synchronize(MainThreadShowCover);
@@ -336,16 +348,18 @@ begin
   MainForm.tmAnimateMangaInfo.Enabled := False;
   MainForm.pbWait.Visible := False;
 
-  if FIsHasMangaCover then
+  if not FIsHasMangaCover then
   begin
-    try
-      MainForm.imCover.Picture.Assign(FCover);
-    except
-      on E: Exception do ;
-    end;
-
-    FCover.Clear;
+    Exit;
   end;
+
+  try
+    MainForm.imCover.Picture.Assign(FCover);
+  except
+    on E: Exception do ;
+  end;
+
+  FCover.Clear;
 end;
 
 constructor TGetMangaInfosThread.Create(const AModule: Pointer;
