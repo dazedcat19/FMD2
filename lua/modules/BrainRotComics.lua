@@ -5,8 +5,8 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '9300f8755204497f998fdb1d831e8b49'
-	m.Name                     = 'Arya Scans'
-	m.RootURL                  = 'https://aryascans.com'
+	m.Name                     = 'BrainRotComics'
+	m.RootURL                  = 'https://brainrotcomics.com'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -37,9 +37,9 @@ function GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
 end
