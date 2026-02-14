@@ -30,11 +30,31 @@ begin
   Result := 0;
 end;
 
+function lua_Merge2Image(L: Plua_State): Integer; cdecl;
+var
+  Directory, ImgName1, ImgName2, FinalName: String;
+  Landscape: Boolean;
+begin
+  // Retrieve string arguments
+  Directory := luaToString(L, 1);
+  ImgName1 := luaToString(L, 2);
+  ImgName2 := luaToString(L, 3);
+  FinalName := luaToString(L, 4);
+  
+  // Retrieve optional boolean argument (default to false if not provided)
+  Landscape := lua_toboolean(L, 5); 
+
+  // Call the uBaseUnit function and push the boolean result back to Lua
+  lua_pushboolean(L, Merge2Image(Directory, ImgName1, ImgName2, FinalName, Landscape));
+  Result := 1;
+end;
+
 const
-  methods: packed array [0..3] of luaL_Reg = (
+  methods: packed array [0..4] of luaL_Reg = (
     (name: 'ExtractFileName'; func: @lua_extractfilename),
     (name: 'ExtractFileNameOnly'; func: @lua_extractfilenameonly),
     (name: 'SerializeAndMaintainNames'; func: @lua_SerializeAndMaintainNames),
+    (name: 'Merge2Image'; func: @lua_Merge2Image),
     (name: nil; func: nil)
     );
 
@@ -48,4 +68,3 @@ initialization
   LuaPackage.AddLib('fileutil', @luaopen_fileutil);
 
 end.
-
