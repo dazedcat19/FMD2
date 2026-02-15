@@ -97,9 +97,12 @@ function GetInfo()
 
 	local x = CreateTXQuery(HTTP.Document)
 	for v in x.XPath('//div[@class="flex items-center"]/a').Get() do
-		local official = MODULE.GetOption('detect_official') and x.XPathString('span[1]/svg/@stroke', v) == '#d8b4fe' and '/official' or ''
-		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href') .. official)
-		MANGAINFO.ChapterNames.Add(x.XPathString('span[2]/span[1]', v))
+		local is_official = MODULE.GetOption('detect_official') and x.XPathString('span[1]/svg/@stroke', v) == '#d8b4fe'
+		local ofc_link = is_official and '/official' or ''
+		local ofc_name = is_official and ' [Official]' or ''
+
+		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href') .. ofc_link)
+		MANGAINFO.ChapterNames.Add(x.XPathString('span[2]/span[1]', v) .. ofc_name)
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
