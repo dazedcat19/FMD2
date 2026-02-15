@@ -16,6 +16,18 @@ function Init()
 	m.MaxTaskLimit             = 2
 	m.MaxConnectionLimit       = 4
 	m.SortedList               = true
+
+	local slang = require 'fmd.env'.SelectedLanguage
+	local translations = {
+		['en'] = {
+			['detect_official'] = 'Separately mark the official chapter so it will be detected when new ones are available'
+		},
+		['id_ID'] = {
+			['detect_official'] = 'Tandai bab resmi secara terpisah supaya bisa terdeteksi saat yang baru tersedia'
+		}
+	}
+	local lang = translations[slang] or translations.en
+	m.AddOptionCheckBox('detect_official', lang.detect_official, false)
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -32,7 +44,7 @@ local DirectoryPageLimit = 32
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
 	local u = MODULE.RootURL .. DirectoryPagination .. 0
-	PAGENUMBER = 9700
+	PAGENUMBER = 10100
 
 	if not HTTP.GET(u .. PAGENUMBER) then return net_problem end
 
@@ -85,7 +97,8 @@ function GetInfo()
 
 	local x = CreateTXQuery(HTTP.Document)
 	for v in x.XPath('//div[@class="flex items-center"]/a').Get() do
-		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
+		local official = MODULE.GetOption('detect_official') and x.XPathString('span[1]/svg/@stroke', v) == '#d8b4fe' and '/official' or ''
+		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href') .. official)
 		MANGAINFO.ChapterNames.Add(x.XPathString('span[2]/span[1]', v))
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
@@ -93,15 +106,15 @@ function GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local u = MaybeFillHost(MODULE.RootURL, URL) .. '/images?reading_style=long_strip'
+	local u = MaybeFillHost(MODULE.RootURL, URL):gsub('/official$', '') .. '/images?reading_style=long_strip'
 
-	if not HTTP.GET(u) then return net_problem end
+	if not HTTP.GET(u) then return false end
 
 	CreateTXQuery(HTTP.Document).XPathStringAll('//img/@src', TASK.PageLinks)
 
-	return no_error
+	return true
 end
 
 -- Prepare the URL, http header and/or http cookies before downloading an image.
