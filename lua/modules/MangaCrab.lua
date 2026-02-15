@@ -3,17 +3,21 @@
 ----------------------------------------------------------------------------------------------------
 
 function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = '73cfa250c661470c81428d99cdb8a140'
-	m.Name                     = 'MangaCrab'
-	m.RootURL                  = 'https://mangacrab.org'
-	m.Category                 = 'Spanish'
-	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
-	m.SortedList               = true
+	local function AddWebsiteModule(id, name, url)
+		local m = NewWebsiteModule()
+		m.ID                       = id
+		m.Name                     = name
+		m.RootURL                  = url
+		m.Category                 = 'Spanish'
+		m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+		m.OnGetNameAndLink         = 'GetNameAndLink'
+		m.OnGetInfo                = 'GetInfo'
+		m.OnGetPageNumber          = 'GetPageNumber'
+		m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
+		m.SortedList               = true
+	end
+	AddWebsiteModule('73cfa250c661470c81428d99cdb8a140', 'MangaCrab', 'https://mangacrab.org')
+	AddWebsiteModule('f1883499b8e640778f0f0c1a4358774f', 'MangaCrabEros', 'https://eros.mangacrab.org')
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -98,9 +102,13 @@ function GetPageNumber()
 	if not HTTP.GET(u) then return false end
 
 	local x = CreateTXQuery(HTTP.Document)
-	MODULE.Storage['Img-X'] = x.XPathString('//script[contains(., "imgHeader")]/substring-before(substring-after(., "imgHeader"":"""), """}")')
-	for v in x.XPath('//div[@class="reader-body"]/img/@data-sec-src').Get() do
-		TASK.PageLinks.Add(MaybeFillHost(MODULE.RootURL, v.ToString()))
+	if MODULE.ID == '73cfa250c661470c81428d99cdb8a140' then
+		MODULE.Storage['Img-X'] = x.XPathString('//script[contains(., "imgHeader")]/substring-before(substring-after(., "imgHeader"":"""), """}")')
+		for v in x.XPath('//div[@class="reader-body"]/img/@data-sec-src').Get() do
+			TASK.PageLinks.Add(MaybeFillHost(MODULE.RootURL, v.ToString()))
+		end
+	else
+		x.XPathStringAll('//div[@class="reader-body"]/p/img/@src', TASK.PageLinks)
 	end
 
 	return true
@@ -108,7 +116,9 @@ end
 
 -- Prepare the URL, http header and/or http cookies before downloading an image.
 function BeforeDownloadImage()
-	HTTP.Headers.Values['Img-X'] = MODULE.Storage['Img-X']
+	if MODULE.ID == '73cfa250c661470c81428d99cdb8a140' then
+		HTTP.Headers.Values['Img-X'] = MODULE.Storage['Img-X']
+	end
 
 	return true
 end
