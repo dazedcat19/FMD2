@@ -88,20 +88,13 @@ function GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local u = MaybeFillHost(MODULE.RootURL, URL)
+	local u = MODULE.RootURL .. '/auth/chapter-content?chapter_id=' .. URL:match('(%d+)$')
 
 	if not HTTP.GET(u) then return false end
 
-	local x = CreateTXQuery(HTTP.Document)
-	for v in x.XPath('//div[@id="reader-media"]//img').Get() do
-		local src = v.GetAttribute('src')
-		if src:find('base64', 1, true) then
-			src = v.GetAttribute('data-src')
-		end
-		TASK.PageLinks.Add(src)
-	end
+	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).images()', TASK.PageLinks)
 
 	return true
 end
