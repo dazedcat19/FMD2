@@ -257,6 +257,8 @@
 {"hash":142739353,"name":"tmainform.lbimagemagickquality.caption","sourcebytes":[73,109,97,103,101,32,113,117,97,108,105,116,121],"value":"Image quality"},
 {"hash":24397,"name":"tmainform.lbimagemagickhint.caption","sourcebytes":[91,63,93],"value":"[?]"},
 {"hash":24397,"name":"tmainform.lbimageconversionhint.caption","sourcebytes":[91,63,93],"value":"[?]"},
+{"hash":196727763,"name":"tmainform.gbimageproperties.caption","sourcebytes":[73,109,97,103,101,32,80,114,111,112,101,114,116,105,101,115],"value":"Image Properties"},
+{"hash":209737461,"name":"tmainform.cbservercreationtime.caption","sourcebytes":[85,115,101,32,115,101,114,118,101,114,32,99,114,101,97,116,105,111,110,32,116,105,109,101,32,111,118,101,114,32,108,111,99,97,108,32,116,105,109,101],"value":"Use server creation time over local time"},
 {"hash":208308883,"name":"tmainform.tsupdate.caption","sourcebytes":[85,112,100,97,116,101,115],"value":"Updates"},
 {"hash":71634382,"name":"tmainform.cboptionautochecklatestversion.caption","sourcebytes":[65,117,116,111,32,99,104,101,99,107,32,102,111,114,32,108,97,116,101,115,116,32,118,101,114,115,105,111,110],"value":"Auto check for latest version"},
 {"hash":225003075,"name":"tmainform.gboptionfavorites.caption","sourcebytes":[70,97,118,111,114,105,116,101,115],"value":"Favorites"},

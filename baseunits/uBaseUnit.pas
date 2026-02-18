@@ -236,13 +236,13 @@ const
   {$ifdef windows}
   // MAX_PATH = 260
   // MAX_PATH - 12 - 1
-  MAX_PATHDIR = 247;
+  MAX_PATHDIR = 246;
   // fmd max file extension = 4
   // max path + file in windows explorer is 259
   // = MAX_PATH - fmd max file extension - 1
   // 1 is pahtdelim "/"
-  FMDMaxImageFilePath = 255;
-  // if directory length is max_pathdir, the remaining allowed filename is 7
+  FMDMaxImageFilePath = 254;
+  // if directory length is MAX_PATHDIR, the remaining allowed filename is 7
   // = 259 - fmd max file extension - 1
   {$endif}
 
@@ -1464,7 +1464,7 @@ begin
   if Length(s) > MAX_PATHDIR then
   begin
     s := MainForm.CheckLongNamePaths(s);
-    if not MainForm.cbOptionEnableLongNamePaths.Checked then
+    if not OptionLongNamePaths then
     begin
       SetLength(s, MAX_PATHDIR);
     end;
@@ -1795,10 +1795,13 @@ begin
   Result := AString;
 
   // for rename chapter only
-  if AChapter <> '' then begin
+  if AChapter <> '' then
+  begin
     // numbering/index
     if (Pos(CR_NUMBERING, Result) = 0) and (Pos(CR_CHAPTER, Result) = 0) then
+    begin
       Result := ANumbering + Result;
+    end;
     Result := StringReplaceBrackets(Result, CR_NUMBERING, ANumbering, [rfReplaceAll]);
 
     // pad number
@@ -1806,20 +1809,27 @@ begin
     if OptionConvertDigitVolume then
     begin
       if OptionConvertDigitChapter then
-        VolumeChapterPadZero(fchapter, OptionConvertDigitVolumeLength, OptionConvertDigitChapterLength)
+      begin
+        VolumeChapterPadZero(fchapter, OptionConvertDigitVolumeLength, OptionConvertDigitChapterLength);
+      end
       else
+      begin
         VolumeChapterPadZero(fchapter, OptionConvertDigitVolumeLength, 0);
+      end;
     end
-    else
-    if OptionConvertDigitChapter then
+    else if OptionConvertDigitChapter then
+    begin
       VolumeChapterPadZero(fchapter, 0, OptionConvertDigitChapterLength);
+    end;
 
     fchapter := FixStringLocal(fchapter);
 
     Result := StringReplaceBrackets(Result, CR_CHAPTER, fchapter, [rfReplaceAll]);
 
     if Result = '' then
+    begin
       Result := ANumbering;
+    end;
   end;
 
   Result := StringReplaceBrackets(Result, CR_WEBSITE, FixStringLocal(AWebsite), [rfReplaceAll]);
@@ -1827,9 +1837,17 @@ begin
   Result := StringReplaceBrackets(Result, CR_AUTHOR, FixStringLocal(AAuthor), [rfReplaceAll]);
   Result := StringReplaceBrackets(Result, CR_ARTIST, FixStringLocal(AArtist), [rfReplaceAll]);
   Result := StringReplaceBrackets(Result, CR_FILENAME, FixStringLocal(AFileName), [rfReplaceAll]);
-  if Result = '' then Result := FixStringLocal(AMangaName);
+  if Result = '' then
+  begin
+    Result := FixStringLocal(AMangaName);
+  end;
 
-  if Result = '' then Exit;
+  if Result = '' then
+  begin
+    Exit;
+  end;
+
+  Result := MainForm.CheckSingularCharacterLimit(Result);
 
   // remove pathdelim
   Result := TrimChar(Result, AllowDirectorySeparators);
@@ -2209,8 +2227,12 @@ function CreateFQDNName(AFileName: String): String;
 var
   UniqueTimestampName: String;
 begin
-  UniqueTimestampName := StringReplace(ExtractFileName(AFileName), ExtractFileExt(AFileName), '', [rfReplaceAll])+ '_' + FormatDateTime('yyyy-mm-dd_hh-nn-ss', Now);
-  Result := StringReplace(('FQDNList_' + UniqueTimestampName), ' ', '_', [rfReplaceAll]);
+  UniqueTimestampName := StringReplace(ExtractFileName(AFileName), ExtractFileExt(AFileName), '', [rfReplaceAll]);
+  UniqueTimestampName := RemoveSymbols(UniqueTimestampName);
+  Delete(UniqueTimestampName, 100, 200);
+  UniqueTimestampName := UniqueTimestampName + '_' + FormatDateTime('yyyy-mm-dd_hh-nn-ss', Now);
+  UniqueTimestampName := StringReplace(('FQDNList_' + UniqueTimestampName), ' ', '_', [rfReplaceAll]);
+  Result := UniqueTimestampName;
 end;
  
 function CreateFQDNFolder(Sender: TObject; ACurrentDir, AFileName: String): String;
@@ -2443,14 +2465,20 @@ begin
     if FileExists(FilePath) then
     begin
       Result := FilePath;
-      if Age > 0 then
-      begin
-        try
-          FileSetDateUTF8(FilePath, Age);
-        except
-          on E: Exception do
-            SendLogException('SaveImageStreamToFile.FileSetDate Error! ' + FilePath, E);
+
+      try
+        if not OptionImageServerTime then
+        begin
+          Age := DateTimeToFileDate(Now);
         end;
+
+        if Age > 0 then
+        begin
+          FileSetDateUTF8(FilePath, Age);
+        end;
+      except
+        on E: Exception do
+          SendLogException('SaveImageStreamToFile.FileSetDate Error! ' + FilePath, E);
       end;
     end;
   end;
@@ -2462,11 +2490,18 @@ var
   lastmodified: LongInt;
 begin
   Result := '';
-  if AHTTP = nil then Exit;
-  s := Trim(AHTTP.Headers.Values['last-modified']);
+  if AHTTP = nil then
+  begin
+    Exit;
+  end;
+                                     
   lastmodified := 0;
+  s := Trim(AHTTP.Headers.Values['last-modified']);
   if s <> '' then
+  begin
     lastmodified := DateTimeToFileDate(DecodeRfcDateTime(s));
+  end;
+
   Result := SaveImageStreamToFile(AHTTP.Document, Path, FileName, lastmodified);
 end;
 

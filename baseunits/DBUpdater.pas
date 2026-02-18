@@ -158,10 +158,13 @@ begin
 
           if used then
             Synchronize(@SyncCloseUsed)
-          else
-          if dataProcess.WebsiteLoaded(FModule.ID) then
+          else if dataProcess.WebsiteLoaded(FModule.ID) then
+          begin
             Synchronize(@SyncRemoveAttached);
+          end;
+
           with TProcess.Create(nil) do
+          begin
             try
               UpdateStatusText(Format('[%d/%d] ' + RS_Extracting, [FIndex + 1, FItems.Count, FModule.Name]));
               Executable := CURRENT_ZIP_EXE;
@@ -173,16 +176,25 @@ begin
               Options := Options + [poWaitOnExit];
               ShowWindow := swoHIDE;
               Execute;
+
               cont := ExitStatus = 0;
               if cont then
-                DeleteFile(currentfilename)
+              begin
+                DeleteFile(currentfilename);
+              end
               else
+              begin
                 FFailedList.Add(RS_FailedExtract, [FModule.Name, ExitStatus]);
+              end;
             finally
               Free;
             end;
+          end;
+
           if cont and used then
+          begin
             Synchronize(@SyncReopenUsed);
+          end;
         end;
 
         dataProcess.Open(FModule.ID);

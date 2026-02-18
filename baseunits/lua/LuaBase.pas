@@ -218,9 +218,13 @@ function LuaLoadFromStreamOrFile(const L: Plua_State;
   const AStream: TMemoryStream; const AFileName: String): Integer;
 begin
   if (not AlwaysLoadLuaFromFile) and (AStream <> nil) then
-    Result := luaL_loadbuffer(L, AStream.Memory, AStream.Size, PAnsiChar(AFileName))
+  begin
+    Result := luaL_loadbuffer(L, AStream.Memory, AStream.Size, PAnsiChar(AFileName));
+  end
   else
+  begin
     Result := luaL_loadfile(L, PAnsiChar(AFileName));
+  end;
 end;
 
 procedure LuaExecute(const L: Plua_State; const AStream: TMemoryStream;
