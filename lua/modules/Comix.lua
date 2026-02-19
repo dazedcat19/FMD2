@@ -12,6 +12,7 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 	m.SortedList               = true
 	m.MaxTaskLimit             = 2
 	m.MaxConnectionLimit       = 4
@@ -21,11 +22,11 @@ function Init()
 	local translations = {
 		['en'] = {
 			['showscangroup'] = 'Show scanlation group',
-			['deduplicatechapters'] = 'Deduplicate chapters (Prefer official chapters, followed by the highest-voted or most recent)'
+			['deduplicatechapters'] = 'Deduplicate chapters (prefer official chapters, followed by the highest-voted or most recent)'
 		},
 		['id_ID'] = {
 			['showscangroup'] = 'Tampilkan grup scanlation',
-			['deduplicatechapters'] = 'Hapus bab ganda (Utamakan bab resmi, diikuti yang paling banyak dipilih atau terbaru)'
+			['deduplicatechapters'] = 'Hapus bab ganda (utamakan bab resmi, diikuti yang paling banyak dipilih atau terbaru)'
 		}
 	}
 	local lang = translations[slang] or translations['en']
@@ -204,13 +205,20 @@ function GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	local u = API_URL .. '/chapters' .. URL
 
 	if not HTTP.GET(u) then return false end
 
 	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).result.images().url', TASK.PageLinks)
+
+	return true
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
 
 	return true
 end
