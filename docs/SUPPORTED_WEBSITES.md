@@ -20,6 +20,7 @@
 | AnimExtremist | [![http://www.animextremist.com](https://img.shields.io/website?url=http://www.animextremist.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.animextremist.com)](http://www.animextremist.com) | - | - | - |
 | AnonimusTLS | [![https://anonimustls.com](https://img.shields.io/website?url=https://anonimustls.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://anonimustls.com)](https://anonimustls.com) | - | - | - |
 | Anteiku Scans | [![https://anteikuscan.fr](https://img.shields.io/website?url=https://anteikuscan.fr%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://anteikuscan.fr)](https://anteikuscan.fr) | OK | 09.01.2025 | Paid chapters are hidden by default |
+| Apkomik | [![https://apkomik.cc](https://img.shields.io/website?url=https://apkomik.cc%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://apkomik.cc)](https://apkomik.cc) | OK | 22.02.2026 | - |
 | Apoll Comics | [![https://apollcomics.es](https://img.shields.io/website?url=https://apollcomics.es%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://apollcomics.es)](https://apollcomics.es) | OK | 28.07.2025 | - |
 | Aqua Manga | [![https://aquareader.net](https://img.shields.io/website?url=https://aquareader.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://aquareader.net)](https://aquareader.net) | OK | 02.04.2025 | - |
 | ArangScans | [![https://arangscans.com](https://img.shields.io/website?url=https://arangscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://arangscans.com)](https://arangscans.com) | - | - | - |
@@ -174,7 +175,6 @@
 | KKJ | [![https://kkjscans.co](https://img.shields.io/website?url=https://kkjscans.co%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kkjscans.co)](https://kkjscans.co) | - | - | - |
 | KlikManga | [![https://klikmanga.com](https://img.shields.io/website?url=https://klikmanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://klikmanga.com)](https://klikmanga.com) | OK | 06.02.2025 | - |
 | KLManga | [![https://klz9.com](https://img.shields.io/website?url=https://klz9.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://klz9.com)](https://klz9.com) | OK | 03.01.2026 | - |
-| KomikAV | [![https://komikav.com](https://img.shields.io/website?url=https://komikav.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikav.com)](https://komikav.com) | - | - | - |
 | KomikCast | [![https://v1.komikcast.fit](https://img.shields.io/website?url=https://v1.komikcast.fit%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://v1.komikcast.fit)](https://v1.komikcast.fit) | OK | 10.02.2026 | - |
 | KomikGO | [![https://komikgo.xyz](https://img.shields.io/website?url=https://komikgo.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikgo.xyz)](https://komikgo.xyz) | - | - | - |
 | KomikGue | [![http://www.komikgue.com](https://img.shields.io/website?url=http://www.komikgue.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.komikgue.com)](http://www.komikgue.com) | - | - | - |
