@@ -6,10 +6,9 @@ Libraries compiled with `MSYS2/mingw-w64 gcc 9.2.0`:
 * Lua 5.4.2
 * PCRE 10.35-RC2
 
-Libraries compiled with `MSYS2/mingw-w64 gcc 15.1.0`:
-* OpenSSL 3.5.1
-
 Libraries compiled with `MSYS2/mingw-w64 gcc 15.2.0`:
+
+* OpenSSL 3.6.1
 * SQLite 3.51.2 with compile-time options `-DSQLITE_MAX_ATTACHED=125`
 
 Libraries compiled with `MSVC 19.29.30136`:
