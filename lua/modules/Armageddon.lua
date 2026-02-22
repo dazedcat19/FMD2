@@ -40,22 +40,25 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	Template.GetPageNumber()
+	local crypto = require 'fmd.crypto'
+	local u = MaybeFillHost(MODULE.RootURL, URL)
 
-	if TASK.PageLinks.Count == 0 then --Secure Reader
-		local crypto = require 'fmd.crypto'
-		local x = CreateTXQuery(HTTP.Document)
-		local secure_js = x.XPathString('//script[contains(., "const _0x1b8fbd")]')
-		local base64 = GetBetween('const _0x1b8fbd="', '",', secure_js)
-		if secure_js == base64 then
-			base64 = GetBetween("const _0x1b8fbd='", "',", secure_js)
-		end
-		local s = crypto.DecodeBase64(base64)
-		x.ParseHTML(s)
+	if not HTTP.GET(u) then return false end
+
+	local x = CreateTXQuery(HTTP.Document)
+	local _, base64 = x.XPathString('//script[contains(., "const _0x1b8fbd")]'):match('const%s+_0x1b8fbd=([\'"])(.-)%1')
+	if base64 then
+		x.ParseHTML(crypto.DecodeBase64(base64))
 		x.XPathStringAll('json(*)()', TASK.PageLinks)
-		for i = 0, TASK.PageLinks.Count - 1 do
-			TASK.PageLinks[i] = crypto.DecodeURL(TASK.PageLinks[i])
-		end 
+	else
+		local s = x.XPathString('//script[contains(., "ts_reader")]')
+		if s ~= '' then
+			x.ParseHTML(s:match('run%((.-)%);'):gsub('!0', 'true'):gsub('!1', 'false'))
+		end
+		x.XPathStringAll('json(*).sources()[1].images()', TASK.PageLinks)
+	end
+	for i = 0, TASK.PageLinks.Count - 1 do
+		TASK.PageLinks[i] = crypto.DecodeURL(TASK.PageLinks[i])
 	end
 
 	return true
