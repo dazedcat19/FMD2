@@ -75,10 +75,18 @@ function _M.GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@class="summary-heading" and contains(., "' .. XPathTokenStatus .. '")]/following-sibling::div'), 'Berjalan|Ongoing|Releasing|مستمرة|Em Andamento|En curso', 'Tamat|Completed|مكتملة|Concluído|Terminado', 'Hiatus|On Hold|متوقفة|Em espera|En espera', 'Diberhentikan|Canceled|مُلغَاة|Cancelado')
 	MANGAINFO.Summary   = x.XPathString('string-join((//div[contains(@class, "summary__content") or @class="manga-summary"])[1]|//div[@class="manga-excerpt"]|//div[@class="post-content_item" and contains(h5, "Summary") or contains(h5, "Sinopsis")]//p, "\r\n")')
 
-	if MANGAINFO.CoverLink == '' then MANGAINFO.CoverLink = x.XPathString('//div[@class="summary_image"]//img/@src') end
-	if MANGAINFO.Authors == '' then MANGAINFO.Authors = x.XPathString('//div[@class="summary-heading" and contains(., "' .. XPathTokenAuthors .. '")]/following-sibling::div|//div[@class="manga-authors"]/a') end
-	if MANGAINFO.Artists == '' then MANGAINFO.Artists = x.XPathString('//div[@class="summary-heading" and contains(., "' .. XPathTokenArtists .. '")]/following-sibling::div|//div[@class="manga-artists"]/a') end
-	if MANGAINFO.Genres == '' then MANGAINFO.Genres = x.XPathStringAll('//div[@class="summary-heading" and contains(., "' .. XPathTokenGenres .. '")]/following-sibling::div/a') end
+	if MANGAINFO.CoverLink == '' then
+		MANGAINFO.CoverLink = x.XPathString('//div[@class="summary_image"]//img/@src')
+	end
+	if MANGAINFO.Authors == '' then
+		MANGAINFO.Authors = x.XPathString('//div[@class="summary-heading" and contains(., "' .. XPathTokenAuthors .. '")]/following-sibling::div|//div[@class="manga-authors"]/a')
+	end
+	if MANGAINFO.Artists == '' then
+		MANGAINFO.Artists = x.XPathString('//div[@class="summary-heading" and contains(., "' .. XPathTokenArtists .. '")]/following-sibling::div|//div[@class="manga-artists"]/a')
+	end
+	if MANGAINFO.Genres == '' then
+		MANGAINFO.Genres = x.XPathStringAll('//div[@class="summary-heading" and contains(., "' .. XPathTokenGenres .. '")]/following-sibling::div/a')
+	end
 
 	local id = x.XPathString('//div[contains(@id, "manga-chapters-holder")]/@data-id')
 
@@ -93,14 +101,27 @@ function _M.GetInfo()
 			HTTP.Reset()
 			HTTP.Headers.Values['Content-Length'] = 0
 			HTTP.Headers.Values['X-Requested-With'] = 'XMLHttpRequest'
+
 			if not HTTP.POST(MANGAINFO.URL .. 'ajax/chapters/?t=' .. page) then return net_problem end
+
 			local x = CreateTXQuery(HTTP.Document)
-			local s = x.XPathString('(//div[@class="li__text"]/a[not(@href="#") and not(@class="reward_ads")])[1]')
-			if s ~= '' then
-				x.XPathHREFAll('//div[@class="li__text"]/a[not(@href="#") and not(@class="reward_ads")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+			local filter = 'a[not(@href="#") and not(@class="reward_ads")]'
+			local li__text = '//div[@class="li__text"]/' .. filter
+
+			if x.XPathString('(' .. li__text .. ')[1]') ~= '' then
+				x.XPathHREFAll(li__text, MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+			elseif x.XPathString('//ul[contains(@class, "volumns")]/li/a[1]') ~= '' then
+				for v in x.XPath('//ul[contains(@class, "volumns")]/li').Get() do
+					local volume = x.XPathString('a', v)
+					for w in x.XPath('.//li[contains(@class, "wp-manga-chapter")]/' .. filter, v).Get() do
+						MANGAINFO.ChapterLinks.Add(w.GetAttribute('href'))
+						MANGAINFO.ChapterNames.Add(volume .. ' - ' .. w.ToString())
+					end
+				end
 			else
-				x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#") and not(@class="reward_ads")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+				x.XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/' .. filter, MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 			end
+
 			if not pages then
 				pages = tonumber(x.XPathString('//div[@class="pagination"]/span[not(contains(normalize-space(.), ">>"))][last()]/a')) or 1
 			end
@@ -116,7 +137,9 @@ function _M.GetInfo()
 		HTTP.Headers.Values['X-Requested-With'] = 'XMLHttpRequest'
 		HTTP.MimeType = 'application/x-www-form-urlencoded'
 		local s = ChapterParameters .. id
+
 		if not HTTP.POST(MODULE.RootURL .. '/wp-admin/admin-ajax.php', s) then return net_problem end
+
 		CreateTXQuery(HTTP.Document).XPathHREFAll('//li[contains(@class, "wp-manga-chapter")]/a[not(@href="#") and not(@class="reward_ads")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
