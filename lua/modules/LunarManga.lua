@@ -85,6 +85,10 @@ function GetInfo()
 	local x = CreateTXQuery(HTTP.Document)
 	local json = x.XPath('parse-json(.)?manga')
 	MANGAINFO.Title     = x.XPathString('title', json)
+	if MANGAINFO.Title == '' and x.XPathString('*'):find('API access denied', 1, true) then
+		MANGAINFO.Title = 'Please complete the security check on your browser'
+		return no_error
+	end
 	MANGAINFO.AltTitles = x.XPathString('string-join(json(alternative_titles), ", ")', json)
 	MANGAINFO.CoverLink = x.XPathString('cover_url', json)
 	MANGAINFO.Authors   = x.XPathString('author', json)
