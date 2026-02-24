@@ -76,16 +76,19 @@ function _M.GetInfo()
 	if not HTTP.GET(u) then return net_problem end
 
 	local x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//h1[@class="names"]/span[@class="name"]')
-	MANGAINFO.AltTitles = x.XPathStringAll('//h1[@class="names"]//span[@class="eng-name"]|//h1[@class="names"]//span[@class="original-name"]')
-	MANGAINFO.CoverLink = x.XPathString('//div[@class="picture-fotorama"]/img[1]/@src')
-	MANGAINFO.Authors   = x.XPathStringAll('//span[contains(@class, "elem_author")]/a|//span[contains(@class, "elem_screenwriter")]/a')
-	MANGAINFO.Artists   = x.XPathStringAll('//span[contains(@class, "elem_illustrator")]/a')
-	MANGAINFO.Genres    = x.XPathStringAll('//span[contains(., "Жанры:")]/following-sibling::a')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@class="subject-meta"]'), 'выпуск продолжается', 'выпуск завершён')
-	MANGAINFO.Summary   = x.XPathString('(//div[@class="manga-description"])[1]')
+	MANGAINFO.Title     = x.XPathString('//h1')
+	MANGAINFO.AltTitles = x.XPathStringAll('//div[@class="cr-hero-names"]/h3//span/text()')
+	MANGAINFO.CoverLink = x.XPathString('//img[@class="cr-hero-poster__img"]/@src')
+	MANGAINFO.Authors   = x.XPathStringAll('(//div[./div="Сценарист"])[1]//a')
+	MANGAINFO.Artists   = x.XPathStringAll('(//div[./div="Художник"])[1]//a')
+	MANGAINFO.Genres    = x.XPathStringAll('(//div[@class="cr-tags"])[1]//a/span[not(@class)]')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('(//div[./div="Перевод"])[1]//span'), 'Продолжается', 'Завершён')
+	MANGAINFO.Summary   = x.XPathString('(//div[@class="cr-description__content"])[1]')
 
-	x.XPathHREFAll('//table[@class="table table-hover"]//a[not(contains(@href, "/internal/")) and not(contains(@class, "btn"))]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+	for v in x.XPath('//table[@class="table table-hover"]//a[not(contains(@href, "/internal/")) and not(contains(@class, "btn"))]').Get() do
+		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
+		MANGAINFO.ChapterNames.Add(x.XPathString('text()', v))
+	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	HTTP.Reset()
@@ -120,8 +123,8 @@ function _M.GetPageNumber()
 
 	if image then
 		for domain, path in image:gmatch("%['([^']+)','[^']*',\"([^\"]+)\"") do
-			if domain:find("one%-way%.work") then
-				path = path:gsub("%?.*$", "")
+			if domain:find('one%-way%.work', 1, true) then
+				path = path:gsub('%?.*$', '')
 			end
 
 			local image_url = domain .. path
