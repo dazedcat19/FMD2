@@ -1491,6 +1491,7 @@ type
     FTimeout: integer;
     FUserName: string;
     FPassword: string;
+    FOAuth2Token: string;
   public
     constructor Create;
   published
@@ -1512,6 +1513,9 @@ type
 
     {:If protocol need user authorization, then fill here password.}
     property Password: string read FPassword Write FPassword;
+
+    {:oauth2 token for possible credentials.}
+    property OAuth2Token: string read FOAuth2Token Write FOAuth2Token;
   end;
 
 var
