@@ -11,6 +11,8 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.MaxTaskLimit             = 2
+	m.MaxConnectionLimit       = 4
 end
 
 ----------------------------------------------------------------------------------------------------
