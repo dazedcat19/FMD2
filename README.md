@@ -50,7 +50,7 @@ In order to build FMD2 from the source code, you must install the latest stable 
 
 To compile FMD2 some packages and components are needed. You can download and install most of them by the built-in Online Package Manager (OPM).  
 The following packages and components are used for building FMD2:  
-- ![Synapse 40.1](https://img.shields.io/badge/Synapse%2040.1-OPM%20(40.1.0.0)-Blue?style=plastic&color=blue) <sup>(Compile before "InternetTools")</sup>  
+- [![Synapse 40.1](https://img.shields.io/badge/Synapse%2040.1-GitHub-Blue?style=plastic&color=blue)](https://github.com/geby/synapse) <sup>(Compile before "InternetTools")</sup>  
 - ![DCPCrypt](https://img.shields.io/badge/DCPCrypt-OPM%20(2.0.4.2)-Blue?style=plastic&color=blue)  
 - ![RichMemo](https://img.shields.io/badge/RichMemo-OPM%20(1.0.0.0)-Blue?style=plastic&color=blue)  
 - ![LCL Extensions](https://img.shields.io/badge/LCL%20Extensions-OPM%20(0.6.1.0)-Blue?style=plastic&color=blue) <sup>(Compile before "VirtualTreeViewV5")</sup>  
