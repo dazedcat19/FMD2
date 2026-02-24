@@ -79,10 +79,10 @@ function _M.GetInfo()
 	MANGAINFO.Title     = x.XPathString('//h1')
 	MANGAINFO.AltTitles = x.XPathStringAll('//div[@class="cr-hero-names"]/h3//span/text()')
 	MANGAINFO.CoverLink = x.XPathString('//img[@class="cr-hero-poster__img"]/@src')
-	MANGAINFO.Authors   = x.XPathStringAll('(//div[./div="Сценарист"])[1]//a')
-	MANGAINFO.Artists   = x.XPathStringAll('(//div[./div="Художник"])[1]//a')
+	MANGAINFO.Authors   = x.XPathStringAll('(//div[div=("Сценарист","Автор")])[1]//a')
+	MANGAINFO.Artists   = x.XPathStringAll('(//div[div="Художник"])[1]//a')
 	MANGAINFO.Genres    = x.XPathStringAll('(//div[@class="cr-tags"])[1]//a/span[not(@class)]')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('(//div[./div="Перевод"])[1]//span'), 'Продолжается', 'Завершён')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('(//div[div="Перевод"])[1]//span'), 'Продолжается|Начат', 'Завершён', 'Приостановлен')
 	MANGAINFO.Summary   = x.XPathString('(//div[@class="cr-description__content"])[1]')
 
 	for v in x.XPath('//table[@class="table table-hover"]//a[not(contains(@href, "/internal/")) and not(contains(@class, "btn"))]').Get() do
