@@ -19,7 +19,7 @@ local json = require 'utils.json'
 
 math.randomseed(os.time())
 
-function RandomHex()
+local function RandomHex()
     local hex = ''
     for i = 1, 16 do
         hex = hex .. string.format('%02x', math.random(0, 255))
@@ -88,9 +88,9 @@ function _M.GetInfo()
 
 	local slug = x.data.manga.slug
 	for _, v in ipairs(x.data.manga.chapters) do
-		local title = v.title
+		local title = v.title:gsub('[\n\t]+', ' ')
 		local number = v.number
-		if title == '' then title = 'Chapter ' .. number end
+		title = title:find(number, 1, true) and title or 'Chapter ' .. number .. ' - ' .. title
 
 		MANGAINFO.ChapterLinks.Add(slug .. '/chapter-' .. number)
 		MANGAINFO.ChapterNames.Add(title)
@@ -99,7 +99,7 @@ function _M.GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function _M.GetPageNumber()
 	local chapter = URL:match('(%d+)$')
 	local slug = URL:match('^/(.-)/')
