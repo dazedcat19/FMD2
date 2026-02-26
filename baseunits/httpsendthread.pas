@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, httpsend, synautil, synacode, ssl_openssl3, blcksock,
   BaseThread, httpcookiemanager, dateutils, strutils,
-  GZIPUtils, BrotliDec;
+  GZIPUtils, BrotliDec, ZstdDec;
 
 const
 
@@ -597,7 +597,7 @@ function THTTPSendThread.DefaultHTTPRequest(const Method, URL: String; const Res
     if Result then Sock.Tag := 0;
   end;
 
-type TContentEncoding = (ceNone, ceGzip, ceBrotli);
+type TContentEncoding = (ceNone, ceGzip, ceBrotli, ceZstd);
 
 var
   counter: Integer = 0;
@@ -677,14 +677,17 @@ begin
   end;
 
   // decompress data
-  if Document.Size>0 then
+  if Document.Size > 0 then
   begin
-    content_encoding:=ceNone;
+    content_encoding := ceNone;
     s := LowerCase(Headers.Values['Content-Encoding']);
-    if s.Contains('br') then
-      content_encoding:=ceBrotli
+    if s.Contains('zstd') then
+      content_encoding := ceZstd
+    else if s.Contains('br') then
+      content_encoding := ceBrotli
     else if s.Contains('gzip') or s.Contains('deflate') then
-      content_encoding:=ceGzip;
+      content_encoding := ceGzip;
+
     if content_encoding<>ceNone then
     begin
       dstream := TMemoryStream.Create;
@@ -692,6 +695,7 @@ begin
         case content_encoding of
           ceGzip: unzipStream(Document, dstream);
           ceBrotli: BrotliDecodeStream(Document, dstream);
+          ceZstd: ZstdDecodeStream(Document, dstream);
           else;
         end;
         Document.Clear;
@@ -939,7 +943,7 @@ begin
   FUploadSize := 0;
   FMimeType := 'text/html';   // MimeType always replaced by received content-type header after each succesful request
   FSock.CloseSocket;
-  if FCompress then Headers.Values['Accept-Encoding'] := 'gzip, deflate, br';
+  if FCompress then Headers.Values['Accept-Encoding'] := 'gzip, deflate, br, zstd';
 end;
 
 procedure THTTPSendThread.ClearCookies;
