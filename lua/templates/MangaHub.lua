@@ -90,7 +90,8 @@ function _M.GetInfo()
 	for _, v in ipairs(x.data.manga.chapters) do
 		local title = v.title:gsub('[\n\t]+', ' ')
 		local number = v.number
-		title = title:find(number, 1, true) and title or 'Chapter ' .. number .. ' - ' .. title
+
+		title = title:find(number, 1, true) and title or 'Chapter ' .. number .. (title ~= '' and ' - ' .. title or '')
 
 		MANGAINFO.ChapterLinks.Add(slug .. '/chapter-' .. number)
 		MANGAINFO.ChapterNames.Add(title)
