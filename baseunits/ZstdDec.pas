@@ -5,22 +5,23 @@ unit ZstdDec;
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils, Dynlibs;
 
+var
+  ZstdLibHandle: TLibHandle = 0;
+  DLLZstdName: String = {$IFDEF WINDOWS} 'libzstd.dll' {$ELSE} 
+                        {$IFDEF DARWIN} 'libzstd.dylib' {$ELSE} 'libzstd.so' {$ENDIF} {$ENDIF};
+
+function IsZstdModuleLoaded: Boolean;
+procedure InitZstdModule;
+procedure DestroyZstdModule;
+function ZstdGetVersion: String;
 function ZstdDecodeStream(inStream, outStream: TMemoryStream): Boolean;
 
 implementation
 
-const
-  {$IFDEF WINDOWS}
-  ZSTD_LIB = 'libzstd.dll';
-  {$ELSE}
-    {$IFDEF DARWIN}
-    ZSTD_LIB = 'libzstd.dylib';
-    {$ELSE}
-    ZSTD_LIB = 'libzstd.so';
-    {$ENDIF}
-  {$ENDIF}
+uses
+  SyncObjs;
 
 type
   TZSTD_inBuffer = record
@@ -35,11 +36,90 @@ type
     pos: SizeUInt;
   end;
 
-  function ZSTD_createDStream: Pointer; cdecl; external ZSTD_LIB;
-  function ZSTD_freeDStream(zds: Pointer): SizeUInt; cdecl; external ZSTD_LIB;
-  function ZSTD_initDStream(zds: Pointer): SizeUInt; cdecl; external ZSTD_LIB;
-  function ZSTD_decompressStream(zds: Pointer; output: Pointer; input: Pointer): SizeUInt; cdecl; external ZSTD_LIB;
-  function ZSTD_isError(code: SizeUInt): Cardinal; cdecl; external ZSTD_LIB;
+  // Function prototypes for dynamic mapping
+  TZSTD_createDStream = function: Pointer; cdecl;
+  TZSTD_freeDStream = function(zds: Pointer): SizeUInt; cdecl;
+  TZSTD_initDStream = function(zds: Pointer): SizeUInt; cdecl;
+  TZSTD_decompressStream = function(zds: Pointer; output: Pointer; input: Pointer): SizeUInt; cdecl;
+  TZSTD_isError = function(code: SizeUInt): Cardinal; cdecl;
+  TZSTD_versionNumber = function: Cardinal; cdecl;
+
+var
+  pZSTD_createDStream: TZSTD_createDStream = nil;
+  pZSTD_freeDStream: TZSTD_freeDStream = nil;
+  pZSTD_initDStream: TZSTD_initDStream = nil;
+  pZSTD_decompressStream: TZSTD_decompressStream = nil;
+  pZSTD_isError: TZSTD_isError = nil;
+  pZSTD_versionNumber: TZSTD_versionNumber = nil;
+  
+  zstdCS: TCriticalSection;
+  zstdLibLoaded: Boolean = False;
+
+resourcestring
+  SErrLoadFailed = 'Can not load Zstd codec library "%s". Check your installation.';
+
+function IsZstdModuleLoaded: Boolean;
+begin
+  Result := zstdLibLoaded;
+end;
+
+procedure InitZstdModule;
+begin
+  if IsZstdModuleLoaded then Exit;
+  zstdCS.Enter;
+  try
+    if not IsZstdModuleLoaded then begin
+      ZstdLibHandle := LoadLibrary(PChar(DLLZstdName));
+      if ZstdLibHandle <> 0 then begin
+        pZSTD_createDStream := TZSTD_createDStream(GetProcAddress(ZstdLibHandle, 'ZSTD_createDStream'));
+        pZSTD_freeDStream := TZSTD_freeDStream(GetProcAddress(ZstdLibHandle, 'ZSTD_freeDStream'));
+        pZSTD_initDStream := TZSTD_initDStream(GetProcAddress(ZstdLibHandle, 'ZSTD_initDStream'));
+        pZSTD_decompressStream := TZSTD_decompressStream(GetProcAddress(ZstdLibHandle, 'ZSTD_decompressStream'));
+        pZSTD_isError := TZSTD_isError(GetProcAddress(ZstdLibHandle, 'ZSTD_isError'));
+        pZSTD_versionNumber := TZSTD_versionNumber(GetProcAddress(ZstdLibHandle, 'ZSTD_versionNumber'));
+        zstdLibLoaded := True;
+      end else
+        raise EInOutError.CreateFmt(SErrLoadFailed, [DLLZstdName]);
+    end;
+  finally
+    zstdCS.Leave;
+  end;
+end;
+
+procedure DestroyZstdModule;
+begin
+  zstdCS.Enter;
+  try
+    if IsZstdModuleLoaded then begin
+      if ZstdLibHandle <> 0 then begin
+        pZSTD_createDStream := nil;
+        pZSTD_freeDStream := nil;
+        pZSTD_initDStream := nil;
+        pZSTD_decompressStream := nil;
+        pZSTD_isError := nil;
+        pZSTD_versionNumber := nil;
+        FreeLibrary(ZstdLibHandle);
+        ZstdLibHandle := 0;
+      end;
+      zstdLibLoaded := False;
+    end;
+  finally
+    zstdCS.Leave;
+  end;
+end;
+
+function ZstdGetVersion: String;
+var
+  v: Cardinal;
+begin
+  Result := 'Unknown';
+  if IsZstdModuleLoaded and Assigned(pZSTD_versionNumber) then
+  begin
+    v := pZSTD_versionNumber();
+    // Zstd version is returned as: (major * 10000 + minor * 100 + release)
+    Result := Format('%d.%d.%d', [v div 10000, (v div 100) mod 100, v mod 100]);
+  end;
+end;
 
 const
   BUFFER_SIZE = 131072; // 128 KB chunk size
@@ -53,12 +133,14 @@ var
   BufferOut: array of Byte;
 begin
   Result := False;
-  DStream := ZSTD_createDStream();
+  if not IsZstdModuleLoaded then InitZstdModule;
+
+  DStream := pZSTD_createDStream();
   if DStream = nil then Exit;
 
   try
-    Ret := ZSTD_initDStream(DStream);
-    if ZSTD_isError(Ret) <> 0 then Exit;
+    Ret := pZSTD_initDStream(DStream);
+    if pZSTD_isError(Ret) <> 0 then Exit;
 
     inStream.Position := 0;
     outStream.Clear;
@@ -75,15 +157,12 @@ begin
       Output.size := BUFFER_SIZE;
       Output.pos := 0;
 
-      Ret := ZSTD_decompressStream(DStream, @Output, @Input);
+      Ret := pZSTD_decompressStream(DStream, @Output, @Input);
       
-      // If the ret code represents an error, fail immediately
-      if ZSTD_isError(Ret) <> 0 then Exit;
+      if pZSTD_isError(Ret) <> 0 then Exit;
 
-      // Flush buffer to the memory stream
       if Output.pos > 0 then
       begin
-        outStream.SetSize(outStream.Size + Output.pos);
         outStream.Write(BufferOut[0], Output.pos);
       end;
     end;
@@ -92,8 +171,15 @@ begin
     inStream.Position := 0;
     outStream.Position := 0;
   finally
-    ZSTD_freeDStream(DStream);
+    pZSTD_freeDStream(DStream);
   end;
 end;
+
+initialization
+  zstdCS := TCriticalSection.Create;
+
+finalization
+  DestroyZstdModule;
+  zstdCS.Free;
 
 end.
