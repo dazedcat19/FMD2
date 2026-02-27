@@ -97,7 +97,7 @@ function _M.GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function _M.GetPageNumber()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
@@ -123,7 +123,7 @@ function _M.GetPageNumber()
 
 	if image then
 		for domain, path in image:gmatch("%['([^']+)','[^']*',\"([^\"]+)\"") do
-			if domain:find('one%-way%.work', 1, true) then
+			if domain:find('one-way.work', 1, true) then
 				path = path:gsub('%?.*$', '')
 			end
 
