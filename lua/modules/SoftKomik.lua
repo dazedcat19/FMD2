@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'df01551e1739407a98669e37318842b0'
 	m.Name                     = 'SoftKomik'
-	m.RootURL                  = 'https://softkomik.com'
+	m.RootURL                  = 'https://softkomik.co'
 	m.Category                 = 'Indonesian'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
@@ -21,7 +21,7 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local API_URL = 'https://v2.softdevices.my.id'
-local CDN_URL = 'https://image.softkomik.com/softkomik/'
+local CDN_URL = 'https://cd1.softkomik.online/softkomik/'
 local DirectoryPagination = '?limit=24&sortBy=newKomik&page='
 
 ----------------------------------------------------------------------------------------------------
@@ -30,29 +30,30 @@ local DirectoryPagination = '?limit=24&sortBy=newKomik&page='
 
 -- Set the required http headers for making a request.
 local function SetRequestHeaders()
-	local now = os.time()
+	local now = os.time() * 1000
 
-	local sign  = MODULE.Storage['sign']
-	local token = MODULE.Storage['token']
-	local saved = MODULE.Storage['session_time'] or 0
+	local sign   = MODULE.Storage['sign']
+	local token  = MODULE.Storage['token']
+	local expiry = tonumber(MODULE.Storage['expiry']) or 0
 
-	if sign ~= '' and token ~= '' and (now - saved) < 21300 then
+	if sign ~= '' and token ~= '' and now < expiry then
 		HTTP.Reset()
 		HTTP.Headers.Values['X-Sign']  = sign
 		HTTP.Headers.Values['X-Token'] = token
 		return no_error
 	end
 
-	if not HTTP.GET(API_URL .. '/api/session') then return net_problem end
+	if not HTTP.GET(MODULE.RootURL .. '/api/sessions') then return net_problem end
 
 	local body = HTTP.Document.ToString()
-	local new_sign  = body:match('"sign":"(.-)"')
-	local new_token = body:match('"token":"(.-)"')
+	local new_sign  = body:match('"sign"%s*:%s*"(.-)"')
+	local new_token = body:match('"token"%s*:%s*"(.-)"')
+	local new_ex    = body:match('"ex"%s*:%s*(%d+)')
 
-	if new_sign and new_token then
-		MODULE.Storage['sign']         = new_sign
-		MODULE.Storage['token']        = new_token
-		MODULE.Storage['session_time'] = now
+	if new_sign and new_token and new_ex then
+		MODULE.Storage['sign']   = new_sign
+		MODULE.Storage['token']  = new_token
+		MODULE.Storage['expiry'] = new_ex
 
 		HTTP.Reset()
 		HTTP.Headers.Values['X-Sign']  = new_sign
@@ -93,13 +94,13 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local u = API_URL .. '/komik' .. URL
+	local u = MODULE.RootURL .. URL
 	SetRequestHeaders()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	local x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
-	local json = x.XPath('parse-json(.)')
+	local x = CreateTXQuery(HTTP.Document)
+	local json = x.XPath('parse-json(//script[@id="__NEXT_DATA__"])?props?pageProps?data')
 	MANGAINFO.Title     = x.XPathString('title', json)
 	MANGAINFO.AltTitles = x.XPathString('title_alt', json)
 	MANGAINFO.CoverLink = 'https://softkomik.com/_next/image?url=https://cover.softdevices.my.id/softkomik-cover/' .. x.XPathString('gambar', json) .. '&w=256&q=100'
@@ -110,7 +111,7 @@ function GetInfo()
 
 	SetRequestHeaders()
 
-	if not HTTP.GET(u .. '/chapter?limit=9999999') then return net_problem end
+	if not HTTP.GET(API_URL .. '/komik' .. URL .. '/chapter?limit=9999999') then return net_problem end
 
 	for v in CreateTXQuery(HTTP.Document).XPath('json(*).chapter().chapter').Get() do
 		local ch = v.ToString()
