@@ -264,11 +264,30 @@ begin
      0:  PreferredAppMode := pamAllowDark;
      1:  PreferredAppMode := pamForceDark;
      2:  PreferredAppMode := pamForceLight;
-  end;
+  end; 
 
   Application.Scaled := True;
   uMetaDarkStyle.ApplyMetaDarkStyle(DefaultDark);
   Application.Initialize;
+
+  try
+    // Perform the Unicode path check
+    for i := 1 to Length(ParamStr(0)) do
+    begin
+      if Ord(ParamStr(0)[i]) > 127 then
+      begin
+        raise Exception.Create(RS_FMDUnicodePathError);
+      end;
+    end;
+
+  except
+    on E: Exception do
+    begin
+      SendLogException('ApplicationStartup.PathValidation', E);
+      raise;
+    end;
+  end;
+
   Application.CreateForm(TMainForm, MainForm);
   MainForm.winBuildNumber := g_buildNumber;
   Application.Run;

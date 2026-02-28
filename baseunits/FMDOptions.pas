@@ -103,6 +103,7 @@ var
   OptionLetFMDDo: TFMDDo = DO_NOTHING;
   OptionDeleteCompletedTasksOnClose: Boolean = False;
   OptionSortDownloadsOnNewTasks: Boolean = False;
+  OptionLongNamePaths: Boolean = False;
 
   // saveto
   OptionChangeUnicodeCharacter: Boolean = False;
@@ -124,6 +125,9 @@ var
   OptionWebPSaveAs: Integer = 1;
   OptionPNGCompressionLevel: Integer = 1;
   OptionJPEGQuality: Integer = 80;
+
+  // image properties
+  OptionImageServerTime: Boolean = True;
 
   // connections
   OptionConnectionTimeout: Integer = 30;
@@ -176,7 +180,7 @@ var
   CL_BSUnfocesedSelectionText: TColor = clWindowText;
   CL_BSOdd: TColor = clBtnFace;
   CL_BSEven: TColor = clWindow;
-  CL_BSSortedColumn: TColor = $F8E6D6;
+  CL_BSSortedColumn: TColor = $F0F0F0;
   CL_BSEnabledWebsiteSettings: TColor = clYellow;
 
   // mangalist color
@@ -198,7 +202,7 @@ var
 
   // custom color darkmode
   // basiclist
-  CL_BSSortedColumnDark: TColor = $E19650;
+  CL_BSSortedColumnDark: TColor = $202020;
   CL_BSEnabledWebsiteSettingsDark: TColor = $009696;
 
   // mangalist color
@@ -306,10 +310,13 @@ procedure doInitialization;
 var
   i: Integer;
 begin
-  AppParams:=TStringList.Create;
-  AppParams.Sorted:=False;
-  for i:=1 to ParamCount do
+  AppParams := TStringList.Create;
+  AppParams.Sorted := False;
+  for i := 1 to ParamCount do
+  begin
     AppParams.Add(ParamStr(i));
+  end;
+
   GetProgramVersion(FMD_VERSION_NUMBER);
   FMD_VERSION_STRING := ProgramversionToStr(FMD_VERSION_NUMBER);
   SetFMDdirectory(ExtractFilePath(Application.ExeName));
