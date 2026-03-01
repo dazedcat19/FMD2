@@ -30,6 +30,7 @@ type
     OnAfterImageSaved: String;
     OnLogin: String;
     OnAccountState: String;
+    OnCheckSite: String;
     Storage: TStringsStorage;
     LastUpdated: String;
     Container: TLuaWebsiteModulesContainer;
@@ -143,7 +144,7 @@ implementation
 uses
   FMDOptions, FileUtil, MultiLog, LuaClass, LuaBase, LuaMangaInfo, LuaHTTPSend,
   LuaXQuery, LuaUtils, LuaDownloadTask, LuaUpdateListManager, LuaStrings,
-  LuaCriticalSection, LuaPackage, uData,
+  LuaCriticalSection, LuaPackage, uData, LuaMangaCheck,
   uDownloadsManager, xquery, httpsendthread, FMDVars, uBaseUnit, LuaWebsiteBypass,
   LuaWebsiteModuleHandler;
 
@@ -445,6 +446,24 @@ begin
     end;
 end;
 
+function DoCheckSite(const AModule: TModuleContainer): Boolean;
+var
+  L: TLuaWebsiteModuleHandler;
+begin
+  Result := False;
+  with TLuaWebsiteModule(AModule.LuaModule) do
+    try
+      L := GetLuaWebsiteModuleHandler(AModule);
+      LuaPushAccountStatus(L.Handle);
+
+      L.CallFunction(OnCheckSite);
+      Result := lua_toboolean(L.Handle, -1);
+    except
+      on E: Exception do
+        SendLogException('LUA>DoCheckSite("' + ExtractFileName(Container.FileName) + '")>', E);
+    end;
+end;
+
 function _newwebsitemodule(L: Plua_State): Integer; cdecl;
 begin
   luaClassPushObject(L, TLuaWebsiteModule.Create, '', False, @luaWebsiteModuleAddMetaTable);
@@ -560,6 +579,8 @@ begin
             Module.OnLogin := @DoLogin;
           if OnAccountState <> '' then
             Module.OnAccountState := @DoAccountState;
+          if OnCheckSite <> '' then
+            Module.OnCheckSite := @DoCheckSite;
         end;
       finally
         Modules.Unlock;
@@ -1002,6 +1023,7 @@ begin
     luaClassAddStringProperty(L, MetaTable, 'OnAccountState', @OnAccountState);
     luaClassAddStringProperty(L, MetaTable, 'LastUpdated', @LastUpdated);
     luaClassAddIntegerProperty(L, MetaTable, 'CurrentDirectoryIndex', @Module.CurrentDirectoryIndex);
+    luaClassAddStringProperty(L, MetaTable, 'OnCheckSite', @OnCheckSite);
 
     luaClassAddProperty(L, MetaTable, UserData, 'TotalDirectory', @lua_gettotaldirectory, @lua_settotaldirectory);
     luaClassAddProperty(L, MetaTable, UserData, 'AccountSupport', @lua_getaccountsupport, @lua_setaccountsupport);

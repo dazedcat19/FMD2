@@ -149,6 +149,7 @@ object AccountManagerForm: TAccountManagerForm
       item
         Position = 3
         Text = 'Status'
+        Width = 174
       end>
     Header.DefaultHeight = 17
     Header.Height = 23

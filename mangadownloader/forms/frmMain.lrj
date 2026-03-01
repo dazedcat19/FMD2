@@ -284,6 +284,7 @@
 {"hash":108725763,"name":"tmainform.tswebsiteoptions.caption","sourcebytes":[79,112,116,105,111,110,115],"value":"Options"},
 {"hash":197676484,"name":"tmainform.tswebsiteadvanced.caption","sourcebytes":[65,100,118,97,110,99,101,100],"value":"Advanced"},
 {"hash":73122451,"name":"tmainform.tswebsitemodules.caption","sourcebytes":[77,111,100,117,108,101,115],"value":"Modules"},
+{"hash":196100051,"name":"tmainform.tswebsitecheckmodules.caption","sourcebytes":[67,104,101,99,107,32,77,111,100,117,108,101,115],"value":"Check Modules"},
 {"hash":344211,"name":"tmainform.tsmisc.caption","sourcebytes":[77,105,115,99],"value":"Misc"},
 {"hash":197593650,"name":"tmainform.tscustomcolor.caption","sourcebytes":[67,117,115,116,111,109,32,99,111,108,111,114],"value":"Custom color"},
 {"hash":21335,"name":"tmainform.tslog.caption","sourcebytes":[76,111,103],"value":"Log"},
