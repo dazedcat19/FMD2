@@ -8,7 +8,6 @@ function Init()
 	m.Name                     = 'MangaTown'
 	m.RootURL                  = 'https://www.mangatown.com'
 	m.Category                 = 'English'
-	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
@@ -17,33 +16,20 @@ function Init()
 end
 
 ----------------------------------------------------------------------------------------------------
--- Local Constants
-----------------------------------------------------------------------------------------------------
-
-local DirectoryPagination = '/directory/'
-
-----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
--- Get the page count of the manga list of the current website.
-function GetDirectoryPageNumber()
-	local u = MODULE.RootURL .. DirectoryPagination .. '?name.az'
-
-	if not HTTP.GET(u) then return net_problem end
-
-	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//div[@class="next-page"]/a[last()-1]')) or 1
-
-	return no_error
-end
-
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1) .. '.htm?name.az'
+	local u = MODULE.RootURL .. '/directory/' .. (URL + 1) .. '.htm?name.az'
 
 	if not HTTP.GET(u) then return net_problem end
 
-	CreateTXQuery(HTTP.Document).XPathHREFTitleAll('//ul[@class="manga_pic_list"]/li/a', LINKS, NAMES)
+	local x = CreateTXQuery(HTTP.Document)
+	if x.XPathCount('//ul[@class="manga_pic_list"]/li/a') > 1 then
+		x.XPathHREFTitleAll('//ul[@class="manga_pic_list"]/li/a', LINKS, NAMES)
+		UPDATELIST.CurrentDirectoryPageNumber = UPDATELIST.CurrentDirectoryPageNumber + 1
+	end
 
 	return no_error
 end
@@ -78,7 +64,7 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local u MaybeFillHost(MODULE.RootURL,URL)
+	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return false end
 
