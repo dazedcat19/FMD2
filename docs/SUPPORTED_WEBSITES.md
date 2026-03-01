@@ -339,7 +339,7 @@
 | MangaToonSP | [![https://mangatoon.mobi/es](https://img.shields.io/website?url=https://mangatoon.mobi/es%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangatoon.mobi/es)](https://mangatoon.mobi/es) | - | - | - |
 | MangaToonTH | [![https://mangatoon.mobi/th](https://img.shields.io/website?url=https://mangatoon.mobi/th%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangatoon.mobi/th)](https://mangatoon.mobi/th) | - | - | - |
 | MangaToonVI | [![https://mangatoon.mobi/vi](https://img.shields.io/website?url=https://mangatoon.mobi/vi%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangatoon.mobi/vi)](https://mangatoon.mobi/vi) | - | - | - |
-| MangaTown | [![http://www.mangatown.com](https://img.shields.io/website?url=http://www.mangatown.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.mangatown.com)](http://www.mangatown.com) | - | - | - |
+| MangaTown | [![https://www.mangatown.com](https://img.shields.io/website?url=https://www.mangatown.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangatown.com)](https://www.mangatown.com) | OK | 01.03.2026 | - |
 | MangaTube | [![https://manga-tube.me](https://img.shields.io/website?url=https://manga-tube.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga-tube.me)](https://manga-tube.me) | - | - | - |
 | MangaTV | [![https://mangatv.net](https://img.shields.io/website?url=https://mangatv.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangatv.net)](https://mangatv.net) | OK | 20.05.2025 | - |
 | MangaTX | [![https://mangatx.to](https://img.shields.io/website?url=https://mangatx.to%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangatx.to)](https://mangatx.to) | - | - | - |
