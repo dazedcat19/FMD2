@@ -20,13 +20,16 @@ function Init()
 	local slang = require 'fmd.env'.SelectedLanguage
 	local translations = {
 		['en'] = {
+			['delay'] = 'Delay (s) between requests',
 			['detect_official'] = 'Separately mark the official chapter so it will be detected when new ones are available'
 		},
 		['id_ID'] = {
+			['delay'] = 'Tunda (d) antara permintaan',
 			['detect_official'] = 'Tandai bab resmi secara terpisah supaya bisa terdeteksi saat yang baru tersedia'
 		}
 	}
 	local lang = translations[slang] or translations.en
+	m.AddOptionSpinEdit('delay', lang.delay, 1)
 	m.AddOptionCheckBox('detect_official', lang.detect_official, false)
 end
 
@@ -36,6 +39,21 @@ end
 
 local DirectoryPagination = '/search/data?limit=32&sort=Recently+Added&order=Descending&official=Any&display_mode=Minimal+Display&offset='
 local DirectoryPageLimit = 32
+
+----------------------------------------------------------------------------------------------------
+-- Helper Functions
+----------------------------------------------------------------------------------------------------
+
+-- Set a minimum time interval between executions.
+local function Delay()
+	local last_delay = tonumber(MODULE.Storage['last_delay']) or 1
+	local delay = tonumber(MODULE.GetOption('delay')) or 1
+	last_delay = os.time() - last_delay
+	if last_delay < delay then
+		sleep((delay - last_delay) * 1000)
+	end
+	MODULE.Storage['last_delay'] = os.time()
+end
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -51,6 +69,7 @@ function GetDirectoryPageNumber()
 	local x = CreateTXQuery(HTTP.Document)
 	local s = x.XPathString('//button/@hx-get')
 	while s ~= '' do
+		Delay()
 		PAGENUMBER = tonumber(s:match('offset=(%d+)')) or PAGENUMBER + DirectoryPageLimit
 		if not HTTP.GET(u .. PAGENUMBER) then return net_problem end
 		s = CreateTXQuery(HTTP.Document).XPathString('//button/@hx-get')
@@ -62,6 +81,7 @@ end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
+	Delay()
 	local u = MODULE.RootURL .. DirectoryPagination .. (DirectoryPageLimit * URL)
 
 	if not HTTP.GET(u) then return net_problem end
@@ -77,6 +97,7 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
+	Delay()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
@@ -93,6 +114,7 @@ function GetInfo()
 	local official = x.XPathString('//li[./strong[contains(., "Official Translation")]]/a')
 	if official:find('Yes', 1, true) then MANGAINFO.Summary = 'Official Translation\r\n \r\n' .. MANGAINFO.Summary end
 
+	Delay()
 	if not HTTP.GET(MANGAINFO.URL:gsub('(/series/[^/]+)/[^/]+$', '%1') .. '/full-chapter-list') then return net_problem end
 
 	local x = CreateTXQuery(HTTP.Document)
@@ -111,6 +133,7 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
+	Delay()
 	local u = MaybeFillHost(MODULE.RootURL, URL):gsub('/official$', '') .. '/images?reading_style=long_strip'
 
 	if not HTTP.GET(u) then return false end
