@@ -6,29 +6,23 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'c753487e924c430aa822da3aac7acf21'
 	m.Name                     = 'Qi Scans'
-	m.RootURL                  = 'https://qiscans.org'
+	m.RootURL                  = 'https://qimanhwa.com'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
 
-	local fmd = require 'fmd.env'
-	local slang = fmd.SelectedLanguage
-	local lang = {
+	local slang = require 'fmd.env'.SelectedLanguage
+	local translations = {
 		['en'] = {
 			['showpaidchapters'] = 'Show paid chapters'
 		},
 		['id_ID'] = {
 			['showpaidchapters'] = 'Tampilkan bab berbayar'
-		},
-		get =
-			function(self, key)
-				local sel = self[slang]
-				if sel == nil then sel = self['en'] end
-				return sel[key]
-			end
+		}
 	}
-	m.AddOptionCheckBox('showpaidchapters', lang:get('showpaidchapters'), false)
+	local lang = translations[slang] or translations.en
+	m.AddOptionCheckBox('showpaidchapters', lang.showpaidchapters, false)
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -36,7 +30,7 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.Iken'
-API_URL = 'https://api.qiscans.org'
+API_URL = 'https://api.qimanhwa.com'
 New = true
 
 ----------------------------------------------------------------------------------------------------
@@ -57,7 +51,7 @@ function GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	Template.GetPageNumber()
 
