@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '35e1b3ff5dbf428889d0f316c3d881e6'
 	m.Name                     = 'WestManga'
-	m.RootURL                  = 'https://westmanga.me'
+	m.RootURL                  = 'https://westmanga.tv'
 	m.Category                 = 'Indonesian'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
@@ -19,11 +19,11 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local API_URL = 'https://data.westmanga.me/api'
+local API_URL = 'https://data.westmanga.tv/api'
 local DirectoryPagination = '/contents?orderBy=Added&type=Comic&page='
 
 ----------------------------------------------------------------------------------------------------
--- Auxiliary Functions
+-- Helper Functions
 ----------------------------------------------------------------------------------------------------
 
 -- Set the required http headers for making a request.
@@ -81,11 +81,11 @@ function GetInfo()
 	MANGAINFO.AltTitles = x.XPathString('alternative_name', json)
 	MANGAINFO.CoverLink = x.XPathString('cover', json)
 	MANGAINFO.Authors   = x.XPathString('author', json)
-	MANGAINFO.Genres    = x.XPathStringAll('json(*).data.genres().name')
+	MANGAINFO.Genres    = x.XPathString('string-join(genres?*?name, ", ")', json)
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status', json))
 	MANGAINFO.Summary   = x.XPathString('sinopsis', json)
 
-	for v in x.XPath('json(*).data.chapters()').Get() do
+	for v in x.XPath('chapters?*', json).Get() do
 		MANGAINFO.ChapterLinks.Add(v.GetProperty('slug').ToString())
 		MANGAINFO.ChapterNames.Add('Chapter ' .. v.GetProperty('number').ToString())
 	end
@@ -94,7 +94,7 @@ function GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	local u = API_URL .. '/v' .. URL
 	SetRequestHeaders('/api/v' .. URL)
