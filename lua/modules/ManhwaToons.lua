@@ -35,10 +35,13 @@ end
 function GetInfo()
 	Template.GetInfo()
 
+	HTTP.Reset()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
+
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	Template.GetPageNumber()
 
