@@ -4996,6 +4996,9 @@ object MainForm: TMainForm
             object tsWebsiteModules: TTabSheet
               Caption = 'Modules'
             end
+            object tsWebsiteCheckModules: TTabSheet
+              Caption = 'Check Modules'
+            end
           end
         end
         object tsMisc: TTabSheet
