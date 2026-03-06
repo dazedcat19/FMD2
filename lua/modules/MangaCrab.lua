@@ -66,11 +66,11 @@ function GetInfo()
 	local x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Title     = x.XPathString('//h1')
 	MANGAINFO.CoverLink = x.XPathString('//img[contains(@class, "wp-post-image")]/@src')
-	MANGAINFO.Genres    = x.XPathStringAll('(//a[contains(@href, "manga-genre")], //span[contains(., "Capitulos")]/substring-after(., ":"))')
+	MANGAINFO.Genres    = x.XPathStringAll('(//a[contains(@href, "manga-genre")], //span[contains(., "Capitulos")] ! substring-after(., ":"))')
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//span[contains(., "Estado")]'), 'En curso', 'Finalizado', 'En Hiatus', 'Cancelada')
 	MANGAINFO.Summary   = x.XPathString('//div[@class="mb-3"]/p')
 
-	local nonce = x.XPathString('//script[contains(., "mvTheme")]/substring-before(substring-after(., "nonce"":"""), """,")')
+	local nonce = x.XPathString('//script[contains(., "mvTheme")] ! substring-before(substring-after(., "nonce"":"""), """,")')
 	local mid = x.XPathString('//div[@data-manga-id]/@data-manga-id')
 	local page = 1
 	local pages = nil
@@ -103,7 +103,7 @@ function GetPageNumber()
 
 	local x = CreateTXQuery(HTTP.Document)
 	if MODULE.ID == '73cfa250c661470c81428d99cdb8a140' then
-		MODULE.Storage['Img-X'] = x.XPathString('//script[contains(., "imgHeader")]/substring-before(substring-after(., "imgHeader"":"""), """}")')
+		MODULE.Storage['Node'] = x.XPathString('//script[contains(., "imgHeader")] ! substring-before(substring-after(., """imgHeader"":"""), """")')
 		for v in x.XPath('//div[@class="reader-body"]/img/@data-sec-src').Get() do
 			TASK.PageLinks.Add(MaybeFillHost(MODULE.RootURL, v.ToString()))
 		end
@@ -117,7 +117,7 @@ end
 -- Prepare the URL, http header and/or http cookies before downloading an image.
 function BeforeDownloadImage()
 	if MODULE.ID == '73cfa250c661470c81428d99cdb8a140' then
-		HTTP.Headers.Values['Img-X'] = MODULE.Storage['Img-X']
+		HTTP.Headers.Values['Node'] = MODULE.Storage['Node']
 	end
 
 	return true
