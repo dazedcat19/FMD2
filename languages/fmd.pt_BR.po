@@ -186,12 +186,38 @@ msgstr "Terminar donwload"
 
 #: frmluamodulesupdater.rs_githubconnectfail
 msgid ""
-"Failed to connect to GitHub API for latest module updates.\n"
-"Please try again later."
+"Failed to connect to GitHub API.\n"
+"Please check your internet connection or try again later."
 msgstr ""
 
 #: frmluamodulesupdater.rs_githubconnecting
 msgid "Connecting to GitHub..."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubdownloadfailed
+msgid ""
+"Modules update failed to download modules from GitHub.\n"
+"Please try update again."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githuberrormessage
+msgid ""
+"GitHub returned an error.\n"
+"Check log for more information."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubnoerrormessage
+#, object-pascal-format
+msgid ""
+"GitHub API didn't return a valid response.\n"
+"Try checking %s in your browser."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubratelimited
+#, object-pascal-format
+msgid ""
+"GitHub API is rate limited.\n"
+"Change the network or try again after %d minute(s)"
 msgstr ""
 
 #: frmluamodulesupdater.rs_githubratestats
@@ -387,6 +413,10 @@ msgstr ""
 #: frmmain.rs_fmdalreadyrunning
 msgid "Free Manga Downloader already running!"
 msgstr "Free Manga Downloader já está em execução!"
+
+#: frmmain.rs_fmdunicodepatherror
+msgid "UnicodePathError: Application can't run in a folder path with unicode characters."
+msgstr ""
 
 #: frmmain.rs_hintfavoriteproblem
 msgid ""
@@ -1162,6 +1192,10 @@ msgstr "Buscar em todos sites de mangá"
 msgid "For more manga sites, please go to Options->Manga sites"
 msgstr "Para mais sites de mangá, por favor vá em Opções->Sites de Mangá"
 
+#: tmainform.cbservercreationtime.caption
+msgid "Use server creation time over local time"
+msgstr ""
+
 #: tmainform.cbuseregexpr.caption
 msgid "Regular Expression"
 msgstr "Expressão Regular"
@@ -1630,6 +1664,10 @@ msgstr "Conversão de imagem"
 
 #: tmainform.gbimagemagick.caption
 msgid "Image Magick"
+msgstr ""
+
+#: tmainform.gbimageproperties.caption
+msgid "Image Properties"
 msgstr ""
 
 #: tmainform.gboptionexternal.caption

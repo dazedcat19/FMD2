@@ -285,13 +285,14 @@
           </Other>
         </CompilerOptions>
       </Item6>
-      <SharedMatrixOptions Count="6">
+      <SharedMatrixOptions Count="7">
         <Item1 ID="450276734607" Targets="#project" Modes="Win64 Debug,Win32 Debug,Win32 Debug Leaks,Win64 Debug Leaks" Value="-dDEBUGINFO"/>
         <Item2 ID="952607008458" Targets="#project" Modes="Win64 Debug Leaks,Win32 Debug Leaks" Value="-dDEVBUILD"/>
         <Item3 ID="192299838639" Targets="#project" Modes="Win64 Debug Leaks,Win32 Debug Leaks" Value="-gh -dDEBUGLEAKS"/>
         <Item4 ID="102754335437" Targets="#project" Value="-dluajit"/>
         <Item5 ID="676605726087" Targets="#project" Modes="Win32 Debug,Win64,Win32,Win64 Debug,Win64 Debug Leaks,Win32 Debug Leaks" Value="-dlua54"/>
         <Item6 ID="527273473961" Targets="#project" Value="-dNO_COMMIT_QUEUE"/>
+        <Item7 ID="884247040959" Targets="#project" Modes="Win32 Debug Leaks,Win64 Debug Leaks" Value="-WC"/>
       </SharedMatrixOptions>
     </BuildModes>
     <PublishOptions>

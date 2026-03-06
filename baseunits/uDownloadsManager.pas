@@ -502,7 +502,7 @@ begin
            (CurrentDownloadChapterPtr >= ChapterLinks.Count) and
            (not FailedChaptersExist) then
         begin
-          DownloadInfo.Status := Format('[%d/%d] %s',[Container.ChapterLinks.Count,Container.ChapterLinks.Count,RS_Finish]);
+          DownloadInfo.Status := Format('[%d/%d] %s', [Container.ChapterLinks.Count, Container.ChapterLinks.Count, RS_Finish]);
           DownloadInfo.Progress := '';
           Status := STATUS_FINISH;
         end
@@ -537,9 +537,15 @@ begin
   Result := '';
   if (Container.FileNames.Count = Container.PageLinks.Count) and
     (AWorkId < Container.FileNames.Count) then
+  begin
     Result := Container.FileNames[AWorkId];
+  end;
+
   if Result = '' then
+  begin
     Result := Format('%.3d', [AWorkId + 1]);
+  end;
+
   Result := StringReplace(CurrentCustomFileName, CR_FILENAME, Result, [rfReplaceAll]);
   {$IFDEF WINDOWS}
   s := UTF8Decode(Result);
@@ -696,7 +702,7 @@ begin
       end
       else
       begin
-        FilePath := AppendPathDelim(ExpandFileName(TempPath)) + '*' + ExtractFileExt(FilePath);
+        FilePath := AppendPathDelim(ExpandFileName(TempPath)) + '*';
       end;
 
       Result := ImageMagick.ConvertImage(FilePath, CurrentWorkingDir);
@@ -791,12 +797,18 @@ var
 begin
   if FCurrentWorkingDir = AValue then Exit;
   FCurrentWorkingDir := CorrectPathSys(AValue);
+
   {$IFDEF Windows}
   s := UTF8Decode(FCurrentWorkingDir);
-  if MainForm.cbOptionEnableLongNamePaths.Checked then
-    FCurrentMaxFileNameLength := FMDMaxImageFilePath + Length(s)
+
+  if OptionLongNamePaths then
+  begin
+    FCurrentMaxFileNameLength := FMDMaxImageFilePath + Length(s);
+  end
   else
+  begin
     FCurrentMaxFileNameLength := FMDMaxImageFilePath - Length(s);
+  end;
   {$ENDIF}
 end;
 
@@ -1753,19 +1765,30 @@ procedure TDownloadManager.DBUpdateOrder;
 var
   i: Integer;
 begin
-  if FUpdateOrderCount=0 then Exit;
-  for i := 0 to Items.Count-1 do
-  with Items[i] do begin
-    if i<>Order then
+  if FUpdateOrderCount = 0 then
+  begin
+    Exit;
+  end;
+
+  for i := 0 to Items.Count - 1 do
+  begin
+    with Items[i] do
     begin
-      Order:=i;
-      FDownloadsDB.tempSQL+='UPDATE "downloads" SET "order"='+PrepSQLValue(Order)+' WHERE "id"='''+DlId+''';';
-      Inc(FDownloadsDB.tempSQLcount);
-      if FDownloadsDB.tempSQLcount>=MAX_BIG_SQL_FLUSH_QUEUE then
-        FDownloadsDB.FlushSQL(False);
+      if i <> Order then
+      begin
+        Order := i;
+        FDownloadsDB.tempSQL += 'UPDATE "downloads" SET "order"=' + PrepSQLValue(Order) + ' WHERE "id"=''' + DlId + ''';';
+        Inc(FDownloadsDB.tempSQLcount);
+
+        if FDownloadsDB.tempSQLcount >= MAX_BIG_SQL_FLUSH_QUEUE then
+        begin
+          FDownloadsDB.FlushSQL(False);
+        end;
+      end;
     end;
   end;
-  FUpdateOrderCount:=0;
+
+  FUpdateOrderCount := 0;
 end;
 
 procedure TDownloadManager.UpdateOrder;
