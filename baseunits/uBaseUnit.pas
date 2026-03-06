@@ -541,6 +541,7 @@ function CustomRename(const AString, AWebsite, AMangaName, AAuthor, AArtist, ACh
   const AReplaceUnicode: Boolean;
   const AReplaceUnicodeStr: String;
   const AFileName: String = ''): String;
+function NormalizeKorean(const Input: String): String;
 
 // Get substring from source
 function GetString(const Source, sStart, sEnd: String): String;
@@ -2109,18 +2110,79 @@ begin
   end;
 end;
 
+function NormalizeKorean(const Input: string): string;
+var
+  wsInput: WideString;
+  wsFinal: WideString;
+  i: Integer;
+begin
+  wsInput := UTF8Decode(Input);
+  wsFinal := '';
+  i := 1;
+
+  while i <= Length(wsInput) do
+  begin
+    // Check for Korean Jamo sequences
+    if (i + 1 <= Length(wsInput)) and
+       (Ord(wsInput[i]) >= $1100) and (Ord(wsInput[i]) <= $1112) and     // Initial
+       (Ord(wsInput[i + 1]) >= $1161) and (Ord(wsInput[i + 1]) <= $1175) then // Medial
+    begin
+      // Check for final consonant
+      if (i + 2 <= Length(wsInput)) and
+         (Ord(wsInput[i + 2]) >= $11A8) and (Ord(wsInput[i + 2]) <= $11C2) then
+      begin
+        // 3-Jamo: initial + medial + final
+        wsFinal := wsFinal + WideChar($AC00 +
+          ((Ord(wsInput[i]) - $1100) * 588) +
+          ((Ord(wsInput[i + 1]) - $1161) * 28) +
+          (Ord(wsInput[i + 2]) - $11A7));
+        i := i + 3;
+      end
+      else
+      begin
+        // 2-Jamo: initial + medial (no final)
+        wsFinal := wsFinal + WideChar($AC00 +
+          ((Ord(wsInput[i]) - $1100) * 588) +
+          ((Ord(wsInput[i + 1]) - $1161) * 28));
+        i := i + 2;
+      end;
+    end
+    else
+    begin
+      // Not Korean Jamo, keep as is
+      wsFinal := wsFinal + wsInput[i];
+      i := i + 1;
+    end;
+  end;
+
+  Result := UTF8Encode(wsFinal);
+end;
+
 function CommonStringFilter(const Source: String): String;
+var
+  FilteredString: String;
 begin
   Result := Source;
-  if Source = '' then Exit;
-  Result := Trim(HTMLEntitiesFilter(StringFilter(Trim(Source))));
+  if Length(Result) = 0 then
+  begin
+    Exit;
+  end;
+
+  FilteredString := NormalizeKorean(Source);
+  FilteredString := StringFilter(Trim(FilteredString));
+  FilteredString := Trim(HTMLEntitiesFilter(FilteredString));
+
+  Result := FilteredString;
 end;
 
 function StringBreaks(const Source: String): String;
 begin
   Result := Source;
   if Length(Result) = 0 then
+  begin
     Exit;
+  end;
+
   Result := StringReplace(Result, '\n', #10, [rfReplaceAll]);
   Result := StringReplace(Result, '\r', #13, [rfReplaceAll]);
 end;
@@ -2129,7 +2191,10 @@ function BreaksString(const Source: String): String;
 begin
   Result := Source;
   if Length(Result) = 0 then
+  begin
     Exit;
+  end;
+
   Result := StringReplace(Result, #10, '\n', [rfReplaceAll]);
   Result := StringReplace(Result, #13, '\r', [rfReplaceAll]);
 end;
@@ -2138,7 +2203,10 @@ function RemoveBreaks(const Source: String): String;
 begin
   Result := Source;
   if Length(Result) = 0 then
+  begin
     Exit;
+  end;
+
   Result := StringReplace(Result, #10, '', [rfReplaceAll]);
   Result := StringReplace(Result, #13, '', [rfReplaceAll]);
 end;
@@ -2147,7 +2215,10 @@ function RemoveStringBreaks(const Source: String): String;
 begin
   Result := Source;
   if Length(Result) = 0 then
+  begin
     Exit;
+  end;
+
   Result := StringReplace(Result, #10, '', [rfReplaceAll]);
   Result := StringReplace(Result, #13, '', [rfReplaceAll]);
   Result := StringReplace(Result, '\n', '', [rfReplaceAll]);
@@ -2158,7 +2229,9 @@ function RemoveDoubleSpace(const Source: String): String;
 begin
   Result := Source;
   while Pos('  ', Result) > 0 do
+  begin
     Result := StringReplace(Result, '  ', ' ', [rfReplaceAll, rfIgnoreCase]);
+  end;
 end;
 
 function TrimChar(const Source: String; const Chars: TSysCharSet): String;
@@ -2172,14 +2245,20 @@ var
   i, j: Longint;
 begin
   Result := Source;
+
   i := Length(Result);
   if i > 0 then
   begin
     j := 1;
     while (j <= i) and (Result[j] in Chars) do
+    begin
       Inc(j);
+    end;
+
     if j > 1 then
+    begin
       Delete(Result, 1, j - 1);
+    end;
   end;
 end;
 
@@ -2188,21 +2267,31 @@ var
   i, j: Longint;
 begin
   Result := Source;
+
   i := Length(Result);
   if i > 0 then
   begin
     j := i;
     while (j > 0) and (Result[j] in Chars) do
+    begin
       Dec(j);
+    end;
+
     if j <> i then
+    begin
       SetLength(Result, j);
+    end;
   end;
 end;
 
 function GoogleResultURL(const AURL: String): String;
 begin
   Result := AURL;
-  if Pos('google.', LowerCase(AURL)) = 0 then Exit;
+  if Pos('google.', LowerCase(AURL)) = 0 then
+  begin
+    Exit;
+  end;
+
   Result := DecodeURL(ReplaceRegExpr('(?i)^.*google\..*\&url=([^\&]+)\&?.*$', AURL, '$1', True));
 end;
 
@@ -2210,14 +2299,29 @@ procedure GoogleResultURLs(const AURLs: TStrings);
 var
   i: Integer;
 begin
-  if AURLs.Count = 0 then Exit;
-  if Pos('google.', LowerCase(AURLs.Text)) = 0 then Exit;
-  with TRegExpr.Create('(?i)^.*google\..*\&url=([^\&]+)\&?.*$') do try
-    for i := 0 to AURLs.Count - 1 do
-      if Pos('google.', LowerCase(AURLs[i])) <> 0 then
-        AURLs[i] := DecodeURL(Replace(AURLs[i], '$1', True));
-  finally
-    Free;
+  if AURLs.Count = 0 then
+  begin
+    Exit;
+  end;
+
+  if Pos('google.', LowerCase(AURLs.Text)) = 0 then
+  begin
+    Exit;
+  end;
+
+  with TRegExpr.Create('(?i)^.*google\..*\&url=([^\&]+)\&?.*$') do
+  begin
+    try
+      for i := 0 to AURLs.Count - 1 do
+      begin
+        if Pos('google.', LowerCase(AURLs[i])) <> 0 then
+        begin
+          AURLs[i] := DecodeURL(Replace(AURLs[i], '$1', True));
+        end;
+      end;
+    finally
+      Free;
+    end;
   end;
 end;
 
@@ -2313,23 +2417,28 @@ var
   writer: TFPWriterPNG;
 begin
   Result := False;
+
   mem := nil;
   try
     mem := WebPToMemBitmap(AStream);
     if Assigned(mem) then
-    try
-      writer := TFPWriterPNG.create;
-      writer.Indexed := False;
-      writer.UseAlpha := mem.HasTransparentPixels;
-      writer.CompressionLevel := ALevel;
-      mem.SaveToStream(AStream, writer);
-      Result := True;
-    finally
-      writer.Free;
+    begin
+      try
+        writer := TFPWriterPNG.create;
+        writer.Indexed := False;
+        writer.UseAlpha := mem.HasTransparentPixels;
+        writer.CompressionLevel := ALevel;
+        mem.SaveToStream(AStream, writer);
+        Result := True;
+      finally
+        writer.Free;
+      end;
     end;
   finally
     if Assigned(mem) then
+    begin
       mem.Free;
+    end;
   end;
 end;
 
@@ -2340,21 +2449,26 @@ var
   writer: TFPWriterJPEG;
 begin
   Result := False;
+
   mem := nil;
   try
     mem := WebPToMemBitmap(AStream);
     if Assigned(mem) then
-    try
-      writer := TFPWriterJPEG.create;
-      writer.CompressionQuality := AQuality;
-      mem.SaveToStream(AStream, writer);
-      Result := True;
-    finally
-      writer.Free;
+    begin
+      try
+        writer := TFPWriterJPEG.create;
+        writer.CompressionQuality := AQuality;
+        mem.SaveToStream(AStream, writer);
+        Result := True;
+      finally
+        writer.Free;
+      end;
     end;
   finally
     if Assigned(mem) then
+    begin
       mem.Free;
+    end;
   end;
 end;
 
@@ -2366,6 +2480,7 @@ var
 begin
   Result := False;
   img := TFPMemoryImage.create(0,0);
+
   reader := TFPReaderPNG.create;
   try
     writer := nil;
@@ -2377,8 +2492,11 @@ begin
       Result := True;
     except
     end;
+
     if writer <> nil then
+    begin
       writer.Free;
+    end;
   finally
     reader.Free;
     img.Free;
