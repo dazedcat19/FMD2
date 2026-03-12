@@ -32,7 +32,7 @@ function _M.GetNameAndLink()
 	if not HTTP.GET(u) then return net_problem end
 
 	for v in CreateTXQuery(HTTP.Document).XPath('json(*).items()').Get() do
-		LINKS.Add(v.GetProperty('url').ToString())
+		LINKS.Add(v.GetProperty('slug').ToString())
 		NAMES.Add(v.GetProperty('title').ToString())
 	end
 
@@ -41,28 +41,35 @@ end
 
 -- Get info and chapter list for the current manga.
 function _M.GetInfo()
-	local u = MaybeFillHost(MODULE.RootURL, URL)
+	local slug = URL:gsub('/$', ''):match('([^/]+)$')
+	local u = MODULE.RootURL .. '/wp-content/static/manga/' .. slug .. '.json'
 
 	if not HTTP.GET(u) then return net_problem end
 
 	local x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//h1[@class="ng-detail-title"]')
-	MANGAINFO.AltTitles = x.XPathString('//p[./strong="Alternative:"]/text()')
-	MANGAINFO.CoverLink = x.XPathString('//div[@class="ng-detail-cover"]/@style'):match("background%-image:url%('(.-)'%)")
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//p[./strong="Status:"]/text()'), 'On-going', 'End')
-	MANGAINFO.Summary   = x.XPathString('//p[@class="ng-desc"]')
+	local json = x.XPath('json(*)')
+	MANGAINFO.Title     = x.XPathString('title', json)
+	MANGAINFO.AltTitles = x.XPathString('alternative', json)
+	MANGAINFO.CoverLink = x.XPathString('thumbnail', json)
+	MANGAINFO.Authors   = x.XPathString('author', json)
+	MANGAINFO.Artists   = x.XPathString('artist', json)
+	MANGAINFO.Genres    = x.XPathString('string-join((genres?*, concat(upper-case(substring(type, 1, 1)), lower-case(substring(type, 2)))), ", ")', json)
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status', json), 'on-going', 'end')
+	MANGAINFO.Summary   = x.XPathString('synopsis', json)
 
-	local genres = x.XPathStringAll('(//div[./strong="Genres:"]/text(), //p[./strong="Type:"]/text())')
-	local list = {}
-	for genre in genres:gmatch('[^,]+') do
-		genre = genre:match('^%s*(.-)%s*$'):gsub('^%l', string.upper)
-		list[#list + 1] = genre
+	local chapters = {}
+	for v in x.XPath('chapters?*', json).Get() do
+		table.insert(chapters, {
+			slug = v.GetProperty('slug').ToString(),
+			title = v.GetProperty('title').ToString()
+		})
 	end
-	MANGAINFO.Genres = table.concat(list, ', ')
 
-	for v in x.XPath('//li[@class="ng-chapter-item"]').Get() do
-		MANGAINFO.ChapterLinks.Add(x.XPathString('div/a/@href', v))
-		MANGAINFO.ChapterNames.Add(x.XPathString('div/span', v))
+	table.sort(chapters, function(a, b) return (tonumber(a.slug:match('(%d+)')) or 0) < (tonumber(b.slug:match('(%d+)')) or 0) end)
+
+	for _, chapter in ipairs(chapters) do
+		MANGAINFO.ChapterLinks.Add('komik/' .. slug .. '/' .. chapter.slug)
+		MANGAINFO.ChapterNames.Add(chapter.title)
 	end
 
 	return no_error
@@ -74,7 +81,7 @@ function _M.GetPageNumber()
 
 	if not HTTP.GET(u) then return false end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('//div[@class="ng-chapter-image"]/img/@src', TASK.PageLinks)
+	CreateTXQuery(HTTP.Document).XPathStringAll('//img[@class="mjv2-page-image"]/@src', TASK.PageLinks)
 
 	return true
 end
