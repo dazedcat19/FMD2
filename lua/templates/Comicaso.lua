@@ -32,7 +32,7 @@ function _M.GetNameAndLink()
 	if not HTTP.GET(u) then return net_problem end
 
 	for v in CreateTXQuery(HTTP.Document).XPath('json(*).items()').Get() do
-		LINKS.Add(v.GetProperty('slug').ToString())
+		LINKS.Add('komik/' .. v.GetProperty('slug').ToString())
 		NAMES.Add(v.GetProperty('title').ToString())
 	end
 
