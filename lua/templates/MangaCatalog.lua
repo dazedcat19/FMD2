@@ -32,7 +32,7 @@ function _M.GetInfo()
 
 	for v in x.XPath('//div[@class="col-span-4 lg:col-span-3"]').Get() do
 		local title = x.XPathString('div', v)
-		title = title ~= '' and string.format(' - %s', title) or ''
+		title = (title ~= '') and (' - ' .. title) or ''
 
 		MANGAINFO.ChapterLinks.Add(x.XPathString('a/@href', v))
 		MANGAINFO.ChapterNames.Add(x.XPathString('a/text()', v) .. title)
@@ -45,13 +45,20 @@ function _M.GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function _M.GetPageNumber()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return false end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('//div[@class="js-pages-container"]//img/@src', TASK.PageLinks)
+	CreateTXQuery(HTTP.Document).XPathStringAll('//div[@class="js-pages-container"]//img/@data-src', TASK.PageLinks)
+
+	return true
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function _M.BeforeDownloadImage()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
 
 	return true
 end
