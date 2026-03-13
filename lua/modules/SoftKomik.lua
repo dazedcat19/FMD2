@@ -132,7 +132,7 @@ function GetPageNumber()
 	local id = HTTP.Document.ToString():match('"_id":".-".-"_id":"(.-)"')
 	SetRequestHeaders()
 
-	if not HTTP.GET(API_URL .. '/komik' .. URL .. '/img/' .. id) then return false end
+	if not HTTP.GET(API_URL .. '/komik' .. URL .. '/imgs/' .. id) then return false end
 
 	for v in CreateTXQuery(HTTP.Document).XPath('json(*).imageSrc()').Get() do
 		TASK.PageLinks.Add(CDN_URL .. v.ToString())
