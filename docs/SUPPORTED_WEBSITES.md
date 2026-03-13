@@ -59,7 +59,7 @@
 | ColoredManga | [![https://coloredmanga.com](https://img.shields.io/website?url=https://coloredmanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://coloredmanga.com)](https://coloredmanga.com) | Broken | 31.07.2025 | - |
 | Com-X | [![https://com-x.life](https://img.shields.io/website?url=https://com-x.life%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://com-x.life)](https://com-x.life) | OK | 28.09.2025 | - |
 | Comic-days | [![https://comic-days.com](https://img.shields.io/website?url=https://comic-days.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comic-days.com)](https://comic-days.com) | - | - | - |
-| Comicazen | [![https://comicazen.com](https://img.shields.io/website?url=https://comicazen.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comicazen.com)](https://comicazen.com) | OK | 04.02.2026 | - |
+| Comicazen | [![https://comicazen.id](https://img.shields.io/website?url=https://comicazen.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comicazen.id)](https://comicazen.id) | OK | 13.03.2026 | - |
 | ComicExtra | [![https://www.comicextra.me](https://img.shields.io/website?url=https://www.comicextra.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.comicextra.me)](https://www.comicextra.me) | - | - | - |
 | ComicK | [![https://comick.live](https://img.shields.io/website?url=https://comick.live%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comick.live)](https://comick.live) | OK | 25.10.2025 | Clone version. Manga list is broken |
 | ComickTop | [![https://comick.top](https://img.shields.io/website?url=https://comick.top%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comick.top)](https://comick.top) | - | - | - |
