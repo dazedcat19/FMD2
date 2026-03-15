@@ -14,9 +14,8 @@ function Init()
 	m.OnBeforeDownloadImage = 'BeforeDownloadImage'
 	m.SortedList            = true
 
-	local fmd = require 'fmd.env'
-	local slang = fmd.SelectedLanguage
-	local lang = {
+	local slang = require 'fmd.env'.SelectedLanguage
+	local translations = {
 		['en'] = {
 			['auth'] = 'Authorization:',
 			['showscangroup'] = 'Show scanlation group',
@@ -28,17 +27,12 @@ function Init()
 			['showscangroup'] = 'Показать группу сканлейт',
 			['isvr'] = 'Сервер изображений:',
 			['svr'] = 'Первый\nВторой\nСжатия'
-		},
-		get =
-			function(self, key)
-				local sel = self[slang]
-				if sel == nil then sel = self['en'] end
-				return sel[key]
-			end
+		}
 	}
-	m.AddOptionComboBox('svr', lang:get('isvr'), lang:get('svr'), 0)
-	m.AddOptionCheckBox('showscangroup', lang:get('showscangroup'), false)
-	m.AddOptionEdit('auth', lang:get('auth'))
+	local lang = translations[slang] or translations.en
+	m.AddOptionCheckBox('showscangroup', lang.showscangroup, false)
+	m.AddOptionEdit('auth', lang.auth)
+	m.AddOptionComboBox('svr', lang.isvr, lang.svr, 0)
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -66,11 +60,11 @@ function GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
 end
 
 -- Prepare the URL, http header and/or http cookies before downloading an image.
