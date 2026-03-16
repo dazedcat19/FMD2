@@ -62,7 +62,7 @@ function GetNameAndLink()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	for v in CreateTXQuery(HTTP.Document).XPath('json(*).result.items()').Get() do
+	for v in CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString())).XPath('json(*).result.items()').Get() do
 		LINKS.Add('title/' .. v.GetProperty('hash_id').ToString() .. '-' .. v.GetProperty('slug').ToString())
 		NAMES.Add(v.GetProperty('title').ToString())
 	end
@@ -77,7 +77,7 @@ function GetInfo()
 
 	if not HTTP.GET(u .. s) then return net_problem end
 
-	local x = CreateTXQuery(HTTP.Document)
+	local x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
 	local json = x.XPath('json(*).result')
 	MANGAINFO.Title     = x.XPathString('title', json)
 	MANGAINFO.AltTitles = x.XPathString('string-join(alt_titles?*, ", ")', json)
