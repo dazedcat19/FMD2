@@ -35,10 +35,15 @@ end
 function GetInfo()
 	Template.GetInfo()
 
+	local x = CreateTXQuery(HTTP.Document)
+	MANGAINFO.Title     = x.XPathString('//h1[@itemprop="name"]')
+	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="kdt8-genres"]/a')
+	MANGAINFO.Summary   = x.XPathString('//div[@itemprop="description"]//*[not(script)]/string-join(text(), "\r\n")')
+
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	local crypto = require 'fmd.crypto'
 	local u = MaybeFillHost(MODULE.RootURL, URL)
@@ -58,7 +63,7 @@ function GetPageNumber()
 		x.XPathStringAll('json(*).sources()[1].images()', TASK.PageLinks)
 	end
 	for i = 0, TASK.PageLinks.Count - 1 do
-		TASK.PageLinks[i] = crypto.DecodeURL(TASK.PageLinks[i])
+		TASK.PageLinks[i] = crypto.DecodeURL(TASK.PageLinks[i]):gsub('///', '//')
 	end
 
 	return true
