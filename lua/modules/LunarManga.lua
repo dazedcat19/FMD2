@@ -11,6 +11,7 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 
 	local slang = require 'fmd.env'.SelectedLanguage
 	local translations = {
@@ -115,16 +116,62 @@ function GetInfo()
 		end
 	end
 
+	HTTP.Reset()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+
 	return no_error
 end
 
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
+	local u = MODULE.RootURL .. '/manga' .. URL:match('^[^?]+')
+
+	if not HTTP.GET(u) then return false end
+
+	local secret_key = HTTP.Document.ToString():match('\\"secretKey\\"%s*:%s*\\"([^\\"]+)')
+
 	local u = API_URL .. URL
 
 	if not HTTP.GET(u) then return false end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).data.images()', TASK.PageLinks)
+	local x = CreateTXQuery(HTTP.Document)
+	local json = x.XPath('json(*).data')
+	local session_data = x.XPathString('session_data', json)
+
+	if session_data ~= '' then
+		local js = string.format([[
+		var CryptoJS = require('utils/crypto-js.min.js');
+
+		var secret = "%s";
+		var encrypted = "%s";
+
+		var key = CryptoJS.SHA256(secret);
+		var iv = CryptoJS.lib.WordArray.create([0, 0, 0, 0]);
+
+		var decrypted = CryptoJS.AES.decrypt(
+			encrypted,
+			key,
+			{
+				iv: iv,
+				mode: CryptoJS.mode.CBC,
+				padding: CryptoJS.pad.Pkcs7
+			}
+		);
+
+		decrypted.toString(CryptoJS.enc.Utf8);
+		]], secret_key, session_data)
+
+		local result = require 'fmd.duktape'.ExecJS(js)
+		x.ParseHTML(result)
+	end
+	x.XPathStringAll('json(*).data.images()', TASK.PageLinks)
+
+	return true
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
 
 	return true
 end
