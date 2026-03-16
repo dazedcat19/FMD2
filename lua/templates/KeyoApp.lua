@@ -37,16 +37,9 @@ function _M.GetInfo()
 	MANGAINFO.CoverLink = x.XPathString('//div[contains(@class, "photoURL")]/@style'):match('--photoURL:url%((.-)%)')
 	MANGAINFO.Authors   = x.XPathString('//div[@alt="Author"]/span|//div[@class="grid gap-2 h-fit" and contains(., "Author")]/div[2]')
 	MANGAINFO.Artists   = x.XPathString('//div[@alt="Artist"]/span|//div[@class="grid gap-2 h-fit" and contains(., "Artist")]/div[2]')
-	MANGAINFO.Genres    = x.XPathStringAll('//a[contains(@href, "genre")]/span')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@alt="Status"]/span|//div[@class="grid gap-2 h-fit" and contains(., "Status")]/div[2]'), 'ongoing', 'completed', 'paused', 'dropped')
+	MANGAINFO.Genres    = x.XPathStringAll('(//a[contains(@href, "genre")]/span, concat(upper-case(substring(//div[./div/span="Type"]/div[2], 1, 1)), lower-case(substring(//div[./div/span="Type"]/div[2], 2))))')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@alt="Status"]/span|//div[@class="grid gap-2 h-fit" and contains(., "Status")]/div[2]|//a[@title="Status"]/span'), 'ongoing', 'completed', 'paused', 'dropped')
 	MANGAINFO.Summary   = x.XPathString('string-join(//div[@id="expand_content"]/p/text()|//div[@class="overflow-hidden"]/p/text(), "\r\n")')
-
-	local type = x.XPathString('//div[./div/span="Type"]/div[2]'):gsub('^%l', string.upper)
-	if MANGAINFO.Genres ~= '' then
-		MANGAINFO.Genres = MANGAINFO.Genres .. ', ' .. type
-	else
-		MANGAINFO.Genres = type
-	end
 
 	if MODULE.GetOption('showpaidchapters') then
 		x.XPathHREFTitleAll('//div[@id="chapters"]/a[not(.//span="Upcoming")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
@@ -58,11 +51,11 @@ function _M.GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function _M.GetPageNumber()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
-	if not HTTP.GET(u) then return net_problem end
+	if not HTTP.GET(u) then return false end
 
 	local x = CreateTXQuery(HTTP.Document)
 	local CDN_URL = x.XPathString('//script[contains(., "realUrl")]/substring-before(substring-after(., "realUrl = `"), "${uid}")')
@@ -70,7 +63,7 @@ function _M.GetPageNumber()
 		TASK.PageLinks.Add(CDN_URL .. v.ToString())
 	end
 
-	return no_error
+	return true
 end
 
 ----------------------------------------------------------------------------------------------------
