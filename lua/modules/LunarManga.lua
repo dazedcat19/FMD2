@@ -16,15 +16,18 @@ function Init()
 	local slang = require 'fmd.env'.SelectedLanguage
 	local translations = {
 		['en'] = {
-			['lang'] = 'Language:'
+			['lang'] = 'Language:',
+			['pw'] = 'Chapter password:'
 		},
 		['id_ID'] = {
-			['lang'] = 'Bahasa:'
+			['lang'] = 'Bahasa:',
+			['pw'] = 'Kata sandi bab:'
 		}
 	}
 	local lang = translations[slang] or translations.en
 	local items = table.concat(GetLangList(), '\r\n')
 	m.AddOptionComboBox('lang', lang.lang, items, 1)
+	m.AddOptionEdit('pw', lang.pw)
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -130,13 +133,15 @@ function GetPageNumber()
 
 	local secret_key = HTTP.Document.ToString():match('\\"secretKey\\"%s*:%s*\\"([^\\"]+)')
 
-	local u = API_URL .. URL
+	local pw = MODULE.GetOption('pw')
+	pw = pw ~= '' and '&password=' .. pw or ''
+
+	local u = API_URL .. URL .. pw
 
 	if not HTTP.GET(u) then return false end
 
 	local x = CreateTXQuery(HTTP.Document)
-	local json = x.XPath('json(*).data')
-	local session_data = x.XPathString('session_data', json)
+	local session_data = x.XPathString('json(*).data.session_data')
 
 	if session_data ~= '' then
 		local js = string.format([[
