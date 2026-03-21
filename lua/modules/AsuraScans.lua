@@ -68,11 +68,11 @@ function GetInfo()
 		local c = v[2]
 		local number = c.number[2]
 		local title = c.title and c.title[2]
-		local is_premium = c.is_premium[2]
+		local is_locked = c.is_locked[2]
 
 		title = title and (' - ' .. title) or ''
 
-		if not is_premium then
+		if not is_locked then
 			MANGAINFO.ChapterLinks.Add(slug .. '/chapters/' .. number)
 			MANGAINFO.ChapterNames.Add('Chapter ' .. number .. title)
 		end
