@@ -5,33 +5,16 @@
 local _M = {}
 
 ----------------------------------------------------------------------------------------------------
--- Local Constants
-----------------------------------------------------------------------------------------------------
-
-local DirectoryPagination = '/wp-json/neoglass/v1/mangas?per_page=100&paged='
-
-----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
--- Get the page count of the manga list of the current website.
-function _M.GetDirectoryPageNumber()
-	local u = MODULE.RootURL .. DirectoryPagination .. 1
-
-	if not HTTP.GET(u) then return net_problem end
-
-	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('json(*).total_pages')) or 1
-
-	return no_error
-end
-
 -- Get links and names from the manga list of the current website.
 function _M.GetNameAndLink()
-	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1)
+	local u = MODULE.RootURL .. '/komik/?mjv2_api=home_batch&mjv2_limit=10000'
 
 	if not HTTP.GET(u) then return net_problem end
 
-	for v in CreateTXQuery(HTTP.Document).XPath('json(*).items()').Get() do
+	for v in CreateTXQuery(HTTP.Document).XPath('json(*).data.items()').Get() do
 		LINKS.Add('komik/' .. v.GetProperty('slug').ToString())
 		NAMES.Add(v.GetProperty('title').ToString())
 	end
@@ -81,7 +64,7 @@ function _M.GetPageNumber()
 
 	if not HTTP.GET(u) then return false end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('//img[@class="mjv2-page-image"]/@src', TASK.PageLinks)
+	CreateTXQuery(HTTP.Document).XPathStringAll('//img[@class="mjv2-page-image"]/@data-src', TASK.PageLinks)
 
 	return true
 end
