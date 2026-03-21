@@ -21,7 +21,7 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local API_URL = 'https://v2.softdevices.my.id'
-local CDN_URL = 'https://cd1.softkomik.online/softkomik/'
+local CDN_URL = 'https://cdn1.softkomik.online/softkomik/'
 local DirectoryPagination = '?limit=24&sortBy=newKomik&page='
 
 ----------------------------------------------------------------------------------------------------
