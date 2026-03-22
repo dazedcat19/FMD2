@@ -186,12 +186,38 @@ msgstr "下载完成"
 
 #: frmluamodulesupdater.rs_githubconnectfail
 msgid ""
-"Failed to connect to GitHub API for latest module updates.\n"
-"Please try again later."
+"Failed to connect to GitHub API.\n"
+"Please check your internet connection or try again later."
 msgstr ""
 
 #: frmluamodulesupdater.rs_githubconnecting
 msgid "Connecting to GitHub..."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubdownloadfailed
+msgid ""
+"Modules update failed to download modules from GitHub.\n"
+"Please try update again."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githuberrormessage
+msgid ""
+"GitHub returned an error.\n"
+"Check log for more information."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubnoerrormessage
+#, object-pascal-format
+msgid ""
+"GitHub API didn't return a valid response.\n"
+"Try checking %s in your browser."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubratelimited
+#, object-pascal-format
+msgid ""
+"GitHub API is rate limited.\n"
+"Change the network or try again after %d minute(s)"
 msgstr ""
 
 #: frmluamodulesupdater.rs_githubratestats
@@ -387,6 +413,10 @@ msgstr ""
 #: frmmain.rs_fmdalreadyrunning
 msgid "Free Manga Downloader already running!"
 msgstr "免费漫画下载器已在运行！"
+
+#: frmmain.rs_fmdunicodepatherror
+msgid "UnicodePathError: Application can't run in a folder path with unicode characters."
+msgstr ""
 
 #: frmmain.rs_hintfavoriteproblem
 msgid ""
@@ -1164,6 +1194,10 @@ msgstr "在所有漫画网站中搜索"
 msgid "For more manga sites, please go to Options->Manga sites"
 msgstr "如需更多漫画网站，请前往选项 -> 漫画网站"
 
+#: tmainform.cbservercreationtime.caption
+msgid "Use server creation time over local time"
+msgstr ""
+
 #: tmainform.cbuseregexpr.caption
 msgid "Regular Expression"
 msgstr "正则表达式"
@@ -1632,6 +1666,10 @@ msgstr "图像转换"
 
 #: tmainform.gbimagemagick.caption
 msgid "Image Magick"
+msgstr ""
+
+#: tmainform.gbimageproperties.caption
+msgid "Image Properties"
 msgstr ""
 
 #: tmainform.gboptionexternal.caption
