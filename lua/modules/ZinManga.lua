@@ -45,7 +45,7 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
 
@@ -56,8 +56,24 @@ function GetInfo()
 	local x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Summary = x.XPathString('//h3[text()="Main Plot"]/following-sibling::p[1]')
 
-	x.XPathHREFAll('//div[contains(@class, "wp-manga-chapter")]//a[not(@href="#")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
-	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
+	local slug = URL:match('/([^/]+)$')
+	local page = 1
+	local pages = nil
+	while true do
+		if not HTTP.GET(MODULE.RootURL .. '/api/comics/' .. slug .. '/chapters?per_page=100&order=asc&page=' .. page) then return net_problem end
+		local x = CreateTXQuery(HTTP.Document)
+		for v in x.XPath('json(*).data.chapters()').Get() do
+			MANGAINFO.ChapterLinks.Add('manga/' .. slug .. '/' .. v.GetProperty('chapter_slug').ToString())
+			MANGAINFO.ChapterNames.Add(v.GetProperty('chapter_name').ToString())
+		end
+		if not pages then
+			pages = tonumber(x.XPathString('json(*).data.last_page')) or 1
+		end
+		page = page + 1
+		if page > pages then
+			break
+		end
+	end
 
 	HTTP.Reset()
 	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
@@ -65,7 +81,7 @@ function GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	Template.GetPageNumber()
 
