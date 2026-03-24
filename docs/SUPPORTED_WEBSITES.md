@@ -610,7 +610,7 @@
 | WebToons | [![https://www.webtoons.com](https://img.shields.io/website?url=https://www.webtoons.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.webtoons.com)](https://www.webtoons.com) | OK | 21.06.2025 | - |
 | WebtoonXYZ | [![https://www.webtoon.xyz](https://img.shields.io/website?url=https://www.webtoon.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.webtoon.xyz)](https://www.webtoon.xyz) | OK | 25.07.2025 | - |
 | Weeb Central | [![https://weebcentral.com](https://img.shields.io/website?url=https://weebcentral.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://weebcentral.com)](https://weebcentral.com) | OK | 03.03.2026 | - |
-| WeebDex | [![https://weebdex.org](https://img.shields.io/website?url=https://weebdex.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://weebdex.org)](https://weebdex.org) | OK | 04.11.2025 | - |
+| WeebDex | [![https://weebdex.org](https://img.shields.io/website?url=https://weebdex.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://weebdex.org)](https://weebdex.org) | OK | 25.03.2026 | - |
 | WeiboManhua | [![http://manhua.weibo.com](https://img.shields.io/website?url=http://manhua.weibo.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://manhua.weibo.com)](http://manhua.weibo.com) | - | - | - |
 | WeLoMa | [![https://weloma.art](https://img.shields.io/website?url=https://weloma.art%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://weloma.art)](https://weloma.art) | OK | 03.01.2026 | - |
 | WestManga | [![https://westmanga.tv](https://img.shields.io/website?url=https://westmanga.tv%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://westmanga.tv)](https://westmanga.tv) | OK | 05.03.2026 | - |
