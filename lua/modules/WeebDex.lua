@@ -14,8 +14,7 @@ function Init()
 	m.MaxTaskLimit             = 2
 	m.MaxConnectionLimit       = 4
 
-	local fmd = require 'fmd.env'
-	local slang = fmd.SelectedLanguage
+	local slang = require 'fmd.env'.SelectedLanguage
 	local translations = {
 		['en'] = {
 			['showscangroup'] = 'Show scanlation group',
@@ -28,7 +27,7 @@ function Init()
 			['datasaver'] = 'Penghemat data'
 		}
 	}
-	local lang = translations[slang] or translations['en']
+	local lang = translations[slang] or translations.en
 	local items = table.concat(GetLangList(), '\r\n')
 	m.AddOptionComboBox('lang', lang.lang, items, 1)
 	m.AddOptionCheckBox('showscangroup', lang.showscangroup, false)
@@ -42,7 +41,7 @@ end
 local API_URL = 'https://api.weebdex.org'
 
 local Langs = {
-    { nil,   'All' },
+    {  nil,   'All' },
     { 'en', 'English' },
     { 'ja', 'Japanese' }
 }
@@ -187,7 +186,7 @@ function GetInfo()
 
 	local cover = x.relationships.cover
 	if cover then
-		MANGAINFO.CoverLink = 'https://srv.notdelta.xyz/covers/' .. mid .. '/' .. cover.id .. '.256.webp'
+		MANGAINFO.CoverLink = 'https://srv.weebdex.net/covers/' .. mid .. '/' .. cover.id .. '.256.webp'
 	end
 
 	local authors = {}
@@ -216,12 +215,14 @@ function GetInfo()
 	local optgroup  = MODULE.GetOption('showscangroup')
 	local optlang   = MODULE.GetOption('lang')
 	local optlangid = FindLanguage(optlang)
-	local page = 1
 	local langparam = optlangid and '&tlang=' .. optlangid or ''
+	local limit     = 500
+	local page      = 1
+	local pages     = nil
 
 	while true do
 		SetRequestHeaders()
-		if not HTTP.GET(u .. '/chapters?order=asc&limit=100&page=' .. tostring(page) .. langparam) then return net_problem end
+		if not HTTP.GET(u .. '/chapters?order=asc&limit=' .. limit .. '&page=' .. page .. langparam) then return net_problem end
 		local x = json.decode(HTTP.Document.ToString())
 		for _, chapters in ipairs(x.data or {}) do
 
@@ -250,9 +251,10 @@ function GetInfo()
 			MANGAINFO.ChapterLinks.Add(chapters.id)
 			MANGAINFO.ChapterNames.Add(volume .. chapter .. title .. string.upper(language) .. scanlators)
 		end
-
+		if not pages then
+			pages = tonumber(math.ceil(x.total / limit)) or 1
+		end
 		page = page + 1
-		local pages = tonumber(math.ceil(x.total / x.limit)) or 1
 		if page > pages then
 			break
 		end
@@ -261,7 +263,7 @@ function GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	local cid = URL:gsub('^/', '')
 	local u = API_URL .. '/chapter/' .. cid
