@@ -1026,14 +1026,6 @@ msgstr "Add to download list as stopped task"
 msgid "<none>"
 msgstr "<none>"
 
-#: tmainform.cbimagemagickcompression.text
-msgid "None"
-msgstr ""
-
-#: tmainform.cbimagemagicksaveas.text
-msgid "JPEG"
-msgstr ""
-
 #: tmainform.cbonlynew.caption
 msgid "Search only new manga"
 msgstr "Search only new manga"

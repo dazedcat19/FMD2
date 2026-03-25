@@ -1030,14 +1030,6 @@ msgstr "Tambahkan ke daftar unduhan tanpa dimulai"
 msgid "<none>"
 msgstr "<tidak ada>"
 
-#: tmainform.cbimagemagickcompression.text
-msgid "None"
-msgstr ""
-
-#: tmainform.cbimagemagicksaveas.text
-msgid "JPEG"
-msgstr ""
-
 #: tmainform.cbonlynew.caption
 msgid "Search only new manga"
 msgstr "Hanya cari komik baru"

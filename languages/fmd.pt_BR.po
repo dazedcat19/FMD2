@@ -1020,14 +1020,6 @@ msgstr "Adicionar download de lista como uma tarefa parada"
 msgid "<none>"
 msgstr "<vazio>"
 
-#: tmainform.cbimagemagickcompression.text
-msgid "None"
-msgstr ""
-
-#: tmainform.cbimagemagicksaveas.text
-msgid "JPEG"
-msgstr ""
-
 #: tmainform.cbonlynew.caption
 msgid "Search only new manga"
 msgstr "Buscar somente novos mangás"

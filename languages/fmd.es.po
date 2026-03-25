@@ -1021,14 +1021,6 @@ msgstr "Agregar a Descargas como Tarea Detenida"
 msgid "<none>"
 msgstr "<ninguno>"
 
-#: tmainform.cbimagemagickcompression.text
-msgid "None"
-msgstr ""
-
-#: tmainform.cbimagemagicksaveas.text
-msgid "JPEG"
-msgstr ""
-
 #: tmainform.cbonlynew.caption
 msgid "Search only new manga"
 msgstr "Buscar Solo Manga Nuevo"

@@ -1020,14 +1020,6 @@ msgstr "作为已停止任务添加到下载列表"
 msgid "<none>"
 msgstr "<无>"
 
-#: tmainform.cbimagemagickcompression.text
-msgid "None"
-msgstr ""
-
-#: tmainform.cbimagemagicksaveas.text
-msgid "JPEG"
-msgstr ""
-
 #: tmainform.cbonlynew.caption
 msgid "Search only new manga"
 msgstr "仅搜索新漫画"

@@ -1021,14 +1021,6 @@ msgstr "Zur Downloadliste als angehaltene Aufgabe hinzufügen"
 msgid "<none>"
 msgstr "<none>"
 
-#: tmainform.cbimagemagickcompression.text
-msgid "None"
-msgstr ""
-
-#: tmainform.cbimagemagicksaveas.text
-msgid "JPEG"
-msgstr ""
-
 #: tmainform.cbonlynew.caption
 msgid "Search only new manga"
 msgstr "Nur nach neuen Manga suchen"

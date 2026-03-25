@@ -1023,14 +1023,6 @@ msgstr "Ne pas démarrer les tâches ajoutées à la liste des téléchargements
 msgid "<none>"
 msgstr "<non renseigné>"
 
-#: tmainform.cbimagemagickcompression.text
-msgid "None"
-msgstr ""
-
-#: tmainform.cbimagemagicksaveas.text
-msgid "JPEG"
-msgstr ""
-
 #: tmainform.cbonlynew.caption
 msgid "Search only new manga"
 msgstr "Afficher les nouveaux mangas uniquement"

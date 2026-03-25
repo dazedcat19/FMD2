@@ -1022,14 +1022,6 @@ msgstr "İndirme listesine durdurulmuş görev olarak ekle"
 msgid "<none>"
 msgstr "<hiçbiri>"
 
-#: tmainform.cbimagemagickcompression.text
-msgid "None"
-msgstr ""
-
-#: tmainform.cbimagemagicksaveas.text
-msgid "JPEG"
-msgstr ""
-
 #: tmainform.cbonlynew.caption
 msgid "Search only new manga"
 msgstr "Sadece yeni manga ara"

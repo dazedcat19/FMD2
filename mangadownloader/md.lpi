@@ -20,6 +20,10 @@
     <i18n>
       <EnableI18N Value="True"/>
       <OutDir Value="..\languages"/>
+      <ExcludedIdentifiers Count="2">
+        <Item1 Value="tmainform.cbimagemagickcompression.text"/>
+        <Item2 Value="tmainform.cbimagemagicksaveas.text"/>
+      </ExcludedIdentifiers>
     </i18n>
     <VersionInfo>
       <UseVersionInfo Value="True"/>

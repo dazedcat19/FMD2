@@ -1017,14 +1017,6 @@ msgstr "Προσθήκη στη λίστα λήψης ως διακοπείσα 
 msgid "<none>"
 msgstr "<καμία>"
 
-#: tmainform.cbimagemagickcompression.text
-msgid "None"
-msgstr ""
-
-#: tmainform.cbimagemagicksaveas.text
-msgid "JPEG"
-msgstr ""
-
 #: tmainform.cbonlynew.caption
 msgid "Search only new manga"
 msgstr "Αναζήτηση μόνο νέου manga"
