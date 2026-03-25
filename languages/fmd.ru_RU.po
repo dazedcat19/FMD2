@@ -793,6 +793,41 @@ msgstr "Список манги"
 msgid "Module list"
 msgstr "Список модулей"
 
+#: tformcheckmodules.btncheckintegrity.caption
+msgid "Check Modules Integrity"
+msgstr ""
+
+#: tformcheckmodules.btnrefreshmodules.caption
+msgid "Refresh Module List"
+msgstr ""
+
+#: tformcheckmodules.btnstopcheck.caption
+msgid "Stop Check"
+msgstr ""
+
+#: tformcheckmodules.caption
+msgctxt "tformcheckmodules.caption"
+msgid "Check Modules"
+msgstr ""
+
+#: tformcheckmodules.edtfilter.texthint
+msgid "Type to filter modules..."
+msgstr ""
+
+#: tformcheckmodules.tbwebsitesselectall.caption
+#, fuzzy
+msgctxt "tformcheckmodules.tbwebsitesselectall.caption"
+msgid "Select All"
+msgstr "Выбрать все"
+
+#: tformcheckmodules.tbwebsitesselectinverse.caption
+msgid "Inverse Selection"
+msgstr ""
+
+#: tformcheckmodules.tbwebsitesselectnone.caption
+msgid "Select None"
+msgstr ""
+
 #: tformdroptarget.miaddtofavorites.caption
 msgctxt "TFORMDROPTARGET.MIADDTOFAVORITES.CAPTION"
 msgid "Add to favorites"
@@ -881,6 +916,10 @@ msgstr "Проверить обновления"
 #: tluamodulesupdaterform.ckautorestart.caption
 msgid "Auto restart"
 msgstr "Автоматически перезапускать программу"
+
+#: tluamodulesupdaterform.ckenablemoduledebug.caption
+msgid "Enable Module Debug"
+msgstr ""
 
 #: tluamodulesupdaterform.ckshowupdatewarning.caption
 msgid "Show update warning"
@@ -2387,6 +2426,7 @@ msgid "Expand All"
 msgstr "Раскрыть все"
 
 #: tmainform.tbwebsitesselectall.caption
+msgctxt "tmainform.tbwebsitesselectall.caption"
 msgid "Select All"
 msgstr "Выбрать все"
 
@@ -2480,6 +2520,11 @@ msgstr "Вид"
 #: tmainform.tswebsiteadvanced.caption
 msgid "Advanced"
 msgstr "Расширенные"
+
+#: tmainform.tswebsitecheckmodules.caption
+msgctxt "tmainform.tswebsitecheckmodules.caption"
+msgid "Check Modules"
+msgstr ""
 
 #: tmainform.tswebsitemodules.caption
 msgid "Modules"

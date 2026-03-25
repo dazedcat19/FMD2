@@ -796,6 +796,41 @@ msgstr "Catalogue"
 msgid "Module list"
 msgstr "Modules"
 
+#: tformcheckmodules.btncheckintegrity.caption
+msgid "Check Modules Integrity"
+msgstr ""
+
+#: tformcheckmodules.btnrefreshmodules.caption
+msgid "Refresh Module List"
+msgstr ""
+
+#: tformcheckmodules.btnstopcheck.caption
+msgid "Stop Check"
+msgstr ""
+
+#: tformcheckmodules.caption
+msgctxt "tformcheckmodules.caption"
+msgid "Check Modules"
+msgstr ""
+
+#: tformcheckmodules.edtfilter.texthint
+msgid "Type to filter modules..."
+msgstr ""
+
+#: tformcheckmodules.tbwebsitesselectall.caption
+#, fuzzy
+msgctxt "tformcheckmodules.tbwebsitesselectall.caption"
+msgid "Select All"
+msgstr "Tout sélectionner"
+
+#: tformcheckmodules.tbwebsitesselectinverse.caption
+msgid "Inverse Selection"
+msgstr ""
+
+#: tformcheckmodules.tbwebsitesselectnone.caption
+msgid "Select None"
+msgstr ""
+
 #: tformdroptarget.miaddtofavorites.caption
 msgctxt "TFORMDROPTARGET.MIADDTOFAVORITES.CAPTION"
 msgid "Add to favorites"
@@ -884,6 +919,10 @@ msgstr "Vérifier les mises à jour"
 #: tluamodulesupdaterform.ckautorestart.caption
 msgid "Auto restart"
 msgstr "Redémarrage automatique"
+
+#: tluamodulesupdaterform.ckenablemoduledebug.caption
+msgid "Enable Module Debug"
+msgstr ""
 
 #: tluamodulesupdaterform.ckshowupdatewarning.caption
 msgid "Show update warning"
@@ -2465,6 +2504,7 @@ msgid "Expand All"
 msgstr "Tout développer"
 
 #: tmainform.tbwebsitesselectall.caption
+msgctxt "tmainform.tbwebsitesselectall.caption"
 msgid "Select All"
 msgstr "Tout sélectionner"
 
@@ -2558,6 +2598,11 @@ msgstr "Affichage"
 #: tmainform.tswebsiteadvanced.caption
 msgid "Advanced"
 msgstr "Avancés"
+
+#: tmainform.tswebsitecheckmodules.caption
+msgctxt "tmainform.tswebsitecheckmodules.caption"
+msgid "Check Modules"
+msgstr ""
 
 #: tmainform.tswebsitemodules.caption
 msgid "Modules"
