@@ -60,6 +60,7 @@ type
 
   TLuaModulesUpdaterForm = class(TForm)
     btCheckUpdate: TBitBtn;
+    ckEnableModuleDebug: TCheckBox;
     ckShowUpdateWarning: TCheckBox;
     ckAutoRestart: TCheckBox;
     imStates: TImageList;
