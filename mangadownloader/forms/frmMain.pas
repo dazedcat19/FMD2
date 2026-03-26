@@ -1025,7 +1025,7 @@ uses
   frmImportFavorites, frmShutdownCounter, frmSelectDirectory,
   frmWebsiteSettings, WebsiteModules, uUpdateThread, FMDVars, RegExpr, sqlite3dyn, Clipbrd,
   ssl_openssl3_lib, LazFileUtils, LazUTF8, webp, DBUpdater, pcre2, pcre2lib, dynlibs,
-  LuaWebsiteModules, LuaBase, uBackupSettings, frmCustomMessageDlg;
+  LuaWebsiteModules, LuaBase, uBackupSettings, frmCustomMessageDlg, ZstdDec;
 
 var
   // thread for open db
@@ -2494,6 +2494,8 @@ begin
 
   if WebPLibHandle = 0 then InitWebPModule;
   if WebPLibHandle <> 0 then try AddToAboutStatus('WebP Version', WebPGetVersion); except end;
+  if ZstdLibHandle = 0 then InitZstdModule;
+  if ZstdLibHandle <> 0 then try AddToAboutStatus('Zstd Version', ZstdGetVersion); except end;
   AddToAboutStatus('PCRE Version', pcre2.Version);
 end;
 
