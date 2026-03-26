@@ -262,7 +262,7 @@ begin
             begin
               for i := 0 to links.Count - 1 do
               begin
-                if FOwner.mainDataProcess.AddData(names[i], '', links[i], '', '', '', '', '', 0, 0) then
+                if not FOwner.mainDataProcess.existsData(links[i]) then
                 begin
                   FOwner.tempDataProcess.AddData(names[i], '', links[i], '', '', '', '', '', 0, 0);
                 end
@@ -841,7 +841,8 @@ begin
                   '',
                   '',
                   0,
-                  Now
+                  Now,
+                  True
                   );
                 CheckCommit(5000);
               end;

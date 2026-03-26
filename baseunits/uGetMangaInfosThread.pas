@@ -338,7 +338,7 @@ begin
       ShowInformation;
     except
       on E: Exception do
-        Logger.SendException(Self.ClassName+'.MainThreadShowInfos error!', E);
+        Logger.SendException(Self.ClassName + '.MainThreadShowInfos error!', E);
     end;
   end;
 end;

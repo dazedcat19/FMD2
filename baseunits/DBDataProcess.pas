@@ -107,9 +107,11 @@ type
     function CheckData(const Link, AField: String): TField;
     function ExistsData(const Link: String): Boolean;
     function AddData(Const Title, AltTitles, Link, Authors, Artists, Genres, Status, Summary: String;
-      NumChapter, JDN: Integer): Boolean; overload;
+      NumChapter, JDN: Integer; ExitExists: Boolean): Boolean; overload;
     function AddData(Const Title, AltTitles, Link, Authors, Artists, Genres, Status, Summary: String;
       NumChapter: Integer; JDN: TDateTime): Boolean; overload; inline;
+    function AddData(Const Title, AltTitles, Link, Authors, Artists, Genres, Status, Summary: String;
+      NumChapter: Integer; JDN: TDateTime; ExitExists: Boolean): Boolean; overload; inline;
     function UpdateData(Const Title, AltTitles, Link, Authors, Artists, Genres, Status, Summary: String;
       NumChapter: Integer; AWebsite: String = ''): Boolean;
     function DeleteData(const RecIndex: Integer): Boolean;
@@ -1164,6 +1166,7 @@ begin
     RemoveFilter;
     FConn.Close;
     FConn.DatabaseName := '';
+    FWebsite := '';
   except
     on E: Exception do
       SendLogException(Self.ClassName + '[' + Website + '].Close.Error!', E);
@@ -1338,7 +1341,7 @@ begin
 end;
 
 function TDBDataProcess.AddData(const Title, AltTitles, Link, Authors, Artists, Genres,
-  Status, Summary: String; NumChapter, JDN: Integer): Boolean;
+  Status, Summary: String; NumChapter, JDN: Integer; ExitExists: Boolean): Boolean;
 var
   sql: String;
   i: Integer;
@@ -1352,6 +1355,11 @@ begin
 
   if ExistsData(Link) then
   begin
+    if ExitExists then
+    begin
+      Exit;
+    end;
+
     Result := UpdateData(Title, AltTitles, Link, Authors, Artists, Genres, Status, Summary, NumChapter, FWebsite);
     Exit;
   end;
@@ -1404,7 +1412,14 @@ function TDBDataProcess.AddData(const Title, AltTitles, Link, Authors, Artists, 
   Status, Summary: String; NumChapter: Integer; JDN: TDateTime): Boolean;
 begin
   Result := AddData(Title, AltTitles, Link, Authors, Artists, Genres, Status, Summary,
-    NumChapter, DateToJDN(JDN));
+    NumChapter, DateToJDN(JDN), False);
+end;
+
+function TDBDataProcess.AddData(const Title, AltTitles, Link, Authors, Artists, Genres,
+  Status, Summary: String; NumChapter: Integer; JDN: TDateTime; ExitExists: Boolean): Boolean;
+begin
+  Result := AddData(Title, AltTitles, Link, Authors, Artists, Genres, Status, Summary,
+    NumChapter, DateToJDN(JDN), ExitExists);
 end;
 
 function TDBDataProcess.UpdateData(const Title, AltTitles, Link, Authors, Artists, Genres,

@@ -7181,6 +7181,7 @@ procedure TMainForm.LoadFormInformation;
     begin
       SortColumn := ReadInteger(name, 'SortColumn', SortColumn);
       SortDirection := TSortDirection(ReadInteger(name, 'SortDirection', Integer(SortDirection)));
+
       for i := 0 to Columns.Count - 1 do
       begin
         Columns[i].Width := ReadInteger(name, 'Column' + IntToStr(i) + 'Width', Columns[i].Width);
@@ -7195,6 +7196,7 @@ procedure TMainForm.LoadFormInformation;
     MonitorRect: TRect;
   begin
     Result := False;
+
     for i := 0 to Screen.MonitorCount - 1 do
     begin
       MonitorRect := Screen.Monitors[i].BoundsRect;
@@ -7216,9 +7218,13 @@ begin
     psInfo.Position := ReadInteger('form', 'MangaInfoSplitter', psInfo.Position);
 
     if ReadBool('update', 'AutoCheckFavStartup', True) and ReadBool('update', 'AutoOpenFavStartup', False) then
-      pcMain.ActivePage := tsFavorites
+    begin
+      pcMain.ActivePage := tsFavorites;
+    end
     else
+    begin
       pcMain.PageIndex := ReadInteger('form', 'pcMainPageIndex', 0);
+    end;
 
     Left := ReadInteger('form', 'MainFormLeft', Left);
     Top := ReadInteger('form', 'MainFormTop', Top);
@@ -7236,7 +7242,8 @@ begin
     CurrentFormWidth := Min(Width, Screen.DesktopWidth);
     CurrentFormHeight := Min(Height, Screen.DesktopHeight);
 
-    if Screen.PixelsPerInch > 96 then begin
+    if Screen.PixelsPerInch > 96 then
+    begin
       Width := ScaleScreenTo96(Width);
       Height := ScaleScreenTo96(Height);
       psDownloads.Position := ScaleScreenTo96(psDownloads.Position);
@@ -7244,9 +7251,14 @@ begin
     end;
 
     if ReadBool('form', 'MainFormMaximized', False) then
-      PrevWindowState := wsMaximized
+    begin
+      PrevWindowState := wsMaximized;
+    end
     else
+    begin
       PrevWindowState := wsNormal;
+    end;
+
     WindowState := PrevWindowState;
 
     ToolBarDownload.Visible := ReadBool('view', 'ShowDownloadsToolbar', True);
@@ -7256,9 +7268,12 @@ begin
     // misc form components
     if tvDownloadFilter.Items.Count>0 then
     begin
-      index:=ReadInteger('general', 'DownloadFilterSelect', 0);
-      if index>=tvDownloadFilter.Items.Count then
-        index:=0;
+      index := ReadInteger('general', 'DownloadFilterSelect', 0);
+      if index >= tvDownloadFilter.Items.Count then
+      begin
+        index := 0;
+      end;
+
       tvDownloadFilter.Items[index].Selected := True;
     end;
 
@@ -7293,6 +7308,7 @@ procedure TMainForm.SaveFormInformation;
     begin
       WriteInteger(name, 'SortColumn', SortColumn);
       WriteInteger(name, 'SortDirection', Integer(SortDirection));
+
       for i := 0 to Columns.Count - 1 do
       begin
         WriteInteger(name, 'Column' + IntToStr(i) + 'Width', ScaleFontTo96(Columns[i].Width));
@@ -7346,10 +7362,14 @@ procedure TMainForm.ShowDropTarget(const AShow: Boolean);
 begin
   ckDropTarget.Checked := AShow;
   settingsfile.WriteBool('droptarget', 'Show', AShow);
+
   if AShow then
   begin
     if FormDropTarget = nil then
+    begin
       Application.CreateForm(TFormDropTarget, FormDropTarget);
+    end;
+
     frmDropTarget.OnDropChekout := @AddSilentThread;
     frmDropTarget.FAlphaBlendValue := tbDropTargetOpacity.Position;
     FormDropTarget.Show;
@@ -7357,7 +7377,9 @@ begin
   else
   begin
     if Assigned(FormDropTarget) then
+    begin
       FormDropTarget.Close;
+    end;
   end;
 end;
 
@@ -7413,14 +7435,17 @@ begin
   begin
     Exit;
   end;
+
   if cbLanguages.ItemIndex < 0 then
   begin
     Exit;
   end;
+
   if cbLanguages.ItemIndex >= AvailableLanguages.Count then
   begin
     Exit;
   end;
+
   if winBuildNumber < 17763 then
   begin
     cbDarkmode.Enabled := False
@@ -7445,6 +7470,7 @@ begin
     idxOptionCompress := rgOptionCompress.ItemIndex;
     idxOptionWebPConvertTo := cbWebPSaveAs.ItemIndex;
     idxOptionWebPPNGLevel := cbPNGCompressionLevel.ItemIndex;
+
     if SimpleTranslator.SetLangByIndex(cbLanguages.ItemIndex) then
     begin
       // assign new value
@@ -7480,7 +7506,9 @@ begin
 
       // refresh custom option
       if not isStartup then
+      begin
         WebsiteOptionCustomForm.CreateWebsiteOption;
+      end;
     end;
   end;
 end;
@@ -7493,9 +7521,17 @@ procedure TMainForm.OpenWithExternalProgramChapters(const Dir: String;
     ADir, SDir, s: String;
   begin
     Result := '';
-    if Filename = '' then Exit;
+    if Filename = '' then
+    begin
+      Exit;
+    end;
+
     ADir := CorrectPathSys(Dir);
-    if not DirectoryExistsUTF8(ADir) then Exit;
+    if not DirectoryExistsUTF8(ADir) then
+    begin
+      Exit;
+    end;
+
     for s in FMDSupportedPackedOutputExt do
     begin
       SDir := ChompPathDelim(CorrectPathSys(ADir + Filename));
@@ -7505,11 +7541,14 @@ procedure TMainForm.OpenWithExternalProgramChapters(const Dir: String;
         Break;
       end;
     end;
+
     if Result = '' then
     begin
       ADir := CorrectPathSys(ADir + Filename);
       if DirectoryExistsUTF8(ADir) then
-      Result := GetLastDir(ADir);
+      begin
+        Result := GetLastDir(ADir);
+      end;
     end;
   end;
 
@@ -7519,32 +7558,56 @@ var
   FindList: TStringList;
   SearchRec: TSearchRec;
 begin
-  if Dir = '' then Exit;
+  if Dir = '' then
+  begin
+    Exit;
+  end;
+
   ADir := CorrectPathSys(Dir);
+
   if Assigned(Chapters) then
+  begin
     if Chapters.Count > 0 then
+    begin
       for i := 0 to Chapters.Count - 1 do
       begin
         AFilename := FindSupportedOutputExt(ADir, Chapters[i]);
+
         if AFilename <> '' then
+        begin
           Break;
+        end;
       end;
+    end;
+  end;
 
   if AFilename = '' then
+  begin
     try
       FindList := TStringList.Create;
+
       if FindFirstUTF8(ADir + '*', faAnyFile and faDirectory, SearchRec) = 0 then
+      begin
         repeat
           FindList.Add(SearchRec.Name);
         until FindNextUTF8(SearchRec) <> 0;
+      end;
+
       if FindList.Count >= 3 then
-        AFilename := FindList.Strings[2]
+      begin
+        AFilename := FindList.Strings[2];
+      end
       else
+      begin
         AFilename := '';
+      end;
+
       FindCloseUTF8(SearchRec);
     finally
       FindList.Free;
     end;
+  end;
+
   OpenWithExternalProgram(ADir, AFilename);
 end;
 
@@ -7561,7 +7624,10 @@ begin
   if Exe <> '' then
   begin
     if (Pos(EXPARAM_PATH + EXPARAM_CHAPTER, Params) <> 0) then
+    begin
       AParam := PathDelim + AParam;
+    end;
+
     Params := StringReplace(Params, EXPARAM_PATH, ADir, [rfIgnoreCase, rfReplaceAll]);
     Params := StringReplace(Params, EXPARAM_CHAPTER, AParam, [rfIgnoreCase, rfReplaceAll]);
     RunExternalProcess(Exe, Params, True, False);
@@ -7569,7 +7635,10 @@ begin
   else
   begin
     if (ADir <> '') and (AParam <> '') then
+    begin
       AParam := ADir + PathDelim + AParam;
+    end;
+
     OpenDocument(AParam);
   end;
 end;
@@ -7580,8 +7649,11 @@ var
 begin
   TransferRateGraphList.Clear;
   TransferRateGraphArea.Legend.Format := FormatByteSize(0, True);
-  for i:=1 to xCount do
-    TransferRateGraphList.DataPoints.Add(IntToStr(i)+'|0|?|');
+
+  for i := 1 to xCount do
+  begin
+    TransferRateGraphList.DataPoints.Add(IntToStr(i) + '|0|?|');
+  end;
 end;
 
 procedure TMainForm.TransferRateGraphAddItem(TransferRate: Integer);
@@ -7589,22 +7661,31 @@ var
   i: Integer;
 begin
   TransferRateGraphArea.Legend.Format := FormatByteSize(TransferRate, True);
+
   with TransferRateGraphList.DataPoints do
   begin
     for i := 0 to Count - 2 do
-      Strings[i] := IntToStr(i+1)+'|'+ValueFromIndex[i+1];
-    Strings[Count-1] := IntToStr(Count)+'|'+IntToStr(TransferRate)+'|?|';
+    begin
+      Strings[i] := IntToStr(i + 1) + '|' + ValueFromIndex[i + 1];
+    end;
+
+    Strings[Count - 1] := IntToStr(Count) + '|' + IntToStr(TransferRate) + '|?|';
   end;
 end;
 
 procedure TMainForm.DoExitWaitCounter;
 begin
-  Logger.Send(Self.ClassName+', Execute exit counter');
-  if isUpdating then begin
-    Logger.Send(Self.ClassName+', Update thread still exist, pending exit counter');
-    isPendingExitCounter:=True
+  Logger.Send(Self.ClassName + ', Execute exit counter');
+
+  if isUpdating then
+  begin
+    Logger.Send(Self.ClassName + ', Update thread still exist, pending exit counter');
+    isPendingExitCounter := True
   end
-  else tmExitCommand.Enabled:=True;
+  else
+  begin
+    tmExitCommand.Enabled := True;
+  end;
 end;
 
 procedure TMainForm.ExceptionHandler(Sender: TObject; E: Exception);
@@ -7676,67 +7757,71 @@ begin
 
   WaitForOpenDataDB;
   UpdateVtMangaListFilterStatus;
-   
-  if (ANodeIndex < 0) or (ALink = '') then
-  begin
-    Exit;
-  end;
 
   vtMangaList.BeginUpdate;
-  totalNodes := vtMangaList.RootNodeCount;
-
-  if (ANodeIndex < totalNodes) then
-  begin
-    // Smart traversal
-    if ANodeIndex < totalNodes div 2 then
+  try
+    totalNodes := vtMangaList.RootNodeCount;
+    if totalNodes = 0 then
     begin
-      // Near beginning - go forward
-      nextNode := vtMangaList.GetFirst;
-      CheckNode(nextNode, newNode, ALink);
+      Exit;
+    end;
 
-      for i := 0 to Min(totalNodes - 1, ANodeIndex) do
+    if (ANodeIndex < 0) or (ALink = '') then
+    begin
+      newNode := vtMangaList.GetFirst;
+    end
+    else if (ANodeIndex < totalNodes) then
+    begin
+      // Smart traversal
+      if ANodeIndex < totalNodes div 2 then
       begin
-        if not Assigned(nextNode) then
-        begin
-          Break;
-        end;
-
-        nextNode := vtMangaList.GetNext(nextNode);
+        // Near beginning - go forward
+        nextNode := vtMangaList.GetFirst;
         CheckNode(nextNode, newNode, ALink);
+
+        for i := 0 to Min(totalNodes - 1, ANodeIndex) do
+        begin
+          if not Assigned(nextNode) then
+          begin
+            Break;
+          end;
+
+          nextNode := vtMangaList.GetNext(nextNode);
+          CheckNode(nextNode, newNode, ALink);
+        end;
+      end
+      else
+      begin
+        // Near end - go backward
+        nextNode := vtMangaList.GetLast;
+        CheckNode(nextNode, newNode, ALink);
+
+        for i := 0 to (totalNodes - ANodeIndex) do
+        begin
+          if not Assigned(nextNode) then
+          begin
+            Break;
+          end;
+
+          nextNode := vtMangaList.GetPrevious(nextNode);
+          CheckNode(nextNode, newNode, ALink);
+        end;
       end;
     end
     else
     begin
-      // Near end - go backward
-      nextNode := vtMangaList.GetLast;
-      CheckNode(nextNode, newNode, ALink);
-
-      for i := 0 to (totalNodes - ANodeIndex) do
-      begin
-        if not Assigned(nextNode) then
-        begin
-          Break;
-        end;
-
-        nextNode := vtMangaList.GetPrevious(nextNode);
-        CheckNode(nextNode, newNode, ALink);
-      end;
+      newNode := vtMangaList.GetLast
     end;
 
-  end
-  else
-  begin
-    newNode := vtMangaList.GetLast
+    if Assigned(newNode) then
+    begin
+      vtMangaList.Selected[newNode] := True;
+      vtMangaList.FocusedNode := newNode;
+      vtMangaList.ScrollIntoView(newNode, True);
+    end;
+  finally
+    vtMangaList.EndUpdate;
   end;
-      
-  if Assigned(newNode) then
-  begin
-    vtMangaList.Selected[newNode] := True;
-    vtMangaList.FocusedNode := newNode;
-    vtMangaList.ScrollIntoView(newNode, True);
-  end;
-
-  vtMangaList.EndUpdate;
 end;
 
 procedure TMainForm.vtOptionMangaSiteSelectionFreeNode(
