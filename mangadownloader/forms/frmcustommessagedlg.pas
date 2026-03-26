@@ -5,7 +5,8 @@ unit frmCustomMessageDlg;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, DialogRes, Buttons, ExtCtrls, StdCtrls, LCLType;
+  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, DialogRes, Buttons,
+  ExtCtrls, StdCtrls, LCLType, Windows;
 
 type
 
@@ -40,6 +41,18 @@ resourcestring
   RS_DialogInformation = 'Information';
   RS_DialogConfirmation = 'Confirmation';
   RS_DialogCustom = 'Message';
+
+  RS_DialogButtonYes = 'Yes';
+  RS_DialogButtonNo = 'No';
+  RS_DialogButtonOK = 'OK';
+  RS_DialogButtonCancel = 'Cancel';
+  RS_DialogButtonAbort = 'Abort';
+  RS_DialogButtonRetry = 'Retry';
+  RS_DialogButtonIgnore = 'Ignore';
+  RS_DialogButtonAll = 'All';
+  RS_DialogButtonNoAll = 'No to All';
+  RS_DialogButtonYesAll = 'Yes to All';
+  RS_DialogButtonClose = 'Close';
 
 implementation
 
@@ -80,17 +93,17 @@ end;
 function GetButtonCaption(Button: TMsgDlgBtn): String;
 begin
   case Button of
-    mbYes: Result := 'Yes';
-    mbNo: Result := 'No';
-    mbOK: Result := 'OK';
-    mbCancel: Result := 'Cancel';
-    mbAbort: Result := 'Abort';
-    mbRetry: Result := 'Retry';
-    mbIgnore: Result := 'Ignore';
-    mbAll: Result := 'All';
-    mbNoToAll: Result := 'No to All';
-    mbYesToAll: Result := 'Yes to All';
-    mbClose: Result := 'Close';
+    mbYes: Result := RS_DialogButtonYes;
+    mbNo: Result := RS_DialogButtonNo;
+    mbOK: Result := RS_DialogButtonOK;
+    mbCancel: Result := RS_DialogButtonCancel;
+    mbAbort: Result := RS_DialogButtonAbort;
+    mbRetry: Result := RS_DialogButtonRetry;
+    mbIgnore: Result := RS_DialogButtonIgnore;
+    mbAll: Result := RS_DialogButtonAll; 
+    mbYesToAll: Result := RS_DialogButtonYesAll;
+    mbNoToAll: Result := RS_DialogButtonNoAll;
+    mbClose: Result := RS_DialogButtonClose;
   else
     Result := '';
   end;
@@ -107,8 +120,8 @@ begin
     mbRetry: Result := mrRetry;
     mbIgnore: Result := mrIgnore;
     mbAll: Result := mrAll;
-    mbNoToAll: Result := mrNoToAll;
     mbYesToAll: Result := mrYesToAll;
+    mbNoToAll: Result := mrNoToAll;
     mbClose: Result := mrClose;
   else
     Result := mrNone;
@@ -132,57 +145,59 @@ end;
 
 procedure TCustomMessageDlg.CreateButtons(AButtons: TMsgDlgButtons);
 const
-  ButtonWidth = 75;
-  ButtonHeight = 25;
-  ButtonSpacing = 10;
+  ButtonWidthMin = 70;
+  ButtonWidthMax = 100;
+  ButtonHeightMin = 25;
+  ButtonHeightMax = 30;
+  ButtonPadding = 7;
 var
   BitBtn: TBitBtn;
-  LeftPos, ButtonCount, TotalWidth: Integer;
+  LeftPos, ButtonWidth, ButtonHeight: Integer;
   BtnKind: TMsgDlgBtn;
 begin
-  // Calculate the number of buttons and total width
-  ButtonCount := 0;
-  for BtnKind := Low(TMsgDlgBtn) to High(TMsgDlgBtn) do
-  begin
-    if BtnKind in AButtons then
-    begin
-      Inc(ButtonCount);
-    end;
-  end;
+  ButtonWidth := 0;
+  ButtonHeight := 0; 
+  pnlButtons.Height := ButtonHeightMax + (ButtonPadding * 2);
 
-  TotalWidth := (ButtonWidth * ButtonCount) + (ButtonSpacing * (ButtonCount - 1));
-
-  // Calculate the starting position for the buttons
-  LeftPos := (pnlButtons.Width - TotalWidth) div 2;
+  // Starting position for the buttons
+  LeftPos := ButtonPadding;
 
   // Create buttons dynamically based on AButtons
   for BtnKind := Low(TMsgDlgBtn) to High(TMsgDlgBtn) do
   begin
-    if BtnKind in AButtons then
+    if not (BtnKind in AButtons) then
     begin
-      BitBtn := TBitBtn.Create(Self);
-      BitBtn.Parent := pnlButtons;
-      BitBtn.Caption := GetButtonCaption(BtnKind);
-      BitBtn.ModalResult := GetButtonResult(BtnKind);
-      BitBtn.Width := ButtonWidth;
-      BitBtn.Height := ButtonHeight;
-      BitBtn.Left := LeftPos;
-      BitBtn.Top := (pnlButtons.Height - ButtonHeight) div 2;
-      BitBtn.Images := MainForm.IconSmall;
-
-      case BtnKind of
-        mbYes: BitBtn.ImageIndex := 2;
-        mbNo: BitBtn.ImageIndex := 1;
-        mbOK: BitBtn.ImageIndex := 2;
-        mbCancel: BitBtn.ImageIndex := 1;
-        mbAbort: BitBtn.ImageIndex := 1;
-        mbRetry: BitBtn.ImageIndex := 2;
-        mbIgnore: BitBtn.ImageIndex := 1;
-      end;
-
-      LeftPos := LeftPos + ButtonWidth + ButtonSpacing;
+      Continue;
     end;
+
+    BitBtn := TBitBtn.Create(Self);
+    BitBtn.Parent := pnlButtons;
+    BitBtn.Caption := GetButtonCaption(BtnKind);
+    BitBtn.ModalResult := GetButtonResult(BtnKind);
+    BitBtn.Constraints.MinWidth := ButtonWidthMin;
+    BitBtn.Constraints.MaxWidth := ButtonWidthMax;
+    BitBtn.Constraints.MinHeight := ButtonHeightMin;
+    BitBtn.Constraints.MaxHeight := ButtonHeightMax;
+    BitBtn.Images := MainForm.IconSmall;
+
+    case BtnKind of
+      mbYes: BitBtn.ImageIndex := 2;
+      mbNo: BitBtn.ImageIndex := 1;
+      mbOK: BitBtn.ImageIndex := 2;
+      mbCancel: BitBtn.ImageIndex := 1;
+      mbAbort: BitBtn.ImageIndex := 1;
+      mbRetry: BitBtn.ImageIndex := 2;
+      mbIgnore: BitBtn.ImageIndex := 1;
+    end;
+
+    BitBtn.GetPreferredSize(ButtonWidth, ButtonHeight);
+    BitBtn.Left := LeftPos;
+    BitBtn.Top := (pnlButtons.Height - ButtonHeight) div 2;
+
+    LeftPos := LeftPos + ButtonWidth + ButtonPadding;
   end;
+
+  pnlButtons.Width := LeftPos;
 end;
 
 procedure TCustomMessageDlg.SetIcon(ADlgType: TMsgDlgType);
@@ -213,6 +228,7 @@ begin
 
     // Create buttons dynamically
     Dlg.CreateButtons(AButtons);
+    Dlg.Width := Max(Dlg.Width, Dlg.pnlButtons.Width);
 
     // Center the dialog on the provided form
     Dlg.Position := poDesigned;

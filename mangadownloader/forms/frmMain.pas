@@ -4325,13 +4325,11 @@ begin
   try
     YesAll := False;
     NoAll := False;
-    if vtMangaList.SelectedCount = 1 then
+    
+    mBtns := [mbYes, mbNo];
+    if vtMangaList.SelectedCount > 1 then
     begin
-      mBtns := [mbYes, mbNo];
-    end
-    else
-    begin
-      mBtns := [mbYes, mbNo, mbYesToAll, mbNoToAll];
+      mBtns := mBtns + [mbYesToAll, mbNoToAll];
     end;
 
     xNode := vtMangaList.GetFirstSelected;
@@ -4339,60 +4337,70 @@ begin
     begin
       data := vtMangaList.GetNodeData(xNode);
       AllowedToCreate := True;
-      if DLManager.Count > 0 then
+
+      if DLManager.Count <= 0 then
       begin
-        for i := 0 to DLManager.Count - 1 do
+        Break;
+      end;
+
+      for i := 0 to DLManager.Count - 1 do
+      begin
+        if data^.Title <> DLManager.Items[i].DownloadInfo.title then
         begin
-          if data^.Title = DLManager.Items[i].DownloadInfo.title then
+          Continue;
+        end;
+
+        if YesAll then
+        begin
+          AllowedToCreate := True;
+          Break;
+        end;
+
+        if NoAll then
+        begin
+          AllowedToCreate := False;
+          Break;
+        end;
+
+        if OptionShowDownloadsTabOnNewTasks then
+        begin
+          pcMain.ActivePage := tsDownload;
+        end;
+
+        mResult := CenteredMessageDlg(Self, DLManager.Items[i].DownloadInfo.title +
+          LineEnding + LineEnding + RS_DlgTitleExistInDLlist, mtConfirmation, mBtns, 0);
+        case mResult of
+          mrYes: AllowedToCreate := True;
+          mrNo: AllowedToCreate := False;
+          mrYesToAll:
           begin
-            if YesAll then
-            begin
-              AllowedToCreate := True
-            end
-            else if NoAll then
-            begin
-              AllowedToCreate := False
-            end
-            else
-            begin
-              if OptionShowDownloadsTabOnNewTasks then
-              begin
-                pcMain.ActivePage := tsDownload;
-              end;
-              mResult := CenteredMessageDlg(Self, DLManager.Items[i].DownloadInfo.title +
-                LineEnding + LineEnding + RS_DlgTitleExistInDLlist, mtConfirmation, mBtns, 0);
-              case mResult of
-                mrYes : AllowedToCreate := True;
-                mrNo  : AllowedToCreate := False;
-                mrYesToAll :
-                  begin
-                    YesAll := True;
-                    NoAll := False;
-                    AllowedToCreate := True;
-                  end;
-                mrNoToAll :
-                  begin
-                    YesAll := False;
-                    NoAll := True;
-                    AllowedToCreate := False;
-                  end;
-              end;
-            end;
-            Break;
+            YesAll := True;
+            NoAll := False;
+            AllowedToCreate := True;
+          end;
+        else
+          begin
+            YesAll := False;
+            NoAll := True;
+            AllowedToCreate := False;
           end;
         end;
+
+        Break;
       end;
 
       if AllowedToCreate then
       begin
         SilentThreadManager.Add(MD_DownloadAll, TModuleContainer(data^.Module), data^.Title, data^.Link);
       end;
+
       xNode := vtMangaList.GetNextSelected(xNode);
     end;
   except
     on E: Exception do
       ExceptionHandler(Self, E);
   end;
+
   SilentThreadManager.EndAdd;
 end;
 

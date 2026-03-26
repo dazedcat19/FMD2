@@ -23,17 +23,18 @@ object CustomMessageDlg: TCustomMessageDlg
   end
   object pnlButtons: TPanel
     AnchorSideLeft.Control = Owner
+    AnchorSideLeft.Side = asrCenter
     AnchorSideTop.Control = imgIcon
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
-    Left = 0
+    Left = 125
     Height = 45
     Top = 73
-    Width = 300
-    Anchors = [akLeft, akRight, akBottom]
+    Width = 50
+    Anchors = [akLeft, akBottom]
     BorderSpacing.Top = 10
     TabOrder = 0
   end

@@ -108,6 +108,58 @@ msgstr "OK"
 msgid "Username or password can't be empty!"
 msgstr "¡Nombre de usuario o contraseña no puede estar vacio!"
 
+#: frmcustommessagedlg.rs_dialogbuttonabort
+#, fuzzy
+msgctxt "frmcustommessagedlg.rs_dialogbuttonabort"
+msgid "Abort"
+msgstr "Abortar"
+
+#: frmcustommessagedlg.rs_dialogbuttonall
+#, fuzzy
+msgctxt "frmcustommessagedlg.rs_dialogbuttonall"
+msgid "All"
+msgstr "Todo"
+
+#: frmcustommessagedlg.rs_dialogbuttoncancel
+#, fuzzy
+msgctxt "frmcustommessagedlg.rs_dialogbuttoncancel"
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: frmcustommessagedlg.rs_dialogbuttonclose
+msgid "Close"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonignore
+msgid "Ignore"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonno
+msgid "No"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonnoall
+msgid "No to All"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonok
+#, fuzzy
+msgctxt "frmcustommessagedlg.rs_dialogbuttonok"
+msgid "OK"
+msgstr "OK"
+
+#: frmcustommessagedlg.rs_dialogbuttonretry
+msgid "Retry"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonyes
+msgid "Yes"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonyesall
+msgid "Yes to All"
+msgstr ""
+
 #: frmcustommessagedlg.rs_dialogconfirmation
 msgctxt "frmcustommessagedlg.rs_dialogconfirmation"
 msgid "Confirmation"
