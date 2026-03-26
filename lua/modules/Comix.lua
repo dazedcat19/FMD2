@@ -146,22 +146,20 @@ function GetInfo()
 					chapter_map[key] = ch_data
 					table.insert(chapter_list, key)
 				else
-					local official_new = (ch_data.scan_group_id == 9275 or ch_data.official == 1)
-					local official_current = (current.scan_group_id == 9275 or current.official == 1)
+					local new_official = ch_data.official == 1
+					local cur_official = current.official == 1
+					local new_group = ch_data.scan_group_id == 10702
+					local cur_group = current.scan_group_id == 10702
 					local better = false
 
-					if official_new and not official_current then
-						better = true
-					elseif not official_new and official_current then
-						better = false
+					if new_official ~= cur_official then
+						better = new_official
+					elseif new_group ~= cur_group then
+						better = new_group
+					elseif ch_data.votes ~= current.votes then
+						better = ch_data.votes > current.votes
 					else
-						if ch_data.votes > current.votes then
-							better = true
-						elseif ch_data.votes < current.votes then
-							better = false
-						elseif ch_data.updated_at > current.updated_at then
-							better = true
-						end
+						better = ch_data.updated_at > current.updated_at
 					end
 
 					if better then
