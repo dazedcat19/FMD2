@@ -43,7 +43,7 @@ local function SetRequestHeaders()
 		return no_error
 	end
 
-	if not HTTP.GET(MODULE.RootURL .. '/api/sessions') then return net_problem end
+	if not HTTP.GET(MODULE.RootURL .. '/api/se') then return net_problem end
 
 	local body = HTTP.Document.ToString()
 	local new_sign  = body:match('"sign"%s*:%s*"(.-)"')
@@ -106,7 +106,7 @@ function GetInfo()
 	MANGAINFO.CoverLink = 'https://softkomik.com/_next/image?url=https://cover.softdevices.my.id/softkomik-cover/' .. x.XPathString('gambar', json) .. '&w=256&q=100'
 	MANGAINFO.Authors   = x.XPathString('author', json)
 	MANGAINFO.Genres    = x.XPathString('string-join((Genre?*, concat(upper-case(substring(type, 1, 1)), lower-case(substring(type, 2)))), ", ")', json)
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status', json))
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status', json), 'ongoing', 'tamat')
 	MANGAINFO.Summary   = x.XPathString('sinopsis', json)
 
 	SetRequestHeaders()
@@ -116,7 +116,7 @@ function GetInfo()
 	for v in CreateTXQuery(HTTP.Document).XPath('json(*).chapter().chapter').Get() do
 		local ch = v.ToString()
 		MANGAINFO.ChapterLinks.Add(URL .. '/chapter/' .. ch)
-		MANGAINFO.ChapterNames.Add('Chapter ' .. ch)
+		MANGAINFO.ChapterNames.Add('Chapter ' .. tonumber(ch))
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
