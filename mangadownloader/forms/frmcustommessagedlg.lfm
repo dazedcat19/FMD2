@@ -36,6 +36,7 @@ object CustomMessageDlg: TCustomMessageDlg
     Width = 50
     Anchors = [akLeft, akBottom]
     BorderSpacing.Top = 10
+    BevelOuter = bvNone
     TabOrder = 0
   end
   object lblMessage: TLabel

@@ -100,9 +100,9 @@ begin
     mbAbort: Result := RS_DialogButtonAbort;
     mbRetry: Result := RS_DialogButtonRetry;
     mbIgnore: Result := RS_DialogButtonIgnore;
-    mbAll: Result := RS_DialogButtonAll; 
-    mbYesToAll: Result := RS_DialogButtonYesAll;
+    mbAll: Result := RS_DialogButtonAll;
     mbNoToAll: Result := RS_DialogButtonNoAll;
+    mbYesToAll: Result := RS_DialogButtonYesAll;
     mbClose: Result := RS_DialogButtonClose;
   else
     Result := '';
@@ -120,8 +120,8 @@ begin
     mbRetry: Result := mrRetry;
     mbIgnore: Result := mrIgnore;
     mbAll: Result := mrAll;
-    mbYesToAll: Result := mrYesToAll;
     mbNoToAll: Result := mrNoToAll;
+    mbYesToAll: Result := mrYesToAll;
     mbClose: Result := mrClose;
   else
     Result := mrNone;
@@ -146,7 +146,7 @@ end;
 procedure TCustomMessageDlg.CreateButtons(AButtons: TMsgDlgButtons);
 const
   ButtonWidthMin = 70;
-  ButtonWidthMax = 100;
+  ButtonWidthMax = 125;
   ButtonHeightMin = 25;
   ButtonHeightMax = 30;
   ButtonPadding = 7;
@@ -171,6 +171,7 @@ begin
     end;
 
     BitBtn := TBitBtn.Create(Self);
+    BitBtn.AutoSize := True;
     BitBtn.Parent := pnlButtons;
     BitBtn.Caption := GetButtonCaption(BtnKind);
     BitBtn.ModalResult := GetButtonResult(BtnKind);
@@ -189,7 +190,8 @@ begin
       mbRetry: BitBtn.ImageIndex := 2;
       mbIgnore: BitBtn.ImageIndex := 1;
     end;
-
+         
+    BitBtn.HandleNeeded;
     BitBtn.GetPreferredSize(ButtonWidth, ButtonHeight);
     BitBtn.Left := LeftPos;
     BitBtn.Top := (pnlButtons.Height - ButtonHeight) div 2;
