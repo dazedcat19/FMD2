@@ -116,7 +116,7 @@ function GetInfo()
 	for v in CreateTXQuery(HTTP.Document).XPath('json(*).chapter().chapter').Get() do
 		local ch = v.ToString()
 		MANGAINFO.ChapterLinks.Add(URL .. '/chapter/' .. ch)
-		MANGAINFO.ChapterNames.Add('Chapter ' .. tonumber(ch))
+		MANGAINFO.ChapterNames.Add('Chapter ' .. tonumber(ch:match('%d+')))
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
