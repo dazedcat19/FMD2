@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'c0b91b10b0bf4bb98a90a9995457c0f9'
 	m.Name                     = 'Shinigami ID'
-	m.RootURL                  = 'https://09.shinigami.asia'
+	m.RootURL                  = 'https://c.shinigami.asia'
 	m.Category                 = 'Indonesian'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
