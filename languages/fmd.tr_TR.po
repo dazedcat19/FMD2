@@ -333,6 +333,10 @@ msgstr "%s GÜNCELLENDİ*"
 msgid "All downloads"
 msgstr "Tüm indirmeler"
 
+#: frmmain.rs_applybuttonsaved
+msgid "Saved!"
+msgstr ""
+
 #: frmmain.rs_btnok
 msgctxt "frmmain.rs_btnok"
 msgid "&OK"

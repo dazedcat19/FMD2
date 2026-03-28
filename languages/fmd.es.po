@@ -332,6 +332,10 @@ msgstr "%s ACTUALIZAR*"
 msgid "All downloads"
 msgstr "Todas las descargas"
 
+#: frmmain.rs_applybuttonsaved
+msgid "Saved!"
+msgstr ""
+
 #: frmmain.rs_btnok
 msgctxt "frmmain.rs_btnok"
 msgid "&OK"

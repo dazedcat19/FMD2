@@ -536,6 +536,8 @@ type
     procedure btDownloadClick(Sender: TObject);
     procedure btFavoritesCheckNewChapterClick(Sender: TObject);
     procedure btOptionApplyClick(Sender: TObject);
+    procedure OptionButtonSavedText;
+    procedure OptionButtonRestoreText(Sender: TObject);
 
     procedure btFilterClick(Sender: TObject);
     procedure btFilterResetClick(Sender: TObject);
@@ -716,6 +718,8 @@ type
       var CellText: String);
     procedure DisableAddToFavorites(const AModule: Pointer);
   private
+    FApplyButtonText: String;
+    FApplyButtonTimer: TTimer;
     PrevWindowState: TWindowState;
     procedure vtDownloadMoveItems(NextIndex : Cardinal; Mode : TDropMode);
   protected
@@ -986,6 +990,7 @@ resourcestring
   RS_Checking = 'Checking...';
   RS_AllDownloads = 'All downloads';
   RS_InProgress = 'In progress';
+  RS_ApplyButtonSaved = 'Saved!';
 
   RS_History = 'History';
   RS_Today = 'Today';
@@ -5539,6 +5544,32 @@ end;
 
 // options
 
+procedure TMainForm.OptionButtonSavedText;
+begin
+  if (FApplyButtonTimer <> nil) and FApplyButtonTimer.Enabled then
+  begin
+    OptionButtonRestoreText(FApplyButtonTimer);
+  end;
+
+  FApplyButtonText := btOptionApply.Caption;
+  btOptionApply.Caption := RS_ApplyButtonSaved;
+
+  if FApplyButtonTimer = nil then
+  begin
+    FApplyButtonTimer := TTimer.Create(nil);
+    FApplyButtonTimer.Interval := 1000;
+    FApplyButtonTimer.OnTimer := @OptionButtonRestoreText;
+  end;
+
+  FApplyButtonTimer.Enabled := True;
+end;
+
+procedure TMainForm.OptionButtonRestoreText(Sender: TObject);
+begin
+  btOptionApply.Caption := FApplyButtonText;
+  FApplyButtonTimer.Enabled := False;
+end;
+
 procedure TMainForm.btOptionApplyClick(Sender: TObject);
 var
   oldOptionMaxParallel: Integer;
@@ -5556,6 +5587,8 @@ begin
   begin
     Self.SetFocus;
   end;
+
+  OptionButtonSavedText;
 end;
 
 // vtMangaList

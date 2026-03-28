@@ -341,6 +341,10 @@ msgstr "%s PEMUTAKHIRAN*"
 msgid "All downloads"
 msgstr "Semua unduhan"
 
+#: frmmain.rs_applybuttonsaved
+msgid "Saved!"
+msgstr ""
+
 #: frmmain.rs_btnok
 msgctxt "frmmain.rs_btnok"
 msgid "&OK"
