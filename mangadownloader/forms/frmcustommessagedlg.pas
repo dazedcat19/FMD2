@@ -147,7 +147,7 @@ procedure TCustomMessageDlg.CreateButtons(AButtons: TMsgDlgButtons);
 const
   ButtonWidthMin = 70;
   ButtonWidthMax = 125;
-  ButtonHeightMin = 25;
+  ButtonHeightMin = 26;
   ButtonHeightMax = 30;
   ButtonPadding = 7;
 var
