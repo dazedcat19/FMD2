@@ -189,15 +189,16 @@ function GetInfo()
 		local page = 1
 		local pages = tonumber(x.XPathString('//a[@class="last"]/@href'):match('(%d+)$')) or 1
 		while true do
-			page = page + 1
-			if page > pages then
-				break
-			end
 			for v in x.XPath('//div[contains(@class, "gallery")]/a').Get() do
 				MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
 				MANGAINFO.ChapterNames.Add(x.XPathString('div', v))
 			end
-			if not HTTP.GET(u:find('search?', 1, true) and u .. '&page=' .. page or u .. '?page=' .. page) then break end
+			page = page + 1
+			if page > pages then
+				break
+			elseif not HTTP.GET(u:find('search?', 1, true) and u .. '&page=' .. page or u .. '?page=' .. page) then
+				break
+			end
 			x.ParseHTML(HTTP.Document)
 		end
 		MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
