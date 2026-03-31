@@ -43,12 +43,12 @@ local function SetRequestHeaders()
 		return no_error
 	end
 
-	if not HTTP.GET(MODULE.RootURL .. '/api/se') then return net_problem end
+	if not HTTP.GET(MODULE.RootURL .. '/api/me') then return net_problem end
 
 	local body = HTTP.Document.ToString()
-	local new_sign  = body:match('"sign"%s*:%s*"(.-)"')
-	local new_token = body:match('"token"%s*:%s*"(.-)"')
-	local new_ex    = body:match('"ex"%s*:%s*(%d+)')
+	local new_sign  = body:match('"sign":%s*"(.-)"')
+	local new_token = body:match('"token":%s*"(.-)"')
+	local new_ex    = body:match('"ex":%s*(%d+)')
 
 	if new_sign and new_token and new_ex then
 		MODULE.Storage['sign']   = new_sign
