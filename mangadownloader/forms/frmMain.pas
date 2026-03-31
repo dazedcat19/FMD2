@@ -83,7 +83,9 @@ type
     ckOptionsAlwaysStartTaskFromFailedChapters: TCheckBox;
     ckEnableLogging: TCheckBox;
     cbWebPSaveAs: TComboBox;
-    cbPNGCompressionLevel: TComboBox;
+    cbAvifSaveAs: TComboBox;
+    cbWebPPNGCompressionLevel: TComboBox;
+    cbAvifPNGCompressionLevel: TComboBox;
     cbImageMagickSaveAs: TComboBox;
     cbImageMagickCompression: TComboBox;
     deDownloadFilterCustomDateFrom: TDateEdit;
@@ -949,6 +951,8 @@ resourcestring
   RS_OptionCompress = 'None'#13#10'ZIP'#13#10'CBZ'#13#10'PDF'#13#10'EPUB';
   RS_WebPConvertTo = 'WebP'#13#10'PNG'#13#10'JPEG';
   RS_WebPPNGLevel = 'None'#13#10'Fastest'#13#10'Default'#13#10'Maximum';
+  RS_AvifConvertTo = 'Avif'#13#10'PNG'#13#10'JPEG';
+  RS_AvifPNGLevel = 'None'#13#10'Fastest'#13#10'Default'#13#10'Maximum';
 
   RS_HintFavoriteProblem = 'There is a problem with this data!'#13#10
                          + 'Removing and re-adding this data may fix the problem.';
@@ -3021,7 +3025,9 @@ begin
     gbImageConversion.Enabled := False;
     ckPNGSaveAsJPEG.Enabled := False;
     cbWebPSaveAs.Enabled := False;
-    cbPNGCompressionLevel.Enabled := False;
+    cbAvifSaveAs.Enabled := False;
+    cbWebPPNGCompressionLevel.Enabled := False;
+    cbAvifPNGCompressionLevel.Enabled := False;
     seJPEGQuality.Enabled := False;
   end
   else
@@ -3031,7 +3037,9 @@ begin
     gbImageConversion.Enabled := True;
     ckPNGSaveAsJPEG.Enabled := True;
     cbWebPSaveAs.Enabled := True;
-    cbPNGCompressionLevel.Enabled := True;
+    cbAvifSaveAs.Enabled := True;
+    cbWebPPNGCompressionLevel.Enabled := True;
+    cbAvifPNGCompressionLevel.Enabled := True;
     seJPEGQuality.Enabled := True;
   end;
 end;
@@ -5821,7 +5829,9 @@ begin
 
     ckPNGSaveAsJPEG.Checked := ReadBool('saveto', 'PNGSaveAsJPEG', OptionPNGSaveAsJPEG);
     cbWebPSaveAs.ItemIndex := ReadInteger('saveto', 'ConvertWebP', OptionWebPSaveAs);
-    cbPNGCompressionLevel.ItemIndex := ReadInteger('saveto', 'PNGCompressionLevel', OptionPNGCompressionLevel);
+    cbAvifSaveAs.ItemIndex := ReadInteger('saveto', 'ConvertAvif', OptionAvifSaveAs);
+    cbWebPPNGCompressionLevel.ItemIndex := ReadInteger('saveto', 'WebPPNGCompressionLevel', OptionWebPPNGCompressionLevel);
+    cbAvifPNGCompressionLevel.ItemIndex := ReadInteger('saveto', 'AvifPNGCompressionLevel', OptionAvifPNGCompressionLevel);
     seJPEGQuality.Value := ReadInteger('saveto', 'JPEGQuality', OptionJPEGQuality);
 
     // imagemagick
@@ -6015,7 +6025,9 @@ begin
       WriteString('saveto', 'FilenameCustomRename', edOptionFilenameCustomRename.Text);
       WriteBool('saveto', 'PNGSaveAsJPEG', ckPNGSaveAsJPEG.Checked);
       WriteInteger('saveto', 'ConvertWebP', cbWebPSaveAs.ItemIndex);
-      WriteInteger('saveto', 'PNGCompressionLevel', cbPNGCompressionLevel.ItemIndex);
+      WriteInteger('saveto', 'ConvertAvif', cbAvifSaveAs.ItemIndex);
+      WriteInteger('saveto', 'WebPPNGCompressionLevel', cbWebPPNGCompressionLevel.ItemIndex);
+      WriteInteger('saveto', 'AvifPNGCompressionLevel', cbAvifPNGCompressionLevel.ItemIndex);
       WriteInteger('saveto', 'JPEGQuality', seJPEGQuality.Value);
 
       // imagemagick
@@ -6215,7 +6227,9 @@ begin
     OptionConvertDigitChapterLength := seOptionDigitChapter.Value;
     OptionPNGSaveAsJPEG := ckPNGSaveAsJPEG.Checked;
     OptionWebPSaveAs := cbWebPSaveAs.ItemIndex;
-    OptionPNGCompressionLevel := cbPNGCompressionLevel.ItemIndex;
+    OptionAvifSaveAs := cbAvifSaveAs.ItemIndex;
+    OptionWebPPNGCompressionLevel := cbWebPPNGCompressionLevel.ItemIndex;
+    OptionAvifPNGCompressionLevel := cbAvifPNGCompressionLevel.ItemIndex;
     OptionJPEGQuality := seJPEGQuality.Value;
 
     // imagemagick
@@ -6812,7 +6826,9 @@ var
   idxDropTargetMode,
   idxOptionCompress,
   idxOptionWebPConvertTo,
-  idxOptionWebPPNGLevel: Integer;
+  idxOptionWebPPNGLevel,
+  idxOptionAvifConvertTo,
+  idxOptionAvifPNGLevel: Integer;
 begin
   if AvailableLanguages.Count = 0 then Exit;
   if cbLanguages.ItemIndex < 0 then Exit;
@@ -6832,7 +6848,9 @@ begin
     idxDropTargetMode := rgDropTargetMode.ItemIndex;
     idxOptionCompress := rgOptionCompress.ItemIndex;
     idxOptionWebPConvertTo := cbWebPSaveAs.ItemIndex;
-    idxOptionWebPPNGLevel := cbPNGCompressionLevel.ItemIndex;
+    idxOptionWebPPNGLevel := cbWebPPNGCompressionLevel.ItemIndex;
+    idxOptionAvifConvertTo := cbAvifSaveAs.ItemIndex;
+    idxOptionAvifPNGLevel := cbAvifPNGCompressionLevel.ItemIndex;
     if SimpleTranslator.SetLangByIndex(cbLanguages.ItemIndex) then
     begin
       // assign new value
@@ -6847,7 +6865,9 @@ begin
       rgDropTargetMode.Items.Text := RS_DropTargetModeItems;
       rgOptionCompress.Items.Text := RS_OptionCompress;
       cbWebPSaveAs.Items.Text := RS_WebPConvertTo;
-      cbPNGCompressionLevel.Items.Text := RS_WebPPNGLevel;
+      cbAvifSaveAs.Items.Text := RS_AvifConvertTo;
+      cbWebPPNGCompressionLevel.Items.Text := RS_WebPPNGLevel;
+      cbAvifPNGCompressionLevel.Items.Text := RS_AvifPNGLevel;
 
       // restore ItemIndex
       cbSelectManga.ItemIndex:=idxSelectManga;
@@ -6859,7 +6879,9 @@ begin
       rgDropTargetMode.ItemIndex := idxDropTargetMode;
       rgOptionCompress.ItemIndex := idxOptionCompress;
       cbWebPSaveAs.ItemIndex := idxOptionWebPConvertTo;
-      cbPNGCompressionLevel.ItemIndex := idxOptionWebPPNGLevel;
+      cbAvifSaveAs.ItemIndex := idxOptionAvifConvertTo;
+      cbWebPPNGCompressionLevel.ItemIndex := idxOptionWebPPNGLevel;
+      cbAvifPNGCompressionLevel.ItemIndex := idxOptionAvifPNGLevel;
       Self.Repaint;
       Self.Caption := Self.Caption + ' v' + FMD_VERSION_STRING;
       vtMangaList.Repaint;

@@ -587,6 +587,10 @@ function CreateFQDNList(Sender: TObject; AFileName: String; AFileList: TStringLi
 function WebPToPNGStream(const AStream: TMemoryStream; const ALevel: Tcompressionlevel = clfastest): Boolean;
 function WebPToJPEGStream(const AStream: TMemoryStream; const AQuality: Integer = 80): Boolean;
 
+// convert avif
+function AvifToPNGStream(const AStream: TMemoryStream; const ALevel: Tcompressionlevel = clfastest): Boolean;
+function AvifToJPEGStream(const AStream: TMemoryStream; const AQuality: Integer = 80): Boolean;
+
 // convert png
 function PNGToJPEGStream(const AStream: TMemoryStream; const AQuality: Integer = 80): Boolean;
 
@@ -662,7 +666,7 @@ procedure SendLogException(const AText: String; AException: Exception); inline;
 implementation
 
 uses
-  frmMain, WebsiteModules, webp, DCPrijndael, DCPsha512, FPWriteJPEG,
+  frmMain, WebsiteModules, webp, avif, DCPrijndael, DCPsha512, FPWriteJPEG,
   LuaWebsiteModules;
 
 {$IFDEF WINDOWS}
@@ -2363,6 +2367,56 @@ begin
   end;
 end;
 
+function AvifToPNGStream(const AStream: TMemoryStream; const ALevel: Tcompressionlevel): Boolean;
+var
+  mem: TMemBitmap;
+  writer: TFPWriterPNG;
+begin
+  Result := False;
+  mem := nil;
+  try
+    mem := AvifToMemBitmap(AStream);
+    if Assigned(mem) then
+    try
+      writer := TFPWriterPNG.create;
+      writer.Indexed := False;
+      writer.UseAlpha := mem.HasTransparentPixels;
+      writer.CompressionLevel := ALevel;
+      mem.SaveToStream(AStream, writer);
+      Result := True;
+    finally
+      writer.Free;
+    end;
+  finally
+    if Assigned(mem) then
+      mem.Free;
+  end;
+end;
+
+function AvifToJPEGStream(const AStream: TMemoryStream; const AQuality: Integer): Boolean;
+var
+  mem: TMemBitmap;
+  writer: TFPWriterJPEG;
+begin
+  Result := False;
+  mem := nil;
+  try
+    mem := AvifToMemBitmap(AStream);
+    if Assigned(mem) then
+    try
+      writer := TFPWriterJPEG.create;
+      writer.CompressionQuality := AQuality;
+      mem.SaveToStream(AStream, writer);
+      Result := True;
+    finally
+      writer.Free;
+    end;
+  finally
+    if Assigned(mem) then
+      mem.Free;
+  end;
+end;
+
 function PNGToJPEGStream(const AStream: TMemoryStream; const AQuality: Integer): Boolean;
 var
   img: TFPCustomImage;
@@ -2427,11 +2481,24 @@ begin
       else if FileExt = 'webp' then
       begin
         case OptionWebPSaveAs of
-          1: if WebPToPNGStream(Stream, Tcompressionlevel(OptionPNGCompressionLevel)) then
+          1: if WebPToPNGStream(Stream, Tcompressionlevel(OptionWebPPNGCompressionLevel)) then
              begin
                FileExt := 'png';
              end;
           2: if WebPToJPEGStream(Stream, OptionJPEGQuality) then
+             begin
+               FileExt := 'jpg';
+             end;
+        end;
+      end
+      else if FileExt = 'avif' then
+      begin
+        case OptionAvifSaveAs of
+          1: if AvifToPNGStream(Stream, Tcompressionlevel(OptionAvifPNGCompressionLevel)) then
+             begin
+               FileExt := 'png';
+             end;
+          2: if AvifToJPEGStream(Stream, OptionJPEGQuality) then
              begin
                FileExt := 'jpg';
              end;
@@ -2646,6 +2713,7 @@ begin
     '.gif': Result := 'image/gif';
     '.bmp': Result := 'image/bmp';
     '.webp': Result := 'image/webp';
+    '.avif': Result := 'image/avif';
     else Result := '';
   end;
 end;

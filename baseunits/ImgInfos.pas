@@ -629,11 +629,49 @@ begin
   end;
 end;
 
+function AVIFCheckImageStream(const Stream: TStream): Boolean;
+var
+  Hdr: array[0..11] of Char = (#0,#0,#0,#0,#0,#0,#0,#0,#0,#0,#0,#0);
+begin
+  // AVIF files start with an ISOBMFF ftyp box.
+  // Bytes 4-7 must be 'ftyp', and bytes 8-11 typically 'avif' or 'avis'.
+  Result := (Stream.Read(Hdr, 12) = 12) and
+            (Hdr[4] = 'f') and (Hdr[5] = 't') and (Hdr[6] = 'y') and (Hdr[7] = 'p') and
+            (Hdr[8] = 'a') and (Hdr[9] = 'v') and (Hdr[10] = 'i') and ((Hdr[11] = 'f') or (Hdr[11] = 's'));
+end;
+
+procedure AVIFGetImageSize(const Stream: TStream; out Width, Height: Integer);
+var
+  Buffer: array[0..4095] of Byte;
+  BytesRead, i: Integer;
+begin
+  Width := 0;
+  Height := 0;
+  Stream.Seek(0, soFromBeginning);
+  
+  // Read the first 4KB to scan for the 'ispe' (Image Spatial Extent) box.
+  // This avoids building a full ISOBMFF tree parser just to get dimensions.
+  BytesRead := Stream.Read(Buffer{%H-}, SizeOf(Buffer));
+  for i := 0 to BytesRead - 16 do
+  begin
+    if (Buffer[i] = Ord('i')) and (Buffer[i+1] = Ord('s')) and 
+       (Buffer[i+2] = Ord('p')) and (Buffer[i+3] = Ord('e')) then
+    begin
+      // 'ispe' found. The next 4 bytes are version(1) and flags(3).
+      // The 4 bytes after that are the Width, followed by 4 bytes for Height (Big Endian).
+      Width := (Buffer[i+8] shl 24) or (Buffer[i+9] shl 16) or (Buffer[i+10] shl 8) or Buffer[i+11];
+      Height := (Buffer[i+12] shl 24) or (Buffer[i+13] shl 16) or (Buffer[i+14] shl 8) or Buffer[i+15];
+      Break;
+    end;
+  end;
+end;
+
 initialization
   ImageHandlerMgr := TimageHandlerMgr.Create;
   ImageHandlerMgr.Add(TFPReaderJPEG, TFPWriterJPEG, @JPEGCheckImageStream, @JPEGGetImageSize, 'jpg');
   ImageHandlerMgr.Add(TFPReaderPNG, TFPWriterPNG, @PNGCheckImageStream, @PNGGetImageSize, 'png');
   ImageHandlerMgr.Add(nil, nil, @WEBPCheckImageStream, @WEBPGetImageSize, 'webp');
+  ImageHandlerMgr.Add(nil, nil, @AVIFCheckImageStream, @AVIFGetImageSize, 'avif');
   ImageHandlerMgr.Add(TFPReaderGif, TFPWriterPNG, @GIFCheckImageStream, @GIFGetImageSize, 'gif', 'png');
   ImageHandlerMgr.Add(TFPReaderBMP, TFPWriterBMP, @BMPCheckImageStream, @BMPGetImageSize, 'bmp');
   ImageHandlerMgr.Add(TFPReaderTiff, TFPWriterTiff, @TIFFCheckImageStream, @TIFFGetImageSize, 'tif');

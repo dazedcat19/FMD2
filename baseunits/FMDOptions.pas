@@ -122,7 +122,9 @@ var
 
   OptionPNGSaveAsJPEG: Boolean = False;
   OptionWebPSaveAs: Integer = 1;
-  OptionPNGCompressionLevel: Integer = 1;
+  OptionAvifSaveAs: Integer = 1;
+  OptionWebPPNGCompressionLevel: Integer = 1;
+  OptionAvifPNGCompressionLevel: Integer = 1;
   OptionJPEGQuality: Integer = 80;
 
   // connections
