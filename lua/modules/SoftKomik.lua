@@ -43,7 +43,7 @@ local function SetRequestHeaders()
 		return no_error
 	end
 
-	if not HTTP.GET(MODULE.RootURL .. '/api/me') then return net_problem end
+	if not HTTP.GET(MODULE.RootURL .. '/api/sessions/oqiw918pa') then return net_problem end
 
 	local body = HTTP.Document.ToString()
 	local new_sign  = body:match('"sign":%s*"(.-)"')
