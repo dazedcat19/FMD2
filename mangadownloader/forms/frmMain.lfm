@@ -4369,9 +4369,42 @@ object MainForm: TMainForm
                 TabOrder = 1
                 Text = 'PNG'
               end
+              object lbAvifSaveAs: TLabel
+                AnchorSideLeft.Control = gbImageConversion
+                AnchorSideTop.Control = cbWebPSaveAs
+                AnchorSideTop.Side = asrBottom
+                Left = 4
+                Height = 15
+                Top = 54
+                Width = 70
+                BorderSpacing.Top = 6
+                Caption = 'Save Avif as'
+                ParentColor = False
+              end
+              object cbAvifSaveAs: TComboBox
+                AnchorSideLeft.Control = lbAvifSaveAs
+                AnchorSideLeft.Side = asrBottom
+                AnchorSideTop.Control = lbAvifSaveAs
+                AnchorSideTop.Side = asrCenter
+                Left = 82
+                Height = 23
+                Top = 50
+                Width = 76
+                BorderSpacing.Left = 10
+                ItemHeight = 15
+                ItemIndex = 1
+                Items.Strings = (
+                  'Avif'
+                  'PNG'
+                  'JPEG'
+                )
+                Style = csDropDownList
+                TabOrder = 2
+                Text = 'PNG'
+              end
               object lbPNGCompressionLevel: TLabel
                 AnchorSideLeft.Control = lbWebPSaveAs
-                AnchorSideTop.Control = cbWebPSaveAs
+                AnchorSideTop.Control = cbAvifSaveAs
                 AnchorSideTop.Side = asrBottom
                 Left = 4
                 Height = 15
@@ -4399,7 +4432,7 @@ object MainForm: TMainForm
                   'Maximum'
                 )
                 Style = csDropDownList
-                TabOrder = 2
+                TabOrder = 3
                 Text = 'Fastest'
               end
               object lbJPEGQuality: TLabel
@@ -4425,7 +4458,7 @@ object MainForm: TMainForm
                 Width = 47
                 MaxValue = 100
                 MinValue = 1
-                TabOrder = 3
+                TabOrder = 4
                 Value = 80
               end
               object ckPNGSaveAsJPEG: TCheckBox

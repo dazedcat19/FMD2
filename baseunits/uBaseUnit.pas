@@ -2481,7 +2481,7 @@ begin
       else if FileExt = 'webp' then
       begin
         case OptionWebPSaveAs of
-          1: if WebPToPNGStream(Stream, Tcompressionlevel(OptionWebPPNGCompressionLevel)) then
+          1: if WebPToPNGStream(Stream, Tcompressionlevel(OptionPNGCompressionLevel)) then
              begin
                FileExt := 'png';
              end;
@@ -2494,7 +2494,7 @@ begin
       else if FileExt = 'avif' then
       begin
         case OptionAvifSaveAs of
-          1: if AvifToPNGStream(Stream, Tcompressionlevel(OptionAvifPNGCompressionLevel)) then
+          1: if AvifToPNGStream(Stream, Tcompressionlevel(OptionPNGCompressionLevel)) then
              begin
                FileExt := 'png';
              end;
