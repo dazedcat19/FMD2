@@ -266,7 +266,6 @@ function GetInfo()
 					local ignore = false
 
 					-- Ignore chapter if it has no pages or an external link
-					local pages = x.XPathString('attributes/pages', chapters.Get(ic))
 					local external_url = x.XPathString('attributes/externalUrl', chapters.Get(ic))
 					-- Some chapters are listed by API as 0 pages, but can still be downloaded succefully.
 					if external_url ~= 'null' then
