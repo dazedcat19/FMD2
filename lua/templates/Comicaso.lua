@@ -64,7 +64,14 @@ function _M.GetPageNumber()
 
 	if not HTTP.GET(u) then return false end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('//img[@class="mjv2-page-image"]/@data-src', TASK.PageLinks)
+	CreateTXQuery(HTTP.Document).XPathStringAll('//img[@class="mjv2-page-image"]/@src', TASK.PageLinks)
+
+	return true
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function _M.BeforeDownloadImage()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
 
 	return true
 end
