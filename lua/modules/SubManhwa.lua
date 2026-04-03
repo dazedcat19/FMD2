@@ -48,7 +48,7 @@ function GetInfo()
 
     for v in x.XPath('//div[contains(@class,"chapter-preview-info") or contains(@class,"chapter-card-item")]//a').Get() do
         MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
-        MANGAINFO.ChapterNames.Add('SM ' .. x.XPathString('normalize-space(text())', v))
+        MANGAINFO.ChapterNames.Add(x.XPathString('normalize-space(text())', v))
     end
 
     MANGAINFO.ChapterLinks.Reverse()
