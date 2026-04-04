@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'e1bb1dd018ff498382dba79d28c401d5'
 	m.Name                     = 'Vortex Scans'
-	m.RootURL                  = 'https://vortexscans.org'
+	m.RootURL                  = 'https://vortexcomics.org'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
