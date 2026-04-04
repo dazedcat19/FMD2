@@ -40,6 +40,162 @@ end
 
 local API_URL = 'https://comix.to/api/v2'
 local DirectoryPagination = '/manga?order[created_at]=desc&limit=100&page='
+local crypto = require 'fmd.crypto'
+
+----------------------------------------------------------------------------------------------------
+-- Helper Functions
+----------------------------------------------------------------------------------------------------
+
+local function ToBytes(s)
+    local t = {}
+    for i = 1, #s do
+        t[i] = s:byte(i)
+    end
+    return t
+end
+
+local function FromBytes(t)
+    local s = {}
+    for i = 1, #t do
+        s[i] = string.char(t[i])
+    end
+    return table.concat(s)
+end
+
+local function Ror(x, n) return ((x >> n) | (x << (8 - n))) & 0xFF end
+local function Rol(x, n) return ((x << n) | (x >> (8 - n))) & 0xFF end
+local function MutB(e) return (e - 12 + 256) % 256 end
+local function MutC(e) return (e + 115) % 256 end
+local function MutDollar(e) return Rol(e, 4) end
+local function MutF(e) return (e - 188 + 256) % 256 end
+local function MutG(e) return Rol(e, 2) end
+local function MutH(e) return (e - 42 + 256) % 256 end
+local function MutK(e) return (e - 241 + 256) % 256 end
+local function MutL(e) return Ror(e, 1) end
+local function MutM(e) return (e ~ 177) & 0xFF end
+local function MutS(e) return (e + 143) % 256 end
+local function MutUnderscore(e) return (e - 20 + 256) % 256 end
+local function MutY(e) return Ror(e, 1) end
+
+local raw_keys = {
+    '13YDu67uDgFczo3DnuTIURqas4lfMEPADY6Jaeqky+w=',
+    'yEy7wBfBc+gsYPiQL/4Dfd0pIBZFzMwrtlRQGwMXy3Q=',
+    'yrP+EVA1Dw==',
+    'vZ23RT7pbSlxwiygkHd1dhToIku8SNHPC6V36L4cnwM=',
+    'QX0sLahOByWLcWGnv6l98vQudWqdRI3DOXBdit9bxCE=',
+    'WJwgqCmf',
+    'BkWI8feqSlDZKMq6awfzWlUypl88nz65KVRmpH0RWIc=',
+    'v7EIpiQQjd2BGuJzMbBA0qPWDSS+wTJRQ7uGzZ6rJKs=',
+    '1SUReYlCRA==',
+    'RougjiFHkSKs20DZ6BWXiWwQUGZXtseZIyQWKz5eG34=',
+    'LL97cwoDoG5cw8QmhI+KSWzfW+8VehIh+inTxnVJ2ps=',
+    '52iDqjzlqe8=',
+    'U9LRYFL2zXU4TtALIYDj+lCATRk/EJtH7/y7qYYNlh8=',
+    'e/GtffFDTvnw7LBRixAD+iGixjqTq9kIZ1m0Hj+s6fY=',
+    'xb2XwHNB'
+}
+
+local keys = {}
+for i = 1, #raw_keys do
+    keys[i] = ToBytes(crypto.DecodeBase64(raw_keys[i]))
+end
+
+local function RC4(key, data)
+    local s = {}
+    for i = 0, 255 do
+		s[i] = i
+	end
+
+    local j = 0
+    for i = 0, 255 do
+        j = (j + s[i] + key[(i % #key) + 1]) % 256
+        s[i], s[j] = s[j], s[i]
+    end
+
+    local i, j = 0, 0
+    local out = {}
+    for k = 1, #data do
+        i = (i + 1) % 256
+        j = (j + s[i]) % 256
+        s[i], s[j] = s[j], s[i]
+        out[k] = (data[k] ~ s[(s[i] + s[j]) % 256]) & 0xFF
+    end
+
+    return out
+end
+
+local round_maps = {
+    {map = {[0] = MutC, [1] = MutB, [2] = MutY, [3] = MutDollar, [4] = MutH, [5] = MutS, [6] = MutH, [7] = MutK, [8] = MutL, [9] = MutC}, pref = 7},
+    {map = {[0] = MutC, [1] = MutB, [2] = MutDollar, [3] = MutH, [4] = MutS, [5] = MutK, [6] = MutDollar, [7] = MutUnderscore, [8] = MutC, [9] = MutS}, pref = 6},
+    {map = {[0] = MutC, [1] = MutF, [2] = MutS, [3] = MutG, [4] = MutY, [5] = MutM, [6] = MutDollar, [7] = MutK, [8] = MutS, [9] = MutB}, pref = 7},
+    {map = {[0] = MutB, [1] = MutM, [2] = MutL, [3] = MutS, [4] = MutUnderscore, [5] = MutS, [6] = MutUnderscore, [7] = MutL, [8] = MutY, [9] = MutM}, pref = 8},
+    {map = {[0] = MutUnderscore, [1] = MutS, [2] = MutC, [3] = MutM, [4] = MutB, [5] = MutM, [6] = MutF, [7] = MutS, [8]= MutDollar, [9] = MutG}, pref = 6},
+}
+
+local function GetMutKey(mk, idx)
+    if #mk == 0 then return 0 end
+    if (idx % 32) < #mk then
+        return mk[(idx % #mk) + 1]
+    end
+    return 0
+end
+
+local function Round(data, key_idx)
+    local k  = keys[key_idx]
+    local mk = keys[key_idx + 1]
+    local pk = keys[key_idx + 2]
+
+    local cfg = round_maps[(key_idx // 3) + 1]
+    local map, pref = cfg.map, cfg.pref
+
+    local enc = RC4(k, data)
+    local out = {}
+
+    for i = 1, #enc do
+        if i <= pref and i <= #pk then
+            out[#out+1] = pk[i]
+        end
+
+        local v = (enc[i] ~ GetMutKey(mk, i - 1)) & 0xFF
+        local f = map[(i - 1) % 10]
+        if f then v = f(v) end
+
+        out[#out+1] = v
+    end
+
+    return out
+end
+
+local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+
+local function EncodeBase64(data)
+	return ((data:gsub('.', function(x)
+		local r, bits = '', x:byte()
+		for i = 8, 1, -1 do
+			r = r .. (bits % 2 ^ i - bits % 2 ^ (i - 1) > 0 and '1' or '0')
+		end
+		return r
+	end) .. '0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
+		if (#x < 6) then return '' end
+		local c = 0
+		for i = 1, 6 do
+			c = c + (x:sub(i ,i) == '1' and 2 ^ (6 - i) or 0)
+		end
+		return b:sub(c + 1, c +1)
+	end) .. ({ '', '==', '=' })[#data % 3 + 1])
+end
+
+function GenerateHash(path)
+    local bytes = ToBytes(crypto.DecodeURL(path .. ':0:1'))
+
+    bytes = Round(bytes, 1)
+    bytes = Round(bytes, 4)
+    bytes = Round(bytes, 7)
+    bytes = Round(bytes, 10)
+    bytes = Round(bytes, 13)
+
+    return EncodeBase64(FromBytes(bytes)):gsub('%+', '-'):gsub('/', '_'):gsub('=+$', '')
+end
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -62,7 +218,7 @@ function GetNameAndLink()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	for v in CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString())).XPath('json(*).result.items()').Get() do
+	for v in CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString())).XPath('json(*).result.items()').Get() do
 		LINKS.Add('title/' .. v.GetProperty('hash_id').ToString() .. '-' .. v.GetProperty('slug').ToString())
 		NAMES.Add(v.GetProperty('title').ToString())
 	end
@@ -72,12 +228,13 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local u = API_URL .. '/manga/' .. URL:match('/title/([^%-]+)%-')
+	local mid = URL:match('/title/([^%-]+)%-')
+	local u = API_URL .. '/manga/' .. mid
 	local s = '?includes[]=author&includes[]=artist&includes[]=genre&includes[]=theme&includes[]=demographic'
 
 	if not HTTP.GET(u .. s) then return net_problem end
 
-	local x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
+	local x = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString()))
 	local json = x.XPath('json(*).result')
 	MANGAINFO.Title     = x.XPathString('title', json)
 	MANGAINFO.AltTitles = x.XPathString('string-join(alt_titles?*, ", ")', json)
@@ -96,8 +253,9 @@ function GetInfo()
 
 	local page = 1
 	local pages = nil
+	local token = GenerateHash('/manga/' .. mid .. '/chapters')
 	while true do
-		if not HTTP.GET(u .. '/chapters?order[number]=asc&limit=100&page=' .. page) then return net_problem end
+		if not HTTP.GET(u .. '/chapters?order[number]=asc&limit=100&page=' .. page .. '&time=1&_=' .. token) then return net_problem end
 		local x = CreateTXQuery(HTTP.Document)
 		for v in x.XPath('json(*).result.items()').Get() do
 			local number = v.GetProperty('number').ToString()
