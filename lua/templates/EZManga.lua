@@ -80,7 +80,7 @@ function _M.GetInfo()
 	MANGAINFO.Authors   = x.XPathString('author', json)
 	MANGAINFO.Artists   = x.XPathString('artist', json)
 	MANGAINFO.Genres    = x.XPathString('string-join((genres?*?name, concat(upper-case(substring(type, 1, 1)), lower-case(substring(type, 2)))), ", ")', json)
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status', json))
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status', json), 'ONGOING', 'COMPLETED', 'HIATUS', 'DROPPED')
 	MANGAINFO.Summary   = x.XPathString('description', json)
 
 	local page = 1
