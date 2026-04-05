@@ -5,12 +5,16 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'c753487e924c430aa822da3aac7acf21'
-	m.Name                     = 'Qi Scans'
+	m.Name                     = 'Qi Manhwa'
 	m.RootURL                  = 'https://qimanhwa.com'
 	m.Category                 = 'English-Scanlation'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnLogin                  = 'Login'
+	m.AccountSupport           = true
+	m.SortedList               = true
 
 	local slang = require 'fmd.env'.SelectedLanguage
 	local translations = {
@@ -29,13 +33,26 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.Iken'
-API_URL = 'https://api.qimanhwa.com'
-New = true
+local Template = require 'templates.EZManga'
+API_URL = 'https://api.qimanhwa.com/api/v1'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
+
+-- Sign in to the current website.
+function Login()
+	Template.Login()
+
+	return no_error
+end
+
+-- Get the page count of the manga list of the current website.
+function GetDirectoryPageNumber()
+	Template.GetDirectoryPageNumber()
+
+	return no_error
+end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
