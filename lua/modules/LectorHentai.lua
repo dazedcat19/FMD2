@@ -4,33 +4,39 @@ function Init()
     m.Name                       = 'LectorHentai'
     m.RootURL                    = 'https://lectorhentai.com'
     m.Category                   = 'Spanish'
-    m.OnGetDirectoryPageNumber   = 'GetDirectoryPageNumber'
     m.OnGetNameAndLink           = 'GetNameAndLink'
     m.OnGetInfo                  = 'GetInfo'
     m.OnGetPageNumber            = 'GetPageNumber'
     m.OnBeforeDownloadImage      = 'BeforeDownloadImage'
 end
 
--- Número de páginas (aproximado hasta que no haya resultados)
-function GetDirectoryPageNumber()
-    PAGENUMBER = 9999 -- no hay paginación clara
-    return no_error
-end
-
 -- Lista de mangas
 function GetNameAndLink()
-    if HTTP.GET(MODULE.RootURL .. '/tipo/all?lenguaje=all&page=' .. (URL + 1)) then
-        local x = CreateTXQuery(HTTP.Document)
+    local url = MODULE.RootURL .. '/tipo/all?lenguaje=all&page=1'
 
-        x.XPathHREFTitleAll(
-            '//div[@class="listupd"]//div[@class="bsx"]/a',
-            LINKS, NAMES
-        )
+    if not HTTP.GET(url) then return net_problem end
 
-        return no_error
-    else
-        return net_problem
+    local x = CreateTXQuery(HTTP.Document)
+
+    while true do
+        -- Extraer mangas
+        for v in x.XPath('//div[@class="listupd"]//div[@class="bsx"]/a').Get() do
+            LINKS.Add(v.GetAttribute('href'))
+            NAMES.Add(x.XPathString('div[@class="bigor"]/div[@class="tt"]', v))
+        end
+
+        -- Buscar siguiente página
+        local next_url = x.XPathString('//div[@class="hpage"]/a[contains(@class,"r")]/@href')
+
+        if next_url == '' then break end
+
+        UPDATELIST.UpdateStatusText('Cargando ' .. next_url)
+
+        if not HTTP.GET(next_url) then break end
+        x.ParseHTML(HTTP.Document)
     end
+
+    return no_error
 end
 
 -- Info del manga
