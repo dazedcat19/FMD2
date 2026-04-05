@@ -50,8 +50,8 @@ end
 
 -- Extract genre information
 local function GetGenres(x)
-	local genre = x.XPathStringAll('//div[@class="seriestugenre"]/a')
-	if genre == '' then genre = x.XPathStringAll('//span[@class="mgen"]/a') end
+	local genre = x.XPathStringAll('(//div[@class="seriestugenre"]/a, //td[.="Type"]/following-sibling::td)')
+	if genre == '' then genre = x.XPathStringAll('(//span[@class="mgen"]/a, //div[@class="imptdt" and contains(., "Type")]/a)') end
 	return genre
 end
 
@@ -109,7 +109,10 @@ function _M.GetPageNumber()
 	if not HTTP.GET(u) then return false end
 
 	local x = CreateTXQuery(HTTP.Document)
-	x.ParseHTML(x.XPathString('//script[contains(., "ts_reader")]'):match('run%((.-)%);'):gsub('!0', 'true'):gsub('!1', 'false'))
+	local s = x.XPathString('//script[contains(., "ts_reader")]')
+	if s ~= '' then
+		x.ParseHTML(s:match('run%((.-)%);'):gsub('!0', 'true'):gsub('!1', 'false'))
+	end
 	x.XPathStringAll('json(*).sources()[1].images()', TASK.PageLinks)
 	for i = 0, TASK.PageLinks.Count - 1 do
 		TASK.PageLinks[i] = TASK.PageLinks[i]:gsub('i%d.wp.com/', '')
@@ -117,6 +120,13 @@ function _M.GetPageNumber()
 			TASK.PageLinks[i] = TASK.PageLinks[i]:gsub('/s1600/', '/s0/')
 		end
 	end
+
+	return true
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function _M.BeforeDownloadImage()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
 
 	return true
 end
