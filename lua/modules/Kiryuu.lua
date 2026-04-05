@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '031f3cc0ae3346ad9b8c33d5377891e9'
 	m.Name                     = 'Kiryuu'
-	m.RootURL                  = 'https://kiryuu03.com'
+	m.RootURL                  = 'https://v2.kiryuu.to'
 	m.Category                 = 'Indonesian'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -37,7 +37,7 @@ function GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	Template.GetPageNumber()
 
