@@ -22,7 +22,7 @@ function GetNameAndLink()
         -- Extraer mangas
         for v in x.XPath('//div[@class="listupd"]//div[@class="bsx"]/a').Get() do
             LINKS.Add(v.GetAttribute('href'))
-            NAMES.Add(x.XPathString('div[@class="bigor"]/div[@class="tt"]', v))
+            NAMES.Add(x.XPathString('.//div[@class="tt"]', v))
         end
 
         -- Buscar siguiente página
