@@ -89,14 +89,15 @@ function _M.GetInfo()
 	local show_paid_chapters = MODULE.GetOption('showpaidchapters')
 	while true do
 		if not HTTP.GET(u .. '/chapters?perPage=100&sort=asc&page=' .. page) then return net_problem end
-		for v in CreateTXQuery(HTTP.Document).XPath('json(*).data()').Get() do
+		local x = CreateTXQuery(HTTP.Document)
+		for v in x.XPath('json(*).data()').Get() do
 			local is_accessible = v.GetProperty('requiresPurchase').ToString() ~= 'true'
 
 			if show_paid_chapters or is_accessible then
 				local title = v.GetProperty('title').ToString()
 				local chapter = v.GetProperty('number').ToString()
 				local chapter_slug = v.GetProperty('slug').ToString()
-				title = (title ~= 'null' and title ~= '') and (' - ' .. title) or ''
+				title = (title ~= 'null' and title ~= '' and not title:find(MANGAINFO.Title, 1, true)) and (' - ' .. title) or ''
 
 				MANGAINFO.ChapterLinks.Add('series/' .. slug .. '/chapters/' .. chapter_slug)
 				MANGAINFO.ChapterNames.Add('Chapter ' .. chapter .. title)
