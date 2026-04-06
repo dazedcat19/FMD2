@@ -19,6 +19,25 @@ type
     Value: String;
   end;
 
+  { TMangaInfoData }
+
+  PMangaInfoData = ^TMangaInfoData;
+
+  TMangaInfoData = record
+    Module: Pointer;
+    Link,
+    Title,
+    AltTitles,
+    TitleFormat,
+    Authors,
+    Artists,
+    Genres,
+    Status,
+    Summary: String;
+    NumChapter,
+    JDN: Integer;
+  end;
+
   { TDBDataProcess }
 
   TDBDataProcess = class(TObject)
@@ -82,6 +101,7 @@ type
     function TableExist(const ATableName: String): Boolean;
     function RegexEscapeInput(const Input: String): String;
     function RegexEscapeAltTitles(const ATitle: String): String;
+    procedure SearchUnionSQL(ATitle: String);
     function Search(ATitle: String): Boolean;
     function CanFilter(const checkedGenres, uncheckedGenres: TStringList;
       const stTitle, stAuthors, stArtists, stStatus, stSummary: String;
@@ -118,7 +138,9 @@ type
     procedure Commit;
     procedure Rollback;
     procedure RemoveFilter;
-    procedure Sort;
+    procedure Sort; 
+
+    procedure GetCurrentRecordValues(out Data: TMangaInfoData);
 
     function GetModule(const RecIndex: Integer): Pointer;
     function GoToRecNo(const ARecIndex: Integer): Boolean;
@@ -312,48 +334,64 @@ begin
 end;
 
 function TDBDataProcess.GoToRecNo(const ARecIndex: Integer): Boolean;
-begin
-  if FReadQuery.RecNo = ARecIndex + 1 then
-  begin
-    Exit(True);
-  end;
-
-  Result := False; 
-  GetRecordCount;
-  if ARecIndex > RecordCount then
-  begin
-    Exit;
-  end;
+begin  
+  Result := False;
 
   if not FReadQuery.Active then
   begin
     Exit;
   end;
 
+  if FReadQuery.RecNo = ARecIndex + 1 then
+  begin
+    Exit(True);
+  end;
+
+  if (FRecordCount = 0) or ((FRecordCount > 0) and (ARecIndex >= FRecordCount)) then
+  begin
+    GetRecordCount;
+  end;
+
+  if (ARecIndex < 0) or (ARecIndex >= FRecordCount) then
+  begin
+    Exit;
+  end;
+
   try
-    // Save current position
-    FReadQuery.DisableControls;
-    try
-      FReadQuery.First;
-
-      if ARecIndex > 0 then
-      begin
-        FReadQuery.MoveBy(ARecIndex);
-      end;
-
-      if not FReadQuery.EOF then
-      begin
-        FRecNo := ARecIndex;
-        Result := True;
-      end;
-    finally
-      FReadQuery.EnableControls;
-    end;
+    FReadQuery.RecNo := ARecIndex + 1;
+    FRecNo := ARecIndex;
+    Result := True;
   except
     on E: Exception do
     begin
       SendLogException(Self.ClassName + '[' + Website + '].GoToRecNo.Error!', E);
     end;
+  end;
+end;
+
+procedure TDBDataProcess.GetCurrentRecordValues(out Data: TMangaInfoData);
+begin
+  Data.Link := FReadQuery.Fields[DATA_PARAM_LINK].AsString;
+  Data.Title := FReadQuery.Fields[DATA_PARAM_TITLE].AsString;
+  Data.AltTitles := FReadQuery.Fields[DATA_PARAM_ALTTITLES].AsString;
+  Data.Authors := FReadQuery.Fields[DATA_PARAM_AUTHORS].AsString;
+  Data.Artists := FReadQuery.Fields[DATA_PARAM_ARTISTS].AsString;
+  Data.Genres := FReadQuery.Fields[DATA_PARAM_GENRES].AsString;
+  Data.Status := FReadQuery.Fields[DATA_PARAM_STATUS].AsString;
+  Data.NumChapter := FReadQuery.Fields[DATA_PARAM_NUMCHAPTER].AsInteger;
+  Data.JDN := FReadQuery.Fields[DATA_PARAM_JDN].AsInteger;
+  Data.Summary := FReadQuery.Fields[DATA_PARAM_SUMMARY].AsString;
+
+  Data.TitleFormat := Data.Title + ' (' + IntToStr(Data.NumChapter) + ')';
+
+  if FFilterAllSites then
+  begin  
+    Data.Module := GetModule(FRecNo);
+    Data.TitleFormat += ' [' + TModuleContainer(Data.Module).Name + ']';
+  end
+  else
+  begin
+    Data.Module := FModule;
   end;
 end;
 
@@ -466,23 +504,27 @@ begin
 end;
 
 procedure TDBDataProcess.AddSQLCond(const sqltext: String; useOR: Boolean);
+var
+  sqlAndOr: String;
 begin
   with FReadQuery.SQL do
   begin
-    if Count > 0 then
+    if Count <= 0 then
     begin
-      if (Strings[Count - 1] <> '(') and
-        (UpCase(Trim(Strings[Count - 1])) <> 'WHERE') then
+      Add(sqltext);
+      Exit;
+    end;
+
+    if (Strings[Count - 1] <> '(') and
+      (UpCase(Trim(Strings[Count - 1])) <> 'WHERE') then
+    begin
+      sqlAndOr := 'AND';
+      if useOR then
       begin
-        if useOR then
-        begin
-          Add('OR');
-        end
-        else
-        begin
-          Add('AND');
-        end;
+        sqlAndOr := 'OR';
       end;
+
+      Add(sqlAndOr);
     end;
 
     Add(sqltext);
@@ -492,42 +534,49 @@ end;
 procedure TDBDataProcess.AddSQLSimpleFilter(const fieldname, Value: String;
   useNOT: Boolean; useOR: Boolean; useRegexp: Boolean);
 var
-  svalue: String;
-  scond: String;
+  srchCondNot, srchCondRegLike, srchValue: String;
 begin
-  svalue := LowerCase(Trim(Value));
+  srchValue := LowerCase(Trim(Value));
 
-  if (fieldname = '') or (svalue = '') then
+  if (fieldname = '') or (srchValue = '') then
   begin
     Exit;
   end;
-
+       
+  srchCondNot := '';
   if useNOT then
   begin
-    scond := ' NOT';
-  end
-  else
-  begin
-    scond := '';
+    srchCondNot := ' NOT';
   end;
 
+  srchCondRegLike := 'LIKE';
   if useRegexp then
   begin
-    AddSQLCond('LOWER("' + fieldname + '")' + scond + ' REGEXP ' + QuotedStr(svalue), useOR);
-  end
-  else
-  begin
-    AddSQLCond('LOWER("' + fieldname + '")' + scond + ' LIKE ' + QuotedLike(svalue), useOR);
+    srchCondRegLike := 'REGEXP';
   end;
+
+  AddSQLCond(Format('LOWER("%s")%s %s LOWER(%s)', [fieldname, srchCondNot, srchCondRegLike, QuotedLike(srchValue)]), useOR);
 end;
 
 procedure TDBDataProcess.AddSQLPairedFilter(const Pairs: array of TFieldValuePair;
   useNOT, useOR, useRegexp: Boolean);
 var
   i: Integer;
-  scond, svalue, sqlCondition: String;
+  srchCondNot, srchCondRegLike, srchValue, sqlCondition: String;
 begin
   sqlCondition := '';
+
+  srchCondNot := '';
+  if useNOT then
+  begin
+    srchCondNot := ' NOT';
+  end;
+
+  srchCondRegLike := ' LIKE ';
+  if useRegexp then
+  begin
+    srchCondRegLike := ' REGEXP ';
+  end;
 
   for i := 0 to High(Pairs) do
   begin
@@ -536,29 +585,12 @@ begin
       Continue;
     end;
 
-    svalue := LowerCase(Trim(Pairs[i].Value));
-
-    if useNOT then
-    begin
-      scond := ' NOT';
-    end
-    else
-    begin
-      scond := '';
-    end;
-
-    if useRegexp then
-    begin
-      sqlCondition := sqlCondition + 'LOWER("' + Pairs[i].Field + '")' + scond + ' REGEXP ' + QuotedStr(svalue);
-    end
-    else
-    begin
-      sqlCondition := sqlCondition + 'LOWER("' + Pairs[i].Field + '")' + scond + ' LIKE ' + QuotedLike(svalue);
-    end;
+    srchValue := LowerCase(Trim(Pairs[i].Value));
+    sqlCondition += Format('LOWER("%s")%s %s LOWER(%s)', [Pairs[i].Field, srchCondNot, srchCondRegLike, QuotedLike(srchValue)]);
 
     if i < High(Pairs) then
     begin
-      sqlCondition := sqlCondition + ' OR '; // Add OR between pair conditions
+      sqlCondition += ' OR '; // Add OR between pair conditions
     end;
   end;
 
@@ -1618,87 +1650,94 @@ begin
   Result := HeadRegex + RegexEscapeInput(ATitle) + TailRegex;
 end;
 
+procedure TDBDataProcess.SearchUnionSQL(ATitle: String);
+var
+  NewSQL: TStringList;
+  sqlTitleSearch: String;
+  i: Integer;
+begin
+  if FReadQuery.SQL.Count <= 0 then
+  begin
+    Exit;
+  end;
+
+  sqlTitleSearch := QuotedLike(ATitle);
+  NewSQL := TStringList.Create();
+  for i := 0 to FReadQuery.SQL.Count - 1 do
+  begin
+    if (FReadQuery.SQL[i] = 'UNION ALL') or (FReadQuery.SQL[i] = ')') then
+    begin
+      NewSQL.Add('AND (LOWER("title") LIKE LOWER(' + sqlTitleSearch + ') OR LOWER("alttitles") LIKE LOWER(' + sqlTitleSearch + '))');
+    end;
+
+    NewSQL.Add(FReadQuery.SQL[i]);
+  end;
+
+  FReadQuery.SQL.Assign(NewSQL);
+end;
+
 function TDBDataProcess.Search(ATitle: String): Boolean;
 var
-  i: Integer;
   Titles: array[0..1] of TFieldValuePair;
-begin
-  if FReadQuery.Active then
-  begin 
-    Lock;
+begin        
+  Result := True; 
+  FFiltered := FFilterApplied;
+  FRecordCount := 0;
+
+  if not FReadQuery.Active then
+  begin    
+    FFiltered := False;
+    Exit(False);
+  end;
+
+  Titles[0].Field := 'title';
+  Titles[0].Value := ATitle;
+  Titles[1].Field := 'alttitles';
+  Titles[1].Value := ATitle;
+
+  Lock;
+  try
     try
-      try
-        FReadQuery.Close;
+      FReadQuery.Close;
+      FReadQuery.SQL.Clear;
 
-        with FReadQuery do
+      if FFilterApplied then
+      begin
+        FReadQuery.SQL.AddText(FFilterSQL);
+      end
+      else
+      begin
+        FReadQuery.SQL.Add(FSQLSelect);
+      end;
+
+      if ATitle <> '' then
+      begin
+        if not FFilterApplied then
         begin
-          SQL.Clear;
-          if FFilterApplied then
-          begin
-            SQL.AddText(FFilterSQL);
-          end
-          else
-          begin
-            SQL.Add(FSQLSelect);
-          end;
-
-          if ATitle <> '' then
-          begin
-            if not FFilterApplied then
-            begin
-              SQL.Add('WHERE');
-            end;
-
-            if FAllSitesAttached then
-            begin
-              if SQL.Count > 0 then
-              begin
-                i := 0;
-                while i < SQL.Count do
-                begin
-                  if (SQL[i] = 'UNION ALL') or (SQL[i] = ')') then
-                  begin
-                    SQL.Insert(i, 'AND');
-                    SQL.Insert(i + 1, '("title" LIKE ' + QuotedLike(ATitle));
-                    SQL.Insert(i + 2, 'OR');
-                    SQL.Insert(i + 3, '"alttitles" LIKE ' + QuotedLike(ATitle) + ')');
-                    Inc(i, 5);
-                  end
-                  else
-                  begin
-                    Inc(i);
-                  end;
-                end;
-              end;
-            end
-            else
-            begin
-              Titles[0].Field := 'title';
-              Titles[0].Value := ATitle;
-              Titles[1].Field := 'alttitles';
-              Titles[1].Value := ATitle;
-
-              AddSQLPairedFilter(Titles);
-            end;
-
-            FFiltered := True;
-          end
-          else
-          begin
-            FFiltered := FFilterApplied;
-          end;
+          FReadQuery.SQL.Add('WHERE');
         end;
 
-        GetRecordCount;
-        FReadQuery.Open;
-      except
-        on E: Exception do
-          SendLogException(Self.ClassName + '[' + Website + '].Search.Error!'#13#10 +
-            'SQL:'#13#10 + FReadQuery.SQL.Text, E);
+        if FAllSitesAttached then
+        begin
+          SearchUnionSQL(ATitle);
+        end
+        else
+        begin
+          AddSQLPairedFilter(Titles);
+        end;
+
+        FFiltered := True;
       end;
-    finally
-      Unlock;
+
+      GetRecordCount;
+      FReadQuery.Open;
+    except
+      on E: Exception do
+        SendLogException(Self.ClassName + '[' + Website + '].Search.Error!'#13#10 +
+          'SQL:'#13#10 + FReadQuery.SQL.Text, E);
     end;
+  finally
+    Unlock;
   end;
 
   Result := FReadQuery.Active;
@@ -1901,6 +1940,7 @@ procedure TDBDataProcess.CreateDatabase(const AWebsite: String);
 var
   filepath: String;
 begin
+  filepath := '';
   Close;
 
   if CheckWebsiteAndFilePath(AWebsite, filepath) then
@@ -1943,8 +1983,6 @@ begin
 end;
 
 procedure TDBDataProcess.Sort;
-var
-  queryactive: Boolean;
 begin
   if not FConn.Connected then
   begin
@@ -1985,9 +2023,17 @@ begin
     Exit;
   end;
 
-  FReadQuery.RecNo := RecIndex + 1;
-  i := FReadQuery.Fields[DBTempFieldWebsiteIndex].AsInteger;
+  try
+    FReadQuery.RecNo := RecIndex + 1;
+    FRecNo := RecIndex;
+  except
+    on E: Exception do
+    begin
+      SendLogException(Self.ClassName + '[' + Website + '].GetModule.Error!', E);
+    end;
+  end;
 
+  i := FReadQuery.Fields[DBTempFieldWebsiteIndex].AsInteger;
   if i <> -1 then
   begin
     Result := Pointer(FAttachedSites.Objects[i]);

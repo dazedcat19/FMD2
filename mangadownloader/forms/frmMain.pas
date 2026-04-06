@@ -898,23 +898,6 @@ type
     procedure NewSearch(const ASearchStr: String);
   end;
 
-  PMangaInfoData = ^TMangaInfoData;
-
-  TMangaInfoData = record
-    Module: Pointer;
-    Link,
-    Title,
-    AltTitles,
-    TitleFormat,
-    Authors,
-    Artists,
-    Genres,
-    Status,
-    Summary: String;
-    NumChapter,
-    JDN: Integer;
-  end;
-
 var
   MainForm: TMainForm;
   TimerBackupInterval: Integer = 10;
@@ -7740,30 +7723,7 @@ begin
     Exit;
   end;
 
-  with data^ do
-  begin
-    Link := dataProcess.Value[nodeRecIndex, DATA_PARAM_LINK];
-    Title := dataProcess.Value[nodeRecIndex, DATA_PARAM_TITLE];
-    AltTitles := dataProcess.Value[nodeRecIndex, DATA_PARAM_ALTTITLES];
-    Authors := dataProcess.Value[nodeRecIndex, DATA_PARAM_AUTHORS];
-    Artists := dataProcess.Value[nodeRecIndex, DATA_PARAM_ARTISTS];
-    Genres := dataProcess.Value[nodeRecIndex, DATA_PARAM_GENRES];
-    Status := dataProcess.Value[nodeRecIndex, DATA_PARAM_STATUS];
-    NumChapter := dataProcess.ValueInt[nodeRecIndex, DATA_PARAM_NUMCHAPTER];
-    JDN := dataProcess.ValueInt[nodeRecIndex, DATA_PARAM_JDN];
-    Summary := dataProcess.Value[nodeRecIndex, DATA_PARAM_SUMMARY];
-    TitleFormat := Title + ' (' + IntToStr(NumChapter) + ')';
-
-    if dataProcess.FilterAllSites then
-    begin
-      Module := dataProcess.GetModule(nodeRecIndex);
-      TitleFormat += ' [' + TModuleContainer(Module).Name + ']';
-    end
-    else
-    begin
-      Module := dataProcess.Module;
-    end;
-  end;
+  dataprocess.GetCurrentRecordValues(data^);
 end;
 
 procedure TMainForm.vtMangaListResetList(ANodeIndex: Integer; ALink, AModuleID: String);
