@@ -166,6 +166,14 @@ end
 function json.encode(val, indent)
   if indent == nil then
     indent = "\t"
+  elseif type(indent) == "string" then
+    --pass string as indent
+  elseif type(indent) == "number" then
+    if indent >= 0 then
+      indent = string.rep(' ', indent)
+    else
+      indent = nil
+    end
   end
   local rope = {}
   encode(rope, val, {}, indent, 0)
