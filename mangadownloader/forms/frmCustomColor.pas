@@ -19,7 +19,7 @@ type
 
   TThemeCustomColorManager = class
   private
-    FThemeColorMappings: array[0..14] of TColorMapping;
+    FThemeColorMappings: array[0..15] of TColorMapping;
     procedure SetColorMapping(Index: Integer; const AName: String; ALight, ADark: TColor);
   public
     constructor Create;
@@ -432,20 +432,21 @@ constructor TThemeCustomColorManager.Create;
 begin
   // Initialize theme color mappings
   SetColorMapping(0, 'BSDisabled', clBtnShadow, clGrayText);
-  SetColorMapping(1, 'BSTreeLine', clBtnShadow, clGrayText);
-  SetColorMapping(2, 'BSUnfocusedSelection', clMedGray, clGray);
-  SetColorMapping(3, 'BSUnfocusedSelectionBorder', clGray, clMedGray);
-  SetColorMapping(4, 'BSSortedColumn', CL_BSSortedColumn, CL_BSSortedColumnDark);
-  SetColorMapping(5, 'BSEnabledWebsiteSettings', CL_BSEnabledWebsiteSettings, CL_BSEnabledWebsiteSettingsDark);
-  SetColorMapping(6, 'MNNewManga', CL_MNNewManga, CL_MNNewMangaDark);
-  SetColorMapping(7, 'MNCompletedManga', CL_MNCompletedManga, CL_MNCompletedMangaDark);
-  SetColorMapping(8, 'FVBrokenFavorite', CL_FVBrokenFavorite, CL_FVBrokenFavoriteDark);
-  SetColorMapping(9, 'FVChecking', CL_FVChecking, CL_FVCheckingDark);
-  SetColorMapping(10, 'FVNewChapterFound', CL_FVNewChapterFound, CL_FVNewChapterFoundDark);
-  SetColorMapping(11, 'FVCompletedManga', CL_FVCompletedManga, CL_FVCompletedMangaDark);
-  SetColorMapping(12, 'FVEmptyChapters', CL_FVEmptyChapters, CL_FVEmptyChaptersDark);
-  SetColorMapping(13, 'CHDownloaded', CL_CHDownloaded, CL_CHDownloadedDark);
-  SetColorMapping(14, 'MDNewUpdate', CL_MDNewUpdate, CL_MDNewUpdateDark);
+  SetColorMapping(1, 'BSGridLine', clBtnShadow, clGrayText);
+  SetColorMapping(2, 'BSTreeLine', clBtnShadow, clGrayText);
+  SetColorMapping(3, 'BSUnfocusedSelection', clMedGray, clGray);
+  SetColorMapping(4, 'BSUnfocusedSelectionBorder', clGray, clMedGray);
+  SetColorMapping(5, 'BSSortedColumn', CL_BSSortedColumn, CL_BSSortedColumnDark);
+  SetColorMapping(6, 'BSEnabledWebsiteSettings', CL_BSEnabledWebsiteSettings, CL_BSEnabledWebsiteSettingsDark);
+  SetColorMapping(7, 'MNNewManga', CL_MNNewManga, CL_MNNewMangaDark);
+  SetColorMapping(8, 'MNCompletedManga', CL_MNCompletedManga, CL_MNCompletedMangaDark);
+  SetColorMapping(9, 'FVBrokenFavorite', CL_FVBrokenFavorite, CL_FVBrokenFavoriteDark);
+  SetColorMapping(10, 'FVChecking', CL_FVChecking, CL_FVCheckingDark);
+  SetColorMapping(11, 'FVNewChapterFound', CL_FVNewChapterFound, CL_FVNewChapterFoundDark);
+  SetColorMapping(12, 'FVCompletedManga', CL_FVCompletedManga, CL_FVCompletedMangaDark);
+  SetColorMapping(13, 'FVEmptyChapters', CL_FVEmptyChapters, CL_FVEmptyChaptersDark);
+  SetColorMapping(14, 'CHDownloaded', CL_CHDownloaded, CL_CHDownloadedDark);
+  SetColorMapping(15, 'MDNewUpdate', CL_MDNewUpdate, CL_MDNewUpdateDark);
 end;
 
 procedure TThemeCustomColorManager.SetColorMapping(Index: Integer; const AName: String; ALight, ADark: TColor);
@@ -459,34 +460,38 @@ function TThemeCustomColorManager.CheckDefaultCustomColors(const AName: String; 
 var
   i: Integer;
 begin
-  Result := AColor; // Default to custom color
+  Result := AColor;
 
   for i := Low(FThemeColorMappings) to High(FThemeColorMappings) do
   begin
-    if (AName = FThemeColorMappings[i].Name) then
+    if (AName <> FThemeColorMappings[i].Name) then
     begin
-      if IsDarkModeEnabled then
-      begin
-        if AColor = FThemeColorMappings[i].Light then
-        begin
-          Result := FThemeColorMappings[i].Dark;
-        end;
-      end
-      else
-      begin
-        if AColor = FThemeColorMappings[i].Dark then
-        begin
-          Result := FThemeColorMappings[i].Light;
-        end;
-      end;
-      Exit; // Exit early once found
+      Continue;
     end;
+
+    if IsDarkModeEnabled then
+    begin
+      if AColor = FThemeColorMappings[i].Light then
+      begin
+        Result := FThemeColorMappings[i].Dark;
+      end;
+    end
+    else
+    begin
+      if AColor = FThemeColorMappings[i].Dark then
+      begin
+        Result := FThemeColorMappings[i].Light;
+      end;
+    end;
+
+    Exit;
   end;
 end;
 
 procedure TThemeCustomColorManager.CheckListColors;
 begin
   BasicListColors[2] := CheckDefaultCustomColors('BSDisabled', BasicListColors[2]);
+  BasicListColors[8] := CheckDefaultCustomColors('BSGridLine', BasicListColors[8]);
   BasicListColors[13] := CheckDefaultCustomColors('BSTreeLine', BasicListColors[13]);
   BasicListColors[14] := CheckDefaultCustomColors('BSUnfocusedSelection', BasicListColors[14]);
   BasicListColors[15] := CheckDefaultCustomColors('BSUnfocusedSelectionBorder', BasicListColors[15]);
