@@ -61,6 +61,96 @@ local function FindLanguage(lang)
 	return Langs[lang + 1][1]
 end
 
+local function GetKeys(slug, chapter, lang)
+	local url = string.format('%s/manga/%s/%s?id=%s', MODULE.RootURL, slug, chapter, lang)
+
+	local js = [[
+		const secretWait = async (page) => {
+			for (let i = 0; i < 50; i++) {
+				const ok = await page.evaluate(() => typeof window.__rctx0 === 'function');
+				if (ok) return true;
+				await new Promise(r => setTimeout(r, 100));
+			}
+			return false;
+		};
+
+		if (!(await secretWait(page))) {
+			console.log(JSON.stringify({ error: "keys not found" }));
+			return;
+		}
+
+		const result = await page.evaluate(() => ({
+			secret_key: window.__rctx0(),
+			xor_key: window.__rctx1()
+		}));
+
+		console.log(JSON.stringify(result));
+	]]
+
+	local result = require 'utils.nodejs'.run_html_load_with_js(url, js)
+
+	return result
+end
+
+local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+
+local function EncodeBase64(data)
+	return ((data:gsub('.', function(x)
+		local r, bits = '', x:byte()
+		for i = 8, 1, -1 do
+			r = r .. (bits % 2 ^ i - bits % 2 ^ (i - 1) > 0 and '1' or '0')
+		end
+		return r
+	end) .. '0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
+		if (#x < 6) then return '' end
+		local c = 0
+		for i = 1, 6 do
+			c = c + (x:sub(i, i) == '1' and 2 ^ (6 - i) or 0)
+		end
+		return b:sub(c + 1, c +1)
+	end) .. ({ '', '==', '=' })[#data % 3 + 1])
+end
+
+local function GenerateToken(secret, xor, slug, chapter)
+	local function str_to_bytes(s)
+		local t = {}
+		for i = 1, #s do t[i] = s:byte(i) end
+		return t
+	end
+
+	local a = str_to_bytes(secret)
+	local b = str_to_bytes(xor)
+
+	local cipher = {}
+	local max_len = math.max(#a, #b)
+
+	for i = 1, max_len do
+		cipher[i] = a[(i - 1) % #a + 1] ~ b[(i - 1) % #b + 1]
+	end
+
+	local ts = os.time()
+	local rand = ''
+	local chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+	for i = 1, 8 do
+		local r = math.random(#chars)
+		rand = rand .. chars:sub(r, r)
+	end
+
+	local payload = string.format("%x|%s|%s|%s", ts, rand, slug, chapter)
+
+	local out = {}
+	for i = 1, #payload do
+		local c = payload:byte(i)
+		local k = cipher[(i - 1) % #cipher + 1]
+		out[i] = string.char(c ~ k)
+	end
+
+	local encoded = EncodeBase64(table.concat(out))
+	encoded = encoded:gsub('%+', '-'):gsub('/', '_'):gsub('=+$', '')
+
+	return encoded
+end
+
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
@@ -127,16 +217,17 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local u = MODULE.RootURL .. '/manga' .. URL:match('^[^?]+')
+	local slug, chapter = URL:match('/([^/]+)/([^/?]+)')
+	local lang = URL:match('language=([^&]+)')
 
-	if not HTTP.GET(u) then return false end
-
-	local secret_key = HTTP.Document.ToString():match('\\"secretKey\\"%s*:%s*\\"([^\\"]+)')
+	local res = GetKeys(slug, chapter, lang)
+	local secret_key, xor_key = res:match('"secret_key":"(.-)","xor_key":"(.-)"')
 
 	local pw = MODULE.GetOption('pw')
 	pw = pw ~= '' and '&password=' .. pw or ''
 
-	local u = API_URL .. URL .. pw
+	local token = GenerateToken(secret_key, xor_key, slug, chapter)
+	local u = API_URL .. '/r/' .. token .. '?language=' .. lang .. pw
 
 	if not HTTP.GET(u) then return false end
 
@@ -144,29 +235,8 @@ function GetPageNumber()
 	local session_data = x.XPathString('json(*).data.session_data')
 
 	if session_data ~= '' then
-		local js = string.format([[
-		var CryptoJS = require('utils/crypto-js.min.js');
-
-		var secret = "%s";
-		var encrypted = "%s";
-
-		var key = CryptoJS.SHA256(secret);
-		var iv = CryptoJS.lib.WordArray.create([0, 0, 0, 0]);
-
-		var decrypted = CryptoJS.AES.decrypt(
-			encrypted,
-			key,
-			{
-				iv: iv,
-				mode: CryptoJS.mode.CBC,
-				padding: CryptoJS.pad.Pkcs7
-			}
-		);
-
-		decrypted.toString(CryptoJS.enc.Utf8);
-		]], secret_key, session_data)
-
-		local result = require 'fmd.duktape'.ExecJS(js)
+		local iv = string.rep('0', 32)
+		local result = require 'fmd.crypto'.AESDecryptCBCSHA256Base64Pkcs7(session_data, secret_key, iv)
 		x.ParseHTML(result)
 	end
 	x.XPathStringAll('json(*).data.images()', TASK.PageLinks)
