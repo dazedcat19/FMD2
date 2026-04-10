@@ -11,6 +11,20 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnCheckSite              = 'CheckSite'
+
+	local fmd = require 'fmd.env'
+	local slang = fmd.SelectedLanguage
+	local translations = {
+		['en'] = {
+			['showscangroup'] = 'Show scanlation group'
+		},
+		['id_ID'] = {
+			['showscangroup'] = 'Tampilkan grup scanlation'
+		}
+	}
+	local lang = translations[slang] or translations['en']
+	m.AddOptionCheckBox('showscangroup', lang.showscangroup, false)
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -50,34 +64,51 @@ function GetInfo()
 	local u = API_URL .. '/manga/page?id=' .. mid
 
 	if not HTTP.GET(u) then return net_problem end
-	
-	local x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('json(*).mangaPage.title')
-	MANGAINFO.CoverLink = MODULE.RootURL .. '/static/' .. x.XPathString('json(*).mangaPage.poster.image')
-	MANGAINFO.Authors   = x.XPathStringAll('json(*).mangaPage.authors().name')
-	MANGAINFO.Genres    = x.XPathStringAll('(json(*).mangaPage.tags().name, json(*).mangaPage.type)')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('json(*).mangaPage.status'))
-	MANGAINFO.Summary   = x.XPathString('json(*).mangaPage.synopsis')
 
-	local page = 0
-	while true do
-		if not HTTP.GET(API_URL .. '/manga/chapters?id=' .. mid .. '&filter=all&sort=asc&page=' .. tostring(page)) then return net_problem end
-		local x = CreateTXQuery(HTTP.Document)
-		for v in x.XPath('json(*).chapters()').Get() do
-			MANGAINFO.ChapterLinks.Add(mid .. '/' .. v.GetProperty('id').ToString())
-			MANGAINFO.ChapterNames.Add(v.GetProperty('title').ToString())
-		end
-		page = page + 1
-		local pages = tonumber(x.XPathString('json(*).pages')) or 1
-		if page > pages then
-			break
+	local x = CreateTXQuery(HTTP.Document)
+	local info = x.XPath('json(*).mangaPage')
+	MANGAINFO.Title     = x.XPathString('title', info)
+	MANGAINFO.AltTitles = x.XPathString('string-join(otherNames?*, ", ")', info)
+	MANGAINFO.CoverLink = MODULE.RootURL .. '/static/' .. x.XPathString('poster?image', info)
+	MANGAINFO.Authors   = x.XPathString('string-join(authors?*?name, ", ")', info)
+	MANGAINFO.Genres    = x.XPathString('string-join((genres?*?name, type), ", ")', info)
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status', info))
+	MANGAINFO.Summary   = x.XPathString('synopsis', info)
+
+	local optgroup = MODULE.GetOption('showscangroup')
+	local scanlator_map = {}
+
+	if optgroup then
+		for v in x.XPath('scanlators?*', info).Get() do
+			local id   = v.GetProperty('id').ToString()
+			local name = v.GetProperty('name').ToString()
+			scanlator_map[id] = name
 		end
 	end
+
+	if not HTTP.GET(API_URL .. '/manga/allChapters?mangaId=' .. mid) then return net_problem end
+
+	for v in CreateTXQuery(HTTP.Document).XPath('json(*).chapters()').Get() do
+		local scanlator = ''
+
+		if optgroup then
+			local scanlator_id = v.GetProperty('scanlationMangaId').ToString()
+			local name = scanlator_map[scanlator_id]
+
+			if name then
+				scanlator = ' [' .. name .. ']'
+			end
+		end
+
+		MANGAINFO.ChapterLinks.Add(mid .. '/' .. v.GetProperty('id').ToString())
+		MANGAINFO.ChapterNames.Add(v.GetProperty('title').ToString() .. scanlator)
+	end
+	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	local mid, cid = URL:match('^/([^/]+)/([^/]+)$')
 	local u = API_URL .. '/read/chapter?mangaId=' .. mid .. '&chapterId=' .. cid
@@ -89,4 +120,13 @@ function GetPageNumber()
 	end
 
 	return true
+end
+
+-- Verify the module's functionality by checking a specific manga and chapter.
+function CheckSite()
+	MANGACHECK.MangaURL     = '/manga/6rUzU'
+	MANGACHECK.MangaTitle   = 'The Academy’s Sashimi Sword Master'
+	MANGACHECK.ChapterURL   = '/6rUzU/pIEtz'
+	MANGACHECK.ChapterTitle = 'Episode 74'
+	MANGACHECK.ChapterURLAddRootHost = false
 end
