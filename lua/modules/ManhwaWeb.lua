@@ -6,20 +6,20 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'K042a85566244b7e836679491ce67ot0'
 	m.Name                     = 'ManhwaWeb'
-	m.RootURL                  = 'https://manhwaweb.com'
+	m.RootURL                  = 'https://www.manhwaweb.com'
 	m.Category                 = 'Spanish'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.SortedList               = true
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-
-API_URL = 'https://manhwawebbackend-production.up.railway.app'
-DirectoryPagination = '/manhwa/library?buscar=&estado=&tipo=&erotico=&demografia=&tag=&order_item=alfabetico&order_dir=desc&page='
+local API_URL = 'https://manhwawebbackend-production.up.railway.app'
+local DirectoryPagination = '/manhwa/library?order_item=creacion&order_dir=desc&page='
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -27,52 +27,61 @@ DirectoryPagination = '/manhwa/library?buscar=&estado=&tipo=&erotico=&demografia
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local v, x = nil
-	if not HTTP.GET(API_URL .. DirectoryPagination .. (URL + 1) .. '&generes=') then return net_problem end
+	local u = API_URL .. DirectoryPagination .. 1
 
-	x = CreateTXQuery(HTTP.Document)
-	for v in x.XPath('json(*).data()').Get() do
-		LINKS.Add('manhwa/' .. x.XPathString('_id', v))
-		NAMES.Add(x.XPathString('the_real_name', v))
+	if not HTTP.GET(u) then return net_problem end
+
+	local x = CreateTXQuery(HTTP.Document)
+	local page = 1
+	while true do
+		for v in x.XPath('json(*).data()').Get() do
+			if v.GetProperty('_tipo').ToString() ~= 'novela' then
+				LINKS.Add('manhwa/' .. v.GetProperty('_id').ToString())
+				NAMES.Add(v.GetProperty('the_real_name').ToString())
+			end
+		end
+		local has_next = x.XPathString('json(*).next')
+		if has_next ~= 'true' then break end
+		page = page + 1
+		UPDATELIST.UpdateStatusText('Loading page ' .. page)
+		if not HTTP.GET(API_URL .. DirectoryPagination .. page) then break end
+		x.ParseHTML(HTTP.Document)
 	end
 
-    if x.XPathString('json(*).next') == "true" then
-		UPDATELIST.CurrentDirectoryPageNumber = UPDATELIST.CurrentDirectoryPageNumber + 1
-    else
-        UPDATELIST.CurrentDirectoryPageNumber = 0
-    end
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	local u = API_URL .. '/manhwa/see/' .. URL:match('[^/]+$')
 	
 	if not HTTP.GET(u) then return net_problem end
 
 	local x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('json(*).name_esp')
-	MANGAINFO.CoverLink = x.XPathString('json(*)._imagen')
-	MANGAINFO.Genres    = x.XPathStringAll('json(*)._categoris()')
-	MANGAINFO.Status    = x.XPathString('json(*).status_esp')
-	MANGAINFO.Summary   = x.XPathString('json(*)._sinopsis')
+	local info = x.XPath('json(*)')
+	MANGAINFO.Title     = x.XPathString('name_esp', info)
+	MANGAINFO.AltTitles = x.XPathString('string-join((name_raw, _name), ", ")', info)
+	MANGAINFO.CoverLink = x.XPathString('_imagen', info)
+	MANGAINFO.Authors   = x.XPathString('string-join(_extras?autores?*, ", ")', info)
+	MANGAINFO.Genres    = x.XPathString('string-join((_categoris?*?*, concat(upper-case(substring(_demografi, 1, 1)), lower-case(substring(_demografi, 2))), concat(upper-case(substring(_tipo, 1, 1)), lower-case(substring(_tipo, 2)))), ", ")', info)
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('_status', info), 'publicandose', 'finalizado', 'pausado')
+	MANGAINFO.Summary   = x.XPathString('_sinopsis', info)
 
-	local v for v in x.XPath('json(*).chapters_esp()').Get() do
-		MANGAINFO.ChapterLinks.Add(x.XPathString('link', v))
-		MANGAINFO.ChapterNames.Add('Capítulo ' .. x.XPathString('chapter', v))
+	for v in x.XPath('chapters?*', info).Get() do
+		MANGAINFO.ChapterLinks.Add(v.GetProperty('link').ToString())
+		MANGAINFO.ChapterNames.Add('Capítulo ' .. v.GetProperty('chapter').ToString())
 	end  
 
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	if not HTTP.GET(API_URL .. '/chapters/see/' .. URL:match('[^/]+$')) then return net_problem end
+	local u = API_URL .. '/chapters/see/' .. URL:match('[^/]+$')
 
-	local x = CreateTXQuery(HTTP.Document)
-	local v for v in x.XPath('json(*).chapter.img()').Get() do
-		TASK.PageLinks.Add(v.ToString():gsub("cdn.statically.io/img/", ""))
-	end
+	if not HTTP.GET(u) then return false end
 
-	return no_error
+	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).chapter.img()', TASK.PageLinks)
+
+	return true
 end
