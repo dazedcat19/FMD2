@@ -167,7 +167,7 @@ local function EncodeBase64(data)
 		for i = 1, 6 do
 			c = c + (x:sub(i, i) == '1' and 2 ^ (6 - i) or 0)
 		end
-		return b:sub(c + 1, c +1)
+		return b:sub(c + 1, c + 1)
 	end) .. ({ '', '==', '=' })[#data % 3 + 1])
 end
 
@@ -191,7 +191,7 @@ local function GenerateToken(rctx0, rctx1, slug, chapter)
 	end
 	local rand = table.concat(rand_tab)
 
-	local payload = string.format("%x|%s|%s|%s", ts, rand, slug, chapter)
+	local payload = string.format('%x|%s|%s|%s', ts, rand, slug, chapter)
 
 	local out = {}
 	local key_len = #xor_key
@@ -309,12 +309,9 @@ function GetPageNumber()
 
 	local x = CreateTXQuery(HTTP.Document)
 	local session_data = x.XPathString('json(*).data.session_data')
-
-	if session_data ~= '' then
-		local iv = string.rep('0', 32)
-		local result = require 'fmd.crypto'.AESDecryptCBCSHA256Base64Pkcs7(session_data, secret_key, iv)
-		x.ParseHTML(result)
-	end
+	local iv = string.rep('0', 32)
+	local result = require 'fmd.crypto'.AESDecryptCBCSHA256Base64Pkcs7(session_data, secret_key, iv)
+	x.ParseHTML(result)
 	x.XPathStringAll('json(*).data.images()', TASK.PageLinks)
 
 	return true
