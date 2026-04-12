@@ -148,7 +148,7 @@ function GetPageNumber()
     else
         local json = GetBetween("parseJSON('", "')", x.XPathString('//script[contains(., "var g_th")]'))
         for page, ext_type in json:gmatch('"(%d+)":"(%a),') do
-            TASK.PageLinks.Add('https://m' .. load_server .. '.' .. '.hentaiera.com/' .. '/' .. load_dir .. '/' .. load_id .. '/' .. page .. ext[ext_type])
+            TASK.PageLinks.Add('https://m' .. load_server  .. '.hentaiera.com/'  .. load_dir .. '/' .. load_id .. '/' .. page .. ext[ext_type])
         end
     end
 
