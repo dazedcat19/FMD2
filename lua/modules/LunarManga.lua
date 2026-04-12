@@ -37,15 +37,18 @@ end
 local API_URL = 'https://api.lunaranime.ru/api/manga'
 local DirectoryPagination = '/search?'
 local Langs = {
-    {  nil, 'All' },
-    { 'en', 'English' },
-    { 'id', 'Indonesian' },
-    { 'ko', 'Korean' }
+	{  nil, 'All' },
+	{ 'en', 'English' },
+	{ 'id', 'Indonesian' },
+	{ 'ko', 'Korean' }
 }
 
 ----------------------------------------------------------------------------------------------------
 -- Helper Functions
 ----------------------------------------------------------------------------------------------------
+
+-- Seed random number generator once.
+math.randomseed(os.time())
 
 -- Return language names in defined order
 function GetLangList()
@@ -61,33 +64,90 @@ local function FindLanguage(lang)
 	return Langs[lang + 1][1]
 end
 
-local function GetKeys(slug, chapter, lang)
-	local url = string.format('%s/manga/%s/%s?id=%s', MODULE.RootURL, slug, chapter, lang)
+local function RNG(seed)
+	local s = (seed ~ 0x5DEECE66D) & ((1 << 48) - 1)
+	return function(n)
+		s = (s * 0x5DEECE66D + 0xB) & ((1 << 48) - 1)
+		local result = (s >> (48 - 31)) & 0x7FFFFFFF
+		return result % n
+	end
+end
 
-	local js = [[
-		const secretWait = async (page) => {
-			for (let i = 0; i < 50; i++) {
-				const ok = await page.evaluate(() => typeof window.__rctx0 === 'function');
-				if (ok) return true;
-				await new Promise(r => setTimeout(r, 100));
-			}
-			return false;
-		};
+local function GenerateRctx(data)
+	local encoded
+	for k, v in pairs(data) do
+		if #k == 2 then 
+			encoded = v:reverse()
+			break 
+		end
+	end
+	if not encoded then return '' end
 
-		if (!(await secretWait(page))) {
-			console.log(JSON.stringify({ error: "keys not found" }));
-			return;
-		}
+	local decoded = require 'fmd.crypto'.DecodeBase64(encoded)
 
-		const result = await page.evaluate(() => ({
-			secret_key: window.__rctx0(),
-			xor_key: window.__rctx1()
-		}));
+	local parts = {}
+	for p in decoded:gmatch('[^.]+') do
+		table.insert(parts, p)
+	end
+	
+	local xor_key = tonumber(parts[1], 16)
 
-		console.log(JSON.stringify(result));
-	]]
+	local hex = ''
+	for i = 2, #parts do
+		hex = hex .. (data[parts[i]] or '')
+	end
 
-	local result = require 'utils.nodejs'.run_html_load_with_js(url, js)
+	local d = {}
+	local idx = 0
+	for h in hex:gmatch('..') do
+		local val = tonumber(h, 16)
+		local k = (xor_key + idx * 7 + 3) & 0xFF
+		table.insert(d, val ~ k)
+		idx = idx + 1
+	end
+	if #d == 0 then return '' end
+
+	local rand = RNG(#d)
+
+	local h = {}
+	for i = 0, 255 do h[i] = i end
+
+	for i = 255, 1, -1 do
+		local j = rand(i + 1)
+		h[i], h[j] = h[j], h[i]
+	end
+
+	local s = {}
+	for i = 0, 255 do s[h[i]] = i end
+	
+	local u = {}
+	for i = 1, #d do u[i] = rand(256) end
+
+	for round = 0, 2 do
+		for t = 1, #d do
+			local val = d[t] ~ u[((t - 1) + 7 * round) % #u + 1]
+			val = h[val]
+			local shift = ((t - 1) + 3 * round + 1) % 7 + 1
+			d[t] = ((val << shift) | (val >> (8 - shift))) & 0xFF
+		end
+		for t = 2, #d do
+			d[t] = d[t] ~ d[t - 1]
+		end
+	end
+
+	local e = d
+	for round = 2, 0, -1 do
+		for t = #e, 2, -1 do e[t] = e[t] ~ e[t - 1] end
+		for t = 1, #e do
+			local shift = ((t - 1) + 3 * round + 1) % 7 + 1
+			local val = ((e[t] >> shift) | (e[t] << (8 - shift))) & 0xFF
+			val = s[val]
+			e[t] = val ~ u[((t - 1) + 7 * round) % #u + 1]
+		end
+	end
+
+	local result = ''
+	for i = 1, #e do result = result .. string.char(e[i]) end
 
 	return result
 end
@@ -111,44 +171,38 @@ local function EncodeBase64(data)
 	end) .. ({ '', '==', '=' })[#data % 3 + 1])
 end
 
-local function GenerateToken(secret, xor, slug, chapter)
-	local function str_to_bytes(s)
-		local t = {}
-		for i = 1, #s do t[i] = s:byte(i) end
-		return t
-	end
+local function GenerateToken(rctx0, rctx1, slug, chapter)
+	local len0, len1 = #rctx0, #rctx1
+	local max_len = math.max(len0, len1)
 
-	local a = str_to_bytes(secret)
-	local b = str_to_bytes(xor)
-
-	local cipher = {}
-	local max_len = math.max(#a, #b)
-
+	local xor_key = {}
 	for i = 1, max_len do
-		cipher[i] = a[(i - 1) % #a + 1] ~ b[(i - 1) % #b + 1]
+		local a = rctx0:byte((i - 1) % len0 + 1)
+		local b = rctx1:byte((i - 1) % len1 + 1)
+		xor_key[i] = a ~ b
 	end
 
 	local ts = os.time()
-	local rand = ''
 	local chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+	local rand_tab = {}
 	for i = 1, 8 do
 		local r = math.random(#chars)
-		rand = rand .. chars:sub(r, r)
+		rand_tab[i] = chars:sub(r, r)
 	end
+	local rand = table.concat(rand_tab)
 
 	local payload = string.format("%x|%s|%s|%s", ts, rand, slug, chapter)
 
 	local out = {}
+	local key_len = #xor_key
 	for i = 1, #payload do
 		local c = payload:byte(i)
-		local k = cipher[(i - 1) % #cipher + 1]
+		local k = xor_key[(i - 1) % key_len + 1]
 		out[i] = string.char(c ~ k)
 	end
 
 	local encoded = EncodeBase64(table.concat(out))
-	encoded = encoded:gsub('%+', '-'):gsub('/', '_'):gsub('=+$', '')
-
-	return encoded
+	return encoded:gsub('%+', '-'):gsub('/', '_'):gsub('=+$', '')
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -177,19 +231,19 @@ function GetInfo()
 	if not HTTP.GET(u) then return net_problem end
 
 	local x = CreateTXQuery(HTTP.Document)
-	local json = x.XPath('parse-json(.)?manga')
-	MANGAINFO.Title     = x.XPathString('title', json)
+	local info = x.XPath('parse-json(.)?manga')
+	MANGAINFO.Title     = x.XPathString('title', info)
 	if MANGAINFO.Title == '' and x.XPathString('*'):find('API access denied', 1, true) then
 		MANGAINFO.Title = 'Please complete the security check on your browser'
 		return no_error
 	end
-	MANGAINFO.AltTitles = x.XPathString('string-join(json(alternative_titles), ", ")', json)
-	MANGAINFO.CoverLink = x.XPathString('cover_url', json)
-	MANGAINFO.Authors   = x.XPathString('author', json)
-	MANGAINFO.Artists   = x.XPathString('artist', json)
-	MANGAINFO.Genres    = x.XPathString('string-join((json(genres), json(themes), concat(upper-case(substring(demographic, 1, 1)), lower-case(substring(demographic, 2))))[string-length(.) > 0], ", ")', json)
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('publication_status', json))
-	MANGAINFO.Summary   = x.XPathString('description', json)
+	MANGAINFO.AltTitles = x.XPathString('string-join(json(alternative_titles), ", ")', info)
+	MANGAINFO.CoverLink = x.XPathString('cover_url', info)
+	MANGAINFO.Authors   = x.XPathString('author', info)
+	MANGAINFO.Artists   = x.XPathString('artist', info)
+	MANGAINFO.Genres    = x.XPathString('string-join((json(genres), json(themes), concat(upper-case(substring(demographic, 1, 1)), lower-case(substring(demographic, 2))))[string-length(.) > 0], ", ")', info)
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('publication_status', info))
+	MANGAINFO.Summary   = x.XPathString('description', info)
 
 	if not HTTP.GET(u:gsub('title/', '')) then return net_problem end
 
@@ -219,17 +273,39 @@ end
 function GetPageNumber()
 	local slug, chapter = URL:match('/([^/]+)/([^/?]+)')
 	local lang = URL:match('language=([^&]+)')
+	
+	local u = MODULE.RootURL .. '/manga' .. URL:match('^[^?]+')
 
-	local res = GetKeys(slug, chapter, lang)
-	local secret_key, xor_key = res:match('"secret_key":"(.-)","xor_key":"(.-)"')
+	if not HTTP.GET(u) then return false end
+
+	local body = HTTP.Document.ToString()
+
+	local seeds = {}
+	for segment in body:gmatch('self%.__next_f%.push%(%[1,"(.-)"%]%)') do
+		local decoded = segment:gsub('\\\\', '\\'):gsub('\\"', '"')
+		for obj in decoded:gmatch('({[^{}]-})') do
+			local success, data = pcall(function()
+				return require 'utils.json'.decode(obj)
+			end)
+			if success and type(data) == 'table' then
+				for k, _ in pairs(data) do
+					if #k == 2 then table.insert(seeds, data) break end
+				end
+			end
+		end
+	end
+
+	if #seeds < 2 then return false end
+
+	local secret_key = GenerateRctx(seeds[1])
+	local xor_key = GenerateRctx(seeds[2])
 
 	local pw = MODULE.GetOption('pw')
 	pw = pw ~= '' and '&password=' .. pw or ''
 
 	local token = GenerateToken(secret_key, xor_key, slug, chapter)
-	local u = API_URL .. '/r/' .. token .. '?language=' .. lang .. pw
 
-	if not HTTP.GET(u) then return false end
+	if not HTTP.GET(API_URL .. '/r/' .. token .. '?language=' .. lang .. pw) then return false end
 
 	local x = CreateTXQuery(HTTP.Document)
 	local session_data = x.XPathString('json(*).data.session_data')
@@ -244,7 +320,6 @@ function GetPageNumber()
 	return true
 end
 
--- Prepare the URL, http header and/or http cookies before downloading an image.
 function BeforeDownloadImage()
 	HTTP.Headers.Values['Referer'] = MODULE.RootURL
 
