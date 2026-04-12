@@ -64,7 +64,7 @@ function _M.GetPageNumber()
 
 	if not HTTP.GET(u) then return false end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('//img[@class="mjv2-page-image"]/@src', TASK.PageLinks)
+	CreateTXQuery(HTTP.Document).XPathStringAll('//figure/img[@class="mjv2-page-image"]/@src', TASK.PageLinks)
 
 	return true
 end
