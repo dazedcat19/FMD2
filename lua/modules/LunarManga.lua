@@ -320,6 +320,7 @@ function GetPageNumber()
 	return true
 end
 
+-- Prepare the URL, http header and/or http cookies before downloading an image.
 function BeforeDownloadImage()
 	HTTP.Headers.Values['Referer'] = MODULE.RootURL
 
