@@ -6749,8 +6749,8 @@ begin
     OptionDeleteCompletedTasksOnClose := cbOptionDeleteCompletedTasksOnClose.Checked;
     OptionSortDownloadsOnNewTasks := cbOptionSortDownloadsOnNewTasks.Checked;
     OptionLongNamePaths := cbOptionEnableLongNamePaths.Checked;
-    DLManager.DB.AutoVacuum:=cbOptionVacuumDatabasesOnExit.Checked;
-    FavoriteManager.DB.AutoVacuum:=cbOptionVacuumDatabasesOnExit.Checked;
+    DLManager.DB.AutoVacuum := cbOptionVacuumDatabasesOnExit.Checked;
+    FavoriteManager.DB.AutoVacuum := cbOptionVacuumDatabasesOnExit.Checked;
 
     // view
     ToolBarDownload.Visible := cbOptionShowDownloadToolbar.Checked;

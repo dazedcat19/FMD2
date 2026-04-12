@@ -18,7 +18,7 @@ interface
 uses
   SysUtils, LazFileUtils, StrUtils, Graphics, Dialogs, uBaseUnit, uData, Forms,
   FMDOptions, BaseThread, ImgInfos, webp, MultiLog, MemBitmap, VirtualTrees,
-  DBDataProcess;
+  DBDataProcess, WebsiteModules;
 
 type
 
@@ -31,12 +31,13 @@ type
     FTitle,
     FLink: String;
     FInfo: TMangaInformation;
+    FModule: TModuleContainer;
     FNumChapter: Cardinal;
     FIsHasMangaCover: Boolean;
     FFillSaveTo: Boolean;
   protected
     procedure Execute; override;
-    procedure MainThreadSyncInfos;
+    procedure MainThreadSyncAddInfos;
     procedure MainThreadShowInfos;
     procedure MainThreadShowCover;
     procedure MainThreadShowCannotGetInfo;
@@ -51,26 +52,76 @@ type
 implementation
 
 uses
-  frmMain, frmCustomMessageDlg, WebsiteModules, FMDVars;
+  frmMain, frmCustomMessageDlg, FMDVars;
 
-procedure TGetMangaInfosThread.MainThreadSyncInfos;
+procedure TGetMangaInfosThread.MainThreadSyncAddInfos;
+var
+  tempDataProcess: TDBDataProcess;
+  data: PMangaInfoData;
+  oldModuleID, dataLink: String;
+  nodeIndex: Integer;
 begin
-  FInfo.SyncInfoToData(dataProcess);
-  dataProcess.Commit;
+  if (FInfo.MangaInfo.Title = '') or (FInfo.MangaInfo.Link = '') then
+  begin
+    Exit;
+  end;
+
+  tempDataProcess := dataProcess;
+  oldModuleID := dataProcess.Website;
+  if oldModuleID <> FModule.ID then
+  begin
+    tempDataProcess := TDBDataProcess.Create;
+  end;
+
+  try
+    if not tempDataProcess.Connect(FModule.ID) then
+    begin
+      Exit;
+    end;
+
+    if not Assigned(FNode) then
+    begin
+      FNode := MainForm.vtMangaList.FocusedNode;
+    end;
+
+    data := MainForm.vtMangaList.GetNodeData(FNode);
+    dataLink := '';
+    if Assigned(data) then
+    begin
+      dataLink := data^.Link;
+    end;
+    nodeIndex := MainForm.vtMangaList.AbsoluteIndex(FNode);
+
+    if FInfo.DataExists(tempDataProcess) then
+    begin
+      FInfo.SyncInfoToData(tempDataProcess);
+      tempDataProcess.Commit;
+    end
+    else
+    begin
+      FInfo.AddInfoToData(FInfo.MangaInfo.Title, FInfo.MangaInfo.Link, tempDataProcess);
+      tempDataProcess.Sort;
+    end;
+  finally
+    if oldModuleID = FModule.ID then
+    begin
+      MainForm.vtMangaList.Clear;
+      tempDataProcess.Refresh(tempDataProcess.Filtered);
+      MainForm.vtMangaListResetList(nodeIndex, dataLink, FModule.ID);
+    end
+    else
+    begin
+      tempDataProcess.Free;
+    end;
+  end;
 end;
 
 procedure TGetMangaInfosThread.Execute;
-var
-  m: TModuleContainer;
 
   function GetMangaInfo: Boolean;
   var
     infob: byte;
-    tempDataProcess: TDBDataProcess;
     data: PMangaInfoData;
-    oldModuleID, dataLink: String;
-    nodeIndex: Integer;
-    infoAlreadyExists: Boolean;
   begin
     Result := False;
     try
@@ -78,7 +129,7 @@ var
       FInfo.MangaInfo.Title := FTitle;
       data := MainForm.vtMangaList.GetNodeData(FNode);
       if Assigned(data) and (MainForm.cbSelectManga.ItemIndex <> -1) and
-        (m = TModuleContainer(MainForm.cbSelectManga.Items.Objects[MainForm.cbSelectManga.ItemIndex])) then
+        (FModule = TModuleContainer(MainForm.cbSelectManga.Items.Objects[MainForm.cbSelectManga.ItemIndex])) then
       begin
         if FInfo.MangaInfo.Title = '' then
         begin
@@ -119,9 +170,9 @@ var
       end;
 
       data := MainForm.vtMangaList.GetNodeData(FNode);
-      if Assigned(data) and dataProcess.WebsiteLoaded(m.ID) then //todo: use tmodulecontainer
+      if Assigned(data) and dataProcess.WebsiteLoaded(FModule.ID) then //todo: use tmodulecontainer
       begin
-        if not(m.InformationAvailable) then
+        if not(FModule.InformationAvailable) then
         begin
           if FInfo.MangaInfo.AltTitles = '' then
           begin
@@ -149,50 +200,6 @@ var
           end;
         end;
 
-        if not (Terminated or isExiting) then
-        begin
-          Synchronize(MainThreadSyncInfos);
-        end;
-      end;
-
-      if (FInfo.MangaInfo.Title <> '') and (FInfo.MangaInfo.Link <> '') then
-      begin
-        tempDataProcess := dataProcess;
-        oldModuleID := dataProcess.Website;
-        if oldModuleID <> m.ID then
-        begin
-          tempDataProcess := TDBDataProcess.Create;
-        end;
-
-        if not Assigned(FNode) then
-        begin
-          FNode := MainForm.vtMangaList.FocusedNode;
-        end;
-
-        data := MainForm.vtMangaList.GetNodeData(FNode);
-        dataLink := '';
-        if Assigned(data) then
-        begin
-          dataLink := data^.Link;
-        end;
-        nodeIndex := MainForm.vtMangaList.AbsoluteIndex(FNode);
-
-        if tempDataProcess.Connect(m.ID) then
-        begin
-          FInfo.AddInfoToData(FInfo.MangaInfo.Title, FInfo.MangaInfo.Link, tempDataProcess);
-          tempDataProcess.Sort;
-
-          if oldModuleID = m.ID then
-          begin      
-            MainForm.vtMangaList.Clear;
-            tempDataProcess.Refresh(tempDataProcess.Filtered);
-            MainForm.vtMangaListResetList(nodeIndex, dataLink, m.ID);
-          end
-          else
-          begin
-            tempDataProcess.Free;
-          end;
-        end;
       end;
 
       if FFillSaveTo and OptionGenerateMangaFolder then
@@ -219,8 +226,6 @@ var
   end;
 
 begin
-  m := TModuleContainer(FInfo.Module);
-
   try
     if not GetMangaInfo then
     begin
@@ -255,6 +260,8 @@ begin
       begin
         Synchronize(MainThreadShowCover);
       end;
+
+      MainThreadSyncAddInfos;
     end;
   except
     on E: Exception do
@@ -370,6 +377,7 @@ begin
   FIsHasMangaCover := False;
   FFillSaveTo := False;
   FInfo := TMangaInformation.Create(Self);
+  FModule := TModuleContainer(AModule);
   FInfo.Module := AModule;
   FLink := ALink;
   FNode := ANode;
@@ -380,6 +388,7 @@ begin
   GetInfosThread := nil;
   FCover := nil;
   FInfo.Free;
+  //FModule.Free;
   inherited Destroy;
 end;
 

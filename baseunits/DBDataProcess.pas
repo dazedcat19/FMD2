@@ -37,6 +37,18 @@ type
     NumChapter,
     JDN: Integer;
   end;
+             
+  { TVacuumThread }
+
+  TDBVacuumThread = class(TThread)
+  private
+    FDatabaseFile,
+    FWebsite: string;
+  protected
+    procedure Execute; override;
+  public
+    constructor Create(const ADatabaseFile, AWebsite: string);
+  end;
 
   { TDBDataProcess }
 
@@ -52,6 +64,7 @@ type
     FWebsite: String;
     FTableName: String;
     FRecordCount: Integer;
+    FSorted: Boolean;
     FFiltered: Boolean;
     FFilterAllSites: Boolean;
     FFilterApplied: Boolean;
@@ -127,11 +140,11 @@ type
     function CheckData(const Link, AField: String): TField;
     function ExistsData(const Link: String): Boolean;
     function AddData(Const Title, AltTitles, Link, Authors, Artists, Genres, Status, Summary: String;
-      NumChapter, JDN: Integer; ExitExists: Boolean): Boolean; overload;
+      NumChapter, JDN: Integer; ExitExistsCheck: Boolean): Boolean; overload;
     function AddData(Const Title, AltTitles, Link, Authors, Artists, Genres, Status, Summary: String;
       NumChapter: Integer; JDN: TDateTime): Boolean; overload; inline;
     function AddData(Const Title, AltTitles, Link, Authors, Artists, Genres, Status, Summary: String;
-      NumChapter: Integer; JDN: TDateTime; ExitExists: Boolean): Boolean; overload; inline;
+      NumChapter: Integer; JDN: TDateTime; ExitExistsCheck: Boolean): Boolean; overload; inline;
     function UpdateData(Const Title, AltTitles, Link, Authors, Artists, Genres, Status, Summary: String;
       NumChapter: Integer; AWebsite: String = ''): Boolean;
     function DeleteData(const RecIndex: Integer): Boolean;
@@ -190,7 +203,7 @@ procedure OverwriteDBDataProcess(const AWebsite, NWebsite: String);
 implementation
 
 uses
-  uBaseUnit, WebsiteModules;
+  uBaseUnit, WebsiteModules, frmMain;
 
 function NaturalCompareCallback({%H-}user: pointer; len1: longint;
   data1: pointer; len2: longint; data2: pointer): longint; cdecl;
@@ -314,6 +327,48 @@ begin
   end;
 
   RenameFile(DATA_FOLDER + NWebsite + DBDATA_EXT, DATA_FOLDER + AWebsite + DBDATA_EXT);
+end;
+
+{ TDBVacuumThread }
+
+constructor TDBVacuumThread.Create(const ADatabaseFile, AWebsite: string);
+begin
+  inherited Create(False);
+  FDatabaseFile := ADatabaseFile;
+  FWebsite := AWebsite;
+  FreeOnTerminate := True;
+end;
+
+procedure TDBVacuumThread.Execute;
+var
+  VacuumConn: TSQLite3ConnectionH;
+  VacuumTrans: TSQLTransaction;
+begin
+  VacuumTrans := TSQLTransaction.Create(nil);
+  VacuumConn := TSQLite3ConnectionH.Create(nil);
+
+  try
+    VacuumConn.DatabaseName := FDatabaseFile;
+    VacuumConn.Transaction := VacuumTrans;
+
+    try
+      VacuumConn.ExecuteDirect('END TRANSACTION;');
+
+      try
+        VacuumConn.ExecuteDirect('VACUUM;');
+      finally
+        VacuumConn.ExecuteDirect('BEGIN TRANSACTION;');
+      end;
+    except
+      on E: Exception do
+      begin
+        SendLogException(Self.ClassName + '[' + FWebsite + '].VacuumTable.Error!', E);
+      end;
+    end;
+  finally
+    VacuumTrans.Free;
+    VacuumConn.Free;
+  end;
 end;
 
 { TDBDataProcess }
@@ -920,7 +975,8 @@ begin
   FAttachedSites := TStringList.Create;
   FTableName := 'masterlist';
   FSQLSelect := 'SELECT * FROM "' + FTableName + '"';
-  FRecordCount := 0;
+  FRecordCount := 0;   
+  FSorted := False;
   FFiltered := False;
   FFilterAllSites := False;
   FFilterApplied := False;
@@ -957,6 +1013,8 @@ begin
 end;
 
 destructor TDBDataProcess.Destroy;
+var
+  i: Integer;
 begin
   try
     if FConn.Connected then
@@ -1185,6 +1243,8 @@ begin
 end;
 
 procedure TDBDataProcess.Close;
+var
+  databaseName: String;
 begin
   FRecordCount := 0;
 
@@ -1193,11 +1253,19 @@ begin
     Exit;
   end;
 
+  databaseName := FConn.DatabaseName;
   try
     FReadQuery.Close;
     RemoveFilter;
     FConn.Close;
     FConn.DatabaseName := '';
+
+    if FSorted and MainForm.cbOptionVacuumDatabasesOnExit.Checked then
+    begin
+      TDBVacuumThread.Create(databaseName, FWebsite);
+    end;
+            
+    FSorted := False;
     FWebsite := '';
   except
     on E: Exception do
@@ -1373,7 +1441,7 @@ begin
 end;
 
 function TDBDataProcess.AddData(const Title, AltTitles, Link, Authors, Artists, Genres,
-  Status, Summary: String; NumChapter, JDN: Integer; ExitExists: Boolean): Boolean;
+  Status, Summary: String; NumChapter, JDN: Integer; ExitExistsCheck: Boolean): Boolean;
 var
   sql: String;
   i: Integer;
@@ -1387,7 +1455,7 @@ begin
 
   if ExistsData(Link) then
   begin
-    if ExitExists then
+    if ExitExistsCheck then
     begin
       Exit;
     end;
@@ -1448,10 +1516,10 @@ begin
 end;
 
 function TDBDataProcess.AddData(const Title, AltTitles, Link, Authors, Artists, Genres,
-  Status, Summary: String; NumChapter: Integer; JDN: TDateTime; ExitExists: Boolean): Boolean;
+  Status, Summary: String; NumChapter: Integer; JDN: TDateTime; ExitExistsCheck: Boolean): Boolean;
 begin
   Result := AddData(Title, AltTitles, Link, Authors, Artists, Genres, Status, Summary,
-    NumChapter, DateToJDN(JDN), ExitExists);
+    NumChapter, DateToJDN(JDN), ExitExistsCheck);
 end;
 
 function TDBDataProcess.UpdateData(const Title, AltTitles, Link, Authors, Artists, Genres,
@@ -1988,7 +2056,9 @@ begin
   begin
     Exit;
   end;
-  
+
+  FSorted := True;
+
   Lock;
   try
     with FConn do
@@ -2006,7 +2076,6 @@ begin
     end;
 
     FTrans.Commit;
-    VacuumTable;
   finally
     Unlock;
   end;

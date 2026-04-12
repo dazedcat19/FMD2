@@ -36,6 +36,7 @@ type
     constructor Create(const AOwnerThread: TBaseThread = nil);
     destructor Destroy; override;
     function GetInfoFromURL(const AURL: String): Byte;
+    function DataExists(const ADataProcess: TDBDataProcess): Boolean;
     procedure SyncInfoToData(const ADataProcess: TDBDataProcess); overload;
     procedure AddInfoToData(const ATitle, ALink: String; const ADataProcess: TDBDataProcess); overload;
     property Thread: TBaseThread read FOwner;
@@ -262,6 +263,18 @@ begin
   end;
 end;
 
+function TMangaInformation.DataExists(const ADataProcess: TDBDataProcess): Boolean;
+begin
+  Result := False;
+
+  if not Assigned(ADataProcess) then
+  begin
+    Exit;
+  end;
+
+  Result := ADataProcess.ExistsData(MangaInfo.Link);
+end;
+
 procedure TMangaInformation.SyncInfoToData(const ADataProcess: TDBDataProcess);
 begin
   if not Assigned(ADataProcess) then
@@ -296,7 +309,7 @@ begin
   with MangaInfo do
   begin
     ADataProcess.AddData(Title, AltTitles, Link, Authors, Artists, Genres, Status,
-      StringBreaks(Summary), NumChapter, Now);
+      StringBreaks(Summary), NumChapter, Now, True);
   end;
 end;
 
