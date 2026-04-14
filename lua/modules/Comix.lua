@@ -46,22 +46,6 @@ local crypto = require 'fmd.crypto'
 -- Helper Functions
 ----------------------------------------------------------------------------------------------------
 
-local function ToBytes(s)
-    local t = {}
-    for i = 1, #s do
-        t[i] = s:byte(i)
-    end
-    return t
-end
-
-local function FromBytes(t)
-    local s = {}
-    for i = 1, #t do
-        s[i] = string.char(t[i])
-    end
-    return table.concat(s)
-end
-
 local function Ror(x, n) return ((x >> n) | (x << (8 - n))) & 0xFF end
 local function Rol(x, n) return ((x << n) | (x >> (8 - n))) & 0xFF end
 local function MutB(e) return (e - 12 + 256) % 256 end
@@ -97,31 +81,7 @@ local raw_keys = {
 
 local keys = {}
 for i = 1, #raw_keys do
-    keys[i] = ToBytes(crypto.DecodeBase64(raw_keys[i]))
-end
-
-local function RC4(key, data)
-    local s = {}
-    for i = 0, 255 do
-		s[i] = i
-	end
-
-    local j = 0
-    for i = 0, 255 do
-        j = (j + s[i] + key[(i % #key) + 1]) % 256
-        s[i], s[j] = s[j], s[i]
-    end
-
-    local i, j = 0, 0
-    local out = {}
-    for k = 1, #data do
-        i = (i + 1) % 256
-        j = (j + s[i]) % 256
-        s[i], s[j] = s[j], s[i]
-        out[k] = (data[k] ~ s[(s[i] + s[j]) % 256]) & 0xFF
-    end
-
-    return out
+    keys[i] = crypto.DecodeBase64(raw_keys[i])
 end
 
 local round_maps = {
@@ -135,58 +95,40 @@ local round_maps = {
 local function GetMutKey(mk, idx)
     if #mk == 0 then return 0 end
     if (idx % 32) < #mk then
-        return mk[(idx % #mk) + 1]
+        return mk:byte((idx % #mk) + 1)
     end
     return 0
 end
 
-local function Round(data, key_idx)
-    local k  = keys[key_idx]
-    local mk = keys[key_idx + 1]
-    local pk = keys[key_idx + 2]
+local function Round(data, idx)
+    local k  = keys[idx]
+    local mk = keys[idx + 1]
+    local pk = keys[idx + 2]
 
-    local cfg = round_maps[(key_idx // 3) + 1]
+    local cfg = round_maps[(idx // 3) + 1]
     local map, pref = cfg.map, cfg.pref
 
-    local enc = RC4(k, data)
+    local enc = crypto.RC4(k, data)
     local out = {}
+    local pk_len = #pk
 
     for i = 1, #enc do
-        if i <= pref and i <= #pk then
-            out[#out+1] = pk[i]
+        if i <= pref and i <= pk_len then
+            out[#out + 1] = string.char(pk:byte(i))
         end
 
-        local v = (enc[i] ~ GetMutKey(mk, i - 1)) & 0xFF
+        local v = (enc:byte(i) ~ GetMutKey(mk, i - 1)) & 0xFF
         local f = map[(i - 1) % 10]
         if f then v = f(v) end
 
-        out[#out+1] = v
+        out[#out + 1] = string.char(v)
     end
 
-    return out
-end
-
-local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-
-local function EncodeBase64(data)
-	return ((data:gsub('.', function(x)
-		local r, bits = '', x:byte()
-		for i = 8, 1, -1 do
-			r = r .. (bits % 2 ^ i - bits % 2 ^ (i - 1) > 0 and '1' or '0')
-		end
-		return r
-	end) .. '0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
-		if (#x < 6) then return '' end
-		local c = 0
-		for i = 1, 6 do
-			c = c + (x:sub(i ,i) == '1' and 2 ^ (6 - i) or 0)
-		end
-		return b:sub(c + 1, c +1)
-	end) .. ({ '', '==', '=' })[#data % 3 + 1])
+    return table.concat(out)
 end
 
 function GenerateHash(path)
-    local bytes = ToBytes(crypto.DecodeURL(path .. ':0:1'))
+    local bytes = crypto.DecodeURL(path .. ':0:1')
 
     bytes = Round(bytes, 1)
     bytes = Round(bytes, 4)
@@ -194,7 +136,7 @@ function GenerateHash(path)
     bytes = Round(bytes, 10)
     bytes = Round(bytes, 13)
 
-    return EncodeBase64(FromBytes(bytes)):gsub('%+', '-'):gsub('/', '_'):gsub('=+$', '')
+    return crypto.EncodeBase64(bytes):gsub('%+', '-'):gsub('/', '_'):gsub('=+$', '')
 end
 
 ----------------------------------------------------------------------------------------------------

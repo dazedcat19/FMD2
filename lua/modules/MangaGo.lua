@@ -202,9 +202,8 @@ function GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local duktape = require('fmd.duktape')
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return false end
@@ -219,30 +218,7 @@ function GetPageNumber()
 	local deobfuscated_js = SoJsonV4Deobfuscator(HTTP.Document.ToString())
 	local key = deobfuscated_js:match('var key%s*=%s*CryptoJS%.enc%.Hex%.parse%("([0-9a-fA-F]+)"%)')
 	local iv = deobfuscated_js:match('var iv%s*=%s*CryptoJS%.enc%.Hex%.parse%("([0-9a-fA-F]+)"%)')
-	local decryption_script = string.format([[
-		var CryptoJS = require('utils/crypto-js.min.js');
-
-		function decryptData(b64_data, hex_key, hex_iv) {
-			var key = CryptoJS.enc.Hex.parse(hex_key);
-			var iv = CryptoJS.enc.Hex.parse(hex_iv);
-
-			var decrypted = CryptoJS.AES.decrypt(
-				b64_data,
-				key,
-				{
-					iv: iv,
-					mode: CryptoJS.mode.CBC,
-					padding: CryptoJS.pad.ZeroPadding
-				}
-			);
-			
-			return decrypted.toString(CryptoJS.enc.Utf8);
-		}
-
-		decryptData('%s', '%s', '%s');
-	]], imgsrc_b64, key, iv)
-
-	local decrypted_image_list = duktape.ExecJS(decryption_script)
+	local decrypted_image_list = require 'fmd.crypto'.AESDecryptCBCHexBase64ZerosPadding(imgsrc_b64, key, iv)
 	local final_image_list = UnscrambleImageList(decrypted_image_list, deobfuscated_js)
 	local cols = deobfuscated_js:match('var%s*widthnum%s*=%s*heightnum%s*=%s*(%d+);') or '0'
 

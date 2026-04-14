@@ -19,8 +19,10 @@ function Pkcs7RemovePad(const s: String): String;
 function AESEncrpytCBCSHA256Base64Pkcs7(const s, key, iv: String): string;
 function AESDecryptCBCSHA256Base64Pkcs7(const s, key, iv: String): string;
 function AESDecryptCBCMD5Base64ZerosPadding(const s, key, iv: String): String;
+function AESDecryptCBCHexBase64ZerosPadding(const s, hexKey, hexIV: String): String;
 function MD5Hex(const s: String): String;
 function AESDecryptCBC(const s, key, iv: String): String;
+function RC4(const Key, Data: String): String;
 
 implementation
 
@@ -166,15 +168,40 @@ begin
   Result := AESDecryptCBC(DecodeStringBase64(s), MD5Hex(key), iv);
 end;
 
+function AESDecryptCBCHexBase64ZerosPadding(const s, hexKey, hexIV: String): String;
+var
+  keyBytes, ivBytes: TBytes;
+  data: String;
+begin
+  Result := '';
+  with TDCP_rijndael.Create(nil) do
+  begin
+    try
+      HexToBytes(hexKey, keyBytes);
+      HexToBytes(hexIV, ivBytes);
+      if Length(keyBytes) = 0 then Exit;
+      Init(keyBytes[0], Length(keyBytes) * 8, @ivBytes[0]);
+      data := DecodeStringBase64(s);
+      SetLength(Result, Length(data));
+      if Length(data) > 0 then
+        DecryptCBC(data[1], Result[1], Length(data));
+      Burn;
+      while (Length(Result) > 0) and (Result[Length(Result)] = #0) do
+        SetLength(Result, Length(Result) - 1);
+    except
+    end;
+    Free;
+  end;
+end;
+
 function MD5Hex(const s: String): String;
 var
-  h: TBytes;
+  h: array[0 .. 15] of Byte;
 begin
   with TDCP_md5.Create(nil) do
     try
       Init;
       UpdateStr(s);
-      SetLength(h, 16);
       Final(h);
     finally
       Free;
@@ -182,5 +209,38 @@ begin
   Result := LowerCase(StrToHexStr(BytesToString(h)));
 end;
 
-end.
+function RC4(const Key, Data: String): String;
+var
+  S: array[0..255] of Byte;
+  Tmp: Byte;
+  i, j, k, KeyLen, DataLen: Integer;
+begin
+  KeyLen  := Length(Key);
+  DataLen := Length(Data);
+  if (KeyLen = 0) or (DataLen = 0) then
+  begin
+    Result := Data;
+    Exit;
+  end;
 
+  for i := 0 to 255 do
+    S[i] := i;
+  j := 0;
+  for i := 0 to 255 do
+  begin
+    j   := (j + S[i] + Ord(Key[(i mod KeyLen) + 1])) and $FF;
+    Tmp := S[i]; S[i] := S[j]; S[j] := Tmp;
+  end;
+
+  SetLength(Result, DataLen);
+  i := 0; j := 0;
+  for k := 1 to DataLen do
+  begin
+    i   := (i + 1) and $FF;
+    j   := (j + S[i]) and $FF;
+    Tmp := S[i]; S[i] := S[j]; S[j] := Tmp;
+    Result[k] := Char(Ord(Data[k]) xor S[(S[i] + S[j]) and $FF]);
+  end;
+end;
+
+end.

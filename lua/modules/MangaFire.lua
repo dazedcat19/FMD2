@@ -49,70 +49,37 @@ end
 local DirectoryPagination = '/newest?page='
 
 local Langs = {
-	["en"] = "English",
-	["fr"] = "French",
-	["ja"] = "Japanese",
-	["pt-br"] = "Portuguese (Br)",
-	["pt"] = "Portuguese (Pt)",
-	["es-la"] = "Spanish (LATAM)",
-	["es"] = "Spanish (Es)"
+	['en'] = 'English',
+	['fr'] = 'French',
+	['ja'] = 'Japanese',
+	['pt-br'] = 'Portuguese (Br)',
+	['pt'] = 'Portuguese (Pt)',
+	['es-la'] = 'Spanish (LATAM)',
+	['es'] = 'Spanish (Es)'
 }
 
 ----------------------------------------------------------------------------------------------------
 -- Helper Functions
 ----------------------------------------------------------------------------------------------------
 
-local function ToBytes(s)
-	local t = {}
-	for i = 1, #s do
-		t[#t + 1] = string.byte(s, i) & 255
-	end
-	return t
-end
-
-local function FromBytes(t)
-	return string.char(table.unpack(t))
-end
-
-local function Rc4(key, input)
-	local s = {}
-	for i = 0, 255 do
-		s[i] = i
-	end
-	local j = 0
-	for i = 0, 255 do
-		j = (j + s[i] + key[(i % #key) + 1]) & 255
-		s[i], s[j] = s[j], s[i]
-	end
-	local out = {}
-	local i = 0
-	j = 0
-	for y = 1, #input do
-		i = (i + 1) & 255
-		j = (j + s[i]) & 255
-		s[i], s[j] = s[j], s[i]
-		local k = s[(s[i] + s[j]) & 255]
-		out[y] = (input[y] ~ k) & 255
-	end
-	return out
-end
-
 local function Transform(input, init_seed_bytes, prefix_key, prefix_len, schedule)
 	local out = {}
 	for i = 1, #input do
 		if (i - 1) < prefix_len then
-			out[#out + 1] = prefix_key[i] or 0
+			out[#out + 1] = string.char(prefix_key:byte(i) or 0)
 		end
-		out[#out + 1] = schedule[((i - 1) % 10) + 1]((input[i] ~ init_seed_bytes[((i - 1) % 32) + 1]) & 255) & 255
+		local seed_byte = init_seed_bytes:byte(((i - 1) % 32) + 1) or 0
+		local v = schedule[((i - 1) % 10) + 1]((input:byte(i) ~ seed_byte) & 0xFF) & 0xFF
+		out[#out + 1] = string.char(v)
 	end
-	return out
+	return table.concat(out)
 end
 
-local function Add8(n) return function(c) return (c + n) & 255 end end
-local function Sub8(n) return function(c) return (c - n + 256) & 255 end end
-local function Xor8(n) return function(c) return (c ~ n) & 255 end end
-local function Rotl8(n) return function(c) return ((c << n) | (c >> (8 - n))) & 255 end end
-local function Rotr8(n) return function(c) return ((c >> n) | (c << (8 - n))) & 255 end end
+local function Add8(n) return function(c) return (c + n) & 0xFF end end
+local function Sub8(n) return function(c) return (c - n + 256) & 0xFF end end
+local function Xor8(n) return function(c) return (c ~ n) & 0xFF end end
+local function Rotl8(n) return function(c) return ((c << n) | (c >> (8 - n))) & 0xFF end end
+local function Rotr8(n) return function(c) return ((c >> n) | (c << (8 - n))) & 0xFF end end
 
 local schedule_c = {
 	Sub8(223), Rotr8(4), Rotr8(4), Add8(234), Rotr8(7),
@@ -140,51 +107,32 @@ local schedule_e = {
 }
 
 local rc4_keys = {
-	l = "FgxyJUQDPUGSzwbAq/ToWn4/e8jYzvabE+dLMb1XU1o=",
-	g = "CQx3CLwswJAnM1VxOqX+y+f3eUns03ulxv8Z+0gUyik=",
-	B = "fAS+otFLkKsKAJzu3yU+rGOlbbFVq+u+LaS6+s1eCJs=",
-	m = "Oy45fQVK9kq9019+VysXVlz1F9S1YwYKgXyzGlZrijo=",
-	F = "aoDIdXezm2l3HrcnQdkPJTDT8+W6mcl2/02ewBHfPzg=",
+	l = 'FgxyJUQDPUGSzwbAq/ToWn4/e8jYzvabE+dLMb1XU1o=',
+	g = 'CQx3CLwswJAnM1VxOqX+y+f3eUns03ulxv8Z+0gUyik=',
+	B = 'fAS+otFLkKsKAJzu3yU+rGOlbbFVq+u+LaS6+s1eCJs=',
+	m = 'Oy45fQVK9kq9019+VysXVlz1F9S1YwYKgXyzGlZrijo=',
+	F = 'aoDIdXezm2l3HrcnQdkPJTDT8+W6mcl2/02ewBHfPzg=',
 }
 
 local seeds_32 = {
-	A = "yH6MXnMEcDVWO/9a6P9W92BAh1eRLVFxFlWTHUqQ474=",
-	V = "RK7y4dZ0azs9Uqz+bbFB46Bx2K9EHg74ndxknY9uknA=",
-	N = "rqr9HeTQOg8TlFiIGZpJaxcvAaKHwMwrkqojJCpcvoc=",
-	P = "/4GPpmZXYpn5RpkP7FC/dt8SXz7W30nUZTe8wb+3xmU=",
-	k = "wsSGSBXKWA9q1oDJpjtJddVxH+evCfL5SO9HZnUDFU8=",
+	A = 'yH6MXnMEcDVWO/9a6P9W92BAh1eRLVFxFlWTHUqQ474=',
+	V = 'RK7y4dZ0azs9Uqz+bbFB46Bx2K9EHg74ndxknY9uknA=',
+	N = 'rqr9HeTQOg8TlFiIGZpJaxcvAaKHwMwrkqojJCpcvoc=',
+	P = '/4GPpmZXYpn5RpkP7FC/dt8SXz7W30nUZTe8wb+3xmU=',
+	k = 'wsSGSBXKWA9q1oDJpjtJddVxH+evCfL5SO9HZnUDFU8=',
 }
 
 local prefix_keys = {
-	O = "l9PavRg=",
-	v = "Ml2v7ag1Jg==",
-	L = "i/Va0UxrbMo=",
-	p = "WFjKAHGEkQM=",
-	W = "5Rr27rWd",
+	O = 'l9PavRg=',
+	v = 'Ml2v7ag1Jg==',
+	L = 'i/Va0UxrbMo=',
+	p = 'WFjKAHGEkQM=',
+	W = '5Rr27rWd',
 }
-
-local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-
-local function EncodeBase64(data)
-	return ((data:gsub('.', function(x)
-		local r, bits = '', x:byte()
-		for i = 8, 1, -1 do
-			r = r .. (bits % 2 ^ i - bits % 2 ^ (i - 1) > 0 and '1' or '0')
-		end
-		return r
-	end) .. '0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
-		if (#x < 6) then return '' end
-		local c = 0
-		for i = 1, 6 do
-			c = c + (x:sub(i ,i) == '1' and 2 ^ (6 - i) or 0)
-		end
-		return b:sub(c + 1, c +1)
-	end) .. ({ '', '==', '=' })[#data % 3 + 1])
-end
 
 local function GenerateVRF(input)
 	local crypto = require 'fmd.crypto'
-	local bytes = ToBytes(crypto.EncodeURLElement(input))
+	local bytes = crypto.EncodeURLElement(input)
 
 	local stages = {
 		{ rc4_keys.l, seeds_32.A, prefix_keys.O, schedule_c },
@@ -197,18 +145,16 @@ local function GenerateVRF(input)
 	for _, st in ipairs(stages) do
 		local key_b64, seed_b64, prefix_b64, sched = st[1], st[2], st[3], st[4]
 
-		local rc4_key = ToBytes(crypto.DecodeBase64(key_b64))
-		bytes = Rc4(rc4_key, bytes)
+		local rc4_key = crypto.DecodeBase64(key_b64)
+		bytes = crypto.RC4(rc4_key, bytes)
 
-		local seed_bytes = ToBytes(crypto.DecodeBase64(seed_b64))
-		local prefix_bytes_str = crypto.DecodeBase64(prefix_b64)
-		local prefix_bytes = ToBytes(prefix_bytes_str)
-		local prefix_len = #prefix_bytes_str
-
-		bytes = Transform(bytes, seed_bytes, prefix_bytes, prefix_len, sched)
+		local seed_bytes = crypto.DecodeBase64(seed_b64)
+		local prefix_key = crypto.DecodeBase64(prefix_b64)
+		local prefix_len = #prefix_key
+		bytes = Transform(bytes, seed_bytes, prefix_key, prefix_len, sched)
 	end
 
-	return EncodeBase64(FromBytes(bytes)):gsub("%+", "-"):gsub("/", "_"):gsub("=+$", "")
+	return crypto.EncodeBase64(bytes):gsub('%+', '-'):gsub('/', '_'):gsub('=+$', '')
 end
 
 function GetLangList()

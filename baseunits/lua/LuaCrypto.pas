@@ -42,6 +42,33 @@ begin
   Result := 1;
 end;
 
+function crypto_AESDecryptCBCMD5Base64ZerosPadding(L: Plua_State): Integer; cdecl;
+begin
+  lua_pushstring(L, AESDecryptCBCMD5Base64ZerosPadding(luaToString(L, 1), luaToString(L, 2), luaToString(L, 3)));
+  Result := 1;
+end;
+
+function crypto_AESDecryptCBCHexBase64ZerosPadding(L: Plua_State): Integer; cdecl;
+begin
+  lua_pushstring(L, AESDecryptCBCHexBase64ZerosPadding(luaToString(L, 1), luaToString(L, 2), luaToString(L, 3)));
+  Result := 1;
+end;
+
+function crypto_rc4(L: Plua_State): Integer; cdecl;
+var
+  Key, Data, Res: String;
+  Len: size_t;
+  P: PChar;
+begin
+  P := lua_tolstring(L, 1, @Len);
+  SetString(Key, P, Len);
+  P := lua_tolstring(L, 2, @Len);
+  SetString(Data, P, Len);
+  Res := RC4(Key, Data);
+  lua_pushlstring(L, PChar(Res), Length(Res));
+  Result := 1;
+end;
+
 function lua_encryptstring(L: Plua_State): Integer; cdecl;
 begin
   lua_pushstring(L, EncryptString(luaToString(L, 1)));
@@ -99,14 +126,22 @@ begin
 end;
 
 function lua_decodebase64(L: Plua_State): Integer; cdecl;
+var
+  s: String;
 begin
-  lua_pushstring(L, DecodeBase64(luaToString(L, 1)));
+  s := DecodeBase64(luaToString(L, 1));
+  lua_pushlstring(L, PChar(s), Length(s));
   Result := 1;
 end;
 
 function lua_encodebase64(L: Plua_State): Integer; cdecl;
+var
+  Input, Res: String;
+  Len: size_t;
 begin
-  lua_pushstring(L, EncodeBase64(luaToString(L, 1)));
+  SetString(Input, lua_tolstring(L, 1, @Len), Len);
+  Res := EncodeBase64(Input);
+  lua_pushstring(L, PChar(Res));
   Result := 1;
 end;
 
@@ -165,7 +200,7 @@ begin
 end;
 
 const
-  cryptomethods: packed array [0..9] of luaL_Reg = (
+  cryptomethods: packed array [0..12] of luaL_Reg = (
     (name: 'EncryptString'; func: @lua_encryptstring),
     (name: 'DecryptString'; func: @lua_decryptstring),
     (name: 'HTMLDecode'; func: @lua_htmldecode),
@@ -175,6 +210,9 @@ const
     (name: 'MD5Hex'; func: @crypto_md5hex),
     (name: 'AESDecryptCBC'; func: @crypto_aesdecryptcbc),
     (name: 'AESDecryptCBCSHA256Base64Pkcs7'; func: @crypto_AESDecryptCBCSHA256Base64Pkcs7),
+    (name: 'AESDecryptCBCMD5Base64ZerosPadding'; func: @crypto_AESDecryptCBCMD5Base64ZerosPadding),
+    (name: 'AESDecryptCBCHexBase64ZerosPadding'; func: @crypto_AESDecryptCBCHexBase64ZerosPadding),
+    (name: 'RC4'; func: @crypto_rc4),
     (name: nil; func: nil)
     );
 
@@ -208,4 +246,3 @@ initialization
   LuaPackage.AddLib('crypto', @luaopen_crypto);
 
 end.
-
