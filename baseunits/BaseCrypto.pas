@@ -19,7 +19,7 @@ function Pkcs7RemovePad(const s: String): String;
 function AESEncrpytCBCSHA256Base64Pkcs7(const s, key, iv: String): string;
 function AESDecryptCBCSHA256Base64Pkcs7(const s, key, iv: String): string;
 function AESDecryptCBCMD5Base64ZerosPadding(const s, key, iv: String): String;
-function AESDecryptCBCHexBase64ZerosPadding(const s, hexKey, hexIV: String): String;
+function AESDecryptCBCHexBase64ZerosPadding(const s, key, iv: String): String;
 function MD5Hex(const s: String): String;
 function AESDecryptCBC(const s, key, iv: String): String;
 function RC4(const Key, Data: String): String;
@@ -168,7 +168,7 @@ begin
   Result := AESDecryptCBC(DecodeStringBase64(s), MD5Hex(key), iv);
 end;
 
-function AESDecryptCBCHexBase64ZerosPadding(const s, hexKey, hexIV: String): String;
+function AESDecryptCBCHexBase64ZerosPadding(const s, key, iv: String): String;
 var
   keyBytes, ivBytes: TBytes;
   data: String;
@@ -177,8 +177,8 @@ begin
   with TDCP_rijndael.Create(nil) do
   begin
     try
-      HexToBytes(hexKey, keyBytes);
-      HexToBytes(hexIV, ivBytes);
+      HexToBytes(key, keyBytes);
+      HexToBytes(iv, ivBytes);
       if Length(keyBytes) = 0 then Exit;
       Init(keyBytes[0], Length(keyBytes) * 8, @ivBytes[0]);
       data := DecodeStringBase64(s);
