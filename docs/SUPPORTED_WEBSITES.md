@@ -159,6 +159,7 @@
 | InfraFandub | [![https://infrafandub.com](https://img.shields.io/website?url=https://infrafandub.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://infrafandub.com)](https://infrafandub.com) | OK | 04.01.2025 | - |
 | InManga | [![https://inmanga.com](https://img.shields.io/website?url=https://inmanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://inmanga.com)](https://inmanga.com) | - | - | - |
 | InstaManhwa | [![https://www.instamanhwa.com](https://img.shields.io/website?url=https://www.instamanhwa.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.instamanhwa.com)](https://www.instamanhwa.com) | - | - | - |
+| Inventario Oculto | [![https://inventariooculto.com](https://img.shields.io/website?url=https://inventariooculto.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://inventariooculto.com)](https://inventariooculto.com) | OK | 15.04.2026 | - |
 | ItsYourRightManhua | [![https://itsyourightmanhua.com](https://img.shields.io/website?url=https://itsyourightmanhua.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://itsyourightmanhua.com)](https://itsyourightmanhua.com) | - | - | - |
 | J8jp | [![https://j8jp.com](https://img.shields.io/website?url=https://j8jp.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://j8jp.com)](https://j8jp.com) | - | - | - |
 | JapitComics | [![https://j-comics.ru](https://img.shields.io/website?url=https://j-comics.ru%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://j-comics.ru)](https://j-comics.ru) | - | - | - |
