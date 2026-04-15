@@ -1,55 +1,61 @@
-local madokamilist = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ_'
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
 
-function GetInfo()
-    Delay()
-    HTTP.GET(MODULE.RootURL .. URL)
-	if HTTP.ResultCode ~= 200 then
-	    CheckAuth()
-		HTTP.GET(MODULE.RootURL .. URL)
-		if HTTP.ResultCode ~= 200 then
-		    return net_problem
-		end
-	end
-	local x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.CoverLink = x.XPathString('//img[@itemprop="image"]/@src')
-	if MANGAINFO.Title == '' then MANGAINFO.Title = x.XPathString('//*[@class="title"]') end
-	if MANGAINFO.Title == '' then MANGAINFO.Title = x.XPathString('(//h1//span[@itemprop="title"])[last()]') end
-	MANGAINFO.Authors   = x.XPathString('//*[@itemprop="author"]')
-	MANGAINFO.Genres = x.XPathStringAll('//div[@class="genres"]/a')
-	MANGAINFO.Status = MangaInfoStatusIfPos(x.XPathString('//span[@class="scanstatus"]'), 'No', 'Yes')
-	local chapters = x.XPath('//table[@id="index-table"]/tbody/tr')
-	for ic = 1, chapters.Count do
-		MANGAINFO.ChapterLinks.Add(x.XPathString('td/a[contains(text(),"Read")]/@href', chapters.Get(ic)))
-		MANGAINFO.ChapterNames.Add((x.XPathString('td[1]/a', chapters.Get(ic))):gsub("%.%w+%s*$",""))
-	end
-	return no_error
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = 'eb27e424af1e4ca987aba1f332df952c'
+	m.Name                     = 'Madokami'
+	m.RootURL                  = 'https://manga.madokami.al'
+	m.Category                 = 'English'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+	m.MaxTaskLimit             = 1
+	m.MaxConnectionLimit       = 4
+	m.AccountSupport           = true
+	m.OnLogin                  = 'Login'
+	m.OnAccountState           = 'AccountState'
+
+	local fmd = require 'fmd.env'
+	local slang = fmd.SelectedLanguage
+	local lang = {
+		['en'] = {
+			['delay'] = 'Delay (s) between requests',
+		},
+		['id_ID'] = {
+			['delay'] = 'Tunda (detik) antara permintaan',
+		},
+		get =
+			function(self, key)
+				local sel = self[slang]
+				if sel == nil then sel = self['en'] end
+				return sel[key]
+			end
+	}
+	m.AddOptionSpinEdit('mdkm_delay', lang:get('delay'), 2)
+	m.Storage['madokamiulist'] = ''
 end
 
-function GetPageNumber()
-    local crypto = require 'fmd.crypto'
-	local json = require("utils.json")
-	HTTP.Headers.Values['charset'] = 'utf-8'
-    HTTP.GET(MODULE.RootURL .. URL)
-	if HTTP.ResultCode ~= 200 then
-	    CheckAuth()
-		HTTP.GET(MODULE.RootURL .. URL)
-		if HTTP.ResultCode ~= 200 then
-		    return net_problem
-		end
-	end
-
-	local x = CreateTXQuery(HTTP.Document)
-
-	datapath = x.XPathString('//div[@id="reader"]/@data-path')
-	datapath = crypto.EncodeURLElement(datapath)
-	datafiles = x.XPathString('//div[@id="reader"]/@data-files')
-	datafiles = json.decode(datafiles)
-	for i=1, #(datafiles) do
-	    TASK.PageLinks.Add(MODULE.RootURL .. '/reader/image?path=' .. datapath .. '&file=' .. crypto.EncodeURLElement(datafiles[i]))
-	end
+----------------------------------------------------------------------------------------------------
+-- Local Constants
+----------------------------------------------------------------------------------------------------
+local json   = require("utils.json")
+local madokamilist_chr = {}
+local madokamilist_custom = {'_', 'Oneshots'}
+-- Add A to Z
+for i = string.byte('A'), string.byte('Z') do
+	madokamilist_chr[string.char(i) .. '/'] = true
 end
-
-function CheckAuth()
+-- Add Custom character
+for _, value in ipairs(madokamilist_custom) do
+	madokamilist_chr[value .. '/'] = true
+end
+----------------------------------------------------------------------------------------------------
+-- Helper Functions
+----------------------------------------------------------------------------------------------------
+local function CheckAuth()
     AccountState()
 	HTTP.GET(MODULE.RootURL)
     if HTTP.Headers.Values['WWW-Authenticate'] ~= '' then
@@ -60,96 +66,7 @@ function CheckAuth()
 	end
 end
 
-
-function GetDirectoryPageNumber()
-    Delay()
-	local temp_table_1stlv = {}
-	local temp_table_2ndlv = {}
-	local temp_table_3rdlv = {}
-
-	--create list for first level
-	for dirurl in madokamilist:gmatch(".") do
-	    table.insert(temp_table_1stlv, MODULE.RootURL .. '/Manga/' .. dirurl)
-	end
-	--create list for secend level
-	for index, item in pairs(temp_table_1stlv) do
-	    --if index == 3 then break end
-		HTTP.GET(item)
-		if HTTP.ResultCode ~= 200 then
-		    CheckAuth()
-			HTTP.GET(item)
-			if HTTP.ResultCode ~= 200 then
-			    return net_problem
-			end
-		end
-		local x = CreateTXQuery(HTTP.Document)
-		local parselinks = x.XPathStringAll('//table[@id="index-table"]/tbody/tr/td[1]/a/@href')
-		for i in string.gmatch(parselinks, '([^, ]+)') do
-			table.insert(temp_table_2ndlv,MODULE.RootURL .. i)
-		end
-	end
-	--create list for third level
-	for index, item in pairs(temp_table_2ndlv) do
-	    --if index == 3 then break end
-		HTTP.GET(item)
-		if HTTP.ResultCode ~= 200 then
-		    CheckAuth()
-			HTTP.GET(item)
-			if HTTP.ResultCode ~= 200 then
-			    return net_problem
-			end
-		end
-		local x = CreateTXQuery(HTTP.Document)
-		local parselinks = x.XPathStringAll('//table[@id="index-table"]/tbody/tr/td[1]/a/@href')
-		for i in string.gmatch(parselinks, '([^, ]+)') do
-			table.insert(temp_table_3rdlv,MODULE.RootURL .. i)
-		end
-	end
-
-	--input temp_table_3rdlv into madokamiulist
-	for index, item in pairs(temp_table_3rdlv) do
-	    if MODULE.Storage['madokamiulist'] == '' then
-		    MODULE.Storage['madokamiulist'] = item
-		else
-		    MODULE.Storage['madokamiulist'] = MODULE.Storage['madokamiulist'] .. ', ' .. item
-		end
-	end
-
-	PAGENUMBER = #temp_table_3rdlv or 1
-	return no_error
-end
-
-function GetNameAndLink()
-    local madokamiulist = {}
-	local madokamiulist_index = 0
-
-	Delay()
-
-	for item in string.gmatch(MODULE.Storage['madokamiulist'], '([^, ]+)') do
-		madokamiulist[madokamiulist_index] = item
-		madokamiulist_index = madokamiulist_index + 1
-	end
-	HTTP.GET(madokamiulist[tonumber(URL)])
-	if HTTP.ResultCode ~= 200 then
-		CheckAuth()
-		HTTP.GET(madokamiulist[tonumber(URL)])
-		if HTTP.ResultCode ~= 200 then
-		    return net_problem
-		end
-	end
-	local x = CreateTXQuery(HTTP.Document)
-	local v = x.XPathStringAll('//table[@id="index-table"]/tbody/tr/td[1]/a[not(ends-with(.,".txt") or ends-with(.,".zip") or ends-with(.,".rar") or ends-with(.,".cbz"))]')
-	for i in string.gmatch(v:gsub(', ',','), '([^,]+)') do
-	    NAMES.Add(i:gsub('/$',''))
-	end
-	local v = x.XPathStringAll('//table[@id="index-table"]/tbody/tr/td[1]/a[not(ends-with(.,".txt") or ends-with(.,".zip") or ends-with(.,".rar") or ends-with(.,".cbz"))]/@href')
-	for i in string.gmatch(v, '([^, ]+)') do
-		LINKS.Add(i)
-	end
-	return no_error
-end
-
-function Delay()
+local function Delay()
 	local lastDelay = tonumber(MODULE.Storage['lastDelay']) or 1
 	local mdkm_delay = tonumber(MODULE.GetOption('mdkm_delay')) or 2 -- * MODULE.ActiveConnectionCount
 	if lastDelay ~= '' then
@@ -161,16 +78,20 @@ function Delay()
 	MODULE.Storage['lastDelay'] = os.time()
 end
 
+----------------------------------------------------------------------------------------------------
+-- Event Functions
+----------------------------------------------------------------------------------------------------
+
 function Login()
-	MODULE.ClearCookies()
+    MODULE.ClearCookies()
 	MODULE.Account.Status = asChecking
 	local login_url=MODULE.RootURL
 	local crypto = require 'fmd.crypto'
 	if not HTTP.GET(login_url) then
 		MODULE.Account.Status = asUnknown
-		return false
+		return net_problem
 	end
-
+	
 	HTTP.Reset()
 
 	HTTP.Headers.Values['Origin'] = ' ' .. MODULE.RootURL
@@ -194,55 +115,101 @@ function Login()
 end
 
 function AccountState()
-	local cookies = ''
+    local cookies
 	if MODULE.Account.Enabled then
-		cookies = MODULE.Account.Cookies
-		if cookies ~= '' then
-			MODULE.AddServerCookies(MODULE.Account.Cookies)
+	    if MODULE.Account.Cookies ~= '' then
+		    MODULE.AddServerCookies(MODULE.Account.Cookies)
 		end
 	else
-		--cookies = MODULE.GetServerCookies('madokami.al', 'laravel_session')
-		if cookies ~= '' then
-			MODULE.Account.Cookies = cookies
-			--MODULE.RemoveCookies('madokami.al', 'laravel_session')
-		end
+	    MODULE.ClearCookies()
+		MODULE.Account.Cookies = ''
 	end
-	return true
 end
 
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = 'eb27e424af1e4ca987aba1f332df952c'
-	m.Name                     = 'Madokami'
-	m.RootURL                  = 'https://manga.madokami.al'
-	m.Category                 = 'English'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
-	m.MaxTaskLimit             = 1
-	m.MaxConnectionLimit       = 4
-	m.AccountSupport           = true
-	m.OnLogin                  = 'Login'
-	m.OnAccountState           = 'AccountState'
-	--m.AddServerCookies('madokami.al', 'madokami_h_toggle=1; max-age=31556952')
+-- Get info and chapter list for the current manga.
+function GetInfo()
+    Delay()
+	CheckAuth()
+	HTTP.GET(MODULE.RootURL .. URL)
+	if HTTP.ResultCode ~= 200 then
+		return net_problem
+	end
+	local x = CreateTXQuery(HTTP.Document)
+	MANGAINFO.Title     = x.XPathString('//span[@class="title"]|(//h1//span[@itemprop="title"])[last()]') 
+	MANGAINFO.CoverLink = x.XPathString('//img[@itemprop="image"]/@src')
+	MANGAINFO.Authors   = x.XPathStringAll('//a[@itemprop="author"]')
+	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="genres"]/a')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//span[@class="scanstatus"]'), 'No', 'Yes')
+	MANGAINFO.Summary   = x.XPathString('//meta[@property="description"]/@content')
+	for ch in x.XPath('//table[@id="index-table"]/tbody/tr').Get() do
+	    MANGAINFO.ChapterLinks.Add(x.XPathString('td/a[contains(text(),"Read")]/@href', ch))
+	    MANGAINFO.ChapterNames.Add(x.XPathString('td[1]/a', ch):gsub("%.%w+%s*$",""))
+	end
+	return no_error
+end
 
-	local fmd = require 'fmd.env'
-	local slang = fmd.SelectedLanguage
-	local lang = {
-		['en'] = {
-			['delay'] = 'Delay (s) between requests',
-		},
-		['id_ID'] = {
-			['delay'] = 'Tunda (detik) antara permintaan',
-		},
-		get =
-			function(self, key)
-				local sel = self[slang]
-				if sel == nil then sel = self['en'] end
-				return sel[key]
+-- Get the page count and/or page links for the current chapter.
+function GetPageNumber()
+    local crypto = require 'fmd.crypto'
+    Delay()
+	CheckAuth()
+	HTTP.Headers.Values['charset'] = 'utf-8'
+	HTTP.GET(MODULE.RootURL .. URL)
+	if HTTP.ResultCode ~= 200 then
+		return net_problem
+	end
+	local x = CreateTXQuery(HTTP.Document)
+	local datapath = x.XPathString('//div[@id="reader"]/@data-path')
+	datapath = crypto.EncodeURLElement(datapath)
+	local datafiles = x.XPathString('//div[@id="reader"]/@data-files')
+	datafiles = json.decode(datafiles)
+	for i=1, #datafiles do
+	    TASK.PageLinks.Add(MODULE.RootURL .. '/reader/image?path=' .. datapath .. '&file=' .. crypto.EncodeURLElement(datafiles[i]))
+	end
+end
+
+-- Get the page count of the manga list of the current website.
+function GetDirectoryPageNumber()
+    MODULE.Storage['madokamiulist'] = ''
+	local madokamiutable = {}
+    Delay()
+	CheckAuth()
+	HTTP.GET(MODULE.RootURL .. '/Manga')
+	if HTTP.ResultCode ~= 200 then
+		return net_problem
+	end
+	local x_1 = CreateTXQuery(HTTP.Document)
+	local x_2
+	local x_3
+	for path_1 in x_1.XPath('//table[@id="index-table"]/tbody/tr/td/a[@href and not(@class="report-link" or @class="tag")]').Get() do
+	    if madokamilist_chr[path_1.ToString()] then
+			HTTP.GET(MODULE.RootURL .. '/Manga' .. '/'.. path_1.ToString())
+			x_2 = CreateTXQuery(HTTP.Document)
+			for path_2 in x_2.XPath('//table[@id="index-table"]/tbody/tr/td/a[@href and not(@class="report-link" or @class="tag")]').Get() do
+				HTTP.GET(MODULE.RootURL .. '/Manga' .. '/'.. path_1.ToString() .. path_2.ToString())
+				x_3 = CreateTXQuery(HTTP.Document)
+				for path_3 in x_3.XPath('//table[@id="index-table"]/tbody/tr/td/a[@href and not(@class="report-link" or @class="tag")]').Get() do
+					table.insert(madokamiutable, MODULE.RootURL .. '/Manga' .. '/'.. path_1.ToString() .. path_2.ToString() .. path_3.ToString())
+                end				
 			end
-	}
-	m.AddOptionSpinEdit('mdkm_delay', lang:get('delay'), 2)
-	m.Storage['madokamiulist'] = ''
+		end
+	end
+	MODULE.Storage['madokamiulist'] = json.encode(madokamiutable)
+	PAGENUMBER = #madokamiutable or 1
+end
+
+-- Get links and names from the manga list of the current website.
+function GetNameAndLink()
+    local madokamiulist
+    if MODULE.Storage['madokamiulist'] ~= '' then
+	    madokamiulist = json.decode(MODULE.Storage['madokamiulist'])
+	end
+	CheckAuth()
+	local x = CreateTXQuery()
+    for _, url_ in ipairs(madokamiulist) do
+	    Delay()
+		HTTP.GET(url_)
+		CreateTXQuery(HTTP.Document).XPathHREFAll('//table[@id="index-table"]/tbody/tr/td[1]/a[@href and not(@class="report-link" or @class="tag" or ends-with(.,".txt") or ends-with(.,".zip") or ends-with(.,".rar") or ends-with(.,".cbz"))]',
+		LINKS, NAMES)
+	end
 end
