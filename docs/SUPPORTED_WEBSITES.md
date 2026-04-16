@@ -406,7 +406,7 @@
 | MethodScans | [![https://methodscans.com](https://img.shields.io/website?url=https://methodscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://methodscans.com)](https://methodscans.com) | - | - | - |
 | Mexat | [![http://manga.mexat.com](https://img.shields.io/website?url=http://manga.mexat.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://manga.mexat.com)](http://manga.mexat.com) | - | - | - |
 | MGJinx | [![https://mgjinx.com](https://img.shields.io/website?url=https://mgjinx.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mgjinx.com)](https://mgjinx.com) | OK | 06.07.2025 | - |
-| MGKomik | [![https://mgkomik.org](https://img.shields.io/website?url=https://mgkomik.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mgkomik.org)](https://mgkomik.org) | OK | 05.04.2025 | - |
+| MGKomik | [![https://id.mgkomik.cc](https://img.shields.io/website?url=https://id.mgkomik.cc%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://id.mgkomik.cc)](https://id.mgkomik.cc) | OK | 16.04.2026 | - |
 | MHScans | [![https://curiosidadtop.com](https://img.shields.io/website?url=https://curiosidadtop.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://curiosidadtop.com)](https://curiosidadtop.com) | OK | 23.09.2025 | - |
 | Milftoon | [![https://milftoon.xxx](https://img.shields.io/website?url=https://milftoon.xxx%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://milftoon.xxx)](https://milftoon.xxx) | OK | 25.07.2025 | - |
 | MintManga | [![https://2.mintmanga.one](https://img.shields.io/website?url=https://2.mintmanga.one%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://2.mintmanga.one)](https://2.mintmanga.one) | OK | 02.11.2025 | An account is required |
