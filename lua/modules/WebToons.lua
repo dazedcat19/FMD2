@@ -46,6 +46,7 @@ end
 
 local langs = {
 	["en"] = "English",
+	["fr"] = "French",
 	["id"] = "Indonesian",
 	["zh-hant"] = "Chinese",
 	["th"] = "Thai"
