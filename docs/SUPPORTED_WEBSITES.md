@@ -191,7 +191,7 @@
 | Komiksin ID | [![https://komiksin.id](https://img.shields.io/website?url=https://komiksin.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komiksin.id)](https://komiksin.id) | OK | 23.12.2024 | - |
 | KomikStation | [![https://komikstation.co](https://img.shields.io/website?url=https://komikstation.co%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikstation.co)](https://komikstation.co) | - | - | - |
 | Komiktap | [![https://komiktap.info](https://img.shields.io/website?url=https://komiktap.info%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komiktap.info)](https://komiktap.info) | OK | 23.02.2025 | - |
-| Komiku | [![https://komiku.id](https://img.shields.io/website?url=https://komiku.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komiku.id)](https://komiku.id) | - | - | - |
+| Komiku | [![https://komiku.org](https://img.shields.io/website?url=https://komiku.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komiku.org)](https://komiku.org) | OK | 22.04.2026 | - |
 | KomikuOne | [![https://komiku.one](https://img.shields.io/website?url=https://komiku.one%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komiku.one)](https://komiku.one) | OK | 03.04.2025 | - |
 | KomikUp | [![https://komikup.com](https://img.shields.io/website?url=https://komikup.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikup.com)](https://komikup.com) | OK | 05.04.2025 | - |
 | KomikZoid | [![https://komikzoid.id](https://img.shields.io/website?url=https://komikzoid.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://komikzoid.id)](https://komikzoid.id) | OK | 19.07.2025 | - |
