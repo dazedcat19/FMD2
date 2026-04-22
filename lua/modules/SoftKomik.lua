@@ -24,7 +24,7 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local API_URL = 'https://v2.softdevices.my.id'
-local CDN_URL = 'https://cdn1.softkomik.online/softkomik/'
+local CDN_URL = 'https://psy1.komik.im/'
 local DirectoryPagination = '?limit=24&sortBy=newKomik&page='
 
 ----------------------------------------------------------------------------------------------------
@@ -37,7 +37,7 @@ local function SetRequestHeaders(mode)
 	local now = os.time() * 1000
 
 	local prefix   = (mode == 'chapter') and 'ch_' or ''
-	local endpoint = (mode == 'chapter') and (MODULE.RootURL .. '/api/sessions/chapter') or (MODULE.RootURL .. '/api/sessions/kajsijas')
+	local endpoint = (mode == 'chapter') and ('/api/session/chapter/iuisxs') or ('/api/session/amsnuy')
 
 	local sign   = MODULE.Storage[prefix .. 'sign']
 	local token  = MODULE.Storage[prefix .. 'token']
@@ -50,7 +50,7 @@ local function SetRequestHeaders(mode)
 		return no_error
 	end
 
-	if not HTTP.GET(endpoint) then return net_problem end
+	if not HTTP.GET(MODULE.RootURL .. endpoint) then return net_problem end
 
 	local body = HTTP.Document.ToString()
 	local new_sign  = body:match('"sign":"(.-)|.-"')
@@ -85,7 +85,7 @@ end
 
 -- Sign in to the current website.
 function Login()
-    local json = require "utils.json"
+    local json = require 'utils.json'
 	if not MODULE.Account.Enabled then
 		MODULE.Account.Status = asUnknown
 		return false
@@ -110,7 +110,7 @@ function Login()
 		['password'] = MODULE.Account.Password,
 	}
 	local s = json.encode(t, -1)
-	HTTP.Headers.Values['Content-Type'] = 'application/json'
+	HTTP.MimeType = 'application/json'
 	if not HTTP.POST(u, s) then
 	    MODULE.Account.Status = asUnknown
 		return net_problem
@@ -167,7 +167,6 @@ end
 -- Get info and chapter list for the current manga.
 function GetInfo()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
-	SetRequestHeaders()
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -201,12 +200,13 @@ function GetPageNumber()
 
 	if not HTTP.GET(u) then return false end
 
-	local x=CreateTXQuery(HTTP.Document)
+	local x = CreateTXQuery(HTTP.Document)
 	local id = x.XPathString('json(//script[@id="__NEXT_DATA__"]).props.pageProps.data.data._id')
 	SetRequestHeaders('chapter')
 	CheckAuth()
-	
+
 	if not HTTP.GET(API_URL .. '/komik' .. URL .. '/imgs/' .. id) then return false end
+
 	for v in CreateTXQuery(HTTP.Document).XPath('json(*).imageSrc()').Get() do
 		TASK.PageLinks.Add(CDN_URL .. v.ToString())
 	end
