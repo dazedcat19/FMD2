@@ -5,20 +5,12 @@
 local _M = {}
 
 ----------------------------------------------------------------------------------------------------
--- Local Constants
-----------------------------------------------------------------------------------------------------
-
-DirectoryPagination = '/newest?page='
-UseLegacyApi  = false
-UseSlugSearch = false
-
-----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
 -- Get the page count of the manga list of the current website.
 function _M.GetDirectoryPageNumber()
-	local u = MODULE.RootURL .. DirectoryPagination .. 1
+	local u = MODULE.RootURL .. (UseLegacyApi and '/newest?page=' or '/az-list?page=') .. 1
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -32,7 +24,7 @@ function _M.GetNameAndLink()
 	if UseSlugSearch then
 		local u = MODULE.RootURL
 
-		if not HTTP.GET(u .. DirectoryPagination .. 1) then return net_problem end
+		if not HTTP.GET(u .. '/newest?page=' .. 1) then return net_problem end
 
 		local x = CreateTXQuery(HTTP.Document)
 		while true do
@@ -42,14 +34,11 @@ function _M.GetNameAndLink()
 			if next_url == '' then break end
 
 			UPDATELIST.UpdateStatusText('Loading page ' .. (next_url:match('(%d+)') or ''))
-			if HTTP.GET(u .. next_url) then
-				x.ParseHTML(HTTP.Document)
-			else
-				break
-			end
+			if not HTTP.GET(u .. next_url) then break end
+			x.ParseHTML(HTTP.Document)
 		end
 	else
-		local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1)
+		local u = MODULE.RootURL .. (UseLegacyApi and '/newest?page=' or '/az-list?page=') .. (URL + 1)
 
 		if not HTTP.GET(u) then return net_problem end
 
@@ -96,20 +85,20 @@ function _M.GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function _M.GetPageNumber()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return false end
 
-	local body = HTTP.Document.ToString()
-	local pages = body:match("var chapImages%s*=%s*['\"]([^'\"]+)['\"]")
+	local s = HTTP.Document.ToString()
+	local pages = s:match("var chapImages%s*=%s*['\"]([^'\"]+)['\"]")
 	if pages then
 		for v in pages:gmatch('[^,]+') do
 			TASK.PageLinks.Add(v)
 		end
 	else
-		CreateTXQuery(HTTP.Document).XPathStringAll('//div[@id="chapter-images"]//img/@data-src', TASK.PageLinks)
+		CreateTXQuery(s).XPathStringAll('//div[@id="chapter-images"]//img/@data-src', TASK.PageLinks)
 	end
 
 	return true
