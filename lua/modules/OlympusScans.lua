@@ -18,8 +18,8 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-API_URL = 'https://dashboard.olympusbiblioteca.com/api'
-DirectoryPagination = '/series?type=comic&direction=desc&page='
+local API_URL = 'https://dashboard.olympusbiblioteca.com/api'
+local DirectoryPagination = '/api/series?type=comic&direction=asc&page='
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -27,7 +27,7 @@ DirectoryPagination = '/series?type=comic&direction=desc&page='
 
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
-	local u = API_URL .. DirectoryPagination .. 1
+	local u = MODULE.RootURL .. DirectoryPagination .. 1
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -38,8 +38,7 @@ end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local v = nil
-	local u = API_URL .. DirectoryPagination .. (URL + 1)
+	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1)
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -53,23 +52,23 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local pages, v, x = nil
-	local page = 1
 	local slug = URL:match('/series/comic%-(.-)$')
-	local u = API_URL .. '/series/' .. slug
+	local u = MODULE.RootURL .. '/api/series/' .. slug
 
 	if not HTTP.GET(u) then return net_problem end
 	
-	x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
-	MANGAINFO.Title     = x.XPathString('json(*).data.name')
-	MANGAINFO.CoverLink = x.XPathString('json(*).data.cover')
-	MANGAINFO.Genres    = x.XPathStringAll('json(*).data.genres().name')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('json(*).data.status.id'), '1', '4', '3', '5|7')
-	MANGAINFO.Summary   = x.XPathString('json(*).data.summary')
+	local x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
+	local info = x.XPath('json(*).data')
+	MANGAINFO.Title     = x.XPathString('name', info)
+	MANGAINFO.CoverLink = x.XPathString('cover', info)
+	MANGAINFO.Genres    = x.XPathString('string-join((genres?*?name, concat(upper-case(substring(type, 1, 1)), lower-case(substring(type, 2)))), ", ")', info)
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status?id', info), '1', '4', '3', '5|7')
+	MANGAINFO.Summary   = x.XPathString('summary', info)
 
-	pages = tonumber(math.ceil(x.XPathString('json(*).data.chapter_count') / 40)) or 1
+	local page = 1
+	local pages = tonumber(math.ceil(x.XPathString('chapter_count', info) / 40)) or 1
 	while true do
-		if not HTTP.GET(u .. '/chapters?direction=asc&type=comic&page=' .. tostring(page)) then return net_problem end
+		if not HTTP.GET(API_URL .. '/series/' .. slug .. '/chapters?direction=asc&type=comic&page=' .. page) then return net_problem end
 		for v in CreateTXQuery(HTTP.Document).XPath('json(*).data()').Get() do
 			MANGAINFO.ChapterLinks.Add(slug .. '/chapters/' .. v.GetProperty('id').ToString())
 			MANGAINFO.ChapterNames.Add('Capítulo ' .. v.GetProperty('name').ToString())
@@ -83,16 +82,14 @@ function GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local v = nil
-	local u = API_URL .. '/series' .. URL .. '?type=comic'
+	local mid, cid = URL:match('^/(.-)/chapters/(.-)$')
+	local u = MODULE.RootURL .. '/api/capitulo/comic-' .. mid .. '/' .. cid
 
-	if not HTTP.GET(u) then return net_problem end
+	if not HTTP.GET(u) then return false end
 
-	for v in CreateTXQuery(HTTP.Document).XPath('json(*).chapter.pages()').Get() do
-		TASK.PageLinks.Add(v.ToString())
-	end
+	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).chapter.pages()', TASK.PageLinks)
 
-	return no_error
+	return true
 end
