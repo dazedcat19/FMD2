@@ -48,17 +48,17 @@ This is an active fork of the Free Manga Downloader which is a free open source 
 In order to build FMD2 from the source code, you must install the latest stable version of Lazarus and Free Pascal Compiler:  
 [![Lazarus](https://img.shields.io/badge/Lazarus%20IDE-Blue?style=for-the-badge&color=blue)](https://sourceforge.net/projects/lazarus/files/Lazarus%20Windows%2064%20bits/)  
 
-To compile FMD2 some packages and components are needed. You can download and install most of them by the built-in Online Package Manager (OPM).  
+To compile FMD2, some packages and components are needed. You can download and install them by either the built-in Online Package Manager (OPM) or GitHub repository.  
 The following packages and components are used for building FMD2:  
-- [![Synapse](https://img.shields.io/badge/Synapse-GitHub-Blue?style=plastic&color=blue)](https://github.com/geby/synapse)  
-- [![InternetTools](https://img.shields.io/badge/InternetTools-GitHub-Blue?style=plastic&color=blue)](https://github.com/benibela/internettools) <sup>(Install and rebuild IDE)</sup>  
-- ![LCL Extensions](https://img.shields.io/badge/LCL%20Extensions-OPM%20(0.6.1.0)-Blue?style=plastic&color=blue) <sup>(Should be installed by default, if not then install it)</sup>  
-- ![DCPCrypt](https://img.shields.io/badge/DCPCrypt-OPM%20(2.0.4.2)-Blue?style=plastic&color=blue)  
-- ![RichMemo](https://img.shields.io/badge/RichMemo-OPM%20(1.0.0.0)-Blue?style=plastic&color=blue)  
-- ![MultiLog](https://img.shields.io/badge/MultiLog-OPM%20(0.7.0.0)-Blue?style=plastic&color=blue)  
-- ![VirtualTreeViewV5](https://img.shields.io/badge/VirtualTreeViewV5-OPM%20(5.5.3.1)-Blue?style=plastic&color=blue) <sup>(Install and rebuild IDE)</sup>  
-- [![MetaDarkStyle](https://img.shields.io/badge/MetaDarkStyle-GitHub-Blue?style=plastic&color=blue)](https://github.com/zamtmn/metadarkstyle) <sup>(Install and rebuild IDE)</sup>  
-- [![Lazarus_CustomControls](https://img.shields.io/badge/Lazarus_CustomControls-GitHub-Blue?style=plastic&color=blue)](https://github.com/NhKPaNdA/Lazarus_CustomControls) <sup>(Install and rebuild IDE)</sup>
+- [![Synapse](https://img.shields.io/badge/Synapse-GitHub-Blue?style=plastic&color=blue&logo=github&logoColor=white)](https://github.com/geby/synapse)  
+- [![InternetTools](https://img.shields.io/badge/InternetTools-GitHub-Blue?style=plastic&color=blue&logo=github&logoColor=white)](https://github.com/benibela/internettools) <sup>(Install and rebuild IDE)</sup>  
+- ![LCL Extensions](https://img.shields.io/badge/LCL%20Extensions-OPM%20(0.6.1.0)-Blue?style=plastic&color=blue&logo=lazarus&logoColor=white) <sup>(Should be installed by default, if not then install it)</sup>  
+- [![DCPCrypt](https://img.shields.io/badge/DCPCrypt-GitHub-Blue?style=plastic&color=blue&logo=github&logoColor=white)](https://github.com/NDXDeveloper/dcpcrypt-lazarus) <sup>(Install and rebuild IDE)</sup>  
+- ![RichMemo](https://img.shields.io/badge/RichMemo-OPM%20(1.0.0.0)-Blue?style=plastic&color=blue&logo=lazarus&logoColor=white)  
+- ![MultiLog](https://img.shields.io/badge/MultiLog-OPM%20(0.7.0.0)-Blue?style=plastic&color=blue&logo=lazarus&logoColor=white)  
+- ![VirtualTreeViewV5](https://img.shields.io/badge/VirtualTreeViewV5-OPM%20(5.5.3.1)-Blue?style=plastic&color=blue&logo=lazarus&logoColor=white) <sup>(Install and rebuild IDE)</sup>  
+- [![MetaDarkStyle](https://img.shields.io/badge/MetaDarkStyle-GitHub-Blue?style=plastic&color=blue&logo=github&logoColor=white)](https://github.com/zamtmn/metadarkstyle) <sup>(Install and rebuild IDE)</sup>  
+- [![Lazarus_CustomControls](https://img.shields.io/badge/Lazarus_CustomControls-GitHub-Blue?style=plastic&color=blue&logo=github&logoColor=white)](https://github.com/NhKPaNdA/Lazarus_CustomControls) <sup>(Install and rebuild IDE)</sup>
 
 </div>
 
