@@ -17,11 +17,8 @@ var
   len: size_t;
   p: PChar;
 begin
-  p := luaL_checklstring(L, idx, @len); 
-  if p <> nil then
-    SetString(Result, p, len)
-  else
-    Result := '';
+  p := luaL_checklstring(L, idx, @len);
+  SetString(Result, p, len);
 end;
 
 procedure PushLuaString(L: Plua_State; const s: String);
