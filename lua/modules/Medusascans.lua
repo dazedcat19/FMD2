@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'dcd099430f7d4db9b4d7f6935ad6eed9'
 	m.Name                     = 'Medusascans'
-	m.RootURL                  = 'https://medusascans.com'
+	m.RootURL                  = 'https://medusascans.pro'
 	m.Category                 = 'Indonesian'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
