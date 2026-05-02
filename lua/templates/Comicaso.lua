@@ -30,18 +30,18 @@ function _M.GetInfo()
 	if not HTTP.GET(u) then return net_problem end
 
 	local x = CreateTXQuery(HTTP.Document)
-	local json = x.XPath('json(*)')
-	MANGAINFO.Title     = x.XPathString('title', json)
-	MANGAINFO.AltTitles = x.XPathString('alternative', json)
-	MANGAINFO.CoverLink = x.XPathString('thumbnail', json)
-	MANGAINFO.Authors   = x.XPathString('author', json)
-	MANGAINFO.Artists   = x.XPathString('artist', json)
-	MANGAINFO.Genres    = x.XPathString('string-join((genres?*, concat(upper-case(substring(type, 1, 1)), lower-case(substring(type, 2)))), ", ")', json)
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status', json), 'on-going', 'end')
-	MANGAINFO.Summary   = x.XPathString('synopsis', json)
+	local info = x.XPath('json(*)')
+	MANGAINFO.Title     = x.XPathString('title', info)
+	MANGAINFO.AltTitles = x.XPathString('alternative', info)
+	MANGAINFO.CoverLink = x.XPathString('thumbnail', info)
+	MANGAINFO.Authors   = x.XPathString('author', info)
+	MANGAINFO.Artists   = x.XPathString('artist', info)
+	MANGAINFO.Genres    = x.XPathString('string-join((genres?*, concat(upper-case(substring(type, 1, 1)), lower-case(substring(type, 2)))), ", ")', info)
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status', info), 'on-going', 'end')
+	MANGAINFO.Summary   = x.XPathString('synopsis', info)
 
 	local chapters = {}
-	for v in x.XPath('chapters?*', json).Get() do
+	for v in x.XPath('chapters?*', info).Get() do
 		table.insert(chapters, {
 			slug = v.GetProperty('slug').ToString(),
 			title = v.GetProperty('title').ToString()
@@ -60,9 +60,18 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function _M.GetPageNumber()
-	local u = MaybeFillHost(MODULE.RootURL, URL)
+	HTTP.Reset()
+	local u = MaybeFillHost(MODULE.RootURL, URL) .. '/'
+	local s = '{"urls":["' .. u .. '"]}'
+	HTTP.MimeType = 'application/json'
 
-	if not HTTP.GET(u) then return false end
+	if not HTTP.POST(MODULE.RootURL .. '/wp-json/mp/v1/chapter', s) then return false end
+
+	local body = HTTP.Document.ToString()
+	local token = body:match('":"([a-f0-9]+)"')
+	local expire = body:match('"expire":(%d+)')
+
+	if not HTTP.GET(u .. '?t=' .. token .. '&e=' .. expire) then return false end
 
 	CreateTXQuery(HTTP.Document).XPathStringAll('//figure/img[@class="mjv2-page-image"]/@src', TASK.PageLinks)
 
