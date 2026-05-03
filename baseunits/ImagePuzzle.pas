@@ -23,7 +23,7 @@ type
 
 implementation
 
-uses Math;
+uses Math, MemBitmap, webp;
 
 constructor TImagePuzzle.Create(horBlockCount, verBlockCount: Integer);
 var i: Integer;
@@ -38,9 +38,15 @@ end;
 procedure TImagePuzzle.DeScramble(input, output: TStream);
 var
   image, result: TPicture;
-  blockWidth, blockHeight: Extended;
+  memStream: TMemoryStream;
+  tmpMemBitmap: TMemBitmap;
+  reversalMatrix: Boolean;
+  blockWidth, blockHeight: Double;
+  imgWidth, imgHeight: Integer;
+  baseBlockHeight, remainder: Integer;
+  destY, destH, srcY, srcH: Integer;
   i, row, col: Integer;
-  x1, y1: Integer;
+  x1, y1, x2, y2: Integer;
   dstrect, srcrect: TRect;
   ext: String = 'jpg';
 begin
@@ -49,39 +55,111 @@ begin
   Assert(Length(Matrix) >= HorBlock * VerBlock, 'Invalid matrix size');
   image := TPicture.Create;
   result := TPicture.Create;
+  memStream := TMemoryStream.Create;
   try
-    image.LoadFromStream(input);
-    if image.Graphic is TPortableNetworkGraphic then ext := 'png';
-    result.Bitmap.SetSize(image.Width, image.Height);
-    if Multiply <= 1 then begin
-      blockWidth := float(image.Width) / HorBlock;
-      blockHeight := float(image.Height) / VerBlock;
+    memStream.LoadFromStream(input);
+    memStream.Position := 0;
+    tmpMemBitmap := WebPToMemBitmap(memStream);
+    if Assigned(tmpMemBitmap) then
+    begin
+      try
+        ext := 'png';
+        image.Bitmap.SetSize(tmpMemBitmap.Width, tmpMemBitmap.Height);
+        image.Bitmap.PixelFormat := pf32bit;
+        for i := 0 to tmpMemBitmap.Height - 1 do
+        begin
+          Move(tmpMemBitmap.ScanLine[i]^, image.Bitmap.ScanLine[i]^, tmpMemBitmap.Width * 4);
+        end;
+      finally
+        tmpMemBitmap.Free;
+      end;
     end
-    else begin
-      blockWidth := trunc(float(image.Width) / (HorBlock * Multiply)) * Multiply;
-      blockHeight := trunc(float(image.Height) / (VerBlock * Multiply)) * Multiply;
+    else
+    begin
+      memStream.Position := 0;
+      image.LoadFromStream(memStream);
+      if image.Graphic is TPortableNetworkGraphic then
+      begin
+        ext := 'png';
+      end;
     end;
-    for i := 0 to HorBlock * VerBlock - 1 do begin
-      row := floor(float(Matrix[i]) / VerBlock);
-      col := Matrix[i] - row * HorBlock;
-      x1 := trunc(col * blockWidth);
-      y1 := trunc(row * blockHeight);
-      dstrect := Rect(x1, y1, Trunc(x1 + blockWidth), Trunc(y1 + blockHeight));
-      row := floor(float(i) / HorBlock);
-      col := i - row * HorBlock;
-      x1 := trunc(col * blockWidth);
-      y1 := trunc(row * blockHeight);
-      srcrect := Rect(x1, y1, Trunc(x1 + blockWidth), Trunc(y1 + blockHeight));
-      result.Bitmap.Canvas.CopyRect(dstrect, image.Bitmap.Canvas, srcrect);
+    result.Bitmap.SetSize(image.Width, image.Height);
+    reversalMatrix := (HorBlock = 1) and (VerBlock > 0) and (Length(Matrix) >= VerBlock);
+    if reversalMatrix then
+    begin
+      for i := 0 to VerBlock - 1 do
+      begin
+        if Matrix[i] <> (VerBlock - 1 - i) then
+        begin
+          reversalMatrix := False;
+          Break;
+        end;
+      end;
+    end;
+    if reversalMatrix then
+    begin
+      imgHeight := image.Height;
+      imgWidth := image.Width;
+      baseBlockHeight := imgHeight div VerBlock;
+      remainder := imgHeight mod VerBlock;
+      for i := 0 to VerBlock - 1 do
+      begin
+        destH := baseBlockHeight;
+        destY := baseBlockHeight * i;
+        if i = 0 then
+        begin
+          destH := destH + remainder;
+        end
+        else
+        begin
+          destY := destY + remainder;
+        end;
+        dstrect := Rect(0, destY, imgWidth, destY + destH);
+        srcY := imgHeight - (baseBlockHeight * (i + 1)) - remainder;
+        srcH := destH;
+        srcrect := Rect(0, srcY, imgWidth, srcY + srcH);
+        result.Bitmap.Canvas.CopyRect(dstrect, image.Bitmap.Canvas, srcrect);
+      end;
+    end
+    else
+    begin
+      if Multiply <= 1 then
+      begin
+        blockWidth := image.Width / HorBlock;
+        blockHeight := image.Height / VerBlock;
+      end
+      else
+      begin
+        blockWidth := Trunc(image.Width / (HorBlock * Multiply)) * Multiply;
+        blockHeight := Trunc(image.Height / (VerBlock * Multiply)) * Multiply;
+      end;
+      for i := 0 to HorBlock * VerBlock - 1 do
+      begin
+        row := Matrix[i] div HorBlock;
+        col := Matrix[i] mod HorBlock;
+        x1 := Trunc(col * blockWidth);
+        y1 := Trunc(row * blockHeight);
+        x2 := Trunc((col + 1) * blockWidth);
+        y2 := Trunc((row + 1) * blockHeight);
+        dstrect := Rect(x1, y1, x2, y2);
+        row := i div HorBlock;
+        col := i mod HorBlock;
+        x1 := Trunc(col * blockWidth);
+        y1 := Trunc(row * blockHeight);
+        x2 := Trunc((col + 1) * blockWidth);
+        y2 := Trunc((row + 1) * blockHeight);
+        srcrect := Rect(x1, y1, x2, y2);
+        result.Bitmap.Canvas.CopyRect(dstrect, image.Bitmap.Canvas, srcrect);
+      end;
     end;
     output.Position := 0;
     output.Size := 0;
     result.SaveToStreamWithFileExt(output, ext);
   finally
+    memStream.Free;
     result.Free;
     image.Free;
   end;
 end;
 
 end.
-
