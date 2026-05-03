@@ -80,7 +80,8 @@ Some other external 3rd party tools and libraries are used as well:
 - [![OpenSSL](https://img.shields.io/badge/OpenSSL-3.6.1-Blue?style=plastic&color=blue)](https://www.openssl.org/)  
 - [![SQLite](https://img.shields.io/badge/SQLite-3.51.2-Blue?style=plastic&color=blue)](https://www.sqlite.org/)  
 - [![PCRE2](https://img.shields.io/badge/PCRE2-10.47-Blue?style=plastic&color=blue)](https://pcre2project.github.io/pcre2/)  
-- [![Brotli](https://img.shields.io/badge/Brotli-1.2.0-Blue?style=plastic&color=blue)](https://www.brotli.org/)
+- [![Brotli](https://img.shields.io/badge/Brotli-1.2.0-Blue?style=plastic&color=blue)](https://www.brotli.org/)  
+- [![Zstd](https://img.shields.io/badge/Zstd-1.5.7-Blue?style=plastic&color=blue)](https://facebook.github.io/zstd/)
   
 These tools and libraries are not part of the source. You have to either download pre-compiled binaries, compile them yourself or just copy them from the latest FMD2 releases.
 
