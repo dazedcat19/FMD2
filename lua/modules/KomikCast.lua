@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'b8206e754d4541689c1d367f7e19fd64'
 	m.Name                     = 'KomikCast'
-	m.RootURL                  = 'https://v1.komikcast.fit'
+	m.RootURL                  = 'https://v2.komikcast.fit'
 	m.Category                 = 'Indonesian'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -18,7 +18,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local API_URL = 'https://be.komikcast.fit'
+local API_URL = 'https://be.komikcast.cc'
 local DirectoryPagination = '/series?take=100000'
 
 ----------------------------------------------------------------------------------------------------
@@ -59,14 +59,14 @@ function GetInfo()
 	if not HTTP.GET(u) then return net_problem end
 
 	local x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
-	local json = x.XPath('parse-json(.)?data?data')
-	MANGAINFO.Title     = x.XPathString('?title', json)
-	MANGAINFO.AltTitles = x.XPathString('?nativeTitle', json)
-	MANGAINFO.CoverLink = x.XPathString('?coverImage', json)
-	MANGAINFO.Authors   = x.XPathString('?author', json)
-	MANGAINFO.Genres    = x.XPathString('string-join((?genres?*?data?name, concat(upper-case(substring(?format, 1, 1)), lower-case(substring(?format, 2)))), ", ")', json)
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('?status', json))
-	MANGAINFO.Summary   = x.XPathString('?synopsis', json)
+	local info = x.XPath('parse-json(.)?data?data')
+	MANGAINFO.Title     = x.XPathString('?title', info)
+	MANGAINFO.AltTitles = x.XPathString('?nativeTitle', info)
+	MANGAINFO.CoverLink = x.XPathString('?coverImage', info)
+	MANGAINFO.Authors   = x.XPathString('?author', info)
+	MANGAINFO.Genres    = x.XPathString('string-join((?genres?*?data?name, concat(upper-case(substring(?format, 1, 1)), lower-case(substring(?format, 2)))), ", ")', info)
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('?status', info))
+	MANGAINFO.Summary   = x.XPathString('?synopsis', info)
 
 	HTTP.Reset()
 	SetRequestHeaders()
