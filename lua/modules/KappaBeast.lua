@@ -112,5 +112,9 @@ function GetPageNumber()
 	x.ParseHTML(x.XPathString('json(*).data().htmlContent'))
 	x.XPathStringAll('//a/@href', TASK.PageLinks)
 
+	for i = 0, TASK.PageLinks.Count - 1 do
+		TASK.PageLinks[i] = TASK.PageLinks[i]:gsub('/s%d+/', '/s0/')
+	end
+
 	return true
 end
