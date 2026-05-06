@@ -14,34 +14,25 @@ function Init()
 
 	local cat = 'English'
 	local m = AddWebsiteModule('8e7bd7b38aa041aa9bc1bddeec33b6f4', 'MangaHere', 'https://www.mangahere.cc', cat)
-	m.AddOptionSpinEdit('timeout', 'Timeout in (s)', 60)
 
 	local m = AddWebsiteModule('0d3653a8d9b747a381374f32e0a1641e', 'FanFox', 'https://fanfox.net', cat)
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	local fmd = require 'fmd.env'
 	local slang = fmd.SelectedLanguage
-	local lang = {
+	local translations = {
 		['en'] = {
-			['timeout'] = 'Timeout in (s)',
 			['removewatermark'] = 'Remove watermark',
 			['saveaspng'] = 'Save as PNG'
 		},
 		['id_ID'] = {
-			['timeout'] = 'Batas waktu dalam (detik)',
 			['removewatermark'] = 'Hapus watermark',
 			['saveaspng'] = 'Simpan sebagai PNG'
-		},
-		get =
-			function(self, key)
-				local sel = self[slang]
-				if sel == nil then sel = self['en'] end
-				return sel[key]
-			end
+		}
 	}
+	local lang = translations[slang] or translations.en
 	m.OnAfterImageSaved = 'AfterImageSaved'
-	m.AddOptionSpinEdit('timeout', lang:get('timeout'), 60)
-	m.AddOptionCheckBox('mf_removewatermark', lang:get('removewatermark'), true)
-	m.AddOptionCheckBox('mf_saveaspng', lang:get('saveaspng'), false)
+	m.AddOptionCheckBox('mf_removewatermark', lang.removewatermark, true)
+	m.AddOptionCheckBox('mf_saveaspng', lang.saveaspng, false)
 	require('fmd.mangafoxwatermark').LoadTemplate(fmd.LuaDirectory .. 'extras\\mangafoxtemplate')
 end
 
@@ -115,10 +106,7 @@ function GetPageNumber()
 			TASK.PageNumber = tonumber(s:match('imagecount%s*=%s*(%d-)%s*;') or '0')
 			if TASK.PageNumber == nil then TASK.PageNumber = 1 end
 			local p = 1
-			local ts = os.time()
-			local timeout = tonumber(MODULE.GetOption('timeout') or '60')
 			while p <= TASK.PageNumber do
-				if os.time() >= ts + timeout then print(string.format("%s second timeout.", timeout)) break end
 				HTTP.Reset()
 				HTTP.Headers.Values['Pragma'] = 'no-cache'
 				HTTP.Headers.Values['Cache-Control'] = 'no-cache'
