@@ -42,9 +42,9 @@ function _M.GetInfo()
 	MANGAINFO.Summary   = x.XPathString('string-join(//div[@id="expand_content"]/p/text()|//div[@class="overflow-hidden"]/p/text(), "\r\n")')
 
 	if MODULE.GetOption('showpaidchapters') then
-		x.XPathHREFTitleAll('//div[@id="chapters"]/a[not(.//span="Upcoming")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+		x.XPathHREFTitleAll('//div[@id="chapters"]//a[not(.//span="Upcoming")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 	else
-		x.XPathHREFTitleAll('//div[@id="chapters"]/a[not(.//img[@alt="Coin"]) and not(.//span="Upcoming")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+		x.XPathHREFTitleAll('//div[@id="chapters"]//a[not(.//img[@alt="Coin"]) and not(.//span="Upcoming")]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
