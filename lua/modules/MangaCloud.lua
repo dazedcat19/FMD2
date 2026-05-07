@@ -25,6 +25,30 @@ local CDN_URL = 'https://pika.' .. domain
 local DirectoryPagination = '/comic/browse'
 
 ----------------------------------------------------------------------------------------------------
+-- Helper Functions
+----------------------------------------------------------------------------------------------------
+
+-- Seed random number generator once.
+math.randomseed(os.time())
+
+local function GenerateKey()
+	local timestamp = tostring(os.time()):reverse()
+	local result = ''
+
+	for i = 1, #timestamp do
+		local char = timestamp:sub(i, i)
+		result = result .. math.random(0, 9) .. char
+	end
+
+	return result
+end
+
+-- Set the required http headers for making a request.
+local function SetRequestHeaders()
+	HTTP.Headers.Values['Key'] = GenerateKey()
+end
+
+----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
@@ -33,6 +57,7 @@ function GetNameAndLink()
 	local s = '{"sort":"created_date-DESC","page":' .. (URL + 1) .. '}'
 	local u = API_URL .. DirectoryPagination
 	HTTP.MimeType = 'application/json'
+	SetRequestHeaders()
 
 	if not HTTP.POST(u, s) then return net_problem end
 
@@ -52,6 +77,7 @@ end
 function GetInfo()
 	local mid = URL:match('(%d+)')
 	local u = API_URL .. '/comic/' .. mid
+	SetRequestHeaders()
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -83,6 +109,7 @@ end
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	local u = API_URL .. URL
+	SetRequestHeaders()
 
 	if not HTTP.GET(u) then return false end
 
