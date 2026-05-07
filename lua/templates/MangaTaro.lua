@@ -68,20 +68,33 @@ function _M.GetInfo()
 		utc.year, utc.month, utc.day, utc.hour
 	)
 
-	local mid = x.XPathString('//body/@data-manga-id')
-	local timestamp = os.time()
-	local token = md5_hex(timestamp .. 'mng_ch_' .. formatted):sub(1, 16)
+	local mid   = x.XPathString('//body/@data-manga-id')
+	local limit  = 500
+	local offset = 0
 
-	if not HTTP.GET(MODULE.RootURL .. '/auth/manga-chapters?manga_id=' .. mid .. '&offset=0&limit=9999&order=ASC&_t=' .. token .. '&_ts=' .. timestamp) then return net_problem end
+	while true do
+		-- Regenerate token per request; timestamp must be fresh each time
+		local timestamp = os.time()
+		local token = md5_hex(timestamp .. 'mng_ch_' .. formatted):sub(1, 16)
 
-	for v in CreateTXQuery(HTTP.Document).XPath('json(*).chapters()').Get() do
-		local chapter = v.GetProperty('chapter').ToString()
-		local title   = v.GetProperty('title').ToString()
+		if not HTTP.GET(MODULE.RootURL .. '/auth/manga-chapters?manga_id=' .. mid ..
+			'&offset=' .. offset .. '&limit=' .. limit ..
+			'&order=ASC&_t=' .. token .. '&_ts=' .. timestamp) then return net_problem end
 
-		title = (title ~= 'N/A' and title ~= '—' and title ~= '') and (' - ' .. title) or ''
+		local count = 0
+		for v in CreateTXQuery(HTTP.Document).XPath('json(*).chapters()').Get() do
+			local chapter = v.GetProperty('chapter').ToString()
+			local title   = v.GetProperty('title').ToString()
 
-		MANGAINFO.ChapterLinks.Add(v.GetProperty('url').ToString())
-		MANGAINFO.ChapterNames.Add('Chapter ' .. chapter .. title)
+			title = (title ~= 'N/A' and title ~= '—' and title ~= '') and (' - ' .. title) or ''
+
+			MANGAINFO.ChapterLinks.Add(v.GetProperty('url').ToString())
+			MANGAINFO.ChapterNames.Add('Chapter ' .. chapter .. title)
+			count = count + 1
+		end
+
+		if count < limit then break end
+		offset = offset + limit
 	end
 
 	return no_error
