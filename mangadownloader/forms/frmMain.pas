@@ -238,6 +238,7 @@ type
     TransferRateToolset: TChartToolset;
     miFavoritesStopCheckNewChapter: TMenuItem;
     miFavoritesCheckNewChapter: TMenuItem;
+    miFavoritesCheckMissingChapters: TMenuItem;
     pnDownloadToolbarLeft: TPanel;
     pnDownloadToolbar: TPanel;
     TransferRateGraphArea: TAreaSeries;
@@ -581,6 +582,7 @@ type
     procedure miDownloadDeleteTaskClick(Sender: TObject);
     procedure miDownloadMergeCompletedClick(Sender: TObject);
     procedure miFavoritesCheckNewChapterClick(Sender: TObject);
+    procedure miFavoritesCheckMissingChaptersClick(Sender: TObject);
     procedure miFavoritesDownloadAllClick(Sender: TObject);
     procedure miFavoritesStopCheckNewChapterClick(Sender: TObject);
     procedure miFavoritesViewInfosClick(Sender: TObject);
@@ -2389,6 +2391,24 @@ begin
       if Assigned(xNode) then
       begin
         FavoriteManager.CheckForNewChapter(xNode^.Index);
+        xNode := vtFavorites.GetNextSelected(xNode);
+      end;
+    until xNode = nil;
+    vtFavorites.Repaint;
+  end;
+end;
+
+procedure TMainForm.miFavoritesCheckMissingChaptersClick(Sender: TObject);
+var
+  xNode: PVirtualNode;
+begin
+  if vtFavorites.SelectedCount > 0 then
+  begin
+    xNode := vtFavorites.GetFirstSelected;
+    repeat
+      if Assigned(xNode) then
+      begin
+        FavoriteManager.CheckForMissingChapters(xNode^.Index);
         xNode := vtFavorites.GetNextSelected(xNode);
       end;
     until xNode = nil;

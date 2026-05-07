@@ -29,6 +29,7 @@ type
   protected
     procedure Execute; override;
     procedure DoCheck;
+    procedure DoCheckMissing;
   public
     FContainer: TfavoriteContainer;
     constructor Create(const ATask: TFavoriteTask);
@@ -49,6 +50,7 @@ type
     FManager: TFavoriteManager;
     FCS_Threads: TRTLCriticalSection;
     FCS_GetNext: TRTLCriticalSection;
+    FCheckMissing: Boolean;
   protected
     procedure DoCustomTerminate(Sender: TObject);
     procedure TimerRepaintOnTimer(Sender: TObject);
@@ -63,7 +65,7 @@ type
     procedure RemoveThread(const T: TFavoriteThread);
   public
     procedure UpdateBtnCaption(Cap: String);
-    constructor Create(const AManager: TFavoriteManager);
+    constructor Create(const AManager: TFavoriteManager; const ACheckMissing: Boolean = False);
     destructor Destroy; override;
   end;
 
@@ -128,6 +130,7 @@ type
 
     //Check favorites
     procedure CheckForNewChapter(FavoriteIndex: Integer = -1);
+    procedure CheckForMissingChapters(FavoriteIndex: Integer = -1);
     procedure StopChekForNewChapter(WaitFor: Boolean = True; FavoriteIndex: Integer = -1);
 
     // Show notification form after checking completed
@@ -173,6 +176,9 @@ resourcestring
   RS_DlgNewChapterCaption = 'Found new chapter(s)';
   RS_LblNewChapterFound = 'Found %d new chapter from %d manga(s):';
   RS_FavoriteHasNewChapter = '%s <%s> has %d new chapter(s).';
+  RS_DlgMissingChapterCaption = 'Found missing chapter(s)';
+  RS_LblMissingChapterFound = 'Found %d missing chapter(s) from %d manga(s):';
+  RS_FavoriteHasMissingChapter = '%s <%s> has %d missing chapter(s).';
   RS_BtnDownload = '&Download';
   RS_BtnAddToQueue = '&Add to queue';
   RS_BtnCancel = '&Cancel';
@@ -297,7 +303,10 @@ procedure TFavoriteThread.Execute;
 begin
   while FTask.GetNext(FContainer) do
   begin
-    DoCheck;
+    if FTask.FCheckMissing then
+      DoCheckMissing
+    else
+      DoCheck;
 
     if Terminated then
     begin
@@ -374,6 +383,141 @@ begin
         // free unneeded objects
         if (NewMangaInfoChaptersPos.Count = 0) and
           (NewMangaInfo.Status <> MangaInfo_StatusCompleted) then
+        begin
+          FreeAndNil(NewMangaInfo);
+          FreeAndNil(NewMangaInfoChaptersPos);
+        end;
+      end;
+    except
+      on E: Exception do
+        ExceptionHandle(Self, E);
+    end;
+end;
+
+procedure TFavoriteThread.DoCheckMissing;
+var
+  i: Integer;
+  chapterName, chapterPath, savePath, ext: String;
+  sr: TSearchRec;
+  cbzCount, zipCount, pdfCount, epubCount, dirCount, maxCount, detectedFormat: Integer;
+  chapterExists: Boolean;
+begin
+  if FContainer.FavoriteInfo.Link = '' then Exit;
+
+  FContainer.Status := STATUS_CHECKING;
+  FTask.UpdateStatus;
+
+  with FContainer do
+    try
+      FMangaInformation.HTTP.Reset;
+      FMangaInformation.MangaInfo.Clear;
+      FMangaInformation.Module := FavoriteInfo.Module;
+      FMangaInformation.isGetByUpdater := False;
+      // get manga info from site
+      FMangaInformation.GetInfoFromURL(FavoriteInfo.Link);
+      if not Terminated then
+      begin
+        FreeAndNil(NewMangaInfo);
+        FreeAndNil(NewMangaInfoChaptersPos);
+        NewMangaInfo := FMangaInformation.MangaInfo.Clone;
+        NewMangaInfoChaptersPos := TCardinalList.Create;
+        // update current chapter count immediately
+        FavoriteInfo.CurrentChapter := IntToStr(NewMangaInfo.ChapterLinks.Count);
+        FavoriteInfo.Status := NewMangaInfo.Status;
+        if NewMangaInfo.ChapterLinks.Count > 0 then
+        begin
+          // detect format by counting existing chapter files in SaveTo
+          savePath := IncludeTrailingPathDelimiter(FavoriteInfo.SaveTo);
+          cbzCount := 0;
+          zipCount := 0;
+          pdfCount := 0;
+          epubCount := 0;
+          dirCount := 0;
+          if FindFirst(savePath + '*', faAnyFile, sr) = 0 then
+            try
+              repeat
+                if (sr.Name = '.') or (sr.Name = '..') then Continue;
+                if (sr.Attr and faDirectory) <> 0 then
+                  Inc(dirCount)
+                else
+                begin
+                  ext := LowerCase(ExtractFileExt(sr.Name));
+                  if ext = '.cbz' then Inc(cbzCount)
+                  else if ext = '.zip' then Inc(zipCount)
+                  else if ext = '.pdf' then Inc(pdfCount)
+                  else if ext = '.epub' then Inc(epubCount);
+                end;
+              until FindNext(sr) <> 0;
+            finally
+              FindClose(sr);
+            end;
+
+          // fall back to the app setting when SaveTo has no existing chapters yet
+          if (cbzCount + zipCount + pdfCount + epubCount + dirCount) = 0 then
+            detectedFormat := FTask.FManager.DLManager.CompressType
+          else
+          begin
+            detectedFormat := 0;
+            maxCount := dirCount;
+            if cbzCount > maxCount then
+            begin
+              maxCount := cbzCount;
+              detectedFormat := 2;
+            end;
+            if zipCount > maxCount then
+            begin
+              maxCount := zipCount;
+              detectedFormat := 1;
+            end;
+            if pdfCount > maxCount then
+            begin
+              maxCount := pdfCount;
+              detectedFormat := 3;
+            end;
+            if epubCount > maxCount then
+              detectedFormat := 4;
+          end;
+
+          for i := 0 to NewMangaInfo.ChapterLinks.Count - 1 do
+          begin
+            chapterName := CustomRename(
+              OptionChapterCustomRename,
+              FavoriteInfo.Website,
+              FavoriteInfo.Title,
+              NewMangaInfo.Authors,
+              NewMangaInfo.Artists,
+              NewMangaInfo.ChapterNames[i],
+              Format('%.4d', [i + 1]),
+              OptionChangeUnicodeCharacter,
+              OptionChangeUnicodeCharacterStr);
+            chapterPath := savePath + chapterName;
+
+            case detectedFormat of
+              1: chapterExists := FileExists(chapterPath + '.zip');
+              2: chapterExists := FileExists(chapterPath + '.cbz');
+              3: chapterExists := FileExists(chapterPath + '.pdf');
+              4: chapterExists := FileExists(chapterPath + '.epub');
+              else chapterExists := DirectoryExists(chapterPath);
+            end;
+
+            // a folder when format is compressed = images downloaded but compression
+            // failed or was interrupted; treat as missing so it re-downloads cleanly
+            if chapterExists and (detectedFormat > 0) and DirectoryExists(chapterPath) then
+              chapterExists := False;
+
+            if not chapterExists then
+              NewMangaInfoChaptersPos.Add(i);
+          end;
+        end;
+
+        if not Terminated then
+        begin
+          FContainer.FavoriteInfo.DateLastChecked := Now;
+          if NewMangaInfoChaptersPos.Count <> 0 then
+            FContainer.FavoriteInfo.DateLastUpdated := Now;
+        end;
+
+        if NewMangaInfoChaptersPos.Count = 0 then
         begin
           FreeAndNil(NewMangaInfo);
           FreeAndNil(NewMangaInfoChaptersPos);
@@ -531,8 +675,9 @@ begin
   Synchronize(SyncUpdateBtnCaption);
 end;
 
-constructor TFavoriteTask.Create(const AManager: TFavoriteManager);
+constructor TFavoriteTask.Create(const AManager: TFavoriteManager; const ACheckMissing: Boolean);
 begin
+  FCheckMissing := ACheckMissing;
   inherited Create(False);
   FManager := AManager;
   OnCustomTerminate := DoCustomTerminate;
@@ -735,6 +880,52 @@ begin
   end;
 end;
 
+procedure TFavoriteManager.CheckForMissingChapters(FavoriteIndex: Integer);
+var
+  i: Integer;
+  toCheckCount: Integer;
+begin
+  if isDlgCounter then Exit;
+  if Items.Count = 0 then Exit;
+  try
+    toCheckCount := 0;
+    if FavoriteIndex > -1 then
+    begin
+      with Items[FavoriteIndex] do
+        if Assigned(FavoriteInfo.Module) and FEnabled and (Status = STATUS_IDLE) then
+        begin
+          Status := STATUS_CHECK;
+          Inc(toCheckCount);
+          if Assigned(TaskThread) then
+            InterLockedIncrement(TaskThread.FPendingCount);
+        end;
+    end
+    else
+    if isRunning then
+      CenteredMessageDlg(MainForm, RS_DlgFavoritesCheckIsRunning, mtInformation, [mbOK], 0)
+    else
+    begin
+      EnterCriticalsection(FGuardian);
+      try
+        for i := 0 to Items.Count - 1 do
+          with Items[i] do
+            if Assigned(FavoriteInfo.Module) and FEnabled and (Status = STATUS_IDLE) and (Trim(FavoriteInfo.Link) <> '') then
+            begin
+              Status := STATUS_CHECK;
+              Inc(toCheckCount);
+            end;
+      finally
+        LeaveCriticalsection(FGuardian);
+      end;
+    end;
+    if (toCheckCount > 0) and (TaskThread = nil) then
+      TaskThread := TFavoriteTask.Create(Self, True);
+  except
+    on E: Exception do
+      ExceptionHandle(Self, E);
+  end;
+end;
+
 procedure TFavoriteManager.StopChekForNewChapter(WaitFor: Boolean; FavoriteIndex: Integer);
 begin
   if not isRunning then Exit;
@@ -769,12 +960,14 @@ var
   LNCResult: TNewChapterResult = ncrCancel;
   newChapterListStr: String = '';
   removeListStr: String = '';
+  isMissingCheck: Boolean;
 begin
   if isDlgCounter then Exit;
   if (Self.DLManager = nil) and Assigned(DLManager) then
     Self.DLManager := DLManager;
   if Self.DLManager = nil then Exit;
 
+  isMissingCheck := Assigned(TaskThread) and TaskThread.FCheckMissing;
   Self.Sort(Self.FSortColumn);
   Lock;
   try
@@ -789,12 +982,17 @@ begin
         begin
           if Assigned(NewMangaInfo) then
           begin
-            // new chapters add to notification
+            // new/missing chapters add to notification
             if NewMangaInfoChaptersPos.Count > 0 then
             begin
-              newChapterListStr += LineEnding + '- ' + Format(
-                RS_FavoriteHasNewChapter, [FavoriteInfo.Title, FavoriteInfo.Website,
-                NewMangaInfoChaptersPos.Count]);
+              if isMissingCheck then
+                newChapterListStr += LineEnding + '- ' + Format(
+                  RS_FavoriteHasMissingChapter, [FavoriteInfo.Title, FavoriteInfo.Website,
+                  NewMangaInfoChaptersPos.Count])
+              else
+                newChapterListStr += LineEnding + '- ' + Format(
+                  RS_FavoriteHasNewChapter, [FavoriteInfo.Title, FavoriteInfo.Website,
+                  NewMangaInfoChaptersPos.Count]);
               Inc(numOfMangaNewChapters);
               Inc(numOfNewChapters, NewMangaInfoChaptersPos.Count);
             end
@@ -854,9 +1052,18 @@ begin
         else
           with TNewChapter.Create(MainForm) do
             try
-              Caption := RS_DlgNewChapterCaption;
-              lbNotification.Caption :=
-                Format(RS_LblNewChapterFound, [numOfNewChapters, numOfMangaNewChapters]);
+              if isMissingCheck then
+              begin
+                Caption := RS_DlgMissingChapterCaption;
+                lbNotification.Caption :=
+                  Format(RS_LblMissingChapterFound, [numOfNewChapters, numOfMangaNewChapters]);
+              end
+              else
+              begin
+                Caption := RS_DlgNewChapterCaption;
+                lbNotification.Caption :=
+                  Format(RS_LblNewChapterFound, [numOfNewChapters, numOfMangaNewChapters]);
+              end;
               mmMemo.Lines.Text := Trim(newChapterListStr);
               btDownload.Caption := RS_BtnDownload;
               btQueue.Caption := RS_BtnAddToQueue;
