@@ -63,7 +63,7 @@ function GetPageNumber()
 
 	if not HTTP.GET(u) then return false end
 
-	locak x = CreateTXQuery(HTTP.Document)
+	local x = CreateTXQuery(HTTP.Document)
 	x.ParseHTML(require 'fmd.crypto'.DecodeBase64(GetBetween("toon_img = '", "';", x.XPathString('//script[contains(., "toon_img")]'))))
 	for v in x.XPath('//img/@src').Get() do
 		TASK.PageLinks.Add(MaybeFillHost(MODULE.RootURL, v.ToString()))
