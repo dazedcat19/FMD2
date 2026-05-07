@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '2a7d69a1e1d24f90851b4e2598cffdcd'
 	m.Name                     = 'Toonkor'
-	m.RootURL                  = 'https://toonkor490.com'
+	m.RootURL                  = 'https://tkor115.com'
 	m.Category                 = 'Raw'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -38,12 +38,11 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local v, x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
+	local x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Title     = x.XPathString('//table[@class="bt_view1"]//td[@class="bt_title"]')
 	MANGAINFO.CoverLink = MaybeFillHost(MODULE.RootURL, x.XPathString('//table[@class="bt_view1"]//td[@class="bt_thumb"]/a/img/@src'))
 	MANGAINFO.Authors   = x.XPathString('//table[@class="bt_view1"]//span[contains(., "작가")]/following-sibling::span[1]')
@@ -58,18 +57,17 @@ function GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local i, x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
-	if not HTTP.GET(u) then return net_problem end
+	if not HTTP.GET(u) then return false end
 
-	x = CreateTXQuery(HTTP.Document)
+	locak x = CreateTXQuery(HTTP.Document)
 	x.ParseHTML(require 'fmd.crypto'.DecodeBase64(GetBetween("toon_img = '", "';", x.XPathString('//script[contains(., "toon_img")]'))))
-	for i in x.XPath('//img/@src').Get() do
-		TASK.PageLinks.Add(MaybeFillHost(MODULE.RootURL, i.ToString()))
+	for v in x.XPath('//img/@src').Get() do
+		TASK.PageLinks.Add(MaybeFillHost(MODULE.RootURL, v.ToString()))
 	end
 
-	return no_error
+	return true
 end
