@@ -68,8 +68,8 @@ function _M.GetInfo()
 		utc.year, utc.month, utc.day, utc.hour
 	)
 
-	local mid   = x.XPathString('//body/@data-manga-id')
-	local limit  = 500
+	local mid = x.XPathString('//body/@data-manga-id')
+	local limit = 500
 	local offset = 0
 
 	while true do
