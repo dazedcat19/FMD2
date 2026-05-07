@@ -38,29 +38,13 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local API_URL = 'https://comix.to/api/v2'
+local API_URL = 'https://comix.to/api/v1'
 local DirectoryPagination = '/manga?order[created_at]=desc&limit=100&page='
 local crypto = require 'fmd.crypto'
 
 ----------------------------------------------------------------------------------------------------
 -- Helper Functions
 ----------------------------------------------------------------------------------------------------
-
-local function ToBytes(s)
-    local t = {}
-    for i = 1, #s do
-        t[i] = s:byte(i)
-    end
-    return t
-end
-
-local function FromBytes(t)
-    local s = {}
-    for i = 1, #t do
-        s[i] = string.char(t[i])
-    end
-    return table.concat(s)
-end
 
 local function Ror(x, n) return ((x >> n) | (x << (8 - n))) & 0xFF end
 local function Rol(x, n) return ((x << n) | (x >> (8 - n))) & 0xFF end
@@ -97,31 +81,31 @@ local raw_keys = {
 
 local keys = {}
 for i = 1, #raw_keys do
-    keys[i] = ToBytes(crypto.DecodeBase64(raw_keys[i]))
+    keys[i] = crypto.DecodeBase64(raw_keys[i])
 end
 
 local function RC4(key, data)
-    local s = {}
-    for i = 0, 255 do
+	local s = {}
+	for i = 0, 255 do
 		s[i] = i
 	end
 
-    local j = 0
-    for i = 0, 255 do
-        j = (j + s[i] + key[(i % #key) + 1]) % 256
-        s[i], s[j] = s[j], s[i]
-    end
+	local j = 0
+	for i = 0, 255 do
+		j = (j + s[i] + key:byte((i % #key) + 1)) % 256
+		s[i], s[j] = s[j], s[i]
+	end
 
-    local i, j = 0, 0
-    local out = {}
-    for k = 1, #data do
-        i = (i + 1) % 256
-        j = (j + s[i]) % 256
-        s[i], s[j] = s[j], s[i]
-        out[k] = (data[k] ~ s[(s[i] + s[j]) % 256]) & 0xFF
-    end
+	local i, j = 0, 0
+	local out = {}
+	for k = 1, #data do
+		i = (i + 1) % 256
+		j = (j + s[i]) % 256
+		s[i], s[j] = s[j], s[i]
+		out[k] = string.char((data:byte(k) ~ s[(s[i] + s[j]) % 256]) & 0xFF)
+	end
 
-    return out
+	return table.concat(out)
 end
 
 local round_maps = {
@@ -135,35 +119,36 @@ local round_maps = {
 local function GetMutKey(mk, idx)
     if #mk == 0 then return 0 end
     if (idx % 32) < #mk then
-        return mk[(idx % #mk) + 1]
+        return mk:byte((idx % #mk) + 1)
     end
     return 0
 end
 
-local function Round(data, key_idx)
-    local k  = keys[key_idx]
-    local mk = keys[key_idx + 1]
-    local pk = keys[key_idx + 2]
+local function Round(data, idx)
+    local k  = keys[idx]
+    local mk = keys[idx + 1]
+    local pk = keys[idx + 2]
 
-    local cfg = round_maps[(key_idx // 3) + 1]
+    local cfg = round_maps[(idx // 3) + 1]
     local map, pref = cfg.map, cfg.pref
 
     local enc = RC4(k, data)
     local out = {}
+    local pk_len = #pk
 
     for i = 1, #enc do
-        if i <= pref and i <= #pk then
-            out[#out+1] = pk[i]
+        if i <= pref and i <= pk_len then
+            out[#out + 1] = string.char(pk:byte(i))
         end
 
-        local v = (enc[i] ~ GetMutKey(mk, i - 1)) & 0xFF
+        local v = (enc:byte(i) ~ GetMutKey(mk, i - 1)) & 0xFF
         local f = map[(i - 1) % 10]
         if f then v = f(v) end
 
-        out[#out+1] = v
+        out[#out + 1] = string.char(v)
     end
 
-    return out
+    return table.concat(out)
 end
 
 local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
@@ -186,7 +171,7 @@ local function EncodeBase64(data)
 end
 
 function GenerateHash(path)
-    local bytes = ToBytes(crypto.DecodeURL(path .. ':0:1'))
+    local bytes = crypto.EncodeURLElement(path)
 
     bytes = Round(bytes, 1)
     bytes = Round(bytes, 4)
@@ -194,7 +179,7 @@ function GenerateHash(path)
     bytes = Round(bytes, 10)
     bytes = Round(bytes, 13)
 
-    return EncodeBase64(FromBytes(bytes)):gsub('%+', '-'):gsub('/', '_'):gsub('=+$', '')
+    return EncodeBase64(bytes):gsub('%+', '-'):gsub('/', '_'):gsub('=+$', '')
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -207,7 +192,7 @@ function GetDirectoryPageNumber()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('json(*).result.pagination.last_page')) or 1
+	PAGENUMBER = tonumber(CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString())).XPathString('json(*).result.meta.lastPage')) or 1
 
 	return no_error
 end
@@ -219,7 +204,7 @@ function GetNameAndLink()
 	if not HTTP.GET(u) then return net_problem end
 
 	for v in CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString())).XPath('json(*).result.items()').Get() do
-		LINKS.Add('title/' .. v.GetProperty('hash_id').ToString() .. '-' .. v.GetProperty('slug').ToString())
+		LINKS.Add('title/' .. v.GetProperty('hid').ToString() .. '-' .. v.GetProperty('slug').ToString())
 		NAMES.Add(v.GetProperty('title').ToString())
 	end
 
@@ -235,15 +220,15 @@ function GetInfo()
 	if not HTTP.GET(u .. s) then return net_problem end
 
 	local x = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString()))
-	local json = x.XPath('json(*).result')
-	MANGAINFO.Title     = x.XPathString('title', json)
-	MANGAINFO.AltTitles = x.XPathString('string-join(alt_titles?*, ", ")', json)
-	MANGAINFO.CoverLink = x.XPathString('poster/medium', json)
-	MANGAINFO.Authors   = x.XPathString('string-join(author?*/title, ", ")', json)
-	MANGAINFO.Artists   = x.XPathString('string-join(artist?*/title, ", ")', json)
-	MANGAINFO.Genres    = x.XPathString('string-join((genre?*/title, theme?*/title, demographic?*/title, concat(upper-case(substring(type, 1, 1)), lower-case(substring(type, 2)))), ", ")', json)
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status', json), 'releasing', 'finished', 'on_hiatus', 'discontinued')
-	MANGAINFO.Summary   = x.XPathString('synopsis', json)
+	local info = x.XPath('json(*).result')
+	MANGAINFO.Title     = x.XPathString('title', info)
+	MANGAINFO.AltTitles = x.XPathString('string-join(altTitles?*, ", ")', info)
+	MANGAINFO.CoverLink = x.XPathString('poster?medium', info)
+	MANGAINFO.Authors   = x.XPathString('string-join(authors?*?title, ", ")', info)
+	MANGAINFO.Artists   = x.XPathString('string-join(artists?*?title, ", ")', info)
+	MANGAINFO.Genres    = x.XPathString('string-join((genres?*?title, theme?*?title, demographics?*?title, concat(upper-case(substring(type, 1, 1)), lower-case(substring(type, 2)))), ", ")', info)
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status', info), 'releasing', 'finished', 'on_hiatus', 'discontinued')
+	MANGAINFO.Summary   = x.XPathString('synopsis', info)
 
 	local deduplicate  = MODULE.GetOption('deduplicatechapters')
 	local optgroup     = MODULE.GetOption('showscangroup')
@@ -255,18 +240,18 @@ function GetInfo()
 	local pages = nil
 	local token = GenerateHash('/manga/' .. mid .. '/chapters')
 	while true do
-		if not HTTP.GET(u .. '/chapters?order[number]=asc&limit=100&page=' .. page .. '&time=1&_=' .. token) then return net_problem end
+		if not HTTP.GET(u .. '/chapters?order[number]=asc&limit=100&page=' .. page .. '&_=' .. token) then return net_problem end
 		local x = CreateTXQuery(HTTP.Document)
 		for v in x.XPath('json(*).result.items()').Get() do
 			local number = v.GetProperty('number').ToString()
-			local id = v.GetProperty('chapter_id').ToString()
+			local id = v.GetProperty('id').ToString()
 			local name = v.GetProperty('name').ToString()
 			local vol_num = v.GetProperty('volume').ToString()
-			local scan_group_id = tonumber(v.GetProperty('scanlation_group_id').ToString()) or 0
-			local scan_group_name = v.GetProperty('scanlation_group').GetProperty('name').ToString()
+			local scan_group_id = tonumber(v.GetProperty('group').GetProperty('id').ToString()) or 0
+			local scan_group_name = v.GetProperty('group').GetProperty('name').ToString()
 			local votes = tonumber(v.GetProperty('votes').ToString()) or 0
 			local updated_at = tonumber(v.GetProperty('updated_at').ToString()) or 0
-			local official_str = v.GetProperty('is_official').ToString()
+			local official_str = v.GetProperty('isOfficial').ToString()
 			local official = (official_str == '1' or official_str == 'true') and 1 or 0
 
 			if not number:find('%.') then
@@ -317,7 +302,7 @@ function GetInfo()
 					elseif ch_data.votes ~= current.votes then
 						better = ch_data.votes > current.votes
 					else
-						better = ch_data.updated_at > current.updated_at
+						better = ch_data.id > current.id
 					end
 
 					if better then
@@ -327,7 +312,7 @@ function GetInfo()
 			end
 		end
 		if not pages then
-			pages = tonumber(x.XPathString('json(*).result.pagination.last_page')) or 1
+			pages = tonumber(x.XPathString('json(*).result.meta.lastPage')) or 1
 		end
 		page = page + 1
 		if page > pages then
@@ -363,11 +348,12 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local u = API_URL .. '/chapters' .. URL
+	local token = GenerateHash('/chapters' .. URL)
+	local u = API_URL .. '/chapters' .. URL .. '?_=' .. token
 
 	if not HTTP.GET(u) then return false end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).result.images().url', TASK.PageLinks)
+	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).result.pages().url', TASK.PageLinks)
 
 	return true
 end
