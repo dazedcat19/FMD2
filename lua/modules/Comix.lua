@@ -46,37 +46,39 @@ local crypto = require 'fmd.crypto'
 -- Helper Functions
 ----------------------------------------------------------------------------------------------------
 
-local function Ror(x, n) return ((x >> n) | (x << (8 - n))) & 0xFF end
-local function Rol(x, n) return ((x << n) | (x >> (8 - n))) & 0xFF end
-local function MutB(e) return (e - 12 + 256) % 256 end
-local function MutC(e) return (e + 115) % 256 end
-local function MutDollar(e) return Rol(e, 4) end
-local function MutF(e) return (e - 188 + 256) % 256 end
-local function MutG(e) return Rol(e, 2) end
-local function MutH(e) return (e - 42 + 256) % 256 end
-local function MutK(e) return (e - 241 + 256) % 256 end
-local function MutL(e) return Ror(e, 1) end
-local function MutM(e) return (e ~ 177) & 0xFF end
-local function MutS(e) return (e + 143) % 256 end
-local function MutUnderscore(e) return (e - 20 + 256) % 256 end
-local function MutY(e) return Ror(e, 1) end
+local ops = {
+	SR7L1 = function(e) return ((e >> 7) | (e << 1)) & 0xFF end,
+	SL1R7 = function(e) return ((e << 1) | (e >> 7)) & 0xFF end,
+	SR2L6 = function(e) return ((e >> 2) | (e << 6)) & 0xFF end,
+	SL4R4 = function(e) return ((e << 4) | (e >> 4)) & 0xFF end,
+	SR4L4 = function(e) return ((e >> 4) | (e << 4)) & 0xFF end,
+
+	X37  = function(e) return (e ~ 37) & 0xFF end,
+	X81  = function(e) return (e ~ 81) & 0xFF end,
+	X147 = function(e) return (e ~ 147) & 0xFF end,
+	X180 = function(e) return (e ~ 180) & 0xFF end,
+	X218 = function(e) return (e ~ 218) & 0xFF end,
+
+	P34  = function(e) return (e + 34) & 0xFF end,
+	P159 = function(e) return (e + 159) & 0xFF end
+}
 
 local raw_keys = {
-    '13YDu67uDgFczo3DnuTIURqas4lfMEPADY6Jaeqky+w=',
-    'yEy7wBfBc+gsYPiQL/4Dfd0pIBZFzMwrtlRQGwMXy3Q=',
-    'yrP+EVA1Dw==',
-    'vZ23RT7pbSlxwiygkHd1dhToIku8SNHPC6V36L4cnwM=',
-    'QX0sLahOByWLcWGnv6l98vQudWqdRI3DOXBdit9bxCE=',
-    'WJwgqCmf',
-    'BkWI8feqSlDZKMq6awfzWlUypl88nz65KVRmpH0RWIc=',
-    'v7EIpiQQjd2BGuJzMbBA0qPWDSS+wTJRQ7uGzZ6rJKs=',
-    '1SUReYlCRA==',
-    'RougjiFHkSKs20DZ6BWXiWwQUGZXtseZIyQWKz5eG34=',
-    'LL97cwoDoG5cw8QmhI+KSWzfW+8VehIh+inTxnVJ2ps=',
-    '52iDqjzlqe8=',
-    'U9LRYFL2zXU4TtALIYDj+lCATRk/EJtH7/y7qYYNlh8=',
-    'e/GtffFDTvnw7LBRixAD+iGixjqTq9kIZ1m0Hj+s6fY=',
-    'xb2XwHNB'
+	'JxTcdyiA5GZxnbrmthXBQfU2IMTKcY1+3nNhbq98Sgo=',
+	'3PordjODbhqla382Cxapmo/1JiABJQcjiJj1+48gTJ4=',
+	'OaKvnI5ARA==',
+	'MHNBHYWA7lvy867fXgvGcJwWDk79KqUJUVFsh3RwnnI=',
+	'8i0Cru/VJBSVB2Y1GcMDVpzx2WepOcfnWdd81yxICl4=',
+	'Fyskubz8VvA=',
+	'B46L1x+UeWP+19cRpQ+OZvdLAK9EHID8g3mSgn57tew=',
+	'DTSTmUt6LpDUw9r1lSQqyb3YlFTzruT8tk8wUGkwehQ=',
+	'vY/meeI=',
+	'7xWfIF5THL5LAnRgAARg+4mjWHPU9n3PQwvzbaMNi+Q=',
+	'bewtiTuV+HJk56xxkf2iCljLgruCpBmN9BgE8i6gc9M=',
+	'/Xcb2zAu8AU=',
+	'WgeCQ3T8R51uTwVSiVa7Zy0dN6JOg6Z5JleMS+HV8Aw=',
+	'yXayUVFrrcW56jQCEfZzuCidjpnWKjTDUNT7XeX9i7k=',
+	'tSLco2w='
 }
 
 local keys = {}
@@ -84,7 +86,7 @@ for i = 1, #raw_keys do
     keys[i] = crypto.DecodeBase64(raw_keys[i])
 end
 
-local function RC4(key, data)
+local function RC4(data, key)
 	local s = {}
 	for i = 0, 255 do
 		s[i] = i
@@ -109,11 +111,11 @@ local function RC4(key, data)
 end
 
 local round_maps = {
-    {map = {[0] = MutC, [1] = MutB, [2] = MutY, [3] = MutDollar, [4] = MutH, [5] = MutS, [6] = MutH, [7] = MutK, [8] = MutL, [9] = MutC}, pref = 7},
-    {map = {[0] = MutC, [1] = MutB, [2] = MutDollar, [3] = MutH, [4] = MutS, [5] = MutK, [6] = MutDollar, [7] = MutUnderscore, [8] = MutC, [9] = MutS}, pref = 6},
-    {map = {[0] = MutC, [1] = MutF, [2] = MutS, [3] = MutG, [4] = MutY, [5] = MutM, [6] = MutDollar, [7] = MutK, [8] = MutS, [9] = MutB}, pref = 7},
-    {map = {[0] = MutB, [1] = MutM, [2] = MutL, [3] = MutS, [4] = MutUnderscore, [5] = MutS, [6] = MutUnderscore, [7] = MutL, [8] = MutY, [9] = MutM}, pref = 8},
-    {map = {[0] = MutUnderscore, [1] = MutS, [2] = MutC, [3] = MutM, [4] = MutB, [5] = MutM, [6] = MutF, [7] = MutS, [8]= MutDollar, [9] = MutG}, pref = 6},
+	{map = {[0] = ops.SR7L1, [1] = ops.X37, [2] = ops.X81, [3] = ops.X147, [4] = ops.SR2L6, [5] = ops.SR4L4, [6] = ops.X218, [7] = ops.P159, [8] = ops.SR4L4, [9] = ops.X180}, pref = 7},
+	{map = {[0] = ops.X180, [1] = ops.SL1R7, [2] = ops.X147, [3] = ops.SR7L1, [4] = ops.SR2L6, [5] = ops.SR4L4, [6] = ops.P159, [7] = ops.P34, [8] = ops.P159, [9] = ops.X180}, pref = 8},
+	{map = {[0] = ops.X81, [1] = ops.SR4L4, [2] = ops.SL4R4, [3] = ops.X37, [4] = ops.P159, [5] = ops.SL1R7, [6] = ops.X180, [7] = ops.P34, [8] = ops.SR2L6, [9] = ops.SL4R4}, pref = 5},
+	{map = {[0] = ops.X218, [1] = ops.SL1R7, [2] = ops.SR7L1, [3] = ops.P159, [4] = ops.SL1R7, [5] = ops.X180, [6] = ops.X147, [7] = ops.X218, [8] = ops.X180, [9] = ops.X37}, pref = 8},
+	{map = {[0] = ops.SL4R4, [1] = ops.X147, [2] = ops.P34, [3] = ops.X147, [4] = ops.X218, [5] = ops.SL1R7, [6] = ops.X180, [7] = ops.SL1R7, [8] = ops.SR2L6, [9] = ops.X218}, pref = 5}
 }
 
 local function GetMutKey(mk, idx)
@@ -124,31 +126,39 @@ local function GetMutKey(mk, idx)
     return 0
 end
 
-local function Round(data, idx)
-    local k  = keys[idx]
-    local mk = keys[idx + 1]
-    local pk = keys[idx + 2]
+local function Mutate(data, mut_key, pref_key, maps)
+	local out = {}
 
-    local cfg = round_maps[(idx // 3) + 1]
-    local map, pref = cfg.map, cfg.pref
+	for i = 1, #data do
+		local idx = i - 1
 
-    local enc = RC4(k, data)
-    local out = {}
-    local pk_len = #pk
+		if i <= maps.pref and i <= #pref_key then
+			out[#out + 1] = string.char(pref_key:byte(i))
+		end
 
-    for i = 1, #enc do
-        if i <= pref and i <= pk_len then
-            out[#out + 1] = string.char(pk:byte(i))
-        end
+		local n = (data:byte(i) ~ GetMutKey(mut_key, idx)) & 0xFF
 
-        local v = (enc:byte(i) ~ GetMutKey(mk, i - 1)) & 0xFF
-        local f = map[(i - 1) % 10]
-        if f then v = f(v) end
+		local op = maps.map[idx % 10]
+		if op then
+			n = op(n)
+		end
 
-        out[#out + 1] = string.char(v)
-    end
+		out[#out + 1] = string.char(n)
+	end
 
-    return table.concat(out)
+	return table.concat(out)
+end
+
+local function Round(data, round)
+	local base = ((round - 1) * 3) + 1
+
+	local rc4_key  = keys[base]
+	local mut_key  = keys[base + 1]
+	local pref_key = keys[base + 2]
+
+	local mut = Mutate(data, mut_key, pref_key, round_maps[round])
+
+	return RC4(mut, rc4_key)
 end
 
 local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
@@ -171,15 +181,13 @@ local function EncodeBase64(data)
 end
 
 function GenerateHash(path)
-    local bytes = crypto.EncodeURLElement(path)
+    local data = crypto.EncodeURLElement(path)
 
-    bytes = Round(bytes, 1)
-    bytes = Round(bytes, 4)
-    bytes = Round(bytes, 7)
-    bytes = Round(bytes, 10)
-    bytes = Round(bytes, 13)
+	for round = 1, 5 do
+		data = Round(data, round)
+	end
 
-    return EncodeBase64(bytes):gsub('%+', '-'):gsub('/', '_'):gsub('=+$', '')
+    return EncodeBase64(data):gsub('%+', '-'):gsub('/', '_'):gsub('=+$', '')
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -238,9 +246,9 @@ function GetInfo()
 
 	local page = 1
 	local pages = nil
-	local token = GenerateHash('/manga/' .. mid .. '/chapters')
+	local hash = GenerateHash('/manga/' .. mid .. '/chapters')
 	while true do
-		if not HTTP.GET(u .. '/chapters?order[number]=asc&limit=100&page=' .. page .. '&_=' .. token) then return net_problem end
+		if not HTTP.GET(u .. '/chapters?order[number]=asc&limit=100&page=' .. page .. '&_=' .. hash) then return net_problem end
 		local x = CreateTXQuery(HTTP.Document)
 		for v in x.XPath('json(*).result.items()').Get() do
 			local number = v.GetProperty('number').ToString()
@@ -348,8 +356,8 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local token = GenerateHash('/chapters' .. URL)
-	local u = API_URL .. '/chapters' .. URL .. '?_=' .. token
+	local hash = GenerateHash('/chapters' .. URL)
+	local u = API_URL .. '/chapters' .. URL .. '?_=' .. hash
 
 	if not HTTP.GET(u) then return false end
 
