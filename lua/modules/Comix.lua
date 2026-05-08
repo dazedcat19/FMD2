@@ -223,9 +223,8 @@ end
 function GetInfo()
 	local mid = URL:match('/title/([^%-]+)%-')
 	local u = API_URL .. '/manga/' .. mid
-	local s = '?includes[]=author&includes[]=artist&includes[]=genre&includes[]=theme&includes[]=demographic'
 
-	if not HTTP.GET(u .. s) then return net_problem end
+	if not HTTP.GET(u) then return net_problem end
 
 	local x = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString()))
 	local info = x.XPath('json(*).result')
