@@ -63,6 +63,8 @@ function _M.GetPageNumber()
 	HTTP.Reset()
 	local u = MaybeFillHost(MODULE.RootURL, URL) .. '/'
 	local s = '{"urls":["' .. u .. '"]}'
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
+	HTTP.Headers.Values['X-Requested-With'] = 'XMLHttpRequest'
 	HTTP.MimeType = 'application/json'
 
 	if not HTTP.POST(MODULE.RootURL .. '/wp-json/mp/v1/chapter', s) then return false end
