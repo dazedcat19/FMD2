@@ -92,7 +92,7 @@ local function install_required_modules(js_code)
     local success, err = ensure_install_directory(install_dir)
     if not success then debug_print(err) return false, err end
 
-    modules = {"puppeteer", "isolated-vm"}
+    modules = {"puppeteer"}
     --for mod in js_code:gmatch("require%s*%(%s*['\"](.-)['\"]%s*%)") do -- auto install any npm modules required by the script
     for _, mod in pairs(modules) do
         if not is_module_installed(mod, install_dir) then
@@ -126,47 +126,42 @@ end
 local function isolatevm_js(js_code, pass_page)
     if not js_code then return handle_error("No JavaScript code provided.") end
 
-    local setup_js = (pass_page and [[
-        // Extract page content or specific data after page load
-        const pageContent = await page.content();
-        ]] or [[
-        const ivm = require('isolated-vm');
-        (async () => { 
-        ]]) .. [[
+    if pass_page then return js_code end
 
-        // Now, create an isolated VM and pass the page content or specific data to it
-        const isolate = new ivm.Isolate({ memoryLimit: 10 }); // 10 MB memory limit
-        const context = await isolate.createContext();
-        const jail = context.global;
-        
-        // Set up a limited console object
-        await jail.set('console', {
-            log: (...args) => { console.log(...args); }
-        }, { reference: true });
+    local safe_js_code = string.format("%q", js_code)
 
-        ]] .. (pass_page and [[
-        // Pass the page content or any specific data to the isolated VM
-        await jail.set("pageContent", pageContent);
-        ]] or "") .. [[
+    return [[
+    const vm = require('vm');
+    (async () => {
+        const sandbox = {
+            console: {
+                log: (...args) => { console.log(...args); },
+                error: (...args) => { console.error(...args); }
+            }
+        };
+        vm.createContext(sandbox);
 
-        // Limit the custom JavaScript execution to 5 seconds
-        const jsCode = `]] .. js_code .. [[`;
+        const jsCode = ]] .. safe_js_code .. [[;
+
         try {
-            const result = await context.eval(jsCode, { timeout: 5000 });
-            console.log(result);
+            const p = vm.runInContext('(async () => { ' + jsCode + ' })()', sandbox);
+            await Promise.race([
+                p,
+                new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Execution timed out')), 5000)
+                )
+            ]);
         } catch (error) {
-            console.error("Error or timeout in custom JavaScript execution:", error);
+            console.error("VM Execution Error:", error.message);
         }
-        ]] .. (pass_page and "" or [[ })(); ]])
-
-    return setup_js
+    })();
+    ]]
 end
 
 -- Function to load HTML content and optionally execute JavaScript on it
 local function run_html_with_js(url, js_code)
     local setup_js = [[
         const puppeteer = require('puppeteer');
-        const ivm = require('isolated-vm');
 
         (async () => {
             const url = "]] .. url .. [[";
@@ -177,10 +172,9 @@ local function run_html_with_js(url, js_code)
                     headless: true,
                     args: [
                         '--disable-extensions', // Prevent browser extensions
-                        '--disable-web-security', // Prevent cross-origin issues
-                        '--disable-features=IsolateOrigins,site-per-process',
                         '--disable-webgl', // Disable WebGL
-                        '--disable-webrtc' // Disable WebRTC
+                        '--disable-webrtc', // Disable WebRTC
+                        '--disable-background-networking' // Prevents background requests
                     ]
                 });
                 const page = await browser.newPage();

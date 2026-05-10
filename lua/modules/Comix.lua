@@ -46,148 +46,115 @@ local crypto = require 'fmd.crypto'
 -- Helper Functions
 ----------------------------------------------------------------------------------------------------
 
-local ops = {
-	SR7L1 = function(e) return ((e >> 7) | (e << 1)) & 0xFF end,
-	SL1R7 = function(e) return ((e << 1) | (e >> 7)) & 0xFF end,
-	SR2L6 = function(e) return ((e >> 2) | (e << 6)) & 0xFF end,
-	SL4R4 = function(e) return ((e << 4) | (e >> 4)) & 0xFF end,
-	SR4L4 = function(e) return ((e >> 4) | (e << 4)) & 0xFF end,
+local function GetNodejsScript(fetch_code, arg)
+	return [[
+	const resultJSON = await page.evaluate(async (arg) => {
+		function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
-	X37  = function(e) return (e ~ 37) & 0xFF end,
-	X81  = function(e) return (e ~ 81) & 0xFF end,
-	X147 = function(e) return (e ~ 147) & 0xFF end,
-	X180 = function(e) return (e ~ 180) & 0xFF end,
-	X218 = function(e) return (e ~ 218) & 0xFF end,
+		var nameRe  = /^vm[A-Za-z]_/;
+		var shortRe = /^[A-Za-z]{1,3}$/;
+		var tokenRe = /^[A-Za-z0-9_-]{40,200}$/;
 
-	P34  = function(e) return (e + 34) & 0xFF end,
-	P159 = function(e) return (e + 159) & 0xFF end
-}
+		function tryProbe(ns) {
+			let sig = null, inst = null;
+			let fnames;
+			try { fnames = Object.keys(ns); } catch(e) { return null; }
+			for (let fname of fnames) {
+				let fn = ns[fname];
+				if (typeof fn !== 'function') continue;
+				if (!sig) {
+					try {
+						let testPath = '/manga/d1w0r/chapters';
+						let out = fn(testPath);
+						if (typeof out === 'string' && out !== testPath && tokenRe.test(out)) sig = fn;
+					} catch(e) {}
+				}
+				if (!inst) {
+					try {
+						let got = false;
+						let fakeAxios = {
+							interceptors: { request: { use: () => {} }, response: { use: () => { got = true; } } },
+							defaults: { headers: { common: {} }, transformRequest: [], transformResponse: [] }
+						};
+						fn(fakeAxios);
+						if (got) inst = fn;
+					} catch(e) {}
+				}
+				if (sig && inst) return { sig, inst };
+			}
+			return null;
+		}
 
-local raw_keys = {
-	'JxTcdyiA5GZxnbrmthXBQfU2IMTKcY1+3nNhbq98Sgo=',
-	'3PordjODbhqla382Cxapmo/1JiABJQcjiJj1+48gTJ4=',
-	'OaKvnI5ARA==',
-	'MHNBHYWA7lvy867fXgvGcJwWDk79KqUJUVFsh3RwnnI=',
-	'8i0Cru/VJBSVB2Y1GcMDVpzx2WepOcfnWdd81yxICl4=',
-	'Fyskubz8VvA=',
-	'B46L1x+UeWP+19cRpQ+OZvdLAK9EHID8g3mSgn57tew=',
-	'DTSTmUt6LpDUw9r1lSQqyb3YlFTzruT8tk8wUGkwehQ=',
-	'vY/meeI=',
-	'7xWfIF5THL5LAnRgAARg+4mjWHPU9n3PQwvzbaMNi+Q=',
-	'bewtiTuV+HJk56xxkf2iCljLgruCpBmN9BgE8i6gc9M=',
-	'/Xcb2zAu8AU=',
-	'WgeCQ3T8R51uTwVSiVa7Zy0dN6JOg6Z5JleMS+HV8Aw=',
-	'yXayUVFrrcW56jQCEfZzuCidjpnWKjTDUNT7XeX9i7k=',
-	'tSLco2w='
-}
+		let sig = null, inst = null;
+		for (let attempt = 0; attempt < 40; attempt++) {
+			let keys = Object.keys(window);
 
-local keys = {}
-for i = 1, #raw_keys do
-    keys[i] = crypto.DecodeBase64(raw_keys[i])
-end
+			for (let topName of keys) {
+				if (!nameRe.test(topName)) continue;
+				let ns = window[topName];
+				if (!ns || typeof ns !== 'object') continue;
+				let hit = tryProbe(ns);
+				if (hit) { sig = hit.sig; inst = hit.inst; break; }
+			}
 
-local function RC4(data, key)
-	local s = {}
-	for i = 0, 255 do
-		s[i] = i
-	end
+			if (!sig || !inst) {
+				for (let topName of keys) {
+					if (nameRe.test(topName)) continue;
+					let ns = window[topName];
+					if (!ns || typeof ns !== 'object' || ns === window) continue;
+					let fnames;
+					try { fnames = Object.keys(ns); } catch(e) { continue; }
+					if (fnames.length < 5) continue;
+					let shortAlpha = fnames.filter(f => shortRe.test(f)).length;
+					if (shortAlpha < 3) continue;
+					let hit = tryProbe(ns);
+					if (hit) { sig = hit.sig; inst = hit.inst; break; }
+				}
+			}
 
-	local j = 0
-	for i = 0, 255 do
-		j = (j + s[i] + key:byte((i % #key) + 1)) % 256
-		s[i], s[j] = s[j], s[i]
-	end
+			if (sig && inst) break;
+			await sleep(250);
+		}
+		if (!sig || !inst) return { error: 'Could not find signer/installer' };
+		let captured = { res: null };
+		let fakeAxios = {
+			interceptors: {
+				request:  { use: () => {} },
+				response: { use: (fn) => { captured.res = fn; } }
+			},
+			defaults: { headers: { common: {} }, transformRequest: [], transformResponse: [] }
+		};
+		inst(fakeAxios);
+		async function fetchDecrypted(apiPath) {
+			let signablePath = apiPath.split('?')[0].replace('/api/v1', '');
+			let token = sig(signablePath);
+			let sep = apiPath.indexOf('?') === -1 ? '?' : '&';
+			let url = '/api/v1' + apiPath + sep + '_=' + encodeURIComponent(token);
+			let resp = await fetch(url, {
+				headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+			});
+			let text = await resp.text();
+			let raw;
+			try { raw = JSON.parse(text); } catch(e) { return null; }
 
-	local i, j = 0, 0
-	local out = {}
-	for k = 1, #data do
-		i = (i + 1) % 256
-		j = (j + s[i]) % 256
-		s[i], s[j] = s[j], s[i]
-		out[k] = string.char((data:byte(k) ~ s[(s[i] + s[j]) % 256]) & 0xFF)
-	end
-
-	return table.concat(out)
-end
-
-local round_maps = {
-	{map = {[0] = ops.SR7L1, [1] = ops.X37, [2] = ops.X81, [3] = ops.X147, [4] = ops.SR2L6, [5] = ops.SR4L4, [6] = ops.X218, [7] = ops.P159, [8] = ops.SR4L4, [9] = ops.X180}, pref = 7},
-	{map = {[0] = ops.X180, [1] = ops.SL1R7, [2] = ops.X147, [3] = ops.SR7L1, [4] = ops.SR2L6, [5] = ops.SR4L4, [6] = ops.P159, [7] = ops.P34, [8] = ops.P159, [9] = ops.X180}, pref = 8},
-	{map = {[0] = ops.X81, [1] = ops.SR4L4, [2] = ops.SL4R4, [3] = ops.X37, [4] = ops.P159, [5] = ops.SL1R7, [6] = ops.X180, [7] = ops.P34, [8] = ops.SR2L6, [9] = ops.SL4R4}, pref = 5},
-	{map = {[0] = ops.X218, [1] = ops.SL1R7, [2] = ops.SR7L1, [3] = ops.P159, [4] = ops.SL1R7, [5] = ops.X180, [6] = ops.X147, [7] = ops.X218, [8] = ops.X180, [9] = ops.X37}, pref = 8},
-	{map = {[0] = ops.SL4R4, [1] = ops.X147, [2] = ops.P34, [3] = ops.X147, [4] = ops.X218, [5] = ops.SL1R7, [6] = ops.X180, [7] = ops.SL1R7, [8] = ops.SR2L6, [9] = ops.X218}, pref = 5}
-}
-
-local function GetMutKey(mk, idx)
-    if #mk == 0 then return 0 end
-    if (idx % 32) < #mk then
-        return mk:byte((idx % #mk) + 1)
-    end
-    return 0
-end
-
-local function Mutate(data, mut_key, pref_key, maps)
-	local out = {}
-
-	for i = 1, #data do
-		local idx = i - 1
-
-		if i <= maps.pref and i <= #pref_key then
-			out[#out + 1] = string.char(pref_key:byte(i))
-		end
-
-		local n = (data:byte(i) ~ GetMutKey(mut_key, idx)) & 0xFF
-
-		local op = maps.map[idx % 10]
-		if op then
-			n = op(n)
-		end
-
-		out[#out + 1] = string.char(n)
-	end
-
-	return table.concat(out)
-end
-
-local function Round(data, round)
-	local base = ((round - 1) * 3) + 1
-
-	local rc4_key  = keys[base]
-	local mut_key  = keys[base + 1]
-	local pref_key = keys[base + 2]
-
-	local mut = Mutate(data, mut_key, pref_key, round_maps[round])
-
-	return RC4(mut, rc4_key)
-end
-
-local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-
-local function EncodeBase64(data)
-	return ((data:gsub('.', function(x)
-		local r, bits = '', x:byte()
-		for i = 8, 1, -1 do
-			r = r .. (bits % 2 ^ i - bits % 2 ^ (i - 1) > 0 and '1' or '0')
-		end
-		return r
-	end) .. '0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
-		if (#x < 6) then return '' end
-		local c = 0
-		for i = 1, 6 do
-			c = c + (x:sub(i ,i) == '1' and 2 ^ (6 - i) or 0)
-		end
-		return b:sub(c + 1, c +1)
-	end) .. ({ '', '==', '=' })[#data % 3 + 1])
-end
-
-function GenerateHash(path)
-    local data = crypto.EncodeURLElement(path)
-
-	for round = 1, 5 do
-		data = Round(data, round)
-	end
-
-    return EncodeBase64(data):gsub('%+', '-'):gsub('/', '_'):gsub('=+$', '')
+			if (raw && typeof raw === 'object' && 'e' in raw && captured.res) {
+				let fakeResp = {
+					data: raw, status: resp.status, statusText: resp.statusText,
+					headers: Object.fromEntries([...resp.headers.entries()]),
+					config: { url: url, method: 'get', baseURL: '/api/v1' },
+					request: {}
+				};
+				let decoded = await captured.res(fakeResp);
+				return { result: decoded ? decoded.data : null };
+			} else if (raw && typeof raw === 'object' && 'result' in raw) {
+				return raw;
+			}
+			return { result: raw };
+		}
+		]] .. fetch_code .. [[
+	}, ']] .. arg .. [[');
+	console.log(JSON.stringify(resultJSON));
+	]]
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -243,87 +210,93 @@ function GetInfo()
 	local chapter_list = {}
 	local has_integer  = {}
 
-	local page = 1
-	local pages = nil
-	local hash = GenerateHash('/manga/' .. mid .. '/chapters')
-	while true do
-		if not HTTP.GET(u .. '/chapters?order[number]=asc&limit=100&page=' .. page .. '&_=' .. hash) then return net_problem end
-		local x = CreateTXQuery(HTTP.Document)
-		for v in x.XPath('json(*).result.items()').Get() do
-			local number = v.GetProperty('number').ToString()
-			local id = v.GetProperty('id').ToString()
-			local name = v.GetProperty('name').ToString()
-			local vol_num = v.GetProperty('volume').ToString()
-			local scan_group_id = tonumber(v.GetProperty('group').GetProperty('id').ToString()) or 0
-			local scan_group_name = v.GetProperty('group').GetProperty('name').ToString()
-			local votes = tonumber(v.GetProperty('votes').ToString()) or 0
-			local updated_at = tonumber(v.GetProperty('updated_at').ToString()) or 0
-			local official_str = v.GetProperty('isOfficial').ToString()
-			local official = (official_str == '1' or official_str == 'true') and 1 or 0
+	local fetch_code = [[
+		let allItems = [];
+		let pageNum = 1;
+		let lastPage = 1;
+		while (pageNum <= lastPage) {
+			let path = '/manga/' + arg + '/chapters?order[number]=asc&limit=100&page=' + pageNum;
+			let data = await fetchDecrypted(path);
+			let res = data ? data.result : null;
+			if (!res || !res.items) break;
+			allItems.push(...res.items);
+			lastPage = res.meta ? res.meta.lastPage : 1;
+			pageNum++;
+		}
+		return { items: allItems };
+	]]
+	
+	local js_code = GetNodejsScript(fetch_code, mid)
+	local output = require 'utils.nodejs'.run_html_load_with_js(MODULE.RootURL, js_code)
+	if output:find('error', 1, true) then MANGAINFO.Title = 'Could not find signer/installer' return no_error end
 
-			if not number:find('%.') then
-				has_integer[number] = true
-			end
+	for v in CreateTXQuery(output).XPath('json(*).items()').Get() do
+		local number = v.GetProperty('number').ToString()
+		local id = v.GetProperty('id').ToString()
+		local name = v.GetProperty('name').ToString()
+		local vol_num = v.GetProperty('volume').ToString()
+		local scan_group_id = tonumber(v.GetProperty('group').GetProperty('id').ToString()) or 0
+		local scan_group_name = v.GetProperty('group').GetProperty('name').ToString()
+		local votes = tonumber(v.GetProperty('votes').ToString()) or 0
+		local updated_at = tonumber(v.GetProperty('updated_at').ToString()) or 0
+		local official_str = v.GetProperty('isOfficial').ToString()
+		local official = (official_str == '1' or official_str == 'true') and 1 or 0
 
-			if not deduplicate then
-				local volume = (vol_num ~= '0') and ('Vol. ' .. vol_num .. ' ') or ''
-				local chapter = (number ~= '') and ('Ch. ' .. number) or ''
-				local title = (name ~= '') and (' - ' .. name) or ''
-				local scanlator = ''
-				if optgroup then
-					if scan_group_name ~= '' then
-						scanlator = ' [' .. scan_group_name .. ']'
-					elseif official == 1 then
-						scanlator = ' [Official]'
-					else
-						scanlator = ' [Unknown]'
-					end
-				end
+		if not number:find('%.') then
+			has_integer[number] = true
+		end
 
-				MANGAINFO.ChapterLinks.Add(id)
-				MANGAINFO.ChapterNames.Add(volume .. chapter .. title .. scanlator)
-			else
-				local base = number:match('^(%d+)')
-				local key = (base and has_integer[base]) and base or number
-				local current = chapter_map[key]
-				local ch_data = {
-					id = id, name = name, vol_num = vol_num, number = number,
-					scan_group_id = scan_group_id, scan_group_name = scan_group_name,
-					votes = votes, updated_at = updated_at, official = official
-				}
-
-				if not current then
-					chapter_map[key] = ch_data
-					table.insert(chapter_list, key)
+		if not deduplicate then
+			local volume = (vol_num ~= '0') and ('Vol. ' .. vol_num .. ' ') or ''
+			local chapter = (number ~= '') and ('Ch. ' .. number) or ''
+			local title = (name ~= '') and (' - ' .. name) or ''
+			local scanlator = ''
+			if optgroup then
+				if scan_group_name ~= '' then
+					scanlator = ' [' .. scan_group_name .. ']'
+				elseif official == 1 then
+					scanlator = ' [Official]'
 				else
-					local new_official = ch_data.official == 1
-					local cur_official = current.official == 1
-					local new_group = ch_data.scan_group_id == 10702
-					local cur_group = current.scan_group_id == 10702
-					local better = false
-
-					if new_official ~= cur_official then
-						better = new_official
-					elseif new_group ~= cur_group then
-						better = new_group
-					elseif ch_data.votes ~= current.votes then
-						better = ch_data.votes > current.votes
-					else
-						better = ch_data.id > current.id
-					end
-
-					if better then
-						chapter_map[key] = ch_data
-					end
+					scanlator = ' [Unknown]'
 				end
 			end
-		end
-		if not pages then
-			pages = tonumber(x.XPathString('json(*).result.meta.lastPage')) or 1
-		end
-		page = page + 1
-		if page > pages then
-			break
+
+			MANGAINFO.ChapterLinks.Add(id)
+			MANGAINFO.ChapterNames.Add(volume .. chapter .. title .. scanlator)
+		else
+			local base = number:match('^(%d+)')
+			local key = (base and has_integer[base]) and base or number
+			local current = chapter_map[key]
+			local ch_data = {
+				id = id, name = name, vol_num = vol_num, number = number,
+				scan_group_id = scan_group_id, scan_group_name = scan_group_name,
+				votes = votes, updated_at = updated_at, official = official
+			}
+
+			if not current then
+				chapter_map[key] = ch_data
+				table.insert(chapter_list, key)
+			else
+				local new_official = ch_data.official == 1
+				local cur_official = current.official == 1
+				local new_group = ch_data.scan_group_id == 10702
+				local cur_group = current.scan_group_id == 10702
+				local better = false
+
+				if new_official ~= cur_official then
+					better = new_official
+				elseif new_group ~= cur_group then
+					better = new_group
+				elseif ch_data.votes ~= current.votes then
+					better = ch_data.votes > current.votes
+				else
+					better = ch_data.id > current.id
+				end
+
+				if better then
+					chapter_map[key] = ch_data
+				end
+			end
 		end
 	end
 
@@ -355,12 +328,36 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local hash = GenerateHash('/chapters' .. URL)
-	local u = API_URL .. '/chapters' .. URL .. '?_=' .. hash
+	local fetch_code = [[
+		let data = await fetchDecrypted(arg);
+		let res = data?.result;
+		let links = [];
 
-	if not HTTP.GET(u) then return false end
+		if (res?.pages) {
+			let pages = res.pages;
+			let items = pages.items ?? (Array.isArray(pages) ? pages : []);
+			let base = pages.baseUrl ?? '';
+			if (base.endsWith('/')) base = base.slice(0, -1);
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).result.pages().url', TASK.PageLinks)
+			for (let item of items) {
+				let url = typeof item === 'string' ? item : item?.url;
+				if (!url) continue;
+				links.push(
+					url.startsWith('http')
+						? url
+						: base + (url.startsWith('/') ? url : '/' + url)
+				);
+			}
+		}
+
+		return { links: links };
+	]]
+
+	local js_code = GetNodejsScript(fetch_code, '/chapters' .. URL)
+	local output = require 'utils.nodejs'.run_html_load_with_js(MODULE.RootURL, js_code)
+	if output:find('error', 1, true) then print('Could not find signer/installer') return false end
+
+	CreateTXQuery(output).XPathStringAll('json(*).links()', TASK.PageLinks)
 
 	return true
 end
