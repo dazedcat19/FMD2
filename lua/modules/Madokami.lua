@@ -52,6 +52,8 @@ end
 for _, value in ipairs(madokamilist_custom) do
 	madokamilist_chr[value .. '/'] = true
 end
+
+local supported_extensions = {".jpg", ".png", ".gif", ".webp"}
 ----------------------------------------------------------------------------------------------------
 -- Helper Functions
 ----------------------------------------------------------------------------------------------------
@@ -154,17 +156,62 @@ function GetPageNumber()
     Delay()
 	CheckAuth()
 	HTTP.Headers.Values['charset'] = 'utf-8'
-	HTTP.GET(MODULE.RootURL .. URL)
-	if HTTP.ResultCode ~= 200 then
-		return net_problem
-	end
-	local x = CreateTXQuery(HTTP.Document)
-	local datapath = x.XPathString('//div[@id="reader"]/@data-path')
-	datapath = crypto.EncodeURLElement(datapath)
-	local datafiles = x.XPathString('//div[@id="reader"]/@data-files')
-	datafiles = json.decode(datafiles)
-	for i=1, #datafiles do
+	local u = MaybeFillHost(MODULE.RootURL, URL)
+	HTTP.GET(u)
+	if HTTP.ResultCode == 500 then
+	   local x = CreateTXQuery(HTTP.Document)
+	   local err_msg = x.XPathString('//div[@class="container"]/p')
+	   print(err_msg)
+	   if err_msg == "No valid image files found in archive" then
+	     print("Trying alt method to get pages links")
+		 local datapath = u:gsub(string.gsub("https://manga.madokami.al/reader/", "([^%w])", "%%%1"), "", 1) --extract datapath from url
+		 datapath =crypto.DecodeURL(datapath)
+		 local tmp_u = crypto.DecodeURL(datapath)  --need to do decoding 2 times
+		 tmp_u = MaybeFillHost(MODULE.RootURL, datapath)
+		 HTTP.HEAD(tmp_u)
+		 local file_size = tonumber(HTTP.Headers.Values["content-length"])
+		 HTTP.Reset()
+	     HTTP.Headers.Values['Range'] = "bytes=" .. math.max(0, file_size - (1024*32)) .. "-" .. (file_size - 1)
+		 HTTP.GET(tmp_u)
+		 if HTTP.ResultCode == 206 then -- Partial Content success
+		   local i = 0
+		   local body  = HTTP.Document.ToString()
+		   while i <= #body - 46 do
+		     if body:sub(i, i+3) == "\x50\x4b\x01\x02" then
+			   local b1 = body:byte(i + 28)
+			   local b2 = body:byte(i + 29)
+			   local name_len = b1 + (b2 * 256)
+			   local filename = body:sub(i + 46, i + 46 + name_len - 1)
+			   if #filename > 0 then
+			     for _, ext in ipairs(supported_extensions) do
+				   if string.sub(filename:lower(), -#ext) == ext then
+					 TASK.PageLinks.Add(MODULE.RootURL .. '/reader/image?path=' .. datapath .. '&file=' .. crypto.EncodeURLElement(filename))
+				   end
+				 end
+			   end
+			   i = i + 46 + name_len
+			 else
+			   i = i + 1
+			 end
+		   end
+		   if TASK.PageLinks.Count == 0 then
+		     print('The Images files is in not supported type')
+		   end
+		 else
+		   print("Error: Server does not support Range Requests.")
+		 end
+	   end
+	elseif HTTP.ResultCode ~= 200 then
+	  return net_problem
+	else
+	  local x = CreateTXQuery(HTTP.Document)
+	  local datapath = x.XPathString('//div[@id="reader"]/@data-path')
+	  datapath = crypto.EncodeURLElement(datapath)
+	  local datafiles = x.XPathString('//div[@id="reader"]/@data-files')
+	  datafiles = json.decode(datafiles)
+	  for i=1, #datafiles do
 	    TASK.PageLinks.Add(MODULE.RootURL .. '/reader/image?path=' .. datapath .. '&file=' .. crypto.EncodeURLElement(datafiles[i]))
+	  end
 	end
 end
 
