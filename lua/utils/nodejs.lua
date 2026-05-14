@@ -92,7 +92,7 @@ local function install_required_modules(js_code)
     local success, err = ensure_install_directory(install_dir)
     if not success then debug_print(err) return false, err end
 
-    modules = {"puppeteer"}
+    modules = {"puppeteer", "@jsquash/jxl", "jpeg-js"}
     --for mod in js_code:gmatch("require%s*%(%s*['\"](.-)['\"]%s*%)") do -- auto install any npm modules required by the script
     for _, mod in pairs(modules) do
         if not is_module_installed(mod, install_dir) then
@@ -123,17 +123,20 @@ local function execute_js_script(js_code)
     return output
 end
 
-local function isolatevm_js(js_code, pass_page)
+local function isolatevm_js(js_code, pass_page, timeout_ms, globals)
     if not js_code then return handle_error("No JavaScript code provided.") end
 
     if pass_page then return js_code end
 
-    local safe_js_code = string.format("%q", js_code)
+    timeout_ms = timeout_ms or 5000
+	globals = globals or {}
+    --local safe_js_code = string.format("%q", js_code)
 
     return [[
     const vm = require('vm');
     (async () => {
         const sandbox = {
+		    ]] .. table.concat(globals, ",") ..[[
             console: {
                 log: (...args) => { console.log(...args); },
                 error: (...args) => { console.error(...args); }
@@ -141,14 +144,14 @@ local function isolatevm_js(js_code, pass_page)
         };
         vm.createContext(sandbox);
 
-        const jsCode = ]] .. safe_js_code .. [[;
+        const jsCode = `]] .. js_code .. [[`;
 
         try {
             const p = vm.runInContext('(async () => { ' + jsCode + ' })()', sandbox);
             await Promise.race([
                 p,
                 new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('Execution timed out')), 5000)
+                    setTimeout(() => reject(new Error('Execution timed out')), ]] .. timeout_ms .. [[)
                 )
             ]);
         } catch (error) {
@@ -208,8 +211,13 @@ local function run_html_with_js(url, js_code)
 end
 
 -- Public functions
-function node_executor.run_js(js_code)
-    return execute_js_script(isolatevm_js(js_code))
+function node_executor.run_js(js_code, timeout_ms, globals, run_in_sandbox)
+    run_in_sandbox = run_in_sandbox and true
+	if run_in_sandbox then
+        return execute_js_script(isolatevm_js(js_code, nil, timeout_ms, globals))
+	else
+	    return execute_js_script(js_code)
+	end
 end
 
 function node_executor.run_html_load(url)
