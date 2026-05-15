@@ -60,9 +60,20 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function _M.GetPageNumber()
-	local u = MaybeFillHost(MODULE.RootURL, URL)
+	HTTP.Reset()
+	local u = MaybeFillHost(MODULE.RootURL, URL) .. '/'
+	local s = '{"urls":["' .. u .. '"]}'
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
+	HTTP.Headers.Values['X-Requested-With'] = 'XMLHttpRequest'
+	HTTP.MimeType = 'application/json'
 
-	if not HTTP.GET(u) then return false end
+	if not HTTP.POST(MODULE.RootURL .. '/wp-json/mp/v1/chapter', s) then return false end
+
+	local body = HTTP.Document.ToString()
+	local token = body:match('":"([a-f0-9]+)"')
+	local expire = body:match('"expire":(%d+)')
+
+	if not HTTP.GET(u .. '?t=' .. token .. '&e=' .. expire) then return false end
 
 	CreateTXQuery(HTTP.Document).XPathStringAll('//figure/img[@class="mjv2-page-image"]/@src', TASK.PageLinks)
 
