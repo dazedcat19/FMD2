@@ -464,6 +464,7 @@
 | OneMangaInfo | [![https://onemanga.info](https://img.shields.io/website?url=https://onemanga.info%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://onemanga.info)](https://onemanga.info) | - | - | - |
 | OnePiece-Tube | [![https://onepiece-tube.com](https://img.shields.io/website?url=https://onepiece-tube.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://onepiece-tube.com)](https://onepiece-tube.com) | - | - | - |
 | OneShotScans | [![https://oneshotscans.com](https://img.shields.io/website?url=https://oneshotscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://oneshotscans.com)](https://oneshotscans.com) | - | - | - |
+| OniSaga | [![https://onisaga.com](https://img.shields.io/website?url=https://onisaga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://onisaga.com)](https://onisaga.com) | OK | 15.05.2026 | - |
 | OnlineManga | [![https://adult.onlinemanga.xyz](https://img.shields.io/website?url=https://adult.onlinemanga.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://adult.onlinemanga.xyz)](https://adult.onlinemanga.xyz) | - | - | - |
 | ParagonScans | [![https://paragonscans.com](https://img.shields.io/website?url=https://paragonscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://paragonscans.com)](https://paragonscans.com) | - | - | - |
 | PervEden | [![http://www.perveden.com](https://img.shields.io/website?url=http://www.perveden.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.perveden.com)](http://www.perveden.com) | - | - | - |
