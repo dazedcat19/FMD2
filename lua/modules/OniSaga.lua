@@ -45,6 +45,8 @@ local Langs = {
 	{  'ES', 'Spanish (Es)' }
 }
 
+local json = require 'utils.json'
+
 ----------------------------------------------------------------------------------------------------
 -- Helper Functions
 ----------------------------------------------------------------------------------------------------
@@ -101,7 +103,7 @@ function GetNameAndLink()
 
 	local body = HTTP.Document.ToString()
 	if body:sub(1, 1) == '<' then print('Cookies workaround is needed') return no_error end
-	CreateTXQuery(require 'utils.json'.decode(body).components[1].effects.html).XPathHREFTitleAll('//a[@title]', LINKS, NAMES)
+	CreateTXQuery(json.decode(body).components[1].effects.html).XPathHREFTitleAll('//a[@title]', LINKS, NAMES)
 
 	return no_error
 end
@@ -115,55 +117,65 @@ function GetInfo()
 
 	local x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Title     = x.XPathString('//h1')
-	MANGAINFO.AltTitles = x.XPathString('//p[contains(@class, "text-[13px]")] ! replace(., " [|]", ",")')
+	MANGAINFO.AltTitles = x.XPathString('//p[contains(@class, "text-[13px]")] ! replace(., " [|]| ·", ",")')
 	MANGAINFO.CoverLink = x.XPathString('//img[@class="w-full h-full object-cover"]/@src')
 	MANGAINFO.Authors   = x.XPathStringAll('//a[contains(@href, "/author/")]')
-	MANGAINFO.Genres    = x.XPathStringAll('(//a[contains(@href, "/genre/")], upper-case(substring(//div[contains(@class, "uppercase tracking-widest")], 1, 1)) || lower-case(substring(//div[contains(@class, "uppercase tracking-widest")], 2)))')
+	MANGAINFO.Genres    = x.XPathStringAll('(//a[contains(@href, "/genre/")], //div[contains(@class, "bg-violet-400/20")], upper-case(substring(//div[contains(@class, "uppercase tracking-widest")], 1, 1)) || lower-case(substring(//div[contains(@class, "uppercase tracking-widest")], 2)))')
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//span[contains(@class, "gap-1.5 text-[10px]")]'), 'Ongoing|Releasing')
 	MANGAINFO.Summary   = x.XPathString('//p[contains(@class, "leading-relaxed line-clamp-2")]')
 
-	local ss = x.XPath('parse-json(//div[contains(@*[name()="snapshot"], "manga.chapter-list")]/@*[name()="snapshot"])')
+	local ss = json.decode(x.XPathString('//div[contains(@*[name()="snapshot"], "manga.chapter-list")]/@*[name()="snapshot"]'))
 	local token = x.XPathString('//input[@name="_token"]/@value')
-	local key = x.XPathString('data?manga?*?key', ss)
-	local id = x.XPathString('memo?id', ss)
-	local checksum = x.XPathString('checksum', ss)
+	local key = ss.data.manga[2].key
+	local id = ss.memo.id
+	local checksum = ss.checksum
 
-	local s = '{"_token":"' .. token .. '","components":[{"snapshot":"{\\"data\\":{\\"manga\\":[null,{\\"class\\":\\"App\\\\\\\\Models\\\\\\\\Post\\",\\"key\\":' .. key .. ',\\"s\\":\\"mdl\\"}],' ..
-	'\\"view\\":\\"chapters\\",\\"sortOrder\\":\\"asc\\",\\"search\\":\\"\\",\\"chaptersLoaded\\":1,\\"volumesLoaded\\":1,\\"rateLimited\\":false,\\"importingChapters\\":false},\\"memo\\":{\\"id\\":\\"' .. id ..
-	'\\",\\"name\\":\\"manga.chapter-list\\",\\"path\\":\\"manga\\\\/' .. slug .. '\\",\\"method\\":\\"GET\\",\\"release\\":\\"a-a-a\\",\\"children\\":[],\\"scripts\\":[],\\"assets\\":[],\\"errors\\":[],' ..
-	'\\"locale\\":\\"en\\"},\\"checksum\\":\\"' .. checksum .. '\\"}","updates":{},"calls":[{"path":"","method":"loadMoreChapters","params":[]}]}]}'
+	local page = 1
+	local pages = math.ceil(x.XPathString('//div[contains(@class, "whitespace-nowrap -mt-1 -mb-1")]') / 100 - 1) or 1
+	while true do
+		local s = '{"_token":"' .. token .. '","components":[{"snapshot":"{\\"data\\":{\\"manga\\":[null,{\\"class\\":\\"App\\\\\\\\Models\\\\\\\\Post\\",\\"key\\":' .. key .. ',\\"s\\":\\"mdl\\"}],' ..
+		'\\"view\\":\\"chapters\\",\\"sortOrder\\":\\"asc\\",\\"search\\":\\"\\",\\"chaptersLoaded\\":' .. page .. ',\\"volumesLoaded\\":1,\\"rateLimited\\":false,\\"importingChapters\\":false},\\"memo\\":{\\"id\\":\\"' .. id ..
+		'\\",\\"name\\":\\"manga.chapter-list\\",\\"path\\":\\"manga\\\\/' .. slug .. '\\",\\"method\\":\\"GET\\",\\"release\\":\\"a-a-a\\",\\"children\\":[],\\"scripts\\":[],\\"assets\\":[],\\"errors\\":[],' ..
+		'\\"locale\\":\\"en\\"},\\"checksum\\":\\"' .. checksum .. '\\"}","updates":{},"calls":[{"path":"","method":"loadMoreChapters","params":[]}]}]}'
 
-	HTTP.Reset()
-	HTTP.MimeType = 'application/json'
+		HTTP.Reset()
+		HTTP.MimeType = 'application/json'
 
-	if not HTTP.POST(MODULE.RootURL .. '/livewire/update', s) then return net_problem end
+		if not HTTP.POST(MODULE.RootURL .. '/livewire/update', s) then return net_problem end
 
-	local body = HTTP.Document.ToString()
-	if body:sub(1, 1) == '<' then MANGAINFO.Title = 'Cookies workaround is needed' return no_error end
-	x.ParseHTML(require 'utils.json'.decode(body).components[1].effects.html)
+		local body = HTTP.Document.ToString()
+		if body:sub(1, 1) == '<' then MANGAINFO.Title = 'Cookies workaround is needed' return no_error end
+		local data = json.decode(body).components[1]
+		checksum = json.decode(data.snapshot).checksum
+		x.ParseHTML(data.effects.html)
 
-	local optlang   = MODULE.GetOption('lang')
-	local optlangid = FindLanguage(optlang)
+		local optlang   = MODULE.GetOption('lang')
+		local optlangid = FindLanguage(optlang)
 
-	for v in x.XPath('//div[@class="relative"]//a').Get() do
-		local title = x.XPathString('.//div[@data-flux-heading]', v)
-		local language
+		for v in x.XPath('//div[@class="relative"]//a').Get() do
+			local title = x.XPathString('.//div[@data-flux-heading]', v)
+			local language
 
-		if title == '' then
-			title = x.XPathString('ancestor::ui-dropdown[1]//div[@data-flux-heading]', v)
-			language = x.XPathString('.//div[@data-flux-badge]', v)
-		else
-			language = x.XPathString('tokenize(normalize-space(.//p[@data-flux-text]), " · ")[last()]', v)
+			if title == '' then
+				title = x.XPathString('ancestor::ui-dropdown[1]//div[@data-flux-heading]', v)
+				language = x.XPathString('.//div[@data-flux-badge]', v)
+			else
+				language = x.XPathString('tokenize(normalize-space(.//p[@data-flux-text]), " · ")[last()]', v)
+			end
+
+			if not optlangid or language == optlangid then
+				local volume = x.XPathString('.//p[@data-flux-text]/span', v)
+				if volume ~= '' then volume = volume .. ' ' end
+
+				local lang = (optlang == 0) and (' [' .. language .. ']') or ''
+
+				MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
+				MANGAINFO.ChapterNames.Add(volume .. title .. lang)
+			end
 		end
-
-		if not optlangid or language == optlangid then
-			local volume = x.XPathString('.//p[@data-flux-text]/span', v)
-			if volume ~= '' then volume = volume .. ' ' end
-
-			local lang = (optlang == 0) and (' [' .. language .. ']') or ''
-
-			MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
-			MANGAINFO.ChapterNames.Add(volume .. title .. lang)
+		page = page + 1
+		if page > pages then
+			break
 		end
 	end
 
