@@ -37,6 +37,7 @@ function Init()
 			end
 	}
 	m.AddOptionSpinEdit('mdkm_delay', lang:get('delay'), 2)
+	m.AddOptionComboBox('jxl_convert_target', 'Save JXL Images as', table.concat(jxl_supported_converted_target(), "\r\n"), png_index-1)
 	m.Storage['madokamiulist'] = ''
 end
 
@@ -44,7 +45,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 local json   = require("utils.json")
-local jxl2jpg = require("utils.jxl2jpg")
+local jxlconverter= require("utils.jxlconverter")
 local crypto = require('fmd.crypto')
 local madokamilist_chr = {}
 local madokamilist_custom = {'_', 'Oneshots'}
@@ -58,6 +59,14 @@ for _, value in ipairs(madokamilist_custom) do
 end
 
 local supported_extensions = {".jpg", ".png", ".gif", ".webp", ".jxl"}
+png_index = nil
+
+for i, ext in ipairs(supported_extensions) do
+    if ext == ".png" then
+        png_index = i
+        break
+    end
+end
 ----------------------------------------------------------------------------------------------------
 -- Helper Functions
 ----------------------------------------------------------------------------------------------------
@@ -82,6 +91,18 @@ local function Delay()
 		end
 	end
 	MODULE.Storage['lastDelay'] = os.time()
+end
+
+function jxl_supported_converted_target()
+    local cleaned = {}
+    for _, ext in ipairs(supported_extensions) do
+	    if ext ~= ".jxl" then
+		    table.insert(cleaned, ext:sub(2))
+		end
+	end
+	--local result = table.concat(cleaned, "\r\n")
+	--return result
+	return cleaned
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -267,10 +288,12 @@ end
 
 -- Download and decrypt image given the image URL.
 function DownloadImage()
+    Delay()
+	CheckAuth()
     if not HTTP.GET(URL) then return false end
 	if URL:sub(-4) == ".jxl" then
 	    --URL is a JXL image
-	    local jpg_data = jxl2jpg.convert(HTTP.Document.ToString())
+	    local jpg_data = jxlconverter.convert(HTTP.Document.ToString(), jxl_supported_converted_target()[MODULE.GetOption('jxl_convert_target')-1])
 		HTTP.Document.WriteString(jpg_data)
 	end
     return true
