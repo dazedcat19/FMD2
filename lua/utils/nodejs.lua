@@ -92,7 +92,7 @@ local function install_required_modules(js_code)
     local success, err = ensure_install_directory(install_dir)
     if not success then debug_print(err) return false, err end
 
-    modules = {"puppeteer", "@jsquash/jxl", "jpeg-js"}
+    modules = {"puppeteer", "@jsquash/jxl", "sharp"}
     --for mod in js_code:gmatch("require%s*%(%s*['\"](.-)['\"]%s*%)") do -- auto install any npm modules required by the script
     for _, mod in pairs(modules) do
         if not is_module_installed(mod, install_dir) then
