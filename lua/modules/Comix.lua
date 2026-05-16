@@ -228,7 +228,7 @@ function GetInfo()
 	
 	local js_code = GetNodejsScript(fetch_code, mid)
 	local output = require 'utils.nodejs'.run_html_load_with_js(MODULE.RootURL, js_code)
-	if output:find('error', 1, true) then MANGAINFO.Title = 'Could not find signer/installer' return no_error end
+	if output:find('Could not find signer/installer', 1, true) then MANGAINFO.Title = 'Could not find signer/installer' return no_error end
 
 	for v in CreateTXQuery(output).XPath('json(*).items()').Get() do
 		local number = v.GetProperty('number').ToString()
@@ -355,7 +355,7 @@ function GetPageNumber()
 
 	local js_code = GetNodejsScript(fetch_code, '/chapters' .. URL)
 	local output = require 'utils.nodejs'.run_html_load_with_js(MODULE.RootURL, js_code)
-	if output:find('error', 1, true) then print('Could not find signer/installer') return false end
+	if output:find('Could not find signer/installer', 1, true) then print('Could not find signer/installer') return false end
 
 	CreateTXQuery(output).XPathStringAll('json(*).links()', TASK.PageLinks)
 
