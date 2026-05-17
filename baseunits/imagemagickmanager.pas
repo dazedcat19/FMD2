@@ -36,6 +36,7 @@ type
     constructor CreatePrivate;
 
     function GetPathFound: Boolean;
+    function GetMagickPath: String;
     function GetEnabled: Boolean;
     procedure SetEnabled(AEnabled: Boolean);
     function GetMogrify: Boolean;
@@ -60,6 +61,7 @@ type
     function ConvertImage(InputFile, OutputDir: String): Boolean;
 
     property PathFound: Boolean read GetPathFound;
+    property MagickPath: String read GetMagickPath;
     property Enabled: Boolean read GetEnabled write SetEnabled; 
     property Mogrify: Boolean read GetMogrify write SetMogrify;
     property SupportedFormats: TStrings read GetSupportedFormats;
@@ -172,6 +174,11 @@ end;
 function TImageMagickManager.GetPathFound: Boolean;
 begin
   Result := FPathFound;
+end;
+
+function TImageMagickManager.GetMagickPath: String;
+begin
+  Result := FMagickPath;
 end;
 
 function TImageMagickManager.GetEnabled: Boolean;

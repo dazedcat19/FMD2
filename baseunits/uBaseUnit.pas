@@ -2528,6 +2528,15 @@ begin
     end;
   end;
 
+  if TImageMagickManager.Instance.Enabled then
+  begin
+    s := AFileName + '.' + TImageMagickManager.Instance.SaveAs;
+    if FileExists(s) then
+    begin
+      Exit(s);
+    end;
+  end;
+
   Result := '';
 end;
 
@@ -2639,14 +2648,27 @@ begin
 end;
 
 function GetMimeType(const imgFileName: String): String;
+var
+  ext: String;
 begin
-  case ExtractFileExt(imgFileName) of
+  ext := LowerCase(ExtractFileExt(imgFileName));
+  case ext of
     '.jpeg', '.jpg': Result := 'image/jpeg';
     '.png': Result := 'image/png';
     '.gif': Result := 'image/gif';
     '.bmp': Result := 'image/bmp';
     '.webp': Result := 'image/webp';
-    else Result := '';
+    '.tif', '.tiff': Result := 'image/tiff';
+    '.avif': Result := 'image/avif';
+    '.jxl': Result := 'image/jxl';
+    '.heic', '.heif': Result := 'image/heic';
+    '.j2k', '.jp2': Result := 'image/jp2';
+    '.svg': Result := 'image/svg+xml';
+    '.ico': Result := 'image/x-icon';
+    '.tga': Result := 'image/x-tga';
+    '.pcx': Result := 'image/x-pcx';
+    '.psd': Result := 'image/vnd.adobe.photoshop';
+    else Result := 'image/' + Copy(ext, 2, Length(ext) - 1);
   end;
 end;
 
