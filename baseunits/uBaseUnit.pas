@@ -591,7 +591,7 @@ function WebPToJPEGStream(const AStream: TMemoryStream; const AQuality: Integer 
 function PNGToJPEGStream(const AStream: TMemoryStream; const AQuality: Integer = 80): Boolean;
 
 // try to save tmemorystream to file, return the saved filename if success, otherwise return empty string
-function SaveImageStreamToFile(Stream: TMemoryStream; Path, FileName: String; Age: LongInt = 0): String; overload;
+function SaveImageStreamToFile(Stream: TMemoryStream; Path, FileName: String; Age: LongInt = 0; const ContentType: String = ''): String; overload;
 function SaveImageStreamToFile(AHTTP: THTTPSend; Path, FileName: String): String; overload;
 
 // check file exist with known extensions. AFilename is a filename without extensions
@@ -2390,7 +2390,31 @@ begin
   end;
 end;
 
-function SaveImageStreamToFile(Stream: TMemoryStream; Path, FileName: String; Age: LongInt): String;
+function ExtFromContentType(const ContentType: String): String;
+var
+  ct: String;
+begin
+  Result := '';
+  ct := LowerCase(Trim(ContentType));
+  if ct = '' then Exit;
+  if Pos('image/avif', ct) > 0 then Exit('avif');
+  if Pos('image/jxl', ct) > 0 then Exit('jxl');
+  if Pos('image/heic', ct) > 0 then Exit('heic');
+  if Pos('image/heif', ct) > 0 then Exit('heif');
+  if Pos('image/webp', ct) > 0 then Exit('webp');
+  if Pos('image/png', ct) > 0 then Exit('png');
+  if Pos('image/jpeg', ct) > 0 then Exit('jpg');
+  if Pos('image/gif', ct) > 0 then Exit('gif');
+  if Pos('image/bmp', ct) > 0 then Exit('bmp');
+  if Pos('image/tiff', ct) > 0 then Exit('tif');
+  if Pos('image/svg', ct) > 0 then Exit('svg');
+  if Pos('image/x-tga', ct) > 0 then Exit('tga');
+  if Pos('image/x-icon', ct) > 0 then Exit('ico');
+  if Pos('image/', ct) = 1 then
+    Result := Copy(ct, 7, Length(ct) - 6);
+end;
+
+function SaveImageStreamToFile(Stream: TMemoryStream; Path, FileName: String; Age: LongInt; const ContentType: String = ''): String;
 var
   FilePath, PathDirectory, FileExt: String;
   FileStream: TFileStream;
@@ -2411,6 +2435,11 @@ begin
   if ForceDirectories(PathDirectory) then
   begin
     FileExt := GetImageStreamExt(Stream);
+
+    if FileExt = '' then
+    begin
+      FileExt := ExtFromContentType(ContentType);
+    end;
 
     if not TImageMagickManager.Instance.Enabled then
     begin
@@ -2483,7 +2512,7 @@ end;
 
 function SaveImageStreamToFile(AHTTP: THTTPSend; Path, FileName: String): String;
 var
-  s: String;
+  s, contentType: String;
   lastmodified: LongInt;
 begin
   Result := '';
@@ -2492,7 +2521,8 @@ begin
   lastmodified := 0;
   if s <> '' then
     lastmodified := DateTimeToFileDate(DecodeRfcDateTime(s));
-  Result := SaveImageStreamToFile(AHTTP.Document, Path, FileName, lastmodified);
+  contentType := Trim(AHTTP.Headers.Values['content-type']);
+  Result := SaveImageStreamToFile(AHTTP.Document, Path, FileName, lastmodified, contentType);
 end;
 
 function ImageFileExists(const AFileName: String): Boolean;

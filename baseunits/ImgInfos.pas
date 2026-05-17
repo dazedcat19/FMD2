@@ -633,10 +633,13 @@ function AVIFCheckImageStream(const Stream: TStream): Boolean;
 var
   Hdr: array[0..3] of Char = (#0, #0, #0, #0);
 begin
-  Result := (Stream.Read(Hdr, 4) = 4) and (Hdr = 'ftyp');
+  // Skip box size (bytes 0-3), read 'ftyp' box type at bytes 4-7
+  Result := (Stream.Seek(4, soFromBeginning) = 4) and
+    (Stream.Read(Hdr, 4) = 4) and (Hdr = 'ftyp');
   if not Result then Exit;
-  Result := (Stream.Seek(4, soFromCurrent) = 8) and
-    (Stream.Read(Hdr, 4) = 4) and ((Hdr = 'avif') or (Hdr = 'avis'));
+  // Read major brand at bytes 8-11
+  Result := (Stream.Read(Hdr, 4) = 4) and
+    ((Hdr = 'avif') or (Hdr = 'avis') or (Hdr = 'avio') or (Hdr = 'mif1') or (Hdr = 'msf1'));
 end;
 
 procedure AVIFGetImageSize(const Stream: TStream; out Width, Height: Integer);
