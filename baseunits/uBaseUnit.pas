@@ -233,6 +233,7 @@ const
   MangaInfo_StatusCancelled = '3';
 
   FMDSupportedPackedOutputExt: array[0..3] of ShortString = ('.zip', '.cbz', '.pdf', '.epub');
+  FMDSupportedArchiveExt: array[0..5] of ShortString = ('.zip', '.cbz', '.rar', '.cbr', '.7z', '.tar');
   {$ifdef windows}
   // MAX_PATH = 260
   // MAX_PATH - 12 - 1
