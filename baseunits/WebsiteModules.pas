@@ -61,6 +61,10 @@ type
   TOnAccountState = function(const AModule: TModuleContainer): Boolean;
   TOnCheckSite = function(const AModule: TModuleContainer): Boolean;
 
+  TOnDownloadArchive = function(const ATaskThread: TTaskThread;
+    const AURL: String; const ASavePath, ASaveFileName: String;
+    const AModule: TModuleContainer): Boolean;
+
   TModuleMethod = (MMGetDirectoryPageNumber, MMGetNameAndLink, MMGetInfo,
     MMTaskStart, MMGetPageNumber, MMGetImageURL, MMBeforeDownloadImage,
     MMDownloadImage, MMSaveImage, MMAfterImageSaved, MMLogin);
@@ -131,6 +135,7 @@ type
     InformationAvailable: Boolean;
     FavoriteAvailable: Boolean;
     DynamicPageLink: Boolean;
+    SupportArchiveDownloading: Boolean;
     TotalDirectoryPage: array of Integer;
     CurrentDirectoryIndex: Integer;
     MaxTaskLimit: Integer;
@@ -151,6 +156,7 @@ type
     OnLogin: TOnLogin;
     OnAccountState: TOnAccountState;
     OnCheckSite: TOnCheckSite;
+    OnDownloadArchive: TOnDownloadArchive;
     constructor Create;
     destructor Destroy; override;
   public
@@ -302,6 +308,7 @@ begin
   InformationAvailable := True;
   FavoriteAvailable := True;
   DynamicPageLink := False;
+  SupportArchiveDownloading := False;
   TotalDirectory := 1;
   CurrentDirectoryIndex := 0;
   FWebsiteBypass := TWebsiteBypass.Create(self);

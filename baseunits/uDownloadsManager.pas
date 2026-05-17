@@ -87,6 +87,7 @@ type
     procedure Execute; override;
     function Compress: Boolean;
     function Convert: Boolean;
+    function DownloadArchive: Boolean;
     procedure SyncStop;
     procedure StatusFailedToCreateDir;
     function FirstFailedChapters: Integer;
@@ -738,6 +739,72 @@ begin
   end;
 end;
 
+function TTaskThread.DownloadArchive: Boolean;
+var
+  SavePath, ArchiveFileName, ArchiveURL: String;
+  i: Integer;
+  FileExt: String;
+  AllSuccess: Boolean;
+begin
+  Result := False;
+
+  SavePath := CorrectPathSys(Container.DownloadInfo.SaveTo);
+  if not ForceDirectories(SavePath) then
+  begin
+    StatusFailedToCreateDir;
+    Exit(False);
+  end;
+
+  ArchiveFileName := Container.ChapterNames[Container.CurrentDownloadChapterPtr];
+  AllSuccess := True;
+
+  for i := 0 to Container.PageLinks.Count - 1 do
+  begin
+    ArchiveURL := Trim(Container.PageLinks[i]);
+    if (ArchiveURL = '') or (ArchiveURL = 'D') then
+      Continue;
+
+    if Assigned(TModuleContainer(Container.DownloadInfo.Module).OnDownloadArchive) then
+    begin
+      if not TModuleContainer(Container.DownloadInfo.Module).OnDownloadArchive(
+        Self,
+        ArchiveURL,
+        SavePath,
+        ArchiveFileName,
+        TModuleContainer(Container.DownloadInfo.Module)) then
+      begin
+        AllSuccess := False;
+      end;
+    end
+    else
+    begin
+      AllSuccess := False;
+    end;
+
+    if AllSuccess then
+    begin
+      Container.PageLinks[i] := 'D';
+      InterLockedIncrement(Container.DownCounter);
+      Container.DownloadInfo.Progress :=
+        Format('%d/%d', [Container.DownCounter, Container.PageNumber]);
+    end;
+  end;
+
+  if AllSuccess then
+  begin
+    for i := Low(FMDSupportedArchiveExt) to High(FMDSupportedArchiveExt) do
+    begin
+      FileExt := FMDSupportedArchiveExt[i];
+      if FileExists(SavePath + ArchiveFileName + FileExt) then
+      begin
+        Exit(True);
+      end;
+    end;
+  end;
+
+  Result := False;
+end;
+
 procedure TTaskThread.SyncStop;
 begin
   Container.Manager.CheckAndActiveTask(FCheckAndActiveTaskFlag);
@@ -1029,6 +1096,24 @@ var
     end;
   end;
 
+  function CheckForArchiveExists: Boolean;
+  var
+    i: Integer;
+    ArchivePath, ArchiveName: String;
+  begin
+    Result := False;
+    ArchivePath := CorrectPathSys(Container.DownloadInfo.SaveTo);
+    ArchiveName := Container.ChapterNames[Container.CurrentDownloadChapterPtr];
+    for i := Low(FMDSupportedArchiveExt) to High(FMDSupportedArchiveExt) do
+    begin
+      if FileExists(ArchivePath + ArchiveName + FMDSupportedArchiveExt[i]) then
+      begin
+        Result := True;
+        Exit;
+      end;
+    end;
+  end;
+
   function CheckForExists: Integer;
   var
     FileExists: Boolean;
@@ -1171,7 +1256,11 @@ begin
       end;
 
       //check path
-      if OptionGenerateChapterFolder then
+      if TModuleContainer(Container.DownloadInfo.Module).SupportArchiveDownloading then
+      begin
+        CurrentWorkingDir := CorrectPathSys(Container.DownloadInfo.SaveTo);
+      end
+      else if OptionGenerateChapterFolder then
       begin
         CurrentWorkingDir := CorrectPathSys(Container.DownloadInfo.SaveTo) +
           Container.ChapterNames[Container.CurrentDownloadChapterPtr];
@@ -1231,103 +1320,139 @@ begin
         end;
       end;
 
-      // Check files, if exist set mark 'D', otherwise 'W' or 'G' for dynamic image url
-      CheckForExists;
-
-      // Get the real image urls
-      if Container.PageLinks.Count = 0 then
+      // Archive download mode
+      if TModuleContainer(Container.DownloadInfo.Module).SupportArchiveDownloading then
       begin
-        Container.PageLinks.Add('W');
-      end;
-      Container.PageNumber := Container.PageLinks.Count;
-      if (not DynamicPageLink) and CheckForPrepare then
-      begin
-        Flag := CS_GETPAGELINK;
-        Container.WorkCounter := 0;
-        Container.DownCounter := 0;
-        Container.DownloadInfo.iProgress := 0;
-        Container.DownloadInfo.Progress :=
-          Format('%d/%d', [Container.DownCounter, Container.PageNumber]);
-        Container.DownloadInfo.Status :=
-          Format('[%d/%d] %s (%s)',
-          [Container.CurrentDownloadChapterPtr + 1,
-          Container.ChapterLinks.Count,
-          RS_Preparing,
-          Container.ChapterNames[Container.CurrentDownloadChapterPtr]]);
-        Container.Status := STATUS_PREPARE;
-
-        Checkout;
-        if Terminated then
-        begin
-          Exit;
-        end;
-
-        //check if pagelink is found. Else set again to 'W'(some script return '')
-        if Container.PageLinks.Count > 0 then
-        begin
-          for i := 0 to Container.PageLinks.Count - 1 do
-          begin
-            if Trim(Container.PageLinks[i]) = '' then
-            begin
-              Container.PageLinks[i] := 'W';
-            end;
-          end;
-        end;
-      end;
-      if Terminated then Exit;
-
-      // download the images
-      // If Container doesn't have any image, we will skip the loop. Otherwise
-      // download them
-      Container.PageNumber := Container.PageLinks.Count;
-      if Container.PageLinks.Count > 0 then
-      begin
-        Flag := CS_DOWNLOAD;
-        Container.WorkCounter := 0;
-        Container.DownCounter := 0;
-        Container.DownloadInfo.iProgress := 0;
-        Container.DownloadInfo.Progress :=
-          Format('%d/%d', [Container.DownCounter, Container.PageNumber]);
-        Container.DownloadInfo.Status :=
-          Format('[%d/%d] %s (%s)',
-          [Container.CurrentDownloadChapterPtr + 1,
-          Container.ChapterLinks.Count,
-          RS_Downloading,
-          Container.ChapterNames[Container.CurrentDownloadChapterPtr]]);
-        Container.Status := STATUS_DOWNLOAD;
-
-        Checkout;
-        if Terminated then
-        begin
-          Exit;
-        end;
-
-        //check if all page is downloaded
-        if CheckForFinish then
+        if CheckForArchiveExists then
         begin
           Container.DownloadInfo.Progress := '';
-          Container.Status := STATUS_CONVERT;
-          if not Convert then
-          begin
-            Container.Status := STATUS_FAILED;
-          end;
-
-          if Container.Status <> STATUS_FAILED then
-          begin
-            Container.DownloadInfo.Progress := '';
-            Container.Status := STATUS_COMPRESS;
-            if not Compress then
-            begin
-              Container.Status := STATUS_FAILED;
-            end;
-          end;
+          Container.Status := STATUS_FINISH;
         end
         else
         begin
-          Container.Status := STATUS_FAILED;
+          Container.WorkCounter := 0;
+          Container.DownCounter := 0;
+          Container.DownloadInfo.iProgress := 0;
+          Container.DownloadInfo.Progress :=
+            Format('%d/%d', [Container.DownCounter, Container.PageNumber]);
+          Container.DownloadInfo.Status :=
+            Format('[%d/%d] %s (%s)',
+            [Container.CurrentDownloadChapterPtr + 1,
+            Container.ChapterLinks.Count,
+            RS_Downloading,
+            Container.ChapterNames[Container.CurrentDownloadChapterPtr]]);
+          Container.Status := STATUS_DOWNLOAD;
+
+          if DownloadArchive then
+          begin
+            Container.DownloadInfo.Progress := '';
+            Container.Status := STATUS_FINISH;
+          end
+          else
+          begin
+            Container.Status := STATUS_FAILED;
+          end;
         end;
       end
       else
+      begin
+        // Check files, if exist set mark 'D', otherwise 'W' or 'G' for dynamic image url
+        CheckForExists;
+
+        // Get the real image urls
+        if Container.PageLinks.Count = 0 then
+        begin
+          Container.PageLinks.Add('W');
+        end;
+        Container.PageNumber := Container.PageLinks.Count;
+        if (not DynamicPageLink) and CheckForPrepare then
+        begin
+          Flag := CS_GETPAGELINK;
+          Container.WorkCounter := 0;
+          Container.DownCounter := 0;
+          Container.DownloadInfo.iProgress := 0;
+          Container.DownloadInfo.Progress :=
+            Format('%d/%d', [Container.DownCounter, Container.PageNumber]);
+          Container.DownloadInfo.Status :=
+            Format('[%d/%d] %s (%s)',
+            [Container.CurrentDownloadChapterPtr + 1,
+            Container.ChapterLinks.Count,
+            RS_Preparing,
+            Container.ChapterNames[Container.CurrentDownloadChapterPtr]]);
+          Container.Status := STATUS_PREPARE;
+
+          Checkout;
+          if Terminated then
+          begin
+            Exit;
+          end;
+
+          //check if pagelink is found. Else set again to 'W'(some script return '')
+          if Container.PageLinks.Count > 0 then
+          begin
+            for i := 0 to Container.PageLinks.Count - 1 do
+            begin
+              if Trim(Container.PageLinks[i]) = '' then
+              begin
+                Container.PageLinks[i] := 'W';
+              end;
+            end;
+          end;
+        end;
+        if Terminated then Exit;
+
+        // download the images
+        // If Container doesn't have any image, we will skip the loop. Otherwise
+        // download them
+        Container.PageNumber := Container.PageLinks.Count;
+        if Container.PageLinks.Count > 0 then
+        begin
+          Flag := CS_DOWNLOAD;
+          Container.WorkCounter := 0;
+          Container.DownCounter := 0;
+          Container.DownloadInfo.iProgress := 0;
+          Container.DownloadInfo.Progress :=
+            Format('%d/%d', [Container.DownCounter, Container.PageNumber]);
+          Container.DownloadInfo.Status :=
+            Format('[%d/%d] %s (%s)',
+            [Container.CurrentDownloadChapterPtr + 1,
+            Container.ChapterLinks.Count,
+            RS_Downloading,
+            Container.ChapterNames[Container.CurrentDownloadChapterPtr]]);
+          Container.Status := STATUS_DOWNLOAD;
+
+          Checkout;
+          if Terminated then
+          begin
+            Exit;
+          end;
+
+          //check if all page is downloaded
+          if CheckForFinish then
+          begin
+            Container.DownloadInfo.Progress := '';
+            Container.Status := STATUS_CONVERT;
+            if not Convert then
+            begin
+              Container.Status := STATUS_FAILED;
+            end;
+
+            if Container.Status <> STATUS_FAILED then
+            begin
+              Container.DownloadInfo.Progress := '';
+              Container.Status := STATUS_COMPRESS;
+              if not Compress then
+              begin
+                Container.Status := STATUS_FAILED;
+              end;
+            end;
+          end
+          else
+          begin
+            Container.Status := STATUS_FAILED;
+          end;
+        end
+        else
       begin
         Logger.SendWarning(Format('%s, pagelinks is empty. "%s" "%s" "%s"',
           [Self.ClassName,
@@ -1336,6 +1461,7 @@ begin
            Container.ChapterLinks[Container.CurrentDownloadChapterPtr]
           ]));
         Container.Status := STATUS_FAILED;
+      end;
       end;
 
       if Container.Status = STATUS_FAILED then
@@ -1366,9 +1492,12 @@ begin
         end;
       end;
 
-      if IsDirectoryEmpty(CurrentWorkingDir) then
+      if not TModuleContainer(Container.DownloadInfo.Module).SupportArchiveDownloading then
       begin
-        RemoveDir(CurrentWorkingDir);
+        if IsDirectoryEmpty(CurrentWorkingDir) then
+        begin
+          RemoveDir(CurrentWorkingDir);
+        end;
       end;
     end;
 

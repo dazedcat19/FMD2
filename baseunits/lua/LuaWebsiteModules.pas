@@ -31,6 +31,7 @@ type
     OnLogin: String;
     OnAccountState: String;
     OnCheckSite: String;
+    OnDownloadArchive: String;
     Storage: TStringsStorage;
     LastUpdated: String;
     Container: TLuaWebsiteModulesContainer;
@@ -464,6 +465,29 @@ begin
     end;
 end;
 
+function DoDownloadArchive(const ATaskThread: TTaskThread; const AURL: String;
+  const ASavePath, ASaveFileName: String; const AModule: TModuleContainer): Boolean;
+var
+  L: TLuaWebsiteModuleHandler;
+begin
+  Result := False;
+  with TLuaWebsiteModule(AModule.LuaModule) do
+    try
+      L := GetLuaWebsiteModuleHandler(AModule);
+      L.LoadObject('TASK', ATaskThread.Container, @luaDownloadTaskMetaTable);
+      L.LoadObject('HTTP', ATaskThread.HTTP, @luaHTTPSendThreadAddMetaTable);
+      luaPushStringGlobal(L.Handle, 'URL', AURL);
+      luaPushStringGlobal(L.Handle, 'PATH', ASavePath);
+      luaPushStringGlobal(L.Handle, 'FILENAME', ASaveFileName);
+
+      L.CallFunction(OnDownloadArchive);
+      Result := lua_toboolean(L.Handle, -1);
+    except
+      on E: Exception do
+        SendLogException('LUA>DoDownloadArchive("' + ExtractFileName(Container.FileName) + '")>', E);
+    end;
+end;
+
 function _newwebsitemodule(L: Plua_State): Integer; cdecl;
 begin
   luaClassPushObject(L, TLuaWebsiteModule.Create, '', False, @luaWebsiteModuleAddMetaTable);
@@ -581,6 +605,8 @@ begin
             Module.OnAccountState := @DoAccountState;
           if OnCheckSite <> '' then
             Module.OnCheckSite := @DoCheckSite;
+          if OnDownloadArchive <> '' then
+            Module.OnDownloadArchive := @DoDownloadArchive;
         end;
       finally
         Modules.Unlock;
@@ -1024,6 +1050,8 @@ begin
     luaClassAddStringProperty(L, MetaTable, 'LastUpdated', @LastUpdated);
     luaClassAddIntegerProperty(L, MetaTable, 'CurrentDirectoryIndex', @Module.CurrentDirectoryIndex);
     luaClassAddStringProperty(L, MetaTable, 'OnCheckSite', @OnCheckSite);
+    luaClassAddBooleanProperty(L, MetaTable, 'SupportArchiveDownloading', @Module.SupportArchiveDownloading);
+    luaClassAddStringProperty(L, MetaTable, 'OnDownloadArchive', @OnDownloadArchive);
 
     luaClassAddProperty(L, MetaTable, UserData, 'TotalDirectory', @lua_gettotaldirectory, @lua_settotaldirectory);
     luaClassAddProperty(L, MetaTable, UserData, 'AccountSupport', @lua_getaccountsupport, @lua_setaccountsupport);
