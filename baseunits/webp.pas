@@ -16,6 +16,7 @@ procedure InitWebPModule;
 procedure DestroyWebPModule;
 function WebPToMemBitmap(webp: TMemoryStream): TMemBitmap;
 function WebPGetVersion: String;
+function IsAnimatedWebP(webp: TMemoryStream): Boolean;
 
 implementation
 
@@ -103,6 +104,33 @@ begin
     Result := pWebPGetDecoderVersion()
   else
     Result := 0;
+end;
+
+function IsAnimatedWebP(webp: TMemoryStream): Boolean;
+var
+  Hdr: array[0..3] of Char;
+  Flags: Byte;
+  OldPos: Int64;
+begin
+  Result := False;
+  if (webp = nil) or (webp.Size < 21) then Exit;
+  OldPos := webp.Position;
+  try
+    webp.Position := 0;
+    if webp.Read(Hdr, 4) <> 4 then Exit;
+    if Hdr <> 'RIFF' then Exit;
+    webp.Position := 8;
+    if webp.Read(Hdr, 4) <> 4 then Exit;
+    if Hdr <> 'WEBP' then Exit;
+    webp.Position := 12;
+    if webp.Read(Hdr, 4) <> 4 then Exit;
+    if Hdr <> 'VP8X' then Exit;
+    webp.Position := 20;
+    if webp.Read(Flags, 1) <> 1 then Exit;
+    Result := (Flags and $02) <> 0;
+  finally
+    webp.Position := OldPos;
+  end;
 end;
 
 function WebPGetVersion: String;

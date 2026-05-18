@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, synautil, StrUtils, StdCtrls, Process, Windows, Registry,
-  LazFileUtils, SyncObjs, MultiLog;
+  LazFileUtils, SyncObjs, MultiLog, Graphics;
 
 type
   { TImageMagickManager }
@@ -36,6 +36,7 @@ type
     constructor CreatePrivate;
 
     function GetPathFound: Boolean;
+    function GetMagickPath: String;
     function GetEnabled: Boolean;
     procedure SetEnabled(AEnabled: Boolean);
     function GetMogrify: Boolean;
@@ -58,8 +59,13 @@ type
 
     function IsFormatSupported(const Format: String): Boolean;
     function ConvertImage(InputFile, OutputDir: String): Boolean;
+    function ConvertStreamToPng(Stream: TMemoryStream; const OutputFile: String): Boolean;
+    function ConvertStreamToBmp(Stream: TMemoryStream): TBitmap;
+    function ConvertStreamToGif(Stream: TMemoryStream; const OutputFile: String): Boolean;
+    function ConvertStreamToFirstFrameBmp(Stream: TMemoryStream): TBitmap;
 
     property PathFound: Boolean read GetPathFound;
+    property MagickPath: String read GetMagickPath;
     property Enabled: Boolean read GetEnabled write SetEnabled; 
     property Mogrify: Boolean read GetMogrify write SetMogrify;
     property SupportedFormats: TStrings read GetSupportedFormats;
@@ -172,6 +178,11 @@ end;
 function TImageMagickManager.GetPathFound: Boolean;
 begin
   Result := FPathFound;
+end;
+
+function TImageMagickManager.GetMagickPath: String;
+begin
+  Result := FMagickPath;
 end;
 
 function TImageMagickManager.GetEnabled: Boolean;
@@ -540,7 +551,7 @@ begin
         CommandLine := CommandLine + ' ' + Param;
       end;
 
-      Logger.Send(Self.ClassName + ': ' + CommandLine);
+      //Logger.Send(Self.ClassName + ': ' + CommandLine);
 
       try
         // Start process and timing
@@ -676,6 +687,323 @@ begin
       IFThen(FMogrify, OutputDir, '-set filename:name "%t"'),
       IFThen(FMogrify, InputFile, OutputFile)
     ]);
+  finally
+    FLock.Release;
+  end;
+end;
+
+function TImageMagickManager.ConvertStreamToBmp(Stream: TMemoryStream): TBitmap;
+var
+  Process: TProcess;
+  OutputData: TMemoryStream;
+  Buffer: array[0..4095] of Byte;
+  BytesRead: Integer;
+  CommandLine: string;
+begin
+  Result := nil;
+  FLock.Acquire;
+  try
+    Process := TProcess.Create(nil);
+    OutputData := TMemoryStream.Create;
+    try
+      if FMagickPath <> '' then
+        Process.Executable := FMagickPath + 'magick'
+      else
+        Process.Executable := 'magick';
+
+      Process.Parameters.Add('-');
+      Process.Parameters.Add('bmp:-');
+      Process.Options := [poUsePipes, poStderrToOutPut, poNoConsole];
+      Process.ShowWindow := swoHIDE;
+
+      CommandLine := Process.Executable + ' - bmp:-';
+      //Logger.Send(Self.ClassName + ': ' + CommandLine);
+
+      try
+        Process.Execute;
+        Stream.Position := 0;
+        Process.Input.Write(Stream.Memory^, Stream.Size);
+        CloseHandle(THandleStream(Process.Input).Handle);
+
+        repeat
+          BytesRead := Process.Output.Read(Buffer, SizeOf(Buffer));
+          if BytesRead > 0 then
+            OutputData.Write(Buffer, BytesRead);
+        until BytesRead <= 0;
+
+        Process.WaitOnExit;
+
+        if (Process.ExitStatus = 0) and (OutputData.Size > 0) then
+        begin
+          Result := TBitmap.Create;
+          try
+            OutputData.Position := 0;
+            Result.LoadFromStream(OutputData);
+          except
+            FreeAndNil(Result);
+          end;
+        end;
+
+        if not Assigned(Result) then
+        begin
+          FLastError := Format(
+            'ImageMagick command failed (Code %d)' + sLineBreak +
+            'Command: %s',
+            [Process.ExitStatus, CommandLine]
+          );
+        end;
+      except
+        on E: Exception do
+        begin
+          FLastError := Format(
+            'ImageMagick execution failed' + sLineBreak +
+            'Command: %s' + sLineBreak +
+            'Exception: %s',
+            [CommandLine, E.Message]
+          );
+        end;
+      end;
+    finally
+      Process.Free;
+      OutputData.Free;
+    end;
+  finally
+    FLock.Release;
+  end;
+end;
+
+function TImageMagickManager.ConvertStreamToPng(Stream: TMemoryStream; const OutputFile: String): Boolean;
+var
+  Process: TProcess;
+  OutputData: TMemoryStream;
+  Buffer: array[0..4095] of Byte;
+  BytesRead: Integer;
+  CommandLine: string;
+begin
+  Result := False;
+  FLock.Acquire;
+  try
+    Process := TProcess.Create(nil);
+    OutputData := TMemoryStream.Create;
+    try
+      if FMagickPath <> '' then
+        Process.Executable := FMagickPath + 'magick'
+      else
+        Process.Executable := 'magick';
+
+      Process.Parameters.Add('-');
+      Process.Parameters.Add('-quality');
+      Process.Parameters.Add('100');
+      Process.Parameters.Add('png:-');
+      Process.Options := [poUsePipes, poStderrToOutPut, poNoConsole];
+      Process.ShowWindow := swoHIDE;
+
+      CommandLine := Process.Executable + ' - -quality 100 png:-';
+      //Logger.Send(Self.ClassName + ': ' + CommandLine);
+
+      try
+        Process.Execute;
+        Stream.Position := 0;
+        Process.Input.Write(Stream.Memory^, Stream.Size);
+        CloseHandle(THandleStream(Process.Input).Handle);
+
+        repeat
+          BytesRead := Process.Output.Read(Buffer, SizeOf(Buffer));
+          if BytesRead > 0 then
+            OutputData.Write(Buffer, BytesRead);
+        until BytesRead <= 0;
+
+        Process.WaitOnExit;
+
+        if (Process.ExitStatus = 0) and (OutputData.Size > 0) then
+        begin
+          OutputData.SaveToFile(OutputFile);
+          Result := True;
+        end;
+
+        if not Result then
+        begin
+          FLastError := Format(
+            'ImageMagick command failed (Code %d)' + sLineBreak +
+            'Command: %s',
+            [Process.ExitStatus, CommandLine]
+          );
+        end;
+      except
+        on E: Exception do
+        begin
+          FLastError := Format(
+            'ImageMagick execution failed' + sLineBreak +
+            'Command: %s' + sLineBreak +
+            'Exception: %s',
+            [CommandLine, E.Message]
+          );
+          Result := False;
+        end;
+      end;
+    finally
+      Process.Free;
+      OutputData.Free;
+    end;
+  finally
+    FLock.Release;
+  end;
+end;
+
+function TImageMagickManager.ConvertStreamToGif(Stream: TMemoryStream; const OutputFile: String): Boolean;
+var
+  Process: TProcess;
+  OutputData: TMemoryStream;
+  Buffer: array[0..4095] of Byte;
+  BytesRead: Integer;
+  CommandLine: string;
+begin
+  Result := False;
+  FLock.Acquire;
+  try
+    Process := TProcess.Create(nil);
+    OutputData := TMemoryStream.Create;
+    try
+      if FMagickPath <> '' then
+        Process.Executable := FMagickPath + 'magick'
+      else
+        Process.Executable := 'magick';
+
+      Process.Parameters.Add('webp:-');
+      Process.Parameters.Add('-coalesce');
+      Process.Parameters.Add('-layers');
+      Process.Parameters.Add('Optimize');
+      Process.Parameters.Add('gif:-');
+      Process.Options := [poUsePipes, poStderrToOutPut, poNoConsole];
+      Process.ShowWindow := swoHIDE;
+
+      CommandLine := Process.Executable + ' webp:- -coalesce -layers Optimize gif:-';
+      Logger.Send(Self.ClassName + ': ' + CommandLine);
+
+      try
+        Process.Execute;
+        Stream.Position := 0;
+        Process.Input.Write(Stream.Memory^, Stream.Size);
+        CloseHandle(THandleStream(Process.Input).Handle);
+
+        repeat
+          BytesRead := Process.Output.Read(Buffer, SizeOf(Buffer));
+          if BytesRead > 0 then
+            OutputData.Write(Buffer, BytesRead);
+        until BytesRead <= 0;
+
+        Process.WaitOnExit;
+
+        if (Process.ExitStatus = 0) and (OutputData.Size > 0) then
+        begin
+          OutputData.SaveToFile(OutputFile);
+          Result := True;
+        end;
+
+        if not Result then
+        begin
+          FLastError := Format(
+            'ImageMagick command failed (Code %d)' + sLineBreak +
+            'Command: %s',
+            [Process.ExitStatus, CommandLine]
+          );
+        end;
+      except
+        on E: Exception do
+        begin
+          FLastError := Format(
+            'ImageMagick execution failed' + sLineBreak +
+            'Command: %s' + sLineBreak +
+            'Exception: %s',
+            [CommandLine, E.Message]
+          );
+          Result := False;
+        end;
+      end;
+    finally
+      Process.Free;
+      OutputData.Free;
+    end;
+  finally
+    FLock.Release;
+  end;
+end;
+
+function TImageMagickManager.ConvertStreamToFirstFrameBmp(Stream: TMemoryStream): TBitmap;
+var
+  Process: TProcess;
+  OutputData: TMemoryStream;
+  Buffer: array[0..4095] of Byte;
+  BytesRead: Integer;
+  CommandLine: string;
+begin
+  Result := nil;
+  FLock.Acquire;
+  try
+    Process := TProcess.Create(nil);
+    OutputData := TMemoryStream.Create;
+    try
+      if FMagickPath <> '' then
+        Process.Executable := FMagickPath + 'magick'
+      else
+        Process.Executable := 'magick';
+
+      Process.Parameters.Add('webp:-[0]');
+      Process.Parameters.Add('bmp:-');
+      Process.Options := [poUsePipes, poStderrToOutPut, poNoConsole];
+      Process.ShowWindow := swoHIDE;
+
+      CommandLine := Process.Executable + ' webp:-[0] bmp:-';
+      Logger.Send(Self.ClassName + ': ' + CommandLine);
+
+      try
+        Process.Execute;
+        Stream.Position := 0;
+        Process.Input.Write(Stream.Memory^, Stream.Size);
+        CloseHandle(THandleStream(Process.Input).Handle);
+
+        repeat
+          BytesRead := Process.Output.Read(Buffer, SizeOf(Buffer));
+          if BytesRead > 0 then
+            OutputData.Write(Buffer, BytesRead);
+        until BytesRead <= 0;
+
+        Process.WaitOnExit;
+
+        if (Process.ExitStatus = 0) and (OutputData.Size > 0) then
+        begin
+          Result := TBitmap.Create;
+          try
+            OutputData.Position := 0;
+            Result.LoadFromStream(OutputData);
+          except
+            FreeAndNil(Result);
+          end;
+        end;
+
+        if not Assigned(Result) then
+        begin
+          FLastError := Format(
+            'ImageMagick command failed (Code %d)' + sLineBreak +
+            'Command: %s',
+            [Process.ExitStatus, CommandLine]
+          );
+        end;
+      except
+        on E: Exception do
+        begin
+          FLastError := Format(
+            'ImageMagick execution failed' + sLineBreak +
+            'Command: %s' + sLineBreak +
+            'Exception: %s',
+            [CommandLine, E.Message]
+          );
+        end;
+      end;
+    finally
+      Process.Free;
+      OutputData.Free;
+    end;
   finally
     FLock.Release;
   end;

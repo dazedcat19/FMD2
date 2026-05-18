@@ -16,8 +16,8 @@ unit uGetMangaInfosThread;
 interface
 
 uses
-  SysUtils, Graphics, Dialogs, uBaseUnit, uData, FMDOptions, BaseThread,
-  ImgInfos, webp, MultiLog, MemBitmap, VirtualTrees;
+  Classes, SysUtils, Graphics, Dialogs, uBaseUnit, uData, FMDOptions, BaseThread,
+  ImgInfos, webp, MultiLog, MemBitmap, VirtualTrees, ImageMagickManager;
 
 type
 
@@ -167,26 +167,66 @@ end;
 
 procedure TGetMangaInfosThread.LoadCover;
 var
-  bmp:TMemBitmap;
+  bmp: TMemBitmap;
+  ext: String;
+  imgBmp: TBitmap;
+  tmpFile: String;
 begin
-  FIsHasMangaCover:=false;
+  FIsHasMangaCover := False;
   with FInfo.HTTP do
-  if GetImageStreamExt(Document)='webp' then
   begin
-    bmp:=nil;
-    bmp:=WebPToMemBitmap(Document);
-    if Assigned(bmp) then
-     try
-       FCover.Bitmap:=bmp.Bitmap;
-     finally
-       FreeAndNil(bmp);
-     end
+    ext := GetImageStreamExt(Document);
+    if ext = 'webp' then
+    begin
+      if IsAnimatedWebP(Document) and TImageMagickManager.Instance.PathFound then
+      begin
+        imgBmp := TImageMagickManager.Instance.ConvertStreamToFirstFrameBmp(Document);
+        if Assigned(imgBmp) then
+        begin
+          FCover.Bitmap := imgBmp;
+          FIsHasMangaCover := True;
+          FreeAndNil(imgBmp);
+        end;
+      end
+      else
+      begin
+        bmp := nil;
+        bmp := WebPToMemBitmap(Document);
+        if Assigned(bmp) then
+          try
+            FCover.Bitmap := bmp.Bitmap;
+            FIsHasMangaCover := True;
+          finally
+            FreeAndNil(bmp);
+          end;
+      end;
+    end
+    else if (ext = '') or (ext = 'avif') or (ext = 'jxl') or (ext = 'heic') or (ext = 'heif') then
+    begin
+      if TImageMagickManager.Instance.PathFound then
+      begin
+        imgBmp := nil;
+        try
+          imgBmp := TImageMagickManager.Instance.ConvertStreamToBmp(Document);
+          if Assigned(imgBmp) then
+          begin
+            FCover.Bitmap := imgBmp;
+            FIsHasMangaCover := True;
+          end;
+        finally
+          FreeAndNil(imgBmp);
+        end;
+      end;
+    end
     else
-      Exit;
-  end
-  else
-    FCover.LoadFromStream(FInfo.HTTP.Document);
-  FIsHasMangaCover:=True;
+    begin
+      try
+        FCover.LoadFromStream(Document);
+        FIsHasMangaCover := True;
+      except
+      end;
+    end;
+  end;
 end;
 
 procedure TGetMangaInfosThread.MainThreadShowInfos;
