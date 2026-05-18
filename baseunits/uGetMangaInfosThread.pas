@@ -170,6 +170,7 @@ var
   bmp: TMemBitmap;
   ext: String;
   imgBmp: TBitmap;
+  tmpFile: String;
 begin
   FIsHasMangaCover := False;
   with FInfo.HTTP do
@@ -177,15 +178,28 @@ begin
     ext := GetImageStreamExt(Document);
     if ext = 'webp' then
     begin
-      bmp := nil;
-      bmp := WebPToMemBitmap(Document);
-      if Assigned(bmp) then
-        try
-          FCover.Bitmap := bmp.Bitmap;
+      if IsAnimatedWebP(Document) and TImageMagickManager.Instance.PathFound then
+      begin
+        imgBmp := TImageMagickManager.Instance.ConvertStreamToFirstFrameBmp(Document);
+        if Assigned(imgBmp) then
+        begin
+          FCover.Bitmap := imgBmp;
           FIsHasMangaCover := True;
-        finally
-          FreeAndNil(bmp);
+          FreeAndNil(imgBmp);
         end;
+      end
+      else
+      begin
+        bmp := nil;
+        bmp := WebPToMemBitmap(Document);
+        if Assigned(bmp) then
+          try
+            FCover.Bitmap := bmp.Bitmap;
+            FIsHasMangaCover := True;
+          finally
+            FreeAndNil(bmp);
+          end;
+      end;
     end
     else if (ext = '') or (ext = 'avif') or (ext = 'jxl') or (ext = 'heic') or (ext = 'heif') then
     begin
