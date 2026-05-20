@@ -4482,7 +4482,7 @@ object MainForm: TMainForm
                 Width = 74
                 Caption = 'Save Image as'
               end
-              object cbImageMagickSaveAs: TComboBox
+               object cbImageMagickSaveAs: TComboBox
                 AnchorSideLeft.Control = lbImageMagickSaveAs
                 AnchorSideLeft.Side = asrBottom
                 AnchorSideTop.Control = lbImageMagickSaveAs
@@ -4495,6 +4495,12 @@ object MainForm: TMainForm
                 ItemIndex = 0
                 Items.Strings = (
                   'JPEG'
+                  'PNG'
+                  'JXL'
+                  'GIF'
+                  'BMP'
+                  'WEBP'
+                  'TIF'
                 )
                 TabOrder = 1
                 Text = 'JPEG'

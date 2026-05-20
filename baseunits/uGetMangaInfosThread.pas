@@ -181,15 +181,12 @@ begin
   with FInfo.HTTP do
   begin
     ext := GetImageStreamExt(Document);
-    Logger.Send('GetImageStreamExt: ' + ext);
     
     if (ext = '') and TImageMagickManager.Instance.PathFound then
     begin
-      Logger.Send('Ext is blank, using Identify as fallback');
       Document.Position := 0;
       imgMagick := TImageMagickManager.Instance;
       identifyResult := imgMagick.Identify(Document);
-      Logger.Send('Identify result: ' + identifyResult);
       if identifyResult <> '' then
       begin
         fmtPos := Pos('Format: ', identifyResult);
@@ -200,7 +197,6 @@ begin
           if commaPos > 0 then
             ext := Copy(ext, 1, commaPos - 1);
           ext := LowerCase(Trim(ext));
-          Logger.Send('Identified ext: ' + ext);
         end;
       end;
     end;
@@ -223,38 +219,28 @@ begin
     else if (ext = 'tif') or (ext = 'tiff') or (ext = 'webp') or (ext = 'avif') then
     begin
       Document.Position := 0;
-      Logger.Send(ext + ': Starting conversion. Size=' + IntToStr(Document.Size));
       imgMagick := TImageMagickManager.Instance;
       if imgMagick.PathFound then
       begin
-        Logger.Send(ext + ': Calling ConvertStream to GIF...');
         Output := imgMagick.ConvertStream(Document, 'gif', True, ext);
-        Logger.Send(ext + ': ConvertStream returned. Assigned=' + BoolToStr(Assigned(Output), True));
         if Assigned(Output) and (Output.Size > 0) then
         begin
           Output.Position := 0;
-          Logger.Send(ext + ': Loading GIF from stream...');
           animGif := TBGRAAnimatedGif.Create;
           try
             animGif.LoadFromStream(Output);
             FCover.Graphic := animGif;
             FIsHasMangaCover := True;
-            Logger.Send(ext + ': Cover loaded successfully');
           except
             on E: Exception do
             begin
-              Logger.Send(ext + ': LoadFromStream failed: ' + E.Message);
               animGif.Free;
               raise;
             end;
           end;
-        end
-        else
-          Logger.Send(ext + ': ConvertStream failed: ' + imgMagick.LastError);
+        end;
         Output.Free;
-      end
-      else
-        Logger.Send(ext + ': ImageMagick not available');
+      end;
     end
     else
     begin
