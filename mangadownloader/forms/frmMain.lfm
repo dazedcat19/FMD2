@@ -4459,7 +4459,6 @@ object MainForm: TMainForm
               ChildSizing.VerticalSpacing = 6
               ClientHeight = 102
               ClientWidth = 975
-              Enabled = False
               ParentBackground = False
               TabOrder = 5
               object ckImageMagick: TCheckBox
@@ -4470,7 +4469,6 @@ object MainForm: TMainForm
                 Top = 4
                 Width = 191
                 Caption = 'Enable ImageMagick Conversion'
-                Enabled = False
                 TabOrder = 0
                 OnChange = ckImageMagickChange
               end
@@ -4493,7 +4491,6 @@ object MainForm: TMainForm
                 Height = 23
                 Top = 25
                 Width = 100
-                Enabled = False
                 ItemHeight = 15
                 ItemIndex = 0
                 Items.Strings = (
@@ -4522,7 +4519,6 @@ object MainForm: TMainForm
                 Height = 23
                 Top = 50
                 Width = 100
-                Enabled = False
                 ItemHeight = 15
                 ItemIndex = 0
                 Items.Strings = (
@@ -4551,7 +4547,6 @@ object MainForm: TMainForm
                 Height = 23
                 Top = 75
                 Width = 47
-                Enabled = False
                 MaxValue = 100
                 MinValue = 1
                 TabOrder = 3

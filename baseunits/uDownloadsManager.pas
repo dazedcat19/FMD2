@@ -1306,20 +1306,10 @@ begin
         if CheckForFinish then
         begin
           Container.DownloadInfo.Progress := '';
-          Container.Status := STATUS_CONVERT;
-          if not Convert then
+          Container.Status := STATUS_COMPRESS;
+          if not Compress then
           begin
             Container.Status := STATUS_FAILED;
-          end;
-
-          if Container.Status <> STATUS_FAILED then
-          begin
-            Container.DownloadInfo.Progress := '';
-            Container.Status := STATUS_COMPRESS;
-            if not Compress then
-            begin
-              Container.Status := STATUS_FAILED;
-            end;
           end;
         end
         else

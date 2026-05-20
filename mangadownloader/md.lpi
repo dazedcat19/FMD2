@@ -306,7 +306,7 @@
         <Mode0 Name="default"/>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="15">
+    <RequiredPackages Count="16">
       <Item1>
         <PackageName Value="RunTimeTypeInfoControls"/>
       </Item1>
@@ -353,6 +353,9 @@
       <Item15>
         <PackageName Value="metadarkstyledsgn"/>
       </Item15>
+      <Item16>
+        <PackageName Value="BGRAControls"/>
+      </Item16>
     </RequiredPackages>
     <Units Count="30">
       <Unit0>

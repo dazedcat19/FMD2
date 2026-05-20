@@ -16,8 +16,9 @@ unit uGetMangaInfosThread;
 interface
 
 uses
-  Classes, SysUtils, Graphics, Dialogs, uBaseUnit, uData, FMDOptions, BaseThread,
-  ImgInfos, webp, MultiLog, MemBitmap, VirtualTrees, ImageMagickManager;
+  SysUtils, Graphics, Dialogs, Classes, Windows, uBaseUnit, uData, FMDOptions, BaseThread,
+  ImgInfos, webp, MultiLog, MemBitmap, VirtualTrees, BGRAAnimatedGif,
+  BGRABitmap, BGRABitmapTypes, ImageMagickManager;
 
 type
 
@@ -169,61 +170,100 @@ procedure TGetMangaInfosThread.LoadCover;
 var
   bmp: TMemBitmap;
   ext: String;
-  imgBmp: TBitmap;
-  tmpFile: String;
+  animGif: TBGRAAnimatedGif;
+  tempFile: String;
+  imgMagick: TImageMagickManager;
+  Output: TMemoryStream;
+  identifyResult: String;
+  fmtPos, commaPos: Integer;
 begin
   FIsHasMangaCover := False;
   with FInfo.HTTP do
   begin
     ext := GetImageStreamExt(Document);
-    if ext = 'webp' then
+    Logger.Send('GetImageStreamExt: ' + ext);
+    
+    if (ext = '') and TImageMagickManager.Instance.PathFound then
     begin
-      if IsAnimatedWebP(Document) and TImageMagickManager.Instance.PathFound then
+      Logger.Send('Ext is blank, using Identify as fallback');
+      Document.Position := 0;
+      imgMagick := TImageMagickManager.Instance;
+      identifyResult := imgMagick.Identify(Document);
+      Logger.Send('Identify result: ' + identifyResult);
+      if identifyResult <> '' then
       begin
-        imgBmp := TImageMagickManager.Instance.ConvertStreamToFirstFrameBmp(Document);
-        if Assigned(imgBmp) then
+        fmtPos := Pos('Format: ', identifyResult);
+        if fmtPos > 0 then
         begin
-          FCover.Bitmap := imgBmp;
-          FIsHasMangaCover := True;
-          FreeAndNil(imgBmp);
+          ext := Copy(identifyResult, fmtPos + Length('Format: '), Length(identifyResult));
+          commaPos := Pos(',', ext);
+          if commaPos > 0 then
+            ext := Copy(ext, 1, commaPos - 1);
+          ext := LowerCase(Trim(ext));
+          Logger.Send('Identified ext: ' + ext);
         end;
-      end
-      else
-      begin
-        bmp := nil;
-        bmp := WebPToMemBitmap(Document);
-        if Assigned(bmp) then
-          try
-            FCover.Bitmap := bmp.Bitmap;
-            FIsHasMangaCover := True;
-          finally
-            FreeAndNil(bmp);
-          end;
+      end;
+    end;
+    
+    if (ext = 'gif') or (ext = 'png') then
+    begin
+      Document.Position := 0;
+      animGif := TBGRAAnimatedGif.Create;
+      try
+        animGif.LoadFromStream(Document);
+        FCover.Graphic := animGif;
+        FIsHasMangaCover := True;
+      except
+        animGif.Free;
+        Document.Position := 0;
+        FCover.LoadFromStream(Document);
+        FIsHasMangaCover := True;
       end;
     end
-    else if (ext = '') or (ext = 'avif') or (ext = 'jxl') or (ext = 'heic') or (ext = 'heif') then
+    else if (ext = 'tif') or (ext = 'tiff') or (ext = 'webp') or (ext = 'avif') then
     begin
-      if TImageMagickManager.Instance.PathFound then
+      Document.Position := 0;
+      Logger.Send(ext + ': Starting conversion. Size=' + IntToStr(Document.Size));
+      imgMagick := TImageMagickManager.Instance;
+      if imgMagick.PathFound then
       begin
-        imgBmp := nil;
-        try
-          imgBmp := TImageMagickManager.Instance.ConvertStreamToBmp(Document);
-          if Assigned(imgBmp) then
-          begin
-            FCover.Bitmap := imgBmp;
+        Logger.Send(ext + ': Calling ConvertStream to GIF...');
+        Output := imgMagick.ConvertStream(Document, 'gif', True, ext);
+        Logger.Send(ext + ': ConvertStream returned. Assigned=' + BoolToStr(Assigned(Output), True));
+        if Assigned(Output) and (Output.Size > 0) then
+        begin
+          Output.Position := 0;
+          Logger.Send(ext + ': Loading GIF from stream...');
+          animGif := TBGRAAnimatedGif.Create;
+          try
+            animGif.LoadFromStream(Output);
+            FCover.Graphic := animGif;
             FIsHasMangaCover := True;
+            Logger.Send(ext + ': Cover loaded successfully');
+          except
+            on E: Exception do
+            begin
+              Logger.Send(ext + ': LoadFromStream failed: ' + E.Message);
+              animGif.Free;
+              raise;
+            end;
           end;
-        finally
-          FreeAndNil(imgBmp);
-        end;
-      end;
+        end
+        else
+          Logger.Send(ext + ': ConvertStream failed: ' + imgMagick.LastError);
+        Output.Free;
+      end
+      else
+        Logger.Send(ext + ': ImageMagick not available');
     end
     else
     begin
       try
+        Document.Position := 0;
         FCover.LoadFromStream(Document);
         FIsHasMangaCover := True;
       except
+        
       end;
     end;
   end;

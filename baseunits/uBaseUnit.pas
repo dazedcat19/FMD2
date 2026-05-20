@@ -2416,8 +2416,10 @@ end;
 
 function SaveImageStreamToFile(Stream: TMemoryStream; Path, FileName: String; Age: LongInt; const ContentType: String = ''): String;
 var
-  FilePath, PathDirectory, FileExt: String;
+  FilePath, PathDirectory, FileExt, ConvertedExt: String;
   FileStream: TFileStream;
+  ConvertedStream: TMemoryStream;
+  imgMagick: TImageMagickManager;
 begin
   Result := '';
 
@@ -2441,7 +2443,15 @@ begin
       FileExt := ExtFromContentType(ContentType);
     end;
 
-    if not TImageMagickManager.Instance.Enabled then
+    ConvertedExt := '';
+    if TImageMagickManager.Instance.Enabled then
+    begin
+      ConvertedExt := LowerCase(TImageMagickManager.Instance.SaveAs);
+      if (FileExt <> '') and (LowerCase(FileExt) = ConvertedExt) then
+        ConvertedExt := '';
+    end;
+
+    if ConvertedExt = '' then
     begin
       if FileExt = 'png' then
       begin
@@ -2464,6 +2474,22 @@ begin
              begin
                FileExt := 'jpg';
              end;
+        end;
+      end;
+    end
+    else
+    begin
+      imgMagick := TImageMagickManager.Instance;
+      if imgMagick.PathFound then
+      begin
+        ConvertedStream := imgMagick.ConvertStream(Stream, ConvertedExt, False, FileExt);
+        if Assigned(ConvertedStream) then
+        begin
+          Stream.Clear;
+          Stream.CopyFrom(ConvertedStream, ConvertedStream.Size);
+          Stream.Position := 0;
+          FileExt := ConvertedExt;
+          ConvertedStream.Free;
         end;
       end;
     end;
@@ -2556,6 +2582,15 @@ begin
     begin
       Exit(s);
     end;
+  end;
+
+  if TImageMagickManager.Instance.Enabled then
+  begin
+    s := AFileName + '.jxl'; if FileExists(s) then Exit(s);
+    s := AFileName + '.avif'; if FileExists(s) then Exit(s);
+    s := AFileName + '.webp'; if FileExists(s) then Exit(s);
+    s := AFileName + '.tiff'; if FileExists(s) then Exit(s);
+    s := AFileName + '.tif'; if FileExists(s) then Exit(s);
   end;
 
   if TImageMagickManager.Instance.Enabled then

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectOptions>
+    <Version Value="12"/>
+    <PathDelim Value="\"/>
+    <Target>
+      <Filename Value="fmd_magic"/>
+      <OutputDir Value="bin\x86_64-win64"/>
+    </Target>
+    <CompilerOptions>
+      <Version Value="11"/>
+      <PathDelim Value="\"/>
+      <TargetFilename Value="bin\x86_64-win64\fmd_magic.exe"/>
+      <SearchPaths>
+        <UnitOutputDirectory Value="lib\x86_64-win64"/>
+        <UnitPaths>
+          <UnitPath Value="baseunits"/>
+        </UnitPaths>
+      </SearchPaths>
+      <Parsing>
+        <SyntaxOptions>
+          <SyntaxMode Value="ObjFPC"/>
+        </SyntaxOptions>
+      </Parsing>
+      <Linking>
+        <Options>
+          <Win32>
+            <GraphicApplication Value="False"/>
+          </Win32>
+        </Options>
+      </Linking>
+    </CompilerOptions>
+    <Files Count="1">
+      <Item1>
+        <Filename Value="fmd_magic.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="fmd_magic"/>
+      </Item1>
+    </Files>
+    <MainUnit Value="0"/>
+  </ProjectOptions>
+</CONFIG>

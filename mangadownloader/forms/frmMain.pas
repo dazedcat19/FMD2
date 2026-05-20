@@ -5827,7 +5827,12 @@ begin
     // imagemagick
     if TImageMagickManager.Instance.PathFound then
     begin
+      gbImageMagick.Enabled := True;
       ckImageMagick.Checked := ReadBool('imagemagick', 'ImageMagickEnabled', False);
+    end
+    else
+    begin
+      gbImageMagick.Enabled := False;
     end;
 
     cbImageMagickSaveAs.ItemIndex := cbImageMagickSaveAs.Items.IndexOf(ReadString('imagemagick', 'ImageMagickSaveAs', 'JPEG'));
