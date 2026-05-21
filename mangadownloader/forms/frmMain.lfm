@@ -4500,7 +4500,7 @@ object MainForm: TMainForm
                   'GIF'
                   'BMP'
                   'WEBP'
-                  'TIF'
+                  'AVIF'
                 )
                 TabOrder = 1
                 Text = 'JPEG'

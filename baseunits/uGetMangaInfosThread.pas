@@ -216,7 +216,7 @@ begin
         FIsHasMangaCover := True;
       end;
     end
-    else if (ext = 'tif') or (ext = 'tiff') or (ext = 'webp') or (ext = 'avif') then
+    else if (ext = 'tif') or (ext = 'tiff') or (ext = 'webp') or (ext = 'avif') or (ext = 'jxl') then
     begin
       Document.Position := 0;
       imgMagick := TImageMagickManager.Instance;

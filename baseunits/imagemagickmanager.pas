@@ -683,12 +683,7 @@ var
 begin
   Result := nil;
   IMLog('ConvertStream: Start');
-  if not FLock.TryEnter then
-  begin
-    IMLog('ConvertStream: Lock timeout');
-    FLastError := 'Lock timeout';
-    Exit;
-  end;
+  FLock.Acquire;
   IMLog('ConvertStream: Lock acquired');
   try
     FLastError := '';
