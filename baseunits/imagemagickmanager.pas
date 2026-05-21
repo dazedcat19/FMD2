@@ -510,10 +510,14 @@ var
   BlobLength: Size_t;
   FormatUpper: AnsiString;
   CompressionInt: Integer;
+  SavedCW: Word;
 begin
-  IMLog('WandConvertBlob: Start');
-  Result := nil;
-  if not Assigned(pNewMagickWand) then begin IMLog('WandConvertBlob: pNewMagickWand nil'); Exit; end;
+  SavedCW := Get8087CW;
+  Set8087CW($133F);
+  try
+    IMLog('WandConvertBlob: Start');
+    Result := nil;
+    if not Assigned(pNewMagickWand) then begin IMLog('WandConvertBlob: pNewMagickWand nil'); Exit; end;
 
   IMLog('WandConvertBlob: Creating Wand');
   Wand := pNewMagickWand();
@@ -628,11 +632,23 @@ begin
     end;
 
     if Assigned(BlobData) and Assigned(pMagickRelinquishMemory) then
+    try
       pMagickRelinquishMemory(BlobData);
+    except
+      IMLog('WandConvertBlob: Exception during RelinquishMemory (ignored)');
+    end;
   finally
-    if Assigned(Wand) then
-      pDestroyMagickWand(Wand);
+    try
+      if Assigned(Wand) then
+        pDestroyMagickWand(Wand);
+    except
+      IMLog('WandConvertBlob: Exception during Wand cleanup (ignored)');
+    end;
     IMLog('WandConvertBlob: Finished');
+    Set8087CW(SavedCW);
+  end;
+  finally
+    Set8087CW(SavedCW);
   end;
 end;
 
@@ -700,8 +716,16 @@ begin
       except
         on E: Exception do
         begin
-          FLastError := 'WandConvertBlob exception: ' + E.Message;
-          IMLog('ConvertStream: ' + FLastError);
+          if not Assigned(Result) then
+          begin
+            FLastError := 'WandConvertBlob exception: ' + E.Message;
+            IMLog('ConvertStream: ' + FLastError);
+          end
+          else
+          begin
+            IMLog('ConvertStream: WandConvertBlob raised exception but Result is valid: ' + E.Message);
+            FLastError := '';
+          end;
         end;
       end;
     finally

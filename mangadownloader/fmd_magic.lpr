@@ -4,7 +4,10 @@ program fmd_magic;
 {$APPTYPE CONSOLE}
 
 uses
-  Classes, SysUtils, ImageMagickManager;
+  FpuMaskUnit, Classes, SysUtils, Math, ImageMagickManager;
+
+var
+  SavedExceptionMask: TFPUExceptionMask;
 
 procedure ListFormats;
 const
@@ -29,12 +32,11 @@ var
   InputFile, OutputFile, InputExt, OutputFormat: String;
   Stream, Output: TMemoryStream;
   ImgMagick: TImageMagickManager;
-  Saved8087CW: Word;
 begin
-  Saved8087CW := Get8087CW;
-  Set8087CW($133F);
+  SavedExceptionMask := GetExceptionMask;
+  SetExceptionMask([exInvalidOp, exDenormalized, exZeroDivide, exOverflow, exUnderflow, exPrecision]);
   try
-    if ParamCount < 1 then
+  if ParamCount < 1 then
     begin
       WriteLn('Usage: fmd_magic <output_format> <input_file> <output_file>');
       WriteLn('       fmd_magic -identify <input_file>');
@@ -116,16 +118,18 @@ begin
           WriteLn('Calling ConvertStream...');
           Output := ImgMagick.ConvertStream(Stream, OutputFormat, True, InputExt);
 
-          WriteLn;
-          if Assigned(Output) and (Output.Size > 0) then
-          begin
-            Output.SaveToFile(OutputFile);
-            WriteLn('SUCCESS! Output: ' + OutputFile);
-            WriteLn('Output size: ' + IntToStr(Output.Size) + ' bytes');
-            Output.Free;
-          end
-          else
-            WriteLn('FAILED: ' + ImgMagick.LastError);
+        WriteLn;
+        if Assigned(Output) and (Output.Size > 0) then
+        begin
+          Output.SaveToFile(OutputFile);
+          WriteLn('SUCCESS! Output: ' + OutputFile);
+          WriteLn('Output size: ' + IntToStr(Output.Size) + ' bytes');
+          Output.Free;
+        end
+        else if ImgMagick.LastError <> '' then
+          WriteLn('FAILED: ' + ImgMagick.LastError)
+        else
+          WriteLn('FAILED: Conversion returned empty result');
         finally
           Stream.Free;
         end;
@@ -134,6 +138,6 @@ begin
       TImageMagickManager.Finalize;
     end;
   finally
-    Set8087CW(Saved8087CW);
+    SetExceptionMask(SavedExceptionMask);
   end;
 end.
