@@ -2492,8 +2492,8 @@ begin
     AddToAboutStatus('OpenSSL Version', s);
   end;
 
-  if WebPLibHandle = 0 then InitWebPModule;
-  if WebPLibHandle <> 0 then try AddToAboutStatus('WebP Version', WebPGetVersion); except end;
+  if not IsWebPModuleLoaded then InitWebPModule;
+  if IsWebPModuleLoaded then try AddToAboutStatus('WebP Version', WebPGetVersion); except end;
   if BrotliLibHandle = 0 then InitBrotliModule;
   if BrotliLibHandle <> 0 then try AddToAboutStatus('Brotli Version', BrotliGetVersion); except end;
   if ZstdLibHandle = 0 then InitZstdModule;

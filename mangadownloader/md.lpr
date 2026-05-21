@@ -254,12 +254,6 @@ begin
   end;
   {$endif}
 
-  //webp
-  if FileExists(FMD_DIRECTORY + DLLWebPName) then
-  begin
-    DLLWebPName := FMD_DIRECTORY + DLLWebPName;
-  end;
-
   Case iDarkMode of
      0:  PreferredAppMode := pamAllowDark;
      1:  PreferredAppMode := pamForceDark;
