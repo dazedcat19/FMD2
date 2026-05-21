@@ -1,6 +1,7 @@
 program fmd_magic;
 
 {$mode objfpc}{$H+}
+{$APPTYPE CONSOLE}
 
 uses
   Classes, SysUtils, ImageMagickManager;
@@ -28,104 +29,111 @@ var
   InputFile, OutputFile, InputExt, OutputFormat: String;
   Stream, Output: TMemoryStream;
   ImgMagick: TImageMagickManager;
+  Saved8087CW: Word;
 begin
-  if ParamCount < 1 then
-  begin
-    WriteLn('Usage: fmd_magic <output_format> <input_file> <output_file>');
-    WriteLn('       fmd_magic -identify <input_file>');
-    WriteLn('       fmd_magic --support');
-    WriteLn('Examples:');
-    WriteLn('  fmd_magic png cover.tif cover.png');
-    WriteLn('  fmd_magic gif animated.webp animated.gif');
-    WriteLn('  fmd_magic -identify cover.tif');
-    WriteLn('  fmd_magic --support');
-    Exit;
-  end;
-
-  TImageMagickManager.Initialize;
+  Saved8087CW := Get8087CW;
+  Set8087CW($133F);
   try
-    ImgMagick := TImageMagickManager.Instance;
-    if not ImgMagick.PathFound then
+    if ParamCount < 1 then
     begin
-      WriteLn('ERROR: ImageMagick not found!');
+      WriteLn('Usage: fmd_magic <output_format> <input_file> <output_file>');
+      WriteLn('       fmd_magic -identify <input_file>');
+      WriteLn('       fmd_magic --support');
+      WriteLn('Examples:');
+      WriteLn('  fmd_magic png cover.tif cover.png');
+      WriteLn('  fmd_magic gif animated.webp animated.gif');
+      WriteLn('  fmd_magic -identify cover.tif');
+      WriteLn('  fmd_magic --support');
       Exit;
     end;
 
-    if ParamStr(1) = '--support' then
-    begin
-      ListFormats;
-    end
-    else if ParamStr(1) = '-identify' then
-    begin
-      if ParamCount < 2 then
+    TImageMagickManager.Initialize;
+    try
+      ImgMagick := TImageMagickManager.Instance;
+      if not ImgMagick.PathFound then
       begin
-        WriteLn('ERROR: Missing input file for -identify');
-        Exit;
-      end;
-      InputFile := ExpandFileName(ParamStr(2));
-      if not FileExists(InputFile) then
-      begin
-        WriteLn('ERROR: Input file not found: ' + InputFile);
+        WriteLn('ERROR: ImageMagick not found!');
         Exit;
       end;
 
-      Stream := TMemoryStream.Create;
-      try
-        Stream.LoadFromFile(InputFile);
-        WriteLn(ImgMagick.Identify(Stream, LowerCase(ExtractFileExt(InputFile))));
-      finally
-        Stream.Free;
-      end;
-    end
-    else
-    begin
-      if ParamCount < 3 then
+      if ParamStr(1) = '--support' then
       begin
-        WriteLn('ERROR: Missing parameters. Usage: fmd_magic <output_format> <input_file> <output_file>');
-        Exit;
-      end;
-
-      OutputFormat := ParamStr(1);
-      InputFile := ExpandFileName(ParamStr(2));
-      OutputFile := ExpandFileName(ParamStr(3));
-      InputExt := LowerCase(ExtractFileExt(InputFile));
-      if InputExt <> '' then Delete(InputExt, 1, 1);
-
-      WriteLn('Input: ' + InputFile);
-      WriteLn('Output: ' + OutputFile);
-      WriteLn('Format: ' + OutputFormat);
-      WriteLn;
-
-      if not FileExists(InputFile) then
+        ListFormats;
+      end
+      else if ParamStr(1) = '-identify' then
       begin
-        WriteLn('ERROR: Input file not found: ' + InputFile);
-        Exit;
-      end;
-
-      Stream := TMemoryStream.Create;
-      try
-        Stream.LoadFromFile(InputFile);
-        WriteLn('Loaded stream, size=' + IntToStr(Stream.Size));
-        WriteLn;
-
-        WriteLn('Calling ConvertStream...');
-        Output := ImgMagick.ConvertStream(Stream, OutputFormat, True, InputExt);
-
-        WriteLn;
-        if Assigned(Output) and (Output.Size > 0) then
+        if ParamCount < 2 then
         begin
-          Output.SaveToFile(OutputFile);
-          WriteLn('SUCCESS! Output: ' + OutputFile);
-          WriteLn('Output size: ' + IntToStr(Output.Size) + ' bytes');
-          Output.Free;
-        end
-        else
-          WriteLn('FAILED: ' + ImgMagick.LastError);
-      finally
-        Stream.Free;
+          WriteLn('ERROR: Missing input file for -identify');
+          Exit;
+        end;
+        InputFile := ExpandFileName(ParamStr(2));
+        if not FileExists(InputFile) then
+        begin
+          WriteLn('ERROR: Input file not found: ' + InputFile);
+          Exit;
+        end;
+
+        Stream := TMemoryStream.Create;
+        try
+          Stream.LoadFromFile(InputFile);
+          WriteLn(ImgMagick.Identify(Stream, LowerCase(ExtractFileExt(InputFile))));
+        finally
+          Stream.Free;
+        end;
+      end
+      else
+      begin
+        if ParamCount < 3 then
+        begin
+          WriteLn('ERROR: Missing parameters. Usage: fmd_magic <output_format> <input_file> <output_file>');
+          Exit;
+        end;
+
+        OutputFormat := ParamStr(1);
+        InputFile := ExpandFileName(ParamStr(2));
+        OutputFile := ExpandFileName(ParamStr(3));
+        InputExt := LowerCase(ExtractFileExt(InputFile));
+        if InputExt <> '' then Delete(InputExt, 1, 1);
+
+        WriteLn('Input: ' + InputFile);
+        WriteLn('Output: ' + OutputFile);
+        WriteLn('Format: ' + OutputFormat);
+        WriteLn;
+
+        if not FileExists(InputFile) then
+        begin
+          WriteLn('ERROR: Input file not found: ' + InputFile);
+          Exit;
+        end;
+
+        Stream := TMemoryStream.Create;
+        try
+          Stream.LoadFromFile(InputFile);
+          WriteLn('Loaded stream, size=' + IntToStr(Stream.Size));
+          WriteLn;
+
+          WriteLn('Calling ConvertStream...');
+          Output := ImgMagick.ConvertStream(Stream, OutputFormat, True, InputExt);
+
+          WriteLn;
+          if Assigned(Output) and (Output.Size > 0) then
+          begin
+            Output.SaveToFile(OutputFile);
+            WriteLn('SUCCESS! Output: ' + OutputFile);
+            WriteLn('Output size: ' + IntToStr(Output.Size) + ' bytes');
+            Output.Free;
+          end
+          else
+            WriteLn('FAILED: ' + ImgMagick.LastError);
+        finally
+          Stream.Free;
+        end;
       end;
+    finally
+      TImageMagickManager.Finalize;
     end;
   finally
-    TImageMagickManager.Finalize;
+    Set8087CW(Saved8087CW);
   end;
 end.
