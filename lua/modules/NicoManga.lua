@@ -12,13 +12,14 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.SortedList               = true
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local DirectoryPagination = '/manga-list.html?s=name&st=ASC&p='
+local DirectoryPagination = '/manga-list.html?pr=new&s=post&st=DESC&p='
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -30,7 +31,7 @@ function GetDirectoryPageNumber()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//div[@class="custom-pagination"]/a[last()-1]')) or 1
+	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//div[@class="custom-pagination"]/a[last()-2]')) or 1
 
 	return no_error
 end
@@ -55,28 +56,22 @@ function GetInfo()
 	local x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Title     = x.XPathString('//h1')
 	MANGAINFO.AltTitles = x.XPathString('//div[./div="Other names"]/div[2]')
-	MANGAINFO.CoverLink = x.XPathString('//img[@class="manga-cover-image"]/@data-original')
+	MANGAINFO.CoverLink = x.XPathString('//img[contains(@class, "manga-cover-image")]/@src')
 	MANGAINFO.Authors   = x.XPathStringAll('//div[./div="Author(s)"]//a')
 	MANGAINFO.Genres    = x.XPathStringAll('//div[./div="Genre(s)"]//a')
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[./div="Status"]//a'), 'On going', 'Completed')
 	MANGAINFO.Summary   = x.XPathString('//div[@class="description-text-content"]')
 
-	HTTP.Reset()
-	HTTP.Headers.Values['Referer'] = MODULE.RootURL
-
-	if not HTTP.GET(MODULE.RootURL .. '/app/manga/controllers/cont.Listchapter.php?slug=' .. URL:match('-(.-).html')) then return net_problem end
-
-	local x = CreateTXQuery(HTTP.Document)
-	for v in x.XPath('//a').Get() do
+	for v in x.XPath('//div[@id="chapter-grid"]/a').Get() do
 		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'):gsub('.html', ''))
-		MANGAINFO.ChapterNames.Add(x.XPathString('li/div[1]', v))
+		MANGAINFO.ChapterNames.Add(x.XPathString('.//div[@class="chapter-name-grid"]', v))
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	local u = MaybeFillHost(MODULE.RootURL, URL) .. '.html'
 
