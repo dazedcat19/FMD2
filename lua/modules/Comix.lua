@@ -46,113 +46,32 @@ local crypto = require 'fmd.crypto'
 -- Helper Functions
 ----------------------------------------------------------------------------------------------------
 
-local function GetNodejsScript(fetch_code, arg)
+local function GetNodejsScript(interceptor)
 	return [[
-	const resultJSON = await page.evaluate(async (arg) => {
-		function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+	const resultJSON = await page.evaluate(async () => {
+		return new Promise((resolve) => {
+			const originalParse = JSON.parse;
+			let submitted = false;
+			
+			const submit = (data) => {
+				if (submitted) return;
+				submitted = true;
+				resolve(data);
+			};
 
-		var nameRe  = /^vm[A-Za-z]_/;
-		var shortRe = /^[A-Za-z]{1,3}$/;
-		var tokenRe = /^[A-Za-z0-9_-]{40,200}$/;
-
-		function tryProbe(ns) {
-			let sig = null, inst = null;
-			let fnames;
-			try { fnames = Object.keys(ns); } catch(e) { return null; }
-			for (let fname of fnames) {
-				let fn = ns[fname];
-				if (typeof fn !== 'function') continue;
-				if (!sig) {
+			JSON.parse = new Proxy(originalParse, {
+				apply(target, thisArg, args) {
+					const parsed = Reflect.apply(target, thisArg, args);
 					try {
-						let testPath = '/manga/d1w0r/chapters';
-						let out = fn(testPath);
-						if (typeof out === 'string' && out !== testPath && tokenRe.test(out)) sig = fn;
-					} catch(e) {}
+						]] .. interceptor .. [[
+					} catch (e) {}
+					return parsed;
 				}
-				if (!inst) {
-					try {
-						let got = false;
-						let fakeAxios = {
-							interceptors: { request: { use: () => {} }, response: { use: () => { got = true; } } },
-							defaults: { headers: { common: {} }, transformRequest: [], transformResponse: [] }
-						};
-						fn(fakeAxios);
-						if (got) inst = fn;
-					} catch(e) {}
-				}
-				if (sig && inst) return { sig, inst };
-			}
-			return null;
-		}
-
-		let sig = null, inst = null;
-		for (let attempt = 0; attempt < 40; attempt++) {
-			let keys = Object.keys(window);
-
-			for (let topName of keys) {
-				if (!nameRe.test(topName)) continue;
-				let ns = window[topName];
-				if (!ns || typeof ns !== 'object') continue;
-				let hit = tryProbe(ns);
-				if (hit) { sig = hit.sig; inst = hit.inst; break; }
-			}
-
-			if (!sig || !inst) {
-				for (let topName of keys) {
-					if (nameRe.test(topName)) continue;
-					let ns = window[topName];
-					if (!ns || typeof ns !== 'object' || ns === window) continue;
-					let fnames;
-					try { fnames = Object.keys(ns); } catch(e) { continue; }
-					if (fnames.length < 5) continue;
-					let shortAlpha = fnames.filter(f => shortRe.test(f)).length;
-					if (shortAlpha < 3) continue;
-					let hit = tryProbe(ns);
-					if (hit) { sig = hit.sig; inst = hit.inst; break; }
-				}
-			}
-
-			if (sig && inst) break;
-			await sleep(250);
-		}
-		if (!sig || !inst) return { error: 'Could not find signer/installer' };
-		let captured = { res: null };
-		let fakeAxios = {
-			interceptors: {
-				request:  { use: () => {} },
-				response: { use: (fn) => { captured.res = fn; } }
-			},
-			defaults: { headers: { common: {} }, transformRequest: [], transformResponse: [] }
-		};
-		inst(fakeAxios);
-		async function fetchDecrypted(apiPath) {
-			let signablePath = apiPath.split('?')[0].replace('/api/v1', '');
-			let token = sig(signablePath);
-			let sep = apiPath.indexOf('?') === -1 ? '?' : '&';
-			let url = '/api/v1' + apiPath + sep + '_=' + encodeURIComponent(token);
-			let resp = await fetch(url, {
-				headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
 			});
-			let text = await resp.text();
-			let raw;
-			try { raw = JSON.parse(text); } catch(e) { return null; }
 
-			if (raw && typeof raw === 'object' && 'e' in raw && captured.res) {
-				let fakeResp = {
-					data: raw, status: resp.status, statusText: resp.statusText,
-					headers: Object.fromEntries([...resp.headers.entries()]),
-					config: { url: url, method: 'get', baseURL: '/api/v1' },
-					request: {}
-				};
-				let decoded = await captured.res(fakeResp);
-				return { result: decoded ? decoded.data : null };
-			} else if (raw && typeof raw === 'object' && 'result' in raw) {
-				return raw;
-			}
-			return { result: raw };
-		}
-		]] .. fetch_code .. [[
-	}, ']] .. arg .. [[');
+			setTimeout(() => submit({ error: 'Timed out waiting for data' }), 30000);
+		});
+	});
 	console.log(JSON.stringify(resultJSON));
 	]]
 end
@@ -204,33 +123,38 @@ function GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status', info), 'releasing', 'finished', 'on_hiatus', 'discontinued')
 	MANGAINFO.Summary   = x.XPathString('synopsis', info)
 
+	local interceptor = [[
+		const items = window._capturedChapters || [];
+		window._capturedChapters = items;
+
+		if (parsed && parsed.result && Array.isArray(parsed.result.items) && parsed.result.items.length > 0) {
+			if (parsed.result.items[0].mangaId) {
+				const meta = parsed.result.meta || parsed.result.pagination;
+				for (const it of parsed.result.items) items.push(it);
+
+				if (meta && meta.hasNext) {
+					setTimeout(() => {
+						const btn = document.querySelector('.mchap-foot button[aria-label*=Next]');
+						if (btn && !btn.disabled) btn.click();
+					}, 200);
+				} else {
+					submit({ items: items });
+				}
+			}
+		}
+	]]
+	
+	local js_code = GetNodejsScript(interceptor)
+	local output = require 'utils.nodejs'.run_html_load_with_js(MODULE.RootURL .. URL, js_code)
+	x.ParseHTML(output)
+
 	local deduplicate  = MODULE.GetOption('deduplicatechapters')
 	local optgroup     = MODULE.GetOption('showscangroup')
 	local chapter_map  = {}
 	local chapter_list = {}
 	local has_integer  = {}
 
-	local fetch_code = [[
-		let allItems = [];
-		let pageNum = 1;
-		let lastPage = 1;
-		while (pageNum <= lastPage) {
-			let path = '/manga/' + arg + '/chapters?order[number]=asc&limit=100&page=' + pageNum;
-			let data = await fetchDecrypted(path);
-			let res = data ? data.result : null;
-			if (!res || !res.items) break;
-			allItems.push(...res.items);
-			lastPage = res.meta ? res.meta.lastPage : 1;
-			pageNum++;
-		}
-		return { items: allItems };
-	]]
-	
-	local js_code = GetNodejsScript(fetch_code, mid)
-	local output = require 'utils.nodejs'.run_html_load_with_js(MODULE.RootURL, js_code)
-	if output:find('Could not find signer/installer', 1, true) then MANGAINFO.Title = 'Could not find signer/installer' return no_error end
-
-	for v in CreateTXQuery(output).XPath('json(*).items()').Get() do
+	for v in x.XPath('json(*).items()').Get() do
 		local number = v.GetProperty('number').ToString()
 		local id = v.GetProperty('id').ToString()
 		local name = v.GetProperty('name').ToString()
@@ -238,9 +162,9 @@ function GetInfo()
 		local scan_group_id = tonumber(v.GetProperty('group').GetProperty('id').ToString()) or 0
 		local scan_group_name = v.GetProperty('group').GetProperty('name').ToString()
 		local votes = tonumber(v.GetProperty('votes').ToString()) or 0
-		local updated_at = tonumber(v.GetProperty('updated_at').ToString()) or 0
 		local official_str = v.GetProperty('isOfficial').ToString()
 		local official = (official_str == '1' or official_str == 'true') and 1 or 0
+		local url = v.GetProperty('url').ToString()
 
 		if not number:find('%.') then
 			has_integer[number] = true
@@ -261,7 +185,7 @@ function GetInfo()
 				end
 			end
 
-			MANGAINFO.ChapterLinks.Add(id)
+			MANGAINFO.ChapterLinks.Add(url)
 			MANGAINFO.ChapterNames.Add(volume .. chapter .. title .. scanlator)
 		else
 			local base = number:match('^(%d+)')
@@ -270,7 +194,7 @@ function GetInfo()
 			local ch_data = {
 				id = id, name = name, vol_num = vol_num, number = number,
 				scan_group_id = scan_group_id, scan_group_name = scan_group_name,
-				votes = votes, updated_at = updated_at, official = official
+				votes = votes, official = official, url = url
 			}
 
 			if not current then
@@ -318,44 +242,36 @@ function GetInfo()
 				end
 			end
 
-			MANGAINFO.ChapterLinks.Add(ch.id)
+			MANGAINFO.ChapterLinks.Add(ch.url)
 			MANGAINFO.ChapterNames.Add(volume .. chapter .. title .. scanlator)
 		end
 	end
+	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
 end
 
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local fetch_code = [[
-		let data = await fetchDecrypted(arg);
-		let res = data?.result;
-		let links = [];
-
-		if (res?.pages) {
-			let pages = res.pages;
-			let items = pages.items ?? (Array.isArray(pages) ? pages : []);
-			let base = pages.baseUrl ?? '';
-			if (base.endsWith('/')) base = base.slice(0, -1);
+	local interceptor = [[
+		if (parsed && parsed.result && parsed.result.pages) {
+			const res = parsed.result;
+			const links = [];
+			const pages = res.pages;
+			const items = pages.items || (Array.isArray(pages) ? pages : []);
+			let base = (pages.baseUrl || '').replace(/\/$/, '');
 
 			for (let item of items) {
-				let url = typeof item === 'string' ? item : item?.url;
+				let url = typeof item === 'string' ? item : item.url;
 				if (!url) continue;
-				links.push(
-					url.startsWith('http')
-						? url
-						: base + (url.startsWith('/') ? url : '/' + url)
-				);
+				links.push(url.startsWith('http') ? url : base + '/' + url.replace(/^\//, ''));
 			}
+			submit({ links: links });
 		}
-
-		return { links: links };
 	]]
 
-	local js_code = GetNodejsScript(fetch_code, '/chapters' .. URL)
-	local output = require 'utils.nodejs'.run_html_load_with_js(MODULE.RootURL, js_code)
-	if output:find('Could not find signer/installer', 1, true) then print('Could not find signer/installer') return false end
+	local js_code = GetNodejsScript(interceptor)
+	local output = require 'utils.nodejs'.run_html_load_with_js(MODULE.RootURL .. URL, js_code)
 
 	CreateTXQuery(output).XPathStringAll('json(*).links()', TASK.PageLinks)
 
