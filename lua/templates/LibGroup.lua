@@ -93,7 +93,7 @@ function _M.GetInfo()
 		local title   = v.GetProperty('name').ToString()
 		local base    = 'manga' .. slug .. '/chapter?number=' .. chapter .. '&volume=' .. volume
 
-		for w in x.XPath('branches?*[not(restricted_view)]', v).Get() do
+		for w in x.XPath('branches?*[not(restricted_view) or restricted_view?is_open=true]', v).Get() do
 			local teams = {}
 			for team in x.XPath('teams?*?name', w).Get() do
 				teams[#teams + 1] = team.ToString()
@@ -131,7 +131,7 @@ function _M.GetPageNumber()
 
 	if not HTTP.GET(API_URL .. s) then return false end
 
-	local svr = {'main', 'secondary', 'compress'}
+	local svr = {'main', 'secondary', 'compress', 'download'}
 	local sel_svr = (MODULE.GetOption('svr') or 0) + 1
 	local server = CreateTXQuery(HTTP.Document).XPathString('json(*).data.imageServers()[id="' .. svr[sel_svr] .. '" and site_ids="' .. SITE_ID .. '"].url') .. '/'
 
