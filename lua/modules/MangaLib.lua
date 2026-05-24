@@ -20,13 +20,13 @@ function Init()
 			['auth'] = 'Authorization:',
 			['showscangroup'] = 'Show scanlation group',
 			['isvr'] = 'Image server:',
-			['svr'] = 'Main\nSecondary\nCompress'
+			['svr'] = 'Main\nSecondary\nCompress\nDownload'
 		},
 		['ru_RU'] = {
 			['auth'] = 'Авторизация:',
 			['showscangroup'] = 'Показать группу сканлейт',
 			['isvr'] = 'Сервер изображений:',
-			['svr'] = 'Первый\nВторой\nСжатия'
+			['svr'] = 'Первый\nВторой\nСжатия\nСкачивание'
 		}
 	}
 	local lang = translations[slang] or translations.en
