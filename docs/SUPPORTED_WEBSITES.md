@@ -260,6 +260,7 @@
 | MangaDex | [![https://mangadex.org](https://img.shields.io/website?url=https://mangadex.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangadex.org)](https://mangadex.org) | OK | 23.03.2025 | - |
 | MangaDoom | [![http://www.mngdoom.com](https://img.shields.io/website?url=http://www.mngdoom.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.mngdoom.com)](http://www.mngdoom.com) | - | - | - |
 | MangaDoor | [![http://mangadoor.com](https://img.shields.io/website?url=http://mangadoor.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://mangadoor.com)](http://mangadoor.com) | - | - | - |
+| MangaDotNet | [![https://mangadot.net](https://img.shields.io/website?url=https://mangadot.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangadot.net)](https://mangadot.net) | OK | 24.05.2026 | - |
 | MangaDraft | [![https://www.mangadraft.com](https://img.shields.io/website?url=https://www.mangadraft.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangadraft.com)](https://www.mangadraft.com) | OK | 10.05.2026 | - |
 | MangaEden | [![https://www.mangaeden.com](https://img.shields.io/website?url=https://www.mangaeden.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangaeden.com)](https://www.mangaeden.com) | - | - | - |
 | MangaEden_IT | [![https://www.mangaeden.com](https://img.shields.io/website?url=https://www.mangaeden.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangaeden.com)](https://www.mangaeden.com) | - | - | - |
