@@ -51,6 +51,7 @@
 | BoredomSociety | [![https://www.boredomsociety.xyz](https://img.shields.io/website?url=https://www.boredomsociety.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.boredomsociety.xyz)](https://www.boredomsociety.xyz) | - | - | - |
 | BoxManhwa | [![https://boxmanhwa.com](https://img.shields.io/website?url=https://boxmanhwa.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://boxmanhwa.com)](https://boxmanhwa.com) | OK | 27.04.2026 | - |
 | BrainRotComics | [![https://brainrotcomics.com](https://img.shields.io/website?url=https://brainrotcomics.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://brainrotcomics.com)](https://brainrotcomics.com) | OK | 14.02.2026 | - |
+| CapibaraTraductor | [![https://capibaratraductor.com](https://img.shields.io/website?url=https://capibaratraductor.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://capibaratraductor.com)](https://capibaratraductor.com) | OK | 25.05.2026 | - |
 | Cartel De Manhwas | [![https://carteldemanhwas.net](https://img.shields.io/website?url=https://carteldemanhwas.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://carteldemanhwas.net)](https://carteldemanhwas.net) | OK | 08.08.2025 | - |
 | CartoonPorn | [![https://cartoonporn.to](https://img.shields.io/website?url=https://cartoonporn.to%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://cartoonporn.to)](https://cartoonporn.to) | OK | 28.04.2025 | - |
 | CatManga | [![https://catmanga.org](https://img.shields.io/website?url=https://catmanga.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://catmanga.org)](https://catmanga.org) | - | - | - |
@@ -530,7 +531,6 @@
 | SekteKomik | [![https://sektekomik.id](https://img.shields.io/website?url=https://sektekomik.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://sektekomik.id)](https://sektekomik.id) | OK | 19.07.2025 | - |
 | SelfManga | [![https://1.selfmanga.live](https://img.shields.io/website?url=https://1.selfmanga.live%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://1.selfmanga.live)](https://1.selfmanga.live) | OK | 02.11.2025 | An account is required |
 | SenManga | [![https://www.senmanga.com](https://img.shields.io/website?url=https://www.senmanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.senmanga.com)](https://www.senmanga.com) | - | - | - |
-| SenshimangaCom | [![https://senshimanga.com](https://img.shields.io/website?url=https://senshimanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://senshimanga.com)](https://senshimanga.com) | - | - | - |
 | SetsuScans | [![https://manga.saytsu.com](https://img.shields.io/website?url=https://manga.saytsu.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga.saytsu.com)](https://manga.saytsu.com) | OK | 04.08.2025 | - |
 | ShadowMangas | [![https://shadowmangas.com](https://img.shields.io/website?url=https://shadowmangas.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://shadowmangas.com)](https://shadowmangas.com) | OK | 20.07.2025 | - |
 | Shakai | [![http://shakai.ru](https://img.shields.io/website?url=http://shakai.ru%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://shakai.ru)](http://shakai.ru) | - | - | - |
@@ -817,6 +817,7 @@
 | ~SeaOtterScans~ | ~https://reader.seaotterscans.com~ | Removed | 06.08.2025 | - |
 | ~SenpaiEdiciones~ | ~https://senpaiediciones.com~ | Removed | 20.07.2025 | - |
 | ~SenseScans~ | ~https://sensescans.com~ | Removed | 06.08.2025 | - |
+| ~SenshimangaCom~ | ~https://senshimanga.com~ | Removed | 25.05.2026 | Merged to CapibaraTraductor |
 | ~ShieldManga~ | ~https://shieldmanga.club~ | Removed | 03.08.2025 | - |
 | ~ShimadaScans~ | ~https://shimadascans.com~ | Removed | 20.07.2025 | - |
 | ~ShosetsuManga~ | ~https://www.shosetsu-manga.org~ | Removed | 03.08.2025 | - |
