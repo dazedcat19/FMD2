@@ -177,7 +177,7 @@ function GetInfo()
 	local optlang   = MODULE.GetOption('lang')
 	local optlangid = FindLanguage(optlang)
 
-	local x = CreateTXQuery(HTTP.Document)
+	local x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
 	for ch in x.XPath('json(*).ALL_CHAPTERS()').Get() do
 		local chapter = ch.GetProperty('number').ToString()
 		local number  = ch.GetProperty('number_float').ToString()
