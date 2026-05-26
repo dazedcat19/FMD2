@@ -40,11 +40,7 @@ var
   image, result: TPicture;
   memStream: TMemoryStream;
   tmpMemBitmap: TMemBitmap;
-  reversalMatrix: Boolean;
   blockWidth, blockHeight: Double;
-  imgWidth, imgHeight: Integer;
-  baseBlockHeight, remainder: Integer;
-  destY, destH, srcY, srcH: Integer;
   i, row, col: Integer;
   x1, y1, x2, y2: Integer;
   dstrect, srcrect: TRect;
@@ -84,73 +80,33 @@ begin
       end;
     end;
     result.Bitmap.SetSize(image.Width, image.Height);
-    reversalMatrix := (HorBlock = 1) and (VerBlock > 0) and (Length(Matrix) >= VerBlock);
-    if reversalMatrix then
+    if Multiply <= 1 then
     begin
-      for i := 0 to VerBlock - 1 do
-      begin
-        if Matrix[i] <> (VerBlock - 1 - i) then
-        begin
-          reversalMatrix := False;
-          Break;
-        end;
-      end;
-    end;
-    if reversalMatrix then
-    begin
-      imgHeight := image.Height;
-      imgWidth := image.Width;
-      baseBlockHeight := imgHeight div VerBlock;
-      remainder := imgHeight mod VerBlock;
-      for i := 0 to VerBlock - 1 do
-      begin
-        destH := baseBlockHeight;
-        destY := baseBlockHeight * i;
-        if i = 0 then
-        begin
-          destH := destH + remainder;
-        end
-        else
-        begin
-          destY := destY + remainder;
-        end;
-        dstrect := Rect(0, destY, imgWidth, destY + destH);
-        srcY := imgHeight - (baseBlockHeight * (i + 1)) - remainder;
-        srcH := destH;
-        srcrect := Rect(0, srcY, imgWidth, srcY + srcH);
-        result.Bitmap.Canvas.CopyRect(dstrect, image.Bitmap.Canvas, srcrect);
-      end;
+      blockWidth := image.Width div HorBlock;
+      blockHeight := image.Height div VerBlock;
     end
     else
     begin
-      if Multiply <= 1 then
-      begin
-        blockWidth := image.Width / HorBlock;
-        blockHeight := image.Height / VerBlock;
-      end
-      else
-      begin
-        blockWidth := Trunc(image.Width / (HorBlock * Multiply)) * Multiply;
-        blockHeight := Trunc(image.Height / (VerBlock * Multiply)) * Multiply;
-      end;
-      for i := 0 to HorBlock * VerBlock - 1 do
-      begin
-        row := Matrix[i] div HorBlock;
-        col := Matrix[i] mod HorBlock;
-        x1 := Trunc(col * blockWidth);
-        y1 := Trunc(row * blockHeight);
-        x2 := Trunc((col + 1) * blockWidth);
-        y2 := Trunc((row + 1) * blockHeight);
-        dstrect := Rect(x1, y1, x2, y2);
-        row := i div HorBlock;
-        col := i mod HorBlock;
-        x1 := Trunc(col * blockWidth);
-        y1 := Trunc(row * blockHeight);
-        x2 := Trunc((col + 1) * blockWidth);
-        y2 := Trunc((row + 1) * blockHeight);
-        srcrect := Rect(x1, y1, x2, y2);
-        result.Bitmap.Canvas.CopyRect(dstrect, image.Bitmap.Canvas, srcrect);
-      end;
+      blockWidth := Trunc(image.Width div (HorBlock * Multiply)) * Multiply;
+      blockHeight := Trunc(image.Height div (VerBlock * Multiply)) * Multiply;
+    end;
+    for i := 0 to HorBlock * VerBlock - 1 do
+    begin
+      row := Matrix[i] div HorBlock;
+      col := Matrix[i] mod HorBlock;
+      x1 := Trunc(col * blockWidth);
+      y1 := Trunc(row * blockHeight);
+      x2 := Trunc((col + 1) * blockWidth);
+      y2 := Trunc((row + 1) * blockHeight);
+      dstrect := Rect(x1, y1, x2, y2);
+      row := i div HorBlock;
+      col := i mod HorBlock;
+      x1 := Trunc(col * blockWidth);
+      y1 := Trunc(row * blockHeight);
+      x2 := Trunc((col + 1) * blockWidth);
+      y2 := Trunc((row + 1) * blockHeight);
+      srcrect := Rect(x1, y1, x2, y2);
+      result.Bitmap.Canvas.CopyRect(dstrect, image.Bitmap.Canvas, srcrect);
     end;
     output.Position := 0;
     output.Size := 0;
