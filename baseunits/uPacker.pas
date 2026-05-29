@@ -31,7 +31,6 @@ type
   public
     Path,
     FileName: String;
-    MetaData: String;
     Format: TPackerFormat;
     CompressionQuality: Cardinal;
     function Execute: Boolean;
@@ -244,8 +243,6 @@ begin
     epub := TEpubBuilder.Create;
     try
       epub.Title := GetLastDir(Path);
-
-      if (Metadata <> '') then epub.AddMetadata(Metadata);
 
       for i := 0 to FFileList.Count - 1 do
       begin
