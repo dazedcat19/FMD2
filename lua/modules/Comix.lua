@@ -12,6 +12,7 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnDownloadImage          = 'DownloadImage'
 	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 	m.SortedList               = true
 	m.MaxTaskLimit             = 2
@@ -69,11 +70,33 @@ local function GetNodejsScript(interceptor)
 				}
 			});
 
-			setTimeout(() => submit({ error: 'Timed out waiting for data' }), 30000);
+			setTimeout(() => submit({ error: 'Timed out waiting for data' }), 60000);
 		});
 	});
 	console.log(JSON.stringify(resultJSON));
 	]]
+end
+
+local function GetPermutationMatrix(seed)
+	local n = 25
+	local arr = {}
+	for i = 0, n - 1 do arr[i] = i end
+	
+	local state = seed
+	local LCG_MULTIPLIER = 1664525
+	local LCG_INCREMENT = 1013904223
+	
+	for i = n - 1, 1, -1 do
+		state = (state * LCG_MULTIPLIER + LCG_INCREMENT) & 0xffffffff
+
+		local j = state % (i + 1)
+
+		local tmp = arr[i]
+		arr[i] = arr[j]
+		arr[j] = tmp
+	end
+
+	return arr
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -143,9 +166,20 @@ function GetInfo()
 			}
 		}
 	]]
-	
-	local js_code = GetNodejsScript(interceptor)
-	local output = require 'utils.nodejs'.run_html_load_with_js(MODULE.RootURL .. URL, js_code)
+
+	local now = os.time()
+	local output = MODULE.Storage[mid]
+	local timestamp = tonumber(MODULE.Storage[mid .. '_time']) or 0
+
+	if output == '' or (now - timestamp) >= 900 then
+		local js_code = GetNodejsScript(interceptor)
+		output = require 'utils.nodejs'.run_html_load_with_js(MODULE.RootURL .. URL, js_code)
+
+		if not output:find('Timed out', 1, true) then
+			MODULE.Storage[mid] = output
+			MODULE.Storage[mid .. '_time'] = tostring(now)
+		end
+	end
 	x.ParseHTML(output)
 
 	local deduplicate  = MODULE.GetOption('deduplicatechapters')
@@ -270,10 +304,41 @@ function GetPageNumber()
 		}
 	]]
 
-	local js_code = GetNodejsScript(interceptor)
-	local output = require 'utils.nodejs'.run_html_load_with_js(MODULE.RootURL .. URL, js_code)
+	local output = MODULE.Storage[URL]
+	if output == '' then
+		local js_code = GetNodejsScript(interceptor)
+		output = require 'utils.nodejs'.run_html_load_with_js(MODULE.RootURL .. URL, js_code)
+		MODULE.Storage[URL] = output
+	end
 
 	CreateTXQuery(output).XPathStringAll('json(*).links()', TASK.PageLinks)
+
+	return true
+end
+
+-- Download and decrypt and/or descramble image given the image URL.
+function DownloadImage()
+	if not HTTP.GET(URL) then return false end
+
+	if HTTP.ResultCode == 404 then
+		HTTP.Reset()
+		HTTP.Headers.Values['Origin'] = MODULE.RootURL
+		if not HTTP.GET(URL) then return false end
+	end
+
+	local seed = tonumber(HTTP.Headers.Values['X-Scramble-Seed'])
+
+	if seed and seed > 0 then
+		local grid_size = 5
+		local puzzle = require 'fmd.imagepuzzle'.Create(grid_size, grid_size)
+		local matrix = GetPermutationMatrix(seed)
+
+		for src_idx = 0, 24 do
+			puzzle.Matrix[src_idx] = matrix[src_idx]
+		end
+
+		puzzle.DeScramble(HTTP.Document, HTTP.Document)
+	end
 
 	return true
 end
