@@ -1,4 +1,4 @@
-unit LuaDuktape;
+unit LuaQuickJS;
 
 {$mode objfpc}{$H+}
 
@@ -9,17 +9,17 @@ uses
 
 implementation
 
-uses Duktape, MultiLog, LuaUtils, LuaPackage;
+uses QuickJS, MultiLog, LuaUtils, LuaPackage;
 
 function lua_execjs(L: Plua_State): Integer; cdecl;
 begin
   Result := 0;
   try
-    lua_pushstring(L, Duktape.ExecJS(luaToString(L, 1)));
+    lua_pushstring(L, QuickJS.ExecJS(luaToString(L, 1)));
     Result := 1;
   except
     on E: Exception do
-      Logger.SendError('Duktape.ExecJS() ' + E.Message);
+      Logger.SendError('QuickJS.ExecJS() ' + E.Message);
   end;
 end;
 
@@ -29,14 +29,13 @@ const
     (name: nil; func: nil)
     );
 
-function luaopen_duktape(L: Plua_State): Integer; cdecl;
+function luaopen_quickjs(L: Plua_State): Integer; cdecl;
 begin
   luaNewLibTable(L, methods);
   Result := 1;
 end;
 
 initialization
-  LuaPackage.AddLib('duktape', @luaopen_duktape);
+  LuaPackage.AddLib('quickjs', @luaopen_quickjs); 
 
 end.
-

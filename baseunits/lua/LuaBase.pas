@@ -40,13 +40,13 @@ uses
   // -- in lua 'require "name"'
   LuaFMD,
   LuaPCRE2,
-  LuaDuktape,
   LuaCrypto,
   LuaFileUtil,
   LuaStrings,
   LuaImagePuzzle,
   LuaMangaFox,
   LuaLogger,
+  LuaQuickJS,
   LuaSubprocess;
 
 function luabase_print(L: Plua_State): Integer; cdecl;
