@@ -10,6 +10,19 @@ uses
   Classes, SysUtils, synautil, Windows, Registry,
   LazFileUtils, SyncObjs, Dynlibs;
 
+const
+  // Makes Windows use the DLL's own directory when resolving its dependencies,
+  // instead of the standard PATH-based search. Essential for portable/bundled
+  // DLL folders that are not on the system PATH.
+  // Value is from the Windows SDK (winbase.h).
+  LOAD_WITH_ALTERED_SEARCH_PATH = $00000008;
+
+// LoadLibraryEx is not always declared in FPC's Windows unit, so we declare
+// it explicitly. We use the ANSI variant (A suffix) since FMagickPath is an
+// AnsiString/String — matching what PChar resolves to in FPC.
+function LoadLibraryExA(lpLibFileName: LPCSTR; hFile: THandle; dwFlags: DWORD): HMODULE;
+  stdcall; external 'kernel32' name 'LoadLibraryExA';
+
 type
   MagickBooleanType = (MagickFalse = 0, MagickTrue = 1);
   PMagickWand = Pointer;
@@ -89,6 +102,7 @@ type
     FLastError: String;
 
     FDllHandle: TLibHandle;
+    FDependencyHandles: array of TLibHandle;
 
     function FindMagickBinary: Boolean;
     function LoadMagickDLL: Boolean;
@@ -390,8 +404,11 @@ end;
 function TImageMagickManager.LoadMagickDLL: Boolean;
 var
   DllPath: String;
-  OldDir: String;
   LastErr: DWORD;
+  I: Integer;
+  SR: SysUtils.TSearchRec;
+  H: TLibHandle;
+  DiagLog: String;
 begin
   Result := False;
   if FDllHandle <> NilHandle then Exit(True);
@@ -403,55 +420,132 @@ begin
     Exit;
   end;
 
+  // Tell ImageMagick where to find its config files and coder modules.
   SetEnvironmentVariable('MAGICK_HOME', PChar(FMagickPath));
   SetEnvironmentVariable('MAGICK_CONFIGURE_PATH', PChar(FMagickPath));
   SetEnvironmentVariable('MAGICK_CODER_MODULE_PATH', PChar(FMagickPath + 'modules\coders'));
+  SetEnvironmentVariable('MAGICK_FILTER_MODULE_PATH', PChar(FMagickPath + 'modules\filters'));
   SetEnvironmentVariable('MAGICK_THREAD_LIMIT', '1');
 
-  OldDir := GetCurrentDir;
-  SetCurrentDir(FMagickPath);
+  // Load every DLL in the bundled folder using LOAD_WITH_ALTERED_SEARCH_PATH.
+  // This flag makes the Windows loader use each DLL's own directory when
+  // resolving *its* dependencies, so the entire CORE_RL_* chain resolves
+  // from FMagickPath without needing PATH changes or SetDllDirectory.
+  SetLength(FDependencyHandles, 0);
+  DiagLog := '';
+
+  // Pass 1: VC++ runtime DLLs first (vcruntime, vcomp, msvcp).
+  // If already loaded system-wide, LoadLibraryEx just bumps the ref-count.
+  if SysUtils.FindFirst(FMagickPath + 'vcruntime*.dll', faAnyFile, SR) = 0 then
   try
-    FDllHandle := LoadLibrary(PChar(DllPath));
-    if FDllHandle = NilHandle then
-    begin
-      LastErr := Windows.GetLastError;
-      FLastError := 'Failed to load DLL (Error: ' + IntToStr(LastErr) + ')';
-      Exit;
-    end;
-
-    pMagickWandGenesis := TMagickWandGenesis(GetProcAddress(FDllHandle, 'MagickWandGenesis'));
-    pMagickWandTerminus := TMagickWandTerminus(GetProcAddress(FDllHandle, 'MagickWandTerminus'));
-    pNewMagickWand := TNewMagickWand(GetProcAddress(FDllHandle, 'NewMagickWand'));
-    pDestroyMagickWand := TDestroyMagickWand(GetProcAddress(FDllHandle, 'DestroyMagickWand'));
-    pMagickReadImage := TMagickReadImage(GetProcAddress(FDllHandle, 'MagickReadImage'));
-    pMagickReadImageBlob := TMagickReadImageBlob(GetProcAddress(FDllHandle, 'MagickReadImageBlob'));
-    pMagickGetImageBlob := TMagickGetImageBlob(GetProcAddress(FDllHandle, 'MagickGetImageBlob'));
-    pMagickGetImagesBlob := TMagickGetImagesBlob(GetProcAddress(FDllHandle, 'MagickGetImagesBlob'));
-    pMagickSetFormat := TMagickSetFormat(GetProcAddress(FDllHandle, 'MagickSetFormat'));
-    pMagickWriteImage := TMagickWriteImage(GetProcAddress(FDllHandle, 'MagickWriteImage'));
-    pMagickWriteImages := TMagickWriteImages(GetProcAddress(FDllHandle, 'MagickWriteImages'));
-    pMagickGetException := TMagickGetException(GetProcAddress(FDllHandle, 'MagickGetException'));
-    pMagickCoalesceImages := TMagickCoalesceImages(GetProcAddress(FDllHandle, 'MagickCoalesceImages'));
-    pMagickRelinquishMemory := TMagickRelinquishMemory(GetProcAddress(FDllHandle, 'MagickRelinquishMemory'));
-    pMagickQueryFormats := TMagickQueryFormats(GetProcAddress(FDllHandle, 'MagickQueryFormats'));
-    pMagickSetImageOption := TMagickSetImageOption(GetProcAddress(FDllHandle, 'MagickSetImageOption'));
-    pMagickSetImageCompressionQuality := TMagickSetImageCompressionQuality(GetProcAddress(FDllHandle, 'MagickSetImageCompressionQuality'));
-    pMagickSetImageCompression := TMagickSetImageCompression(GetProcAddress(FDllHandle, 'MagickSetImageCompression'));
-    pMagickResetIterator := TMagickResetIterator(GetProcAddress(FDllHandle, 'MagickResetIterator'));
-    pMagickSetFirstIterator := TMagickSetFirstIterator(GetProcAddress(FDllHandle, 'MagickSetFirstIterator'));
-    pMagickGetImageWidth := TMagickGetImageWidth(GetProcAddress(FDllHandle, 'MagickGetImageWidth'));
-    pMagickGetImageHeight := TMagickGetImageHeight(GetProcAddress(FDllHandle, 'MagickGetImageHeight'));
-    pMagickGetNumberImages := TMagickGetNumberImages(GetProcAddress(FDllHandle, 'MagickGetNumberImages'));
-    pMagickGetImageFormat := TMagickGetImageFormat(GetProcAddress(FDllHandle, 'MagickGetImageFormat'));
-
-    pMagickWandGenesis;
-    Result := True;
+    repeat
+      H := TLibHandle(LoadLibraryExA(PChar(FMagickPath + SR.Name), 0, LOAD_WITH_ALTERED_SEARCH_PATH));
+      if H <> NilHandle then
+      begin
+        SetLength(FDependencyHandles, Length(FDependencyHandles) + 1);
+        FDependencyHandles[High(FDependencyHandles)] := H;
+      end else
+        DiagLog := DiagLog + SR.Name + '(err=' + IntToStr(Windows.GetLastError) + ') ';
+    until SysUtils.FindNext(SR) <> 0;
   finally
-    SetCurrentDir(OldDir);
+    SysUtils.FindClose(SR);
   end;
+
+  if SysUtils.FindFirst(FMagickPath + 'vcomp*.dll', faAnyFile, SR) = 0 then
+  try
+    repeat
+      H := TLibHandle(LoadLibraryExA(PChar(FMagickPath + SR.Name), 0, LOAD_WITH_ALTERED_SEARCH_PATH));
+      if H <> NilHandle then
+      begin
+        SetLength(FDependencyHandles, Length(FDependencyHandles) + 1);
+        FDependencyHandles[High(FDependencyHandles)] := H;
+      end else
+        DiagLog := DiagLog + SR.Name + '(err=' + IntToStr(Windows.GetLastError) + ') ';
+    until SysUtils.FindNext(SR) <> 0;
+  finally
+    SysUtils.FindClose(SR);
+  end;
+
+  if SysUtils.FindFirst(FMagickPath + 'msvcp*.dll', faAnyFile, SR) = 0 then
+  try
+    repeat
+      H := TLibHandle(LoadLibraryExA(PChar(FMagickPath + SR.Name), 0, LOAD_WITH_ALTERED_SEARCH_PATH));
+      if H <> NilHandle then
+      begin
+        SetLength(FDependencyHandles, Length(FDependencyHandles) + 1);
+        FDependencyHandles[High(FDependencyHandles)] := H;
+      end else
+        DiagLog := DiagLog + SR.Name + '(err=' + IntToStr(Windows.GetLastError) + ') ';
+    until SysUtils.FindNext(SR) <> 0;
+  finally
+    SysUtils.FindClose(SR);
+  end;
+
+  // Pass 2: all CORE_RL_*.dll except MagickWand (that comes last as FDllHandle).
+  if SysUtils.FindFirst(FMagickPath + 'CORE_RL_*.dll', faAnyFile, SR) = 0 then
+  try
+    repeat
+      if CompareText(SR.Name, 'CORE_RL_MagickWand_.dll') = 0 then
+        Continue;
+      H := TLibHandle(LoadLibraryExA(PChar(FMagickPath + SR.Name), 0, LOAD_WITH_ALTERED_SEARCH_PATH));
+      if H <> NilHandle then
+      begin
+        SetLength(FDependencyHandles, Length(FDependencyHandles) + 1);
+        FDependencyHandles[High(FDependencyHandles)] := H;
+      end else
+        DiagLog := DiagLog + SR.Name + '(err=' + IntToStr(Windows.GetLastError) + ') ';
+    until SysUtils.FindNext(SR) <> 0;
+  finally
+    SysUtils.FindClose(SR);
+  end;
+
+  // Final: load MagickWand itself.
+  FDllHandle := TLibHandle(LoadLibraryExA(PChar(DllPath), 0, LOAD_WITH_ALTERED_SEARCH_PATH));
+  if FDllHandle = NilHandle then
+  begin
+    LastErr := Windows.GetLastError;
+    FLastError := 'Failed to load CORE_RL_MagickWand_.dll (WinError=' + IntToStr(LastErr) + ').' +
+                  ' Path: ' + FMagickPath;
+    if DiagLog <> '' then
+      FLastError := FLastError + ' Failed deps: ' + DiagLog;
+    for I := 0 to High(FDependencyHandles) do
+      FreeLibrary(FDependencyHandles[I]);
+    SetLength(FDependencyHandles, 0);
+    Exit;
+  end;
+
+  pMagickWandGenesis := TMagickWandGenesis(GetProcAddress(FDllHandle, 'MagickWandGenesis'));
+  pMagickWandTerminus := TMagickWandTerminus(GetProcAddress(FDllHandle, 'MagickWandTerminus'));
+  pNewMagickWand := TNewMagickWand(GetProcAddress(FDllHandle, 'NewMagickWand'));
+  pDestroyMagickWand := TDestroyMagickWand(GetProcAddress(FDllHandle, 'DestroyMagickWand'));
+  pMagickReadImage := TMagickReadImage(GetProcAddress(FDllHandle, 'MagickReadImage'));
+  pMagickReadImageBlob := TMagickReadImageBlob(GetProcAddress(FDllHandle, 'MagickReadImageBlob'));
+  pMagickGetImageBlob := TMagickGetImageBlob(GetProcAddress(FDllHandle, 'MagickGetImageBlob'));
+  pMagickGetImagesBlob := TMagickGetImagesBlob(GetProcAddress(FDllHandle, 'MagickGetImagesBlob'));
+  pMagickSetFormat := TMagickSetFormat(GetProcAddress(FDllHandle, 'MagickSetFormat'));
+  pMagickWriteImage := TMagickWriteImage(GetProcAddress(FDllHandle, 'MagickWriteImage'));
+  pMagickWriteImages := TMagickWriteImages(GetProcAddress(FDllHandle, 'MagickWriteImages'));
+  pMagickGetException := TMagickGetException(GetProcAddress(FDllHandle, 'MagickGetException'));
+  pMagickCoalesceImages := TMagickCoalesceImages(GetProcAddress(FDllHandle, 'MagickCoalesceImages'));
+  pMagickRelinquishMemory := TMagickRelinquishMemory(GetProcAddress(FDllHandle, 'MagickRelinquishMemory'));
+  pMagickQueryFormats := TMagickQueryFormats(GetProcAddress(FDllHandle, 'MagickQueryFormats'));
+  pMagickSetImageOption := TMagickSetImageOption(GetProcAddress(FDllHandle, 'MagickSetImageOption'));
+  pMagickSetImageCompressionQuality := TMagickSetImageCompressionQuality(GetProcAddress(FDllHandle, 'MagickSetImageCompressionQuality'));
+  pMagickSetImageCompression := TMagickSetImageCompression(GetProcAddress(FDllHandle, 'MagickSetImageCompression'));
+  pMagickResetIterator := TMagickResetIterator(GetProcAddress(FDllHandle, 'MagickResetIterator'));
+  pMagickSetFirstIterator := TMagickSetFirstIterator(GetProcAddress(FDllHandle, 'MagickSetFirstIterator'));
+  pMagickGetImageWidth := TMagickGetImageWidth(GetProcAddress(FDllHandle, 'MagickGetImageWidth'));
+  pMagickGetImageHeight := TMagickGetImageHeight(GetProcAddress(FDllHandle, 'MagickGetImageHeight'));
+  pMagickGetNumberImages := TMagickGetNumberImages(GetProcAddress(FDllHandle, 'MagickGetNumberImages'));
+  pMagickGetImageFormat := TMagickGetImageFormat(GetProcAddress(FDllHandle, 'MagickGetImageFormat'));
+
+  pMagickWandGenesis;
+  Result := True;
 end;
 
 procedure TImageMagickManager.UnloadMagickDLL;
+var
+  DepIdx: Integer;
 begin
   if FDllHandle <> NilHandle then
   begin
@@ -483,6 +577,14 @@ begin
     pMagickGetImageHeight := nil;
     pMagickGetNumberImages := nil;
     pMagickGetImageFormat := nil;
+  end;
+  // Release pre-loaded dependency DLLs in reverse load order
+  if Length(FDependencyHandles) > 0 then
+  begin
+    for DepIdx := High(FDependencyHandles) downto 0 do
+      if FDependencyHandles[DepIdx] <> NilHandle then
+        FreeLibrary(FDependencyHandles[DepIdx]);
+    SetLength(FDependencyHandles, 0);
   end;
 end;
 
@@ -759,7 +861,7 @@ begin
   if Pos('*', InputFile) > 0 then
   begin
     InputPath := ExtractFilePath(InputFile);
-    if FindFirst(InputFile, faAnyFile, SearchRec) = 0 then
+    if SysUtils.FindFirst(InputFile, faAnyFile, SearchRec) = 0 then
     try
       repeat
         if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
@@ -779,7 +881,7 @@ begin
             InputStream.Free;
           end;
         end;
-      until FindNext(SearchRec) <> 0;
+      until SysUtils.FindNext(SearchRec) <> 0;
     finally
       SysUtils.FindClose(SearchRec);
     end;

@@ -649,7 +649,7 @@ begin
   Result := True;
               
   ImageMagick := TImageMagickManager.Instance;
-  if not (ImageMagick.Enabled) then
+  if not (ImageMagick.Enabled) or not (ImageMagick.PathFound) then
   begin
     Exit;
   end;

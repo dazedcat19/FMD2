@@ -2930,8 +2930,3 @@ msgstr "Synchronisiere Daten"
 msgid "Updating list"
 msgstr "Aktualisiere Liste"
 
-#: webp.serrloadfailed
-#, object-pascal-format
-msgid "Can not load WebP codec library \"%s\". Check your installation."
-msgstr "Kann WebP Codec \"%s nicht laden. Überprüfen sie ihre Installation."
-

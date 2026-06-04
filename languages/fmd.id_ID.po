@@ -2938,8 +2938,3 @@ msgstr "Menyelaraskan data"
 msgid "Updating list"
 msgstr "Memutakhirkan daftar"
 
-#: webp.serrloadfailed
-#, object-pascal-format
-msgid "Can not load WebP codec library \"%s\". Check your installation."
-msgstr "Tidak dapat memuat pustaka kodek WebP \"%s\". Periksa instalasi Anda."
-
