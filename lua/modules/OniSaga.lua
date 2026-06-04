@@ -14,6 +14,8 @@ function Init()
 	m.OnGetPageNumber          = 'GetPageNumber'
 	m.OnGetImageURL            = 'GetImageURL'
 	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
+	m.MaxTaskLimit             = 1
+	m.MaxThreadPerTaskLimit    = 1
 	m.SortedList               = true
 
 	local slang = require 'fmd.env'.SelectedLanguage
@@ -134,7 +136,7 @@ function GetInfo()
 	local pages = math.ceil(x.XPathString('//div[contains(@class, "whitespace-nowrap -mt-1 -mb-1")]') / 100 - 1) or 1
 	while true do
 		local s = '{"_token":"' .. token .. '","components":[{"snapshot":"{\\"data\\":{\\"manga\\":[null,{\\"class\\":\\"App\\\\\\\\Models\\\\\\\\Post\\",\\"key\\":' .. key .. ',\\"s\\":\\"mdl\\"}],' ..
-		'\\"view\\":\\"chapters\\",\\"sortOrder\\":\\"asc\\",\\"search\\":\\"\\",\\"chaptersLoaded\\":' .. page .. ',\\"volumesLoaded\\":1,\\"rateLimited\\":false,\\"importingChapters\\":false},\\"memo\\":{\\"id\\":\\"' .. id ..
+		'\\"view\\":\\"chapters\\",\\"sortOrder\\":\\"asc\\",\\"search\\":\\"\\",\\"groupFilter\\":null,\\"chaptersLoaded\\":' .. page .. ',\\"volumesLoaded\\":1,\\"rateLimited\\":false,\\"importingChapters\\":false},\\"memo\\":{\\"id\\":\\"' .. id ..
 		'\\",\\"name\\":\\"manga.chapter-list\\",\\"path\\":\\"manga\\\\/' .. slug .. '\\",\\"method\\":\\"GET\\",\\"release\\":\\"a-a-a\\",\\"children\\":[],\\"scripts\\":[],\\"assets\\":[],\\"errors\\":[],' ..
 		'\\"locale\\":\\"en\\"},\\"checksum\\":\\"' .. checksum .. '\\"}","updates":{},"calls":[{"path":"","method":"loadMoreChapters","params":[]}]}]}'
 
@@ -200,6 +202,7 @@ end
 
 -- Extract/Build/Repair image urls before downloading them.
 function GetImageURL()
+	sleep(1500)
 	local cid = URL:match('/(%d+)$')
 	local u = MODULE.RootURL .. '/api/chapter/' .. cid .. '/page/' .. TASK.PageContainerLinks[WORKID]
 	HTTP.Headers.Values['X-Reader-Token'] = MODULE.Storage[URL]
@@ -208,7 +211,22 @@ function GetImageURL()
 
 	if not HTTP.GET(u) then return false end
 
-	TASK.PageLinks[WORKID] = CreateTXQuery(HTTP.Document).XPathString('json(*).url')
+	local s = HTTP.Document.ToString()
+	if s:find('expired', 1, true) then
+		if not HTTP.GET(MaybeFillHost(MODULE.RootURL, URL)) then return false end
+
+		MODULE.Storage[URL] = HTTP.Document.ToString():match('readerToken:%s*"([^"]+)"')
+		HTTP.Reset()
+		HTTP.Headers.Values['X-Reader-Token'] = MODULE.Storage[URL]
+		HTTP.Headers.Values['Sec-Fetch-Mode'] = 'cors'
+		HTTP.Headers.Values['Sec-Fetch-Site'] = 'same-origin'
+
+		if not HTTP.GET(u) then return false end
+
+		s = HTTP.Document.ToString()
+	end
+
+	TASK.PageLinks[WORKID] = CreateTXQuery(s).XPathString('json(*).url')
 
 	return true
 end
