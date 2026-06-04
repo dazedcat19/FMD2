@@ -13,13 +13,15 @@ function Init()
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
 	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
+	m.SortedList               = true
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.MadTheme'
+local Template = require 'templates.MangaK'
+API_URL = 'https://api.manhuasite.com'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions

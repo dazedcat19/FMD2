@@ -4,22 +4,24 @@
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                       = '6285e98e88dc46938e4bf60b8681cf8f'
-	m.Name                     = 'BoxManhwa'
-	m.RootURL                  = 'https://boxmanhwa.com'
+	m.ID                       = '85451defbfe64c5a942990c72ed86fed'
+	m.Name                     = 'MangaK'
+	m.RootURL                  = 'https://mangak.io'
 	m.Category                 = 'English'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
 	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
+	m.SortedList               = true
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.MadTheme'
+local Template = require 'templates.MangaK'
+API_URL = 'https://api.mangak.io'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
