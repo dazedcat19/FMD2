@@ -206,6 +206,8 @@ type
     btDownloadSplit: TSpeedButton;
     sbGeneralSettings: TScrollBox;
     seImageMagickQuality: TSpinEdit;
+    seImageMagickParallel: TSpinEdit;
+    lbImageMagickParallel: TLabel;
     seOptionMaxFavoriteThreads: TSpinEdit;
     seOptionMaxUpdateListThreads: TSpinEdit;
     seOptionMaxBackgroundLoadThreads: TSpinEdit;
@@ -5848,6 +5850,7 @@ begin
     end;
 
     seImageMagickQuality.Value := ReadInteger('imagemagick', 'ImageMagickQuality', 75);
+    seImageMagickParallel.Value := ReadInteger('imagemagick', 'ImageMagickParallel', 1);
 
     // update
     cbOptionAutoCheckLatestVersion.Checked := ReadBool('update', 'AutoCheckLatestVersion', True);
@@ -6035,6 +6038,7 @@ begin
         WriteString('imagemagick', 'ImageMagickCompression', cbImageMagickCompression.Items.ValueFromIndex[cbImageMagickCompression.ItemIndex]);
       end;
       WriteInteger('imagemagick', 'ImageMagickQuality', seImageMagickQuality.Value);
+      WriteInteger('imagemagick', 'ImageMagickParallel', seImageMagickParallel.Value);
 
       // update
       WriteBool('update', 'AutoCheckLatestVersion', cbOptionAutoCheckLatestVersion.Checked);
@@ -6228,6 +6232,7 @@ begin
     TImageMagickManager.Instance.SaveAs := cbImageMagickSaveAs.Items.ValueFromIndex[cbImageMagickSaveAs.ItemIndex];
     TImageMagickManager.Instance.Compression := cbImageMagickCompression.Items.ValueFromIndex[cbImageMagickCompression.ItemIndex];
     TImageMagickManager.Instance.Quality := seImageMagickQuality.Value;
+    TImageMagickManager.Instance.ParallelConversions := seImageMagickParallel.Value;
 
     // update
     OptionAutoCheckLatestVersion := cbOptionAutoCheckLatestVersion.Checked;

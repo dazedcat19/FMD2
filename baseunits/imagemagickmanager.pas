@@ -100,6 +100,8 @@ type
     FQuality: Integer;
     FCompression: String;
     FLastError: String;
+    FParallelConversions: Integer;
+    FSemaphore: THandle;
 
     FDllHandle: TLibHandle;
     FDependencyHandles: array of TLibHandle;
@@ -131,6 +133,8 @@ type
     procedure SetCompression(ACompression: String);
     function GetLastError: String;
     function GetTempPathStr: String;
+    function GetParallelConversions: Integer;
+    procedure SetParallelConversions(AValue: Integer);
 
     function WandConvertBlob(Stream: TMemoryStream; const OutputFormat: String; Coalesce: Boolean; const InputFormat: String = ''): TMemoryStream;
   public
@@ -153,6 +157,7 @@ type
     property Quality: Integer read GetQuality write SetQuality;
     property Compression: String read GetCompression write SetCompression;
     property LastError: String read GetLastError;
+    property ParallelConversions: Integer read GetParallelConversions write SetParallelConversions;
   end;
 
 resourcestring
@@ -198,7 +203,14 @@ begin
   if FInitialized then
   begin
     if Assigned(FInstance) then
+    begin
       FInstance.UnloadMagickDLL;
+      if FInstance.FSemaphore <> 0 then
+      begin
+        CloseHandle(FInstance.FSemaphore);
+        FInstance.FSemaphore := 0;
+      end;
+    end;
     FreeAndNil(FInstance);
     FreeAndNil(FLock);
     FInitialized := False;
@@ -233,6 +245,8 @@ begin
   FCompressionTypes.CaseSensitive := False;
   FQuality := 75;
   FCompression := 'None';
+  FParallelConversions := 1;
+  FSemaphore := CreateSemaphore(nil, FParallelConversions, 32, nil);
   FDllHandle := NilHandle;
 
   if not FindMagickBinary then
@@ -284,6 +298,19 @@ function TImageMagickManager.GetQuality: Integer; begin Result := FQuality; end;
 procedure TImageMagickManager.SetQuality(AQuality: Integer); begin FQuality := AQuality; end;
 function TImageMagickManager.GetCompression: String; begin Result := FCompression; end;
 procedure TImageMagickManager.SetCompression(ACompression: String); begin FCompression := ACompression; end;
+
+function TImageMagickManager.GetParallelConversions: Integer; begin Result := FParallelConversions; end;
+procedure TImageMagickManager.SetParallelConversions(AValue: Integer);
+begin
+  if AValue < 1 then AValue := 1;
+  if AValue > 32 then AValue := 32;
+  if AValue = FParallelConversions then Exit;
+  FParallelConversions := AValue;
+  // Recreate the semaphore with the new limit.
+  // This is safe to call from the main thread while no conversion is running.
+  if FSemaphore <> 0 then CloseHandle(FSemaphore);
+  FSemaphore := CreateSemaphore(nil, FParallelConversions, 32, nil);
+end;
 function TImageMagickManager.GetLastError: String;
 begin
   FLock.Acquire;
@@ -858,55 +885,62 @@ begin
     Exit;
   end;
 
-  if Pos('*', InputFile) > 0 then
-  begin
-    InputPath := ExtractFilePath(InputFile);
-    if SysUtils.FindFirst(InputFile, faAnyFile, SearchRec) = 0 then
-    try
-      repeat
-        if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
-        begin
-          Ext := LowerCase(ExtractFileExt(SearchRec.Name));
-          if Ext <> '' then Delete(Ext, 1, 1);
-          OutputFile := OutputDir + ChangeFileExt(SearchRec.Name, '.' + FSaveAs);
-          InputStream := TFileStream.Create(InputPath + SearchRec.Name, fmOpenRead or fmShareDenyWrite);
-          try
-            OutputStream := ConvertStream(InputStream, FSaveAs, False, Ext);
-            if Assigned(OutputStream) then
-            begin
-              OutputStream.SaveToFile(OutputFile);
-              OutputStream.Free;
+  // Limit concurrent conversions to FParallelConversions.
+  // Each calling TTaskThread blocks here until a slot is available.
+  WaitForSingleObject(FSemaphore, INFINITE);
+  try
+    if Pos('*', InputFile) > 0 then
+    begin
+      InputPath := ExtractFilePath(InputFile);
+      if SysUtils.FindFirst(InputFile, faAnyFile, SearchRec) = 0 then
+      try
+        repeat
+          if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
+          begin
+            Ext := LowerCase(ExtractFileExt(SearchRec.Name));
+            if Ext <> '' then Delete(Ext, 1, 1);
+            OutputFile := OutputDir + ChangeFileExt(SearchRec.Name, '.' + FSaveAs);
+            InputStream := TFileStream.Create(InputPath + SearchRec.Name, fmOpenRead or fmShareDenyWrite);
+            try
+              OutputStream := ConvertStream(InputStream, FSaveAs, False, Ext);
+              if Assigned(OutputStream) then
+              begin
+                OutputStream.SaveToFile(OutputFile);
+                OutputStream.Free;
+              end;
+            finally
+              InputStream.Free;
             end;
-          finally
-            InputStream.Free;
           end;
-        end;
-      until SysUtils.FindNext(SearchRec) <> 0;
-    finally
-      SysUtils.FindClose(SearchRec);
-    end;
-    Result := True;
-  end
-  else if FileExists(InputFile) then
-  begin
-    Ext := LowerCase(ExtractFileExt(InputFile));
-    if Ext <> '' then Delete(Ext, 1, 1);
-    OutputFile := OutputDir + ChangeFileExt(ExtractFileName(InputFile), '.' + FSaveAs);
-    InputStream := TFileStream.Create(InputFile, fmOpenRead or fmShareDenyWrite);
-    try
-      OutputStream := ConvertStream(InputStream, FSaveAs, False, Ext);
-      if Assigned(OutputStream) then
-      begin
-        OutputStream.SaveToFile(OutputFile);
-        OutputStream.Free;
-        Result := True;
+        until SysUtils.FindNext(SearchRec) <> 0;
+      finally
+        SysUtils.FindClose(SearchRec);
       end;
-    finally
-      InputStream.Free;
-    end;
-  end
-  else
-    FLastError := 'Input file not found: ' + InputFile;
+      Result := True;
+    end
+    else if FileExists(InputFile) then
+    begin
+      Ext := LowerCase(ExtractFileExt(InputFile));
+      if Ext <> '' then Delete(Ext, 1, 1);
+      OutputFile := OutputDir + ChangeFileExt(ExtractFileName(InputFile), '.' + FSaveAs);
+      InputStream := TFileStream.Create(InputFile, fmOpenRead or fmShareDenyWrite);
+      try
+        OutputStream := ConvertStream(InputStream, FSaveAs, False, Ext);
+        if Assigned(OutputStream) then
+        begin
+          OutputStream.SaveToFile(OutputFile);
+          OutputStream.Free;
+          Result := True;
+        end;
+      finally
+        InputStream.Free;
+      end;
+    end
+    else
+      FLastError := 'Input file not found: ' + InputFile;
+  finally
+    ReleaseSemaphore(FSemaphore, 1, nil);
+  end;
 end;
 
 procedure TImageMagickManager.CacheSupportedFormats;

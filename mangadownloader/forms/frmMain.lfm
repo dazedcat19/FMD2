@@ -4558,6 +4558,31 @@ object MainForm: TMainForm
                 TabOrder = 3
                 Value = 75
               end
+              object lbImageMagickParallel: TLabel
+                AnchorSideLeft.Control = lbImageMagickQuality
+                AnchorSideTop.Control = seImageMagickQuality
+                AnchorSideTop.Side = asrBottom
+                Left = 4
+                Height = 15
+                Top = 104
+                Width = 110
+                Caption = 'Parallel conversions'
+              end
+              object seImageMagickParallel: TSpinEdit
+                AnchorSideLeft.Control = lbImageMagickParallel
+                AnchorSideLeft.Side = asrBottom
+                AnchorSideTop.Control = lbImageMagickParallel
+                AnchorSideTop.Side = asrCenter
+                AnchorSideRight.Side = asrBottom
+                Left = 120
+                Height = 23
+                Top = 100
+                Width = 47
+                MaxValue = 16
+                MinValue = 1
+                TabOrder = 4
+                Value = 1
+              end
             end
             object lbImageMagickHint: TLabel
               AnchorSideLeft.Control = gbImageMagick
