@@ -77,27 +77,6 @@ local function GetNodejsScript(interceptor)
 	]]
 end
 
-local function GetPermutationMatrix(seed, n)
-	local arr = {}
-	for i = 0, n - 1 do arr[i] = i end
-	
-	local state = seed
-	local LCG_MULTIPLIER = 1664525
-	local LCG_INCREMENT = 1013904223
-	
-	for i = n - 1, 1, -1 do
-		state = (state * LCG_MULTIPLIER + LCG_INCREMENT) & 0xffffffff
-
-		local j = state % (i + 1)
-
-		local tmp = arr[i]
-		arr[i] = arr[j]
-		arr[j] = tmp
-	end
-
-	return arr
-end
-
 local function DecodeEncodedPrefix(data, seed, length)
 	local ENC_MULTIPLIER = 1000005
 	local ENC_INCREMENT = 1234567891
@@ -113,23 +92,6 @@ local function DecodeEncodedPrefix(data, seed, length)
 	end
 
 	return table.concat(decoded) .. string.sub(data, limit + 1)
-end
-
-local function ParseGrid(header)
-	if header == '' then return 5, 5 end
-
-	local parts = {}
-	for part in header:lower():gmatch('%d+') do
-		table.insert(parts, tonumber(part))
-	end
-	
-	if #parts == 1 and parts[1] > 1 then
-		return parts[1], parts[1]
-	elseif #parts >= 2 and parts[1] > 1 and parts[2] > 1 then
-		return parts[1], parts[2]
-	end
-	
-	return 5, 5
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -349,15 +311,9 @@ function GetPageNumber()
 	return true
 end
 
--- Download, decrypt and/or descramble image given the image URL.
+-- Download and decrypt image given the image URL.
 function DownloadImage()
 	if not HTTP.GET(URL) then return false end
-
-	if HTTP.ResultCode == 404 then
-		HTTP.Reset()
-		HTTP.Headers.Values['Origin'] = MODULE.RootURL
-		if not HTTP.GET(URL) then return false end
-	end
 
 	local enc_seed = tonumber(HTTP.Headers.Values['X-Enc-Seed'])
 	local enc_len = tonumber(HTTP.Headers.Values['X-Enc-Len'])
@@ -366,23 +322,6 @@ function DownloadImage()
 		local data = HTTP.Document.ToString()
 		local decrypted_data = DecodeEncodedPrefix(data, enc_seed, enc_len)
 		HTTP.Document.WriteString(decrypted_data)
-	end
-
-	local seed = tonumber(HTTP.Headers.Values['X-Scramble-Seed'])
-
-	if seed and seed ~= 0 then
-		local grid_header = HTTP.Headers.Values['X-Scramble-Grid']
-		local cols, rows = ParseGrid(grid_header)
-		local grid_size = cols * rows
-
-		local puzzle = require 'fmd.imagepuzzle'.Create(cols, rows)
-		local matrix = GetPermutationMatrix(seed, grid_size)
-
-		for src_idx = 0, grid_size - 1 do
-			puzzle.Matrix[src_idx] = matrix[src_idx]
-		end
-
-		puzzle.DeScramble(HTTP.Document, HTTP.Document)
 	end
 
 	return true
