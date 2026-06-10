@@ -60,7 +60,7 @@
 | ColoredManga | [![https://coloredmanga.com](https://img.shields.io/website?url=https://coloredmanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://coloredmanga.com)](https://coloredmanga.com) | Broken | 31.07.2025 | - |
 | Com-X | [![https://com-x.life](https://img.shields.io/website?url=https://com-x.life%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://com-x.life)](https://com-x.life) | OK | 28.09.2025 | - |
 | Comic-days | [![https://comic-days.com](https://img.shields.io/website?url=https://comic-days.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comic-days.com)](https://comic-days.com) | - | - | - |
-| Comicazen | [![https://comicazen.id](https://img.shields.io/website?url=https://comicazen.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comicazen.id)](https://comicazen.id) | OK | 03.04.2026 | - |
+| Comicaso | [![https://v3.comicaso.pro](https://img.shields.io/website?url=https://v3.comicaso.pro%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://v3.comicaso.pro)](https://v3.comicaso.pro) | OK | 10.06.2026 | - |
 | ComicExtra | [![https://www.comicextra.me](https://img.shields.io/website?url=https://www.comicextra.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.comicextra.me)](https://www.comicextra.me) | - | - | - |
 | ComicK | [![https://comick.live](https://img.shields.io/website?url=https://comick.live%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comick.live)](https://comick.live) | OK | 25.10.2025 | Clone version. Manga list is broken |
 | ComickTop | [![https://comick.top](https://img.shields.io/website?url=https://comick.top%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comick.top)](https://comick.top) | - | - | - |
@@ -396,7 +396,6 @@
 | ManyToon | [![https://manytoon.me](https://img.shields.io/website?url=https://manytoon.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manytoon.me)](https://manytoon.me) | - | - | - |
 | ManyToonCom | [![https://manytoon.com](https://img.shields.io/website?url=https://manytoon.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manytoon.com)](https://manytoon.com) | OK | 22.07.2025 | - |
 | ManyToonOrg | [![https://manytoon.org](https://img.shields.io/website?url=https://manytoon.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manytoon.org)](https://manytoon.org) | - | - | - |
-| Medusascans | [![https://medusascans.pro](https://img.shields.io/website?url=https://medusascans.pro%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://medusascans.pro)](https://medusascans.pro) | OK | 02.05.2026 | - |
 | Menudo-Slide | [![https://www.menudo-fansub.com](https://img.shields.io/website?url=https://www.menudo-fansub.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.menudo-fansub.com)](https://www.menudo-fansub.com) | OK | 06.08.2025 | - |
 | MethodScans | [![https://methodscans.com](https://img.shields.io/website?url=https://methodscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://methodscans.com)](https://methodscans.com) | - | - | - |
 | Mexat | [![http://manga.mexat.com](https://img.shields.io/website?url=http://manga.mexat.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://manga.mexat.com)](http://manga.mexat.com) | - | - | - |
@@ -779,6 +778,7 @@
 | ~ManhwaTaro~ | ~https://manhwataro.xyz~ | Removed | 20.07.2025 | - |
 | ~MartialManga~ | ~https://martialmanga.com~ | Removed | 03.04.2025 | - |
 | ~MartialScans~ | ~https://martialscans.com~ | Removed | 03.08.2025 | - |
+| ~Medusascans~ | ~https://medusascans.pro~ | Removed | 10.06.2026 | Merged to Comicaso |
 | ~MerakiScans~ | ~https://merakiscans.com~ | Removed | 03.04.2025 | - |
 | ~MiracleScans~ | ~https://miraclescans.com~ | Removed | 03.08.2025 | - |
 | ~MixedManga~ | ~https://mixedmanga.com~ | Removed | 03.08.2025 | - |
