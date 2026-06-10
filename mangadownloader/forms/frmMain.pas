@@ -86,7 +86,6 @@ type
     cbWebPSaveAs: TComboBox;
     cbPNGCompressionLevel: TComboBox;
     cbImageMagickSaveAs: TComboBox;
-    cbImageMagickCompression: TComboBox;
     deDownloadFilterCustomDateFrom: TDateEdit;
     deDownloadFilterCustomDateTo: TDateEdit;
     edCustomGenres: TCustomEdit;
@@ -124,7 +123,6 @@ type
     lbDarkmodeHint: TLabel;
     lbDownloadFilterCustomDateFrom: TLabel;
     lbDownloadFilterCustomDateTo: TLabel;
-    lbImageMagickCompression: TLabel;
     lbImageMagickQuality: TLabel;
     lbImageMagickHint: TLabel;
     lbOptionMaxFavoriteThreads: TLabel;
@@ -5852,12 +5850,6 @@ begin
       cbImageMagickSaveAs.ItemIndex := 0;
     end;
 
-    cbImageMagickCompression.ItemIndex := cbImageMagickCompression.Items.IndexOf(ReadString('imagemagick', 'ImageMagickCompression', 'None'));
-    if cbImageMagickCompression.ItemIndex = -1 then
-    begin
-      cbImageMagickCompression.ItemIndex := 0;
-    end;
-
     seImageMagickQuality.Value := ReadInteger('imagemagick', 'ImageMagickQuality', 75);
     seImageMagickParallel.Value := ReadInteger('imagemagick', 'ImageMagickParallel', 1);
 
@@ -6042,10 +6034,6 @@ begin
         WriteString('imagemagick', 'ImageMagickSaveAs', cbImageMagickSaveAs.Items.ValueFromIndex[cbImageMagickSaveAs.ItemIndex]);
       end;
 
-      if cbImageMagickCompression.ItemIndex > -1 then
-      begin
-        WriteString('imagemagick', 'ImageMagickCompression', cbImageMagickCompression.Items.ValueFromIndex[cbImageMagickCompression.ItemIndex]);
-      end;
       WriteInteger('imagemagick', 'ImageMagickQuality', seImageMagickQuality.Value);
       WriteInteger('imagemagick', 'ImageMagickParallel', seImageMagickParallel.Value);
 
@@ -6239,7 +6227,6 @@ begin
     // imagemagick
     TImageMagickManager.Instance.Enabled := ckImageMagick.Checked;
     TImageMagickManager.Instance.SaveAs := cbImageMagickSaveAs.Items.ValueFromIndex[cbImageMagickSaveAs.ItemIndex];
-    TImageMagickManager.Instance.Compression := cbImageMagickCompression.Items.ValueFromIndex[cbImageMagickCompression.ItemIndex];
     TImageMagickManager.Instance.Quality := seImageMagickQuality.Value;
     TImageMagickManager.Instance.ParallelConversions := seImageMagickParallel.Value;
 

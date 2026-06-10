@@ -4505,41 +4505,13 @@ object MainForm: TMainForm
                 TabOrder = 1
                 Text = 'JPEG'
               end
-              object lbImageMagickCompression: TLabel
+              object lbImageMagickQuality: TLabel
                 AnchorSideLeft.Control = lbImageMagickSaveAs
                 AnchorSideTop.Control = cbImageMagickSaveAs
                 AnchorSideTop.Side = asrBottom
                 Left = 4
                 Height = 15
                 Top = 54
-                Width = 132
-                Caption = 'Image Compression type'
-              end
-              object cbImageMagickCompression: TComboBox
-                AnchorSideLeft.Control = lbImageMagickCompression
-                AnchorSideLeft.Side = asrBottom
-                AnchorSideTop.Control = lbImageMagickCompression
-                AnchorSideTop.Side = asrCenter
-                AnchorSideRight.Side = asrBottom
-                Left = 142
-                Height = 23
-                Top = 50
-                Width = 100
-                ItemHeight = 15
-                ItemIndex = 0
-                Items.Strings = (
-                  'None'
-                )
-                TabOrder = 2
-                Text = 'None'
-              end
-              object lbImageMagickQuality: TLabel
-                AnchorSideLeft.Control = lbImageMagickSaveAs
-                AnchorSideTop.Control = cbImageMagickCompression
-                AnchorSideTop.Side = asrBottom
-                Left = 4
-                Height = 15
-                Top = 79
                 Width = 72
                 Caption = 'Image quality'
               end

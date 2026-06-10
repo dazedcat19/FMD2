@@ -276,10 +276,8 @@ begin
     gbImageMagick.Enabled := True;
     ckImageMagick.Enabled := True;
     cbImageMagickSaveAs.Enabled := True;
-    cbImageMagickCompression.Enabled := True;
     seImageMagickQuality.Enabled := True;
     SetComboBoxList(cbImageMagickSaveAs, FSupportedFormats);
-    SetComboBoxList(cbImageMagickCompression, FCompressionTypes);
   end;
 {$endif}
 end;
