@@ -439,6 +439,13 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit11>
+      <Unit11b>
+        <Filename Value="forms\frmTaskMonitor.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="FormTaskMonitor"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit11b>
       <Unit12>
         <Filename Value="forms\frmSelectDirectory.pas"/>
         <IsPartOfProject Value="True"/>

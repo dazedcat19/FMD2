@@ -593,6 +593,8 @@ function PNGToJPEGStream(const AStream: TMemoryStream; const AQuality: Integer =
 // try to save tmemorystream to file, return the saved filename if success, otherwise return empty string
 function SaveImageStreamToFile(Stream: TMemoryStream; Path, FileName: String; Age: LongInt = 0; const ContentType: String = ''): String; overload;
 function SaveImageStreamToFile(AHTTP: THTTPSend; Path, FileName: String): String; overload;
+// AIsConverting: optional pointer to a Boolean flag set True during ImageMagick ConvertStream
+function SaveImageStreamToFile(AHTTP: THTTPSend; Path, FileName: String; AIsConverting: PBoolean): String; overload;
 
 // check file exist with known extensions. AFilename is a filename without extensions
 function ImageFileExists(const AFileName: String): Boolean;
@@ -2549,6 +2551,92 @@ begin
     lastmodified := DateTimeToFileDate(DecodeRfcDateTime(s));
   contentType := Trim(AHTTP.Headers.Values['content-type']);
   Result := SaveImageStreamToFile(AHTTP.Document, Path, FileName, lastmodified, contentType);
+end;
+
+// Overload that accepts a PBoolean so the caller can track when ImageMagick is active.
+// AIsConverting is set True just before ConvertStream and cleared after.
+function SaveImageStreamToFile(AHTTP: THTTPSend; Path, FileName: String; AIsConverting: PBoolean): String;
+var
+  s, contentType: String;
+  lastmodified: LongInt;
+  FilePath, PathDirectory, FileExt, ConvertedExt: String;
+  FileStream: TFileStream;
+  ConvertedStream: TMemoryStream;
+  imgMagick: TImageMagickManager;
+begin
+  Result := '';
+  if AHTTP = nil then Exit;
+  s := Trim(AHTTP.Headers.Values['last-modified']);
+  lastmodified := 0;
+  if s <> '' then
+    lastmodified := DateTimeToFileDate(DecodeRfcDateTime(s));
+  contentType := Trim(AHTTP.Headers.Values['content-type']);
+
+  // --- inline of SaveImageStreamToFile(Stream,...) with IsConverting hook ---
+  if AHTTP.Document = nil then Exit;
+  if AHTTP.Document.Size = 0 then Exit;
+
+  PathDirectory := CorrectPathSys(Path);
+  if not ForceDirectories(PathDirectory) then Exit;
+
+  FileExt := GetImageStreamExt(AHTTP.Document);
+  if FileExt = '' then
+    FileExt := ExtFromContentType(contentType);
+
+  ConvertedExt := '';
+  if TImageMagickManager.Instance.Enabled then
+  begin
+    ConvertedExt := LowerCase(TImageMagickManager.Instance.SaveAs);
+    if (FileExt <> '') and (LowerCase(FileExt) = ConvertedExt) then
+      ConvertedExt := '';
+  end;
+
+  if ConvertedExt = '' then
+  begin
+    // No ImageMagick conversion needed — fall through to normal save
+    Result := SaveImageStreamToFile(AHTTP.Document, Path, FileName, lastmodified, contentType);
+    Exit;
+  end;
+
+  // ImageMagick conversion path — set the flag around ConvertStream
+  imgMagick := TImageMagickManager.Instance;
+  if imgMagick.PathFound then
+  begin
+    if Assigned(AIsConverting) then AIsConverting^ := True;
+    try
+      ConvertedStream := imgMagick.ConvertStream(AHTTP.Document, ConvertedExt, False, FileExt);
+    finally
+      if Assigned(AIsConverting) then AIsConverting^ := False;
+    end;
+    if Assigned(ConvertedStream) then
+    begin
+      AHTTP.Document.Clear;
+      AHTTP.Document.CopyFrom(ConvertedStream, ConvertedStream.Size);
+      AHTTP.Document.Position := 0;
+      FileExt := ConvertedExt;
+      ConvertedStream.Free;
+    end;
+  end;
+
+  // Save (whether conversion succeeded or fell back)
+  FilePath := PathDirectory + FileName + '.' + FileExt;
+  FilePath := MainForm.CheckLongNamePaths(FilePath);
+  if FileExists(FilePath) then
+    DeleteFile(FilePath);
+  try
+    FileStream := TFileStream.Create(FilePath, fmCreate);
+    try
+      AHTTP.Document.Position := 0;
+      FileStream.CopyFrom(AHTTP.Document, AHTTP.Document.Size);
+    finally
+      FileStream.Free;
+    end;
+    if lastmodified <> 0 then
+      FileSetDate(FilePath, lastmodified);
+    Result := FilePath;
+  except
+    Result := '';
+  end;
 end;
 
 function ImageFileExists(const AFileName: String): Boolean;

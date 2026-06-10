@@ -5174,6 +5174,19 @@ object MainForm: TMainForm
                 OnClick = btOpenLogClick
                 TabOrder = 3
               end
+              object btOpenTaskMonitor: TBitBtn
+                AnchorSideLeft.Control = ckEnableLogging
+                AnchorSideTop.Control = btOpenLog
+                AnchorSideTop.Side = asrBottom
+                Left = 4
+                Height = 26
+                Top = 133
+                Width = 130
+                AutoSize = True
+                Caption = 'Task Monitor'
+                OnClick = btOpenTaskMonitorClick
+                TabOrder = 4
+              end
               object edLogFileName: TCustomEditButton
                 AnchorSideLeft.Control = ckEnableLogging
                 AnchorSideTop.Control = lbLogFileName

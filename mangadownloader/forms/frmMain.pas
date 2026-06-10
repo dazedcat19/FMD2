@@ -26,7 +26,7 @@ uses
   frmAccountSet, frmWebsiteOptionCustom, frmCustomColor, frmLogger, frmTransferFavorites,
   frmLuaModulesUpdater, CheckUpdate, DBDataProcess, uDarkStyleParams, uWin32WidgetSetDark,
   SimpleTranslator, httpsendthread, DateUtils, SimpleException, uCustomControls,
-  uCustomControlsMultiLog, ImageMagickManager, frmCheckModules;
+  uCustomControlsMultiLog, ImageMagickManager, frmCheckModules, frmTaskMonitor;
 
 type
 
@@ -36,6 +36,7 @@ type
     appPropertiesMain: TApplicationProperties;
     btnDownloadFilterCustomDateApply: TBitBtn;
     btOpenLog: TBitBtn;
+    btOpenTaskMonitor: TBitBtn;
     btClearLogFile: TBitBtn;
     btAddToFavorites: TBitBtn;
     btCancelFavoritesCheck: TSpeedButton;
@@ -482,6 +483,7 @@ type
     procedure btFavoritesImportClick(Sender: TObject);
     procedure btnDownloadFilterCustomDateApplyClick(Sender: TObject);
     procedure btOpenLogClick(Sender: TObject);
+    procedure btOpenTaskMonitorClick(Sender: TObject);
     procedure btReadOnlineClick(Sender: TObject);
     procedure btMangaListSearchClearClick(Sender: TObject);
     procedure btUpdateListClick(Sender: TObject);
@@ -1359,6 +1361,7 @@ begin
 
   // logger
   FormLogger := TFormLogger.Create(Self);
+  FormTaskMonitor := TFormTaskMonitor.Create(Self);
 
   // initialize ImageMagick check
   TImageMagickManager.Initialize;
@@ -3121,6 +3124,12 @@ end;
 procedure TMainForm.btOpenLogClick(Sender: TObject);
 begin
   FormLogger.Show;
+end;
+
+procedure TMainForm.btOpenTaskMonitorClick(Sender: TObject);
+begin
+  FormTaskMonitor.StartMonitoring(DLManager);
+  FormTaskMonitor.Show;
 end;
 
 procedure TMainForm.btChecksClick(Sender: TObject);
