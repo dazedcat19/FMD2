@@ -250,7 +250,7 @@ begin
   FCompression := 'None';
   FParallelConversions := 1;
   FCPUCount := 0;
-  FSemaphore := CreateSemaphore(nil, FParallelConversions, 32, nil);
+  FSemaphore := CreateSemaphore(nil, 1, 1, nil);
   FDllHandle := NilHandle;
 
   if not FindMagickBinary then
@@ -308,11 +308,11 @@ begin
   if AValue > 32 then AValue := 32;
   if AValue = FParallelConversions then Exit;
   FParallelConversions := AValue;
-  // Recreate the semaphore with the new limit.
-  // This is safe to call from the main thread while no conversion is running.
+  // Semaphore stays at 1 — one wand runs at a time, but it uses
+  // FParallelConversions threads internally via MAGICK_THREAD_LIMIT.
   if FSemaphore <> 0 then CloseHandle(FSemaphore);
-  FSemaphore := CreateSemaphore(nil, FParallelConversions, 32, nil);
-  // Rebalance how many internal threads each ImageMagick wand may use.
+  FSemaphore := CreateSemaphore(nil, 1, 1, nil);
+  // Apply the new thread budget to ImageMagick immediately.
   UpdateMagickThreadLimit;
 end;
 function TImageMagickManager.GetLastError: String;
@@ -328,18 +328,18 @@ begin
 end;
 
 procedure TImageMagickManager.UpdateMagickThreadLimit;
-// Recalculates and applies MAGICK_THREAD_LIMIT based on CPU count and the
-// current ParallelConversions setting. Called at DLL load and whenever the
-// user changes ParallelConversions in the options UI.
-var
-  ThreadsPerWand: Integer;
+// MAGICK_THREAD_LIMIT = FParallelConversions directly.
+// This is the total thread budget ImageMagick may use across all cores.
+// Examples (from user's perspective):
+//   ParallelConversions=1  → 1 thread total  → single-threaded conversion
+//   ParallelConversions=5  → 5 threads total → ImageMagick spreads across 5 cores
+//   ParallelConversions=10 → 10 threads total → some cores get 2 threads each
+// The semaphore is always 1, so one wand runs at a time using all its threads.
 begin
   if FCPUCount < 1 then Exit;  // DLL not loaded yet
-  ThreadsPerWand := FCPUCount div FParallelConversions;
-  if ThreadsPerWand < 1 then ThreadsPerWand := 1;
-  SetEnvironmentVariable('MAGICK_THREAD_LIMIT', PChar(IntToStr(ThreadsPerWand)));
-  IMLog(Format('UpdateMagickThreadLimit: CPUCount=%d ParallelConversions=%d ThreadsPerWand=%d',
-    [FCPUCount, FParallelConversions, ThreadsPerWand]));
+  SetEnvironmentVariable('MAGICK_THREAD_LIMIT', PChar(IntToStr(FParallelConversions)));
+  IMLog(Format('UpdateMagickThreadLimit: CPUCount=%d ParallelConversions=%d MAGICK_THREAD_LIMIT=%d',
+    [FCPUCount, FParallelConversions, FParallelConversions]));
 end;
 
 function TImageMagickManager.GetTempPathStr: String;
