@@ -11,7 +11,20 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnCheckSite              = 'CheckSite'
+	m.OnLogin                  = 'Login'
+	m.AccountSupport           = true
+
+	local slang = require 'fmd.env'.SelectedLanguage
+	local translations = {
+		['en'] = {
+			['showpaidchapters'] = 'Show paid chapters'
+		},
+		['id_ID'] = {
+			['showpaidchapters'] = 'Tampilkan bab berbayar'
+		}
+	}
+	local lang = translations[slang] or translations.en
+	m.AddOptionCheckBox('showpaidchapters', lang.showpaidchapters, false)
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -24,6 +37,13 @@ API_URL = 'https://api.azoramoon.com'
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
+
+-- Sign in to the current website.
+function Login()
+	Template.Login()
+
+	return no_error
+end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
@@ -39,17 +59,9 @@ function GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	Template.GetPageNumber()
 
 	return true
-end
-
--- Verify the module's functionality by checking a specific manga and chapter.
-function CheckSite()
-    MANGACHECK.MangaURL     = '/series/the-little-tyrant-is-making-a-scene'
-    MANGACHECK.MangaTitle   = 'The Little Tyrant Is Making a Scene!'
-    MANGACHECK.ChapterURL   = '/series/the-little-tyrant-is-making-a-scene/chapter-26'
-    MANGACHECK.ChapterTitle = 'Chapter 26'
 end

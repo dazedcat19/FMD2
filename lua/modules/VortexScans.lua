@@ -11,7 +11,6 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 	m.OnLogin                  = 'Login'
 	m.AccountSupport           = true
 
@@ -55,68 +54,14 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local u = MaybeFillHost(MODULE.RootURL, URL)
-
-	if not HTTP.GET(u) then return net_problem end
-
-	local mid = HTTP.Document.ToString():match('&quot;postId&quot;:%[0,(%d+)%]')
-
-	if not HTTP.GET(API_URL .. '/api/post?postId=' .. mid) then return net_problem end
-
-	local x = CreateTXQuery(HTTP.Document)
-	local info = x.XPath('parse-json(.)?post')
-	MANGAINFO.Title     = x.XPathString('postTitle', info)
-	MANGAINFO.AltTitles = x.XPathString('alternativeTitles', info)
-	MANGAINFO.CoverLink = x.XPathString('featuredImage', info)
-	MANGAINFO.Authors   = x.XPathString('author', info)
-	MANGAINFO.Artists   = x.XPathString('artist', info)
-	MANGAINFO.Genres    = x.XPathString('string-join((genres?*/name, concat(upper-case(substring(seriesType, 1, 1)), lower-case(substring(seriesType, 2)))), ", ")', info)
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('seriesStatus', info), 'COMING_SOON|MASS_RELEASED|ONGOING', 'COMPLETED', 'HIATUS', 'CANCELLED|DROPPED')
-	MANGAINFO.Summary   = x.XPathString('postContent', info)
-
-	local slug = x.XPathString('slug', info)
-	local show_paid_chapters = MODULE.GetOption('showpaidchapters')
-
-	for v in x.XPath('chapters?*', info).Get() do
-		local is_accessible = v.GetProperty('isAccessible').ToString() ~= 'false'
-
-		if show_paid_chapters or is_accessible then
-			local cid = v.GetProperty('id').ToString()
-			local number = v.GetProperty('number').ToString()
-			local slug_ch = v.GetProperty('slug').ToString()
-			local title = v.GetProperty('title').ToString()
-
-			local chapter = 'Chapter ' .. number
-
-			if title == '' then
-				title = chapter
-			elseif not title:find(chapter, 1, true) then
-				title = chapter .. ' - ' .. title
-			end
-
-			MANGAINFO.ChapterLinks.Add(slug .. '/' .. slug_ch .. '/' .. cid)
-			MANGAINFO.ChapterNames.Add(title)
-		end
-	end
-	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
+	Template.GetInfo()
 
 	return no_error
 end
 
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local u = API_URL .. '/api/chapter?chapterId=' .. URL:match('/(%d+)$')
-
-	if not HTTP.GET(u) then return false end
-
-	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).chapter.images().url', TASK.PageLinks)
-
-	return true
-end
-
--- Prepare the URL, http header and/or http cookies before downloading an image.
-function BeforeDownloadImage()
-	Template.BeforeDownloadImage()
+	Template.GetPageNumber()
 
 	return true
 end
