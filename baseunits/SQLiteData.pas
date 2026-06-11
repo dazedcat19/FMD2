@@ -122,10 +122,10 @@ type
 
 function QuotedStrD(const S: String): String; overload; inline;
 
-function PrepSQLValue(const V: String): String; overload; inline;
-function PrepSQLValue(const V: Integer): String; overload; inline;
-function PrepSQLValue(const V: Boolean): String; overload; inline;
-function PrepSQLValue(const V: TDateTime): String; overload; inline;
+function PrepSQLValue(const V: String): String; overload;
+function PrepSQLValue(const V: Integer): String; overload;
+function PrepSQLValue(const V: Boolean): String; overload;
+function PrepSQLValue(const V: TDateTime): String; overload;
 
 implementation
 

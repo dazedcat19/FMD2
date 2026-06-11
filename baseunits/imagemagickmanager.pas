@@ -132,11 +132,12 @@ type
     function GetCompression: String;
     procedure SetCompression(ACompression: String);
     function GetLastError: String;
+    procedure SetLastError(const AMsg: String);
     function GetTempPathStr: String;
     function GetParallelConversions: Integer;
     procedure SetParallelConversions(AValue: Integer);
 
-    function WandConvertBlob(Stream: TMemoryStream; const OutputFormat: String; Coalesce: Boolean; const InputFormat: String = ''): TMemoryStream;
+    function WandConvertBlob(Stream: TMemoryStream; const OutputFormat: String; Coalesce: Boolean; const InputFormat: String; LocalQuality: Integer; const LocalCompression: String): TMemoryStream;
   public
     class function Instance: TImageMagickManager;
     class procedure Initialize;
@@ -315,6 +316,12 @@ begin
   try Result := FLastError; finally FLock.Release; end;
 end;
 
+procedure TImageMagickManager.SetLastError(const AMsg: String);
+begin
+  FLock.Acquire;
+  try FLastError := AMsg; finally FLock.Release; end;
+end;
+
 function TImageMagickManager.GetTempPathStr: String;
 var
   Buf: array[0..MAX_PATH] of Char;
@@ -434,6 +441,9 @@ var
   SR: SysUtils.TSearchRec;
   H: TLibHandle;
   DiagLog: String;
+  SysInfo: TSystemInfo;
+  CPUCount: Integer;
+  ThreadsPerWand: Integer;
 begin
   Result := False;
   if FDllHandle <> NilHandle then Exit(True);
@@ -450,7 +460,18 @@ begin
   SetEnvironmentVariable('MAGICK_CONFIGURE_PATH', PChar(FMagickPath));
   SetEnvironmentVariable('MAGICK_CODER_MODULE_PATH', PChar(FMagickPath + 'modules\coders'));
   SetEnvironmentVariable('MAGICK_FILTER_MODULE_PATH', PChar(FMagickPath + 'modules\filters'));
-  SetEnvironmentVariable('MAGICK_THREAD_LIMIT', '1');
+
+  // Allow ImageMagick to use multiple threads internally per wand operation.
+  // With FLock removed from the hot path, concurrent ConvertStream calls each
+  // get their own wand, so we divide CPU cores across parallel conversion slots.
+  // Example: 8 cores, ParallelConversions=2 → each wand gets 4 threads.
+  // Minimum 1 to avoid setting '0' which ImageMagick treats as "unlimited".
+  GetSystemInfo(SysInfo);
+  CPUCount := SysInfo.dwNumberOfProcessors;
+  if CPUCount < 1 then CPUCount := 1;
+  ThreadsPerWand := CPUCount div FParallelConversions;
+  if ThreadsPerWand < 1 then ThreadsPerWand := 1;
+  SetEnvironmentVariable('MAGICK_THREAD_LIMIT', PChar(IntToStr(ThreadsPerWand)));
 
   // Load every DLL in the bundled folder using LOAD_WITH_ALTERED_SEARCH_PATH.
   // This flag makes the Windows loader use each DLL's own directory when
@@ -629,7 +650,7 @@ begin
   end;
 end;
 
-function TImageMagickManager.WandConvertBlob(Stream: TMemoryStream; const OutputFormat: String; Coalesce: Boolean; const InputFormat: String = ''): TMemoryStream;
+function TImageMagickManager.WandConvertBlob(Stream: TMemoryStream; const OutputFormat: String; Coalesce: Boolean; const InputFormat: String; LocalQuality: Integer; const LocalCompression: String): TMemoryStream;
 var
   Wand: PMagickWand;
   CoalescedWand: PMagickWand;
@@ -639,19 +660,20 @@ var
   CompressionInt: Integer;
   SavedCW: Word;
 begin
+  // Save and set the x87 FPU control word — ImageMagick DLLs may alter it.
+  // Restored in the single finally block below.
   SavedCW := Get8087CW;
   Set8087CW($133F);
-  try
-    IMLog('WandConvertBlob: Start');
-    Result := nil;
-    if not Assigned(pNewMagickWand) then begin IMLog('WandConvertBlob: pNewMagickWand nil'); Exit; end;
+  IMLog('WandConvertBlob: Start');
+  Result := nil;
+  if not Assigned(pNewMagickWand) then begin IMLog('WandConvertBlob: pNewMagickWand nil'); Exit; end;
 
   IMLog('WandConvertBlob: Creating Wand');
   Wand := pNewMagickWand();
   if Wand = nil then
   begin
-    FLastError := 'Failed to create MagickWand';
-    IMLog('WandConvertBlob: ' + FLastError);
+    SetLastError('Failed to create MagickWand');
+    IMLog('WandConvertBlob: Failed to create MagickWand');
     Exit;
   end;
   IMLog('WandConvertBlob: Wand created');
@@ -664,8 +686,8 @@ begin
     IMLog('WandConvertBlob: Calling pMagickReadImageBlob');
     if pMagickReadImageBlob(Wand, Stream.Memory, Stream.Size) <> MagickTrue then
     begin
-      FLastError := 'MagickReadImageBlob failed: ' + GetException(Wand);
-      IMLog('WandConvertBlob: ' + FLastError);
+      SetLastError('MagickReadImageBlob failed: ' + GetException(Wand));
+      IMLog('WandConvertBlob: MagickReadImageBlob failed');
       Exit;
     end;
     IMLog('WandConvertBlob: ReadImageBlob OK');
@@ -676,8 +698,8 @@ begin
       CoalescedWand := pMagickCoalesceImages(Wand);
       if CoalescedWand = nil then
       begin
-        FLastError := 'MagickCoalesceImages failed: ' + GetException(Wand);
-        IMLog('WandConvertBlob: ' + FLastError);
+        SetLastError('MagickCoalesceImages failed: ' + GetException(Wand));
+        IMLog('WandConvertBlob: MagickCoalesceImages failed');
         Exit;
       end;
       pDestroyMagickWand(Wand);
@@ -691,21 +713,24 @@ begin
 
     FormatUpper := AnsiString(UpperCase(OutputFormat));
     if Assigned(pMagickSetImageCompressionQuality) then
-      pMagickSetImageCompressionQuality(Wand, FQuality);
+      pMagickSetImageCompressionQuality(Wand, LocalQuality);
 
-    if Assigned(pMagickSetImageCompression) then
+    if Assigned(pMagickSetImageCompression) and
+       (LocalCompression <> '') and (LocalCompression <> 'None') then
     begin
       CompressionInt := 0;
-      if FCompression = 'LZW' then CompressionInt := 1
-      else if FCompression = 'Zip' then CompressionInt := 2
-      else if FCompression = 'JPEG' then CompressionInt := 3;
-      pMagickSetImageCompression(Wand, CompressionInt);
+      if LocalCompression = 'LZW' then CompressionInt := 1
+      else if LocalCompression = 'Zip' then CompressionInt := 2
+      else if LocalCompression = 'JPEG' then CompressionInt := 3;
+      // Only call if a recognised compression type was matched
+      if CompressionInt > 0 then
+        pMagickSetImageCompression(Wand, CompressionInt);
     end;
 
     if pMagickSetFormat(Wand, PAnsiChar(FormatUpper)) <> MagickTrue then
     begin
-      FLastError := 'MagickSetFormat (output) failed: ' + GetException(Wand);
-      IMLog('WandConvertBlob: ' + FLastError);
+      SetLastError('MagickSetFormat (output) failed: ' + GetException(Wand));
+      IMLog('WandConvertBlob: MagickSetFormat failed');
       Exit;
     end;
     IMLog('WandConvertBlob: SetFormat=' + String(FormatUpper));
@@ -727,8 +752,8 @@ begin
       end
       else
       begin
-        FLastError := 'MagickGetImagesBlob returned no data: ' + GetException(Wand);
-        IMLog('WandConvertBlob: ' + FLastError);
+        SetLastError('MagickGetImagesBlob returned no data: ' + GetException(Wand));
+        IMLog('WandConvertBlob: MagickGetImagesBlob returned no data');
       end;
     end
     else if Assigned(pMagickGetImageBlob) then
@@ -748,14 +773,14 @@ begin
       end
       else
       begin
-        FLastError := 'MagickGetImageBlob returned no data: ' + GetException(Wand);
-        IMLog('WandConvertBlob: ' + FLastError);
+        SetLastError('MagickGetImageBlob returned no data: ' + GetException(Wand));
+        IMLog('WandConvertBlob: MagickGetImageBlob returned no data');
       end;
     end
     else
     begin
-      FLastError := 'No blob output function available';
-      IMLog('WandConvertBlob: ' + FLastError);
+      SetLastError('No blob output function available');
+      IMLog('WandConvertBlob: No blob output function available');
     end;
 
     if Assigned(BlobData) and Assigned(pMagickRelinquishMemory) then
@@ -772,9 +797,6 @@ begin
       IMLog('WandConvertBlob: Exception during Wand cleanup (ignored)');
     end;
     IMLog('WandConvertBlob: Finished');
-    Set8087CW(SavedCW);
-  end;
-  finally
     Set8087CW(SavedCW);
   end;
 end;
@@ -823,45 +845,67 @@ end;
 function TImageMagickManager.ConvertStream(Stream: TStream; const OutputFormat: String; Coalesce: Boolean = False; const InputFormat: String = ''): TMemoryStream;
 var
   InputMem: TMemoryStream;
+  OwnInputMem: Boolean;
+  LocalQuality: Integer;
+  LocalCompression: String;
+  LocalError: String;
 begin
   Result := nil;
   IMLog('ConvertStream: Start');
+
+  // Snapshot the settings that WandConvertBlob needs.
+  // This is the ONLY part that needs the lock — the actual wand work is
+  // fully stateless per-call and runs lock-free below.
   FLock.Acquire;
-  IMLog('ConvertStream: Lock acquired');
   try
-    FLastError := '';
-    InputMem := TMemoryStream.Create;
-    try
-      Stream.Position := 0;
-      IMLog('ConvertStream: Stream size=' + IntToStr(Stream.Size));
-      InputMem.CopyFrom(Stream, Stream.Size - Stream.Position);
-      InputMem.Position := 0;
-      IMLog('ConvertStream: Calling WandConvertBlob');
-      try
-        Result := WandConvertBlob(InputMem, OutputFormat, Coalesce, InputFormat);
-        IMLog('ConvertStream: WandConvertBlob returned ' + BoolToStr(Assigned(Result), True));
-      except
-        on E: Exception do
-        begin
-          if not Assigned(Result) then
-          begin
-            FLastError := 'WandConvertBlob exception: ' + E.Message;
-            IMLog('ConvertStream: ' + FLastError);
-          end
-          else
-          begin
-            IMLog('ConvertStream: WandConvertBlob raised exception but Result is valid: ' + E.Message);
-            FLastError := '';
-          end;
-        end;
-      end;
-    finally
-      InputMem.Free;
-    end;
+    LocalQuality     := FQuality;
+    LocalCompression := FCompression;
+    FLastError       := '';
   finally
     FLock.Release;
-    IMLog('ConvertStream: Lock released');
   end;
+
+  // If the input is already a TMemoryStream we use it directly (no copy).
+  // Otherwise we copy once into a local TMemoryStream.
+  // In both cases we reset Position to 0 so WandConvertBlob reads from the start.
+  // Note: WandConvertBlob reads Stream.Memory/Size directly (no seek), so using
+  // the caller's TMemoryStream directly is safe — we do not write to it.
+  OwnInputMem := not (Stream is TMemoryStream);
+  if OwnInputMem then
+  begin
+    InputMem := TMemoryStream.Create;
+    Stream.Position := 0;
+    InputMem.CopyFrom(Stream, Stream.Size - Stream.Position);
+    InputMem.Position := 0;
+  end
+  else
+  begin
+    InputMem := TMemoryStream(Stream);
+    InputMem.Position := 0;
+  end;
+
+  IMLog('ConvertStream: Stream size=' + IntToStr(InputMem.Size));
+
+  try
+    IMLog('ConvertStream: Calling WandConvertBlob (lock-free)');
+    try
+      Result := WandConvertBlob(InputMem, OutputFormat, Coalesce, InputFormat,
+                                LocalQuality, LocalCompression);
+      IMLog('ConvertStream: WandConvertBlob returned ' + BoolToStr(Assigned(Result), True));
+    except
+      on E: Exception do
+      begin
+        LocalError := 'WandConvertBlob exception: ' + E.Message;
+        IMLog('ConvertStream: ' + LocalError);
+        if not Assigned(Result) then
+          SetLastError(LocalError);
+      end;
+    end;
+  finally
+    if OwnInputMem then
+      InputMem.Free;
+  end;
+  IMLog('ConvertStream: Done');
 end;
 
 function TImageMagickManager.IsFormatSupported(const Format: String): Boolean;
