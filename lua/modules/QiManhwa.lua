@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'c753487e924c430aa822da3aac7acf21'
 	m.Name                     = 'Qi Manhwa'
-	m.RootURL                  = 'https://qimanhwa.com'
+	m.RootURL                  = 'https://qimanga.com'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
