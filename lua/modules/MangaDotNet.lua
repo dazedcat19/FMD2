@@ -83,6 +83,14 @@ local function DecodeRSC(flat)
 	return resolve(0)
 end
 
+local function ParseList(v)
+	if v == '' then return '' end
+	if v:sub(1, 1) == '[' then
+		return table.concat(json.decode(v), ', ')
+	end
+	return v
+end
+
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
@@ -129,8 +137,8 @@ function GetInfo()
 	MANGAINFO.Title     = manga.title
 	MANGAINFO.AltTitles = table.concat(manga.alt_titles or {}, ', ')
 	MANGAINFO.CoverLink = MaybeFillHost(MODULE.RootURL, manga.photo)
-	MANGAINFO.Authors   = table.concat(json.decode(manga.authors or '[]'), ', ')
-	MANGAINFO.Artists   = table.concat(json.decode(manga.artists or '[]'), ', ')
+	MANGAINFO.Authors   = ParseList(manga.authors)
+	MANGAINFO.Artists   = ParseList(manga.artists)
 	MANGAINFO.Genres    = table.concat(manga.genres or {}, ', ')
 	MANGAINFO.Status    = MangaInfoStatusIfPos(manga.status)
 	MANGAINFO.Summary   = manga.description
