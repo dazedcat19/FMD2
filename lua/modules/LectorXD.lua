@@ -1,105 +1,100 @@
 ----------------------------------------------------------------------------------------------------
--- LectorXD (lectorxd.com) — FMD2 module
--- Spanish manhwa/manga/manhua reader (Astro SSR site).
--- Series: /manhwa/<slug> , /manga/<slug> or /manhua/<slug>  ·  chapter: /<type>/<slug>/leer/<n>
+-- Module Initialization
 ----------------------------------------------------------------------------------------------------
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                    = 'f4cfcaa6ca9b4e25b7cfd4a41bcce99c'
-	m.Name                  = 'LectorXD'
-	m.RootURL               = 'https://lectorxd.com'
-	m.Category              = 'Spanish'
-	m.OnGetInfo             = 'GetInfo'
-	m.OnGetPageNumber       = 'GetPageNumber'
-	m.OnBeforeDownloadImage = 'BeforeDownloadImage'
+	m.ID                        = 'f4cfcaa6ca9b4e25b7cfd4a41bcce99c'
+	m.Name                      = 'LectorXD'
+	m.RootURL                   = 'https://lectorxd.com'
+	m.Category                  = 'Spanish'
+	m.OnGetDirectoryPageNumber  = 'GetDirectoryPageNumber'
+	m.OnGetNameAndLink          = 'GetNameAndLink'
+	m.OnGetInfo                 = 'GetInfo'
+	m.OnGetPageNumber           = 'GetPageNumber'
+	m.OnBeforeDownloadImage     = 'BeforeDownloadImage'
+	m.SortedList                = true
 end
 
 ----------------------------------------------------------------------------------------------------
--- Series info: title, cover and chapter list
+-- Local Constants
 ----------------------------------------------------------------------------------------------------
 
+local DirectoryPagination = '/catalogo?page='
+
+----------------------------------------------------------------------------------------------------
+-- Event Functions
+----------------------------------------------------------------------------------------------------
+
+-- Get the page count of the manga list of the current website.
+function GetDirectoryPageNumber()
+	local u = MODULE.RootURL .. DirectoryPagination .. '1'
+	if not HTTP.GET(u) then return net_problem end
+	local x = CreateTXQuery(HTTP.Document)
+	local s = x.XPathString('//nav//a[contains(@href, "page=")][last()]/@href')
+	local p = s:match('page=(%d+)')
+	PAGENUMBER = tonumber(p) or 1
+	return no_error
+end
+
+-- Get links and names from the manga list of the current website.
+function GetNameAndLink()
+	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1)
+	if not HTTP.GET(u) then return net_problem end
+	local x = CreateTXQuery(HTTP.Document)
+	for v in x.XPath('//div[contains(@class, "manga-grid")]//a[contains(@class, "flex")]').Get() do
+		local link = v.GetAttribute('href')
+		local name = x.XPathString('.//h4', v)
+		if link ~= '' and name ~= '' then
+			LINKS.Add(link)
+			NAMES.Add(name)
+		end
+	end
+	return no_error
+end
+
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	MANGAINFO.URL = MaybeFillHost(MODULE.RootURL, URL)
 	if not HTTP.GET(MANGAINFO.URL) then return net_problem end
-
 	local x = CreateTXQuery(HTTP.Document)
+	local s = HTTP.Document.ToString()
 
-	-- Title
-	MANGAINFO.Title = Trim(x.XPathString('//h1'))
-	if MANGAINFO.Title == '' then
-		local slug = MANGAINFO.URL:match('/([^/]+)$') or ''
-		MANGAINFO.Title = (slug:gsub('%-', ' '))
-	end
+	MANGAINFO.Title     = Trim(x.XPathString('//h1'))
+	MANGAINFO.CoverLink = x.XPathString('//meta[@property="og:image"]/@content')
+	MANGAINFO.Summary   = Trim(x.XPathString('//div[contains(@class,"prose")]//p'))
+	MANGAINFO.Genres    = x.XPathStringAll('//a[contains(@href, "catalogo?tags=")]')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(s, 'en_emision', 'completado')
 
-	-- Cover image
-	MANGAINFO.CoverLink = MaybeFillHost(MODULE.RootURL,
-		x.XPathString('//meta[@property="og:image"]/@content'))
+	-- Extract base path (e.g. /manga/kaoru-hana-wa-rin-to-saku)
+	local base = MANGAINFO.URL:match('https?://[^/]+(/.+)$') or ''
 
-	MANGAINFO.Summary = Trim(x.XPathString('//div[contains(@class,"description")]'))
-
-	-- Extract base path (/<type>/<slug>) and highest chapter number from visible links
-	local base   = ''
-	local maxCap = 0
-	local v = x.XPath('//a[contains(@href, "/leer/")]')
-	for i = 1, v.Count do
-		local href = v.Get(i).GetAttribute('href')
-		local b, n = href:match('(/%w+/[^/]+)/leer/(%d+)')
-		if b and base == '' then
-			base = b
-		end
-		if n then
-			n = tonumber(n)
-			if n > maxCap then maxCap = n end
-		end
-	end
-
-	-- Generate ALL chapters 1..maxCap (ascending order, covers pagination)
-	if base ~= '' and maxCap > 0 then
-		for n = 1, maxCap do
-			MANGAINFO.ChapterLinks.Add(base .. '/leer/' .. n)
-			MANGAINFO.ChapterNames.Add('Capítulo ' .. n)
+	-- Parse chapters from embedded chaptersList JS array (supports decimal numbers).
+	-- Uses a set to skip duplicates (the same data also appears in Astro component props).
+	local seen = {}
+	for ch in s:gmatch('"chapter":"([^"]+)"') do
+		if not seen[ch] then
+			seen[ch] = true
+			MANGAINFO.ChapterLinks.Add(base .. '/leer/' .. ch)
+			MANGAINFO.ChapterNames.Add('Capítulo ' .. ch)
 		end
 	end
 
 	return no_error
 end
 
-----------------------------------------------------------------------------------------------------
--- Chapter pages (images)
-----------------------------------------------------------------------------------------------------
-
-local function collectImages(x, xpath)
-	local count = 0
-	local v = x.XPath(xpath)
-	for i = 1, v.Count do
-		local node = v.Get(i)
-		local src = node.GetAttribute('data-src')
-		if src == '' then src = node.GetAttribute('src') end
-		if src:sub(1, 4) == 'http' then
-			TASK.PageLinks.Add(src)
-			count = count + 1
-		end
-	end
-	return count
-end
-
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	TASK.PageLinks.Clear()
-	if not HTTP.GET(MaybeFillHost(MODULE.RootURL, URL)) then return false end
-
-	local x = CreateTXQuery(HTTP.Document)
-	if collectImages(x, '//*[contains(@class, "page-container")]//img') == 0 then
-		collectImages(x, '//img[contains(@class, "page-image")]') -- fallback
+	local u = MaybeFillHost(MODULE.RootURL, URL)
+	if not HTTP.GET(u) then return false end
+	CreateTXQuery(HTTP.Document).XPathStringAll('//div[contains(@class, "page-container")]/img/@data-src', TASK.PageLinks)
+	if TASK.PageLinks.Count == 0 then
+		CreateTXQuery(HTTP.Document).XPathStringAll('//div[contains(@class, "page-container")]/img/@src', TASK.PageLinks)
 	end
-
 	return true
 end
 
-----------------------------------------------------------------------------------------------------
--- The site requires a Referer header to serve images
-----------------------------------------------------------------------------------------------------
-
+-- Prepare the URL, http header and/or http cookies before downloading an image.
 function BeforeDownloadImage()
 	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
 	return true
