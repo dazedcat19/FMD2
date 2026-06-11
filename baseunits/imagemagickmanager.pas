@@ -101,6 +101,7 @@ type
     FCompression: String;
     FLastError: String;
     FParallelConversions: Integer;
+    FCPUCount: Integer;         // cached at DLL load time, used by SetParallelConversions
     FSemaphore: THandle;
 
     FDllHandle: TLibHandle;
@@ -133,6 +134,7 @@ type
     procedure SetCompression(ACompression: String);
     function GetLastError: String;
     procedure SetLastError(const AMsg: String);
+    procedure UpdateMagickThreadLimit;
     function GetTempPathStr: String;
     function GetParallelConversions: Integer;
     procedure SetParallelConversions(AValue: Integer);
@@ -247,6 +249,7 @@ begin
   FQuality := 75;
   FCompression := 'None';
   FParallelConversions := 1;
+  FCPUCount := 0;
   FSemaphore := CreateSemaphore(nil, FParallelConversions, 32, nil);
   FDllHandle := NilHandle;
 
@@ -309,6 +312,8 @@ begin
   // This is safe to call from the main thread while no conversion is running.
   if FSemaphore <> 0 then CloseHandle(FSemaphore);
   FSemaphore := CreateSemaphore(nil, FParallelConversions, 32, nil);
+  // Rebalance how many internal threads each ImageMagick wand may use.
+  UpdateMagickThreadLimit;
 end;
 function TImageMagickManager.GetLastError: String;
 begin
@@ -320,6 +325,21 @@ procedure TImageMagickManager.SetLastError(const AMsg: String);
 begin
   FLock.Acquire;
   try FLastError := AMsg; finally FLock.Release; end;
+end;
+
+procedure TImageMagickManager.UpdateMagickThreadLimit;
+// Recalculates and applies MAGICK_THREAD_LIMIT based on CPU count and the
+// current ParallelConversions setting. Called at DLL load and whenever the
+// user changes ParallelConversions in the options UI.
+var
+  ThreadsPerWand: Integer;
+begin
+  if FCPUCount < 1 then Exit;  // DLL not loaded yet
+  ThreadsPerWand := FCPUCount div FParallelConversions;
+  if ThreadsPerWand < 1 then ThreadsPerWand := 1;
+  SetEnvironmentVariable('MAGICK_THREAD_LIMIT', PChar(IntToStr(ThreadsPerWand)));
+  IMLog(Format('UpdateMagickThreadLimit: CPUCount=%d ParallelConversions=%d ThreadsPerWand=%d',
+    [FCPUCount, FParallelConversions, ThreadsPerWand]));
 end;
 
 function TImageMagickManager.GetTempPathStr: String;
@@ -442,8 +462,6 @@ var
   H: TLibHandle;
   DiagLog: String;
   SysInfo: TSystemInfo;
-  CPUCount: Integer;
-  ThreadsPerWand: Integer;
 begin
   Result := False;
   if FDllHandle <> NilHandle then Exit(True);
@@ -461,17 +479,11 @@ begin
   SetEnvironmentVariable('MAGICK_CODER_MODULE_PATH', PChar(FMagickPath + 'modules\coders'));
   SetEnvironmentVariable('MAGICK_FILTER_MODULE_PATH', PChar(FMagickPath + 'modules\filters'));
 
-  // Allow ImageMagick to use multiple threads internally per wand operation.
-  // With FLock removed from the hot path, concurrent ConvertStream calls each
-  // get their own wand, so we divide CPU cores across parallel conversion slots.
-  // Example: 8 cores, ParallelConversions=2 → each wand gets 4 threads.
-  // Minimum 1 to avoid setting '0' which ImageMagick treats as "unlimited".
+  // Cache CPU count once here; UpdateMagickThreadLimit uses it on every call.
   GetSystemInfo(SysInfo);
-  CPUCount := SysInfo.dwNumberOfProcessors;
-  if CPUCount < 1 then CPUCount := 1;
-  ThreadsPerWand := CPUCount div FParallelConversions;
-  if ThreadsPerWand < 1 then ThreadsPerWand := 1;
-  SetEnvironmentVariable('MAGICK_THREAD_LIMIT', PChar(IntToStr(ThreadsPerWand)));
+  FCPUCount := SysInfo.dwNumberOfProcessors;
+  if FCPUCount < 1 then FCPUCount := 1;
+  UpdateMagickThreadLimit;
 
   // Load every DLL in the bundled folder using LOAD_WITH_ALTERED_SEARCH_PATH.
   // This flag makes the Windows loader use each DLL's own directory when
