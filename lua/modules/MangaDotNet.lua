@@ -84,7 +84,7 @@ local function DecodeRSC(flat)
 end
 
 local function ParseList(v)
-	if v == '' then return '' end
+	if not v or v == '' then return '' end
 	if v:sub(1, 1) == '[' then
 		return table.concat(json.decode(v), ', ')
 	end
