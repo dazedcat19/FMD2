@@ -158,10 +158,11 @@ local function isolatevm_js(js_code, pass_page)
     ]]
 end
 
--- Helper function to fetch FlareSolverr IP and Port from FMD config
+-- Helper function to fetch FlareSolverr IP, Port, and Status from FMD2 config
 local function get_flaresolverr_config()
     local ip = "127.0.0.1"
     local port = 8191
+    local use_fs = false
     local config_json = "lua/websitebypass/websitebypass_config.json"
     
     local file = io.open(config_json, "r")
@@ -171,10 +172,11 @@ local function get_flaresolverr_config()
         
         local json = require "utils.json"
         local config_table = json.decode(content)
-        if config_table['flaresolverr_ip'] then ip = config_table['flaresolverr_ip'] end
-        if config_table['flaresolverr_port'] then port = tonumber(config_table['flaresolverr_port']) end
+        ip = config_table['flaresolverr_ip']
+        port = tonumber(config_table['flaresolverr_port'])
+        use_fs = config_table['use_webdriver']
     end
-    return ip, port
+    return ip, port, use_fs
 end
 
 -- Helper functions to read/write persistent session data
@@ -199,8 +201,37 @@ end
 
 -- Function to load HTML content and optionally execute JavaScript on it
 local function run_html_with_js(url, js_code)
-    local fs_ip, fs_port = get_flaresolverr_config()
+    local fs_ip, fs_port, use_fs = get_flaresolverr_config()
     local stored_cookies, stored_ua = get_stored_data()
+
+    if not use_fs then
+        if HTTP.UserAgent ~= "" then
+            stored_ua = string.format("%q", HTTP.UserAgent)
+        end
+
+        local raw_cookie = ""
+        local cf = HTTP.Cookies.Values["cf_clearance"]
+        if cf ~= "" then
+            raw_cookie = "cf_clearance=" .. cf
+        end
+
+        if raw_cookie ~= "" then
+            local domain = url:match("https?://([^/]+)")
+            local cookies_kv = {}
+            for k, v in raw_cookie:gmatch("([^%s=;]+)=([^;]*)") do
+                table.insert(cookies_kv, {
+                    name = k,
+                    value = v,
+                    domain = domain,
+                    path = "/"
+                })
+            end
+            if #cookies_kv > 0 then
+                local json = require "utils.json"
+                stored_cookies = json.encode(cookies_kv)
+            end
+        end
+    end
 
     local setup_js = [[
         const puppeteer = require('puppeteer');
@@ -211,6 +242,7 @@ local function run_html_with_js(url, js_code)
             const url = "]] .. url .. [[";
             const fsHost = "]] .. fs_ip .. [[";
             const fsPort = ]] .. fs_port .. [[;
+            const useFS = ]] .. tostring(use_fs) .. [[;
 
             let currentCookies = ]] .. stored_cookies .. [[;
             let currentUA = ]] .. stored_ua .. [[;
@@ -280,33 +312,35 @@ local function run_html_with_js(url, js_code)
                 }
 
                 if (isCloudflare) {
-                    const fsData = await fsRequest();
-                    
-                    if (fsData && fsData.status === 'ok') {
-                        const fsCookies = fsData.solution.cookies;
-                        const fsUA = fsData.solution.userAgent;
+                    if (useFS) {
+                        const fsData = await fsRequest();
+                        
+                        if (fsData && fsData.status === 'ok') {
+                            const fsCookies = fsData.solution.cookies;
+                            const fsUA = fsData.solution.userAgent;
 
-                        if (fsUA) {
-                            currentUA = fsUA;
-                            await page.setUserAgent(fsUA);
-                        }
-                        if (fsCookies && fsCookies.length > 0) {
-                            const validCookies = fsCookies.map(c => ({
-                                name: c.name,
-                                value: c.value,
-                                domain: c.domain,
-                                path: c.path
-                            }));
-                            await page.setCookie(...validCookies);
-                        }
+                            if (fsUA) {
+                                currentUA = fsUA;
+                                await page.setUserAgent(fsUA);
+                            }
+                            if (fsCookies && fsCookies.length > 0) {
+                                const validCookies = fsCookies.map(c => ({
+                                    name: c.name,
+                                    value: c.value,
+                                    domain: c.domain,
+                                    path: c.path
+                                }));
+                                await page.setCookie(...validCookies);
+                            }
 
-                        try {
-                            await page.goto(url, { waitUntil: "domcontentloaded", timeout: 90000 });
-                        } catch (navError) {
-                            console.log("Re-navigation error:", navError.message);
+                            try {
+                                await page.goto(url, { waitUntil: "domcontentloaded", timeout: 90000 });
+                            } catch (navError) {
+                                console.log("Re-navigation error:", navError.message);
+                            }
+                        } else {
+                            console.log("FlareSolverr failed or isn't running on " + fsHost + ":" + fsPort + ". Attempting to continue...");
                         }
-                    } else {
-                        console.log("FlareSolverr failed or isn't running on " + fsHost + ":" + fsPort + ". Attempting to continue...");
                     }
                 }
 

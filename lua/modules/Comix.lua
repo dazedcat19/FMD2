@@ -126,20 +126,46 @@ end
 -- Get info and chapter list for the current manga.
 function GetInfo()
 	local mid = URL:match('/title/([^%-]+)%-')
-	local u = API_URL .. '/manga/' .. mid
+	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	local x = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString()))
-	local info = x.XPath('json(*).result')
-	MANGAINFO.Title     = x.XPathString('title', info)
-	MANGAINFO.AltTitles = x.XPathString('string-join(altTitles?*, ", ")', info)
-	MANGAINFO.CoverLink = x.XPathString('poster?medium', info)
-	MANGAINFO.Authors   = x.XPathString('string-join(authors?*?title, ", ")', info)
-	MANGAINFO.Artists   = x.XPathString('string-join(artists?*?title, ", ")', info)
-	MANGAINFO.Genres    = x.XPathString('string-join((genres?*?title, theme?*?title, demographics?*?title, concat(upper-case(substring(type, 1, 1)), lower-case(substring(type, 2)))), ", ")', info)
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status', info), 'releasing', 'finished', 'on_hiatus', 'discontinued')
-	MANGAINFO.Summary   = x.XPathString('synopsis', info)
+	local x = CreateTXQuery(HTTP.Document)
+	local info = require 'utils.json'.decode(x.XPathString('//script[@id="initial-data"]')).queries['["manga","detail","' .. mid .. '"]']
+
+	local authors = {}
+	for _, author in ipairs(info.authors or {}) do
+		table.insert(authors, author.title)
+	end
+
+	local artists = {}
+	for _, artist in ipairs(info.artists or {}) do
+		table.insert(artists, artist.title)
+	end
+
+	local genres = {}
+	for _, genre in ipairs(info.genres or {}) do
+		table.insert(genres, genre.title)
+	end
+	for _, demo in ipairs(info.demographics or {}) do
+		table.insert(genres, demo.title)
+	end
+	for _, theme in ipairs(info.theme or {}) do
+		table.insert(genres, theme.title)
+	end
+	if info.type then
+		local capitalized = info.type:sub(1,1):upper() .. info.type:sub(2):lower()
+		table.insert(genres, capitalized)
+	end
+
+	MANGAINFO.Title     = info.title
+	MANGAINFO.AltTitles = table.concat(info.altTitles or {}, ', ')
+	MANGAINFO.CoverLink = info.poster.medium
+	MANGAINFO.Authors   = table.concat(authors, ', ')
+	MANGAINFO.Artists   = table.concat(artists, ', ')
+	MANGAINFO.Genres    = table.concat(genres, ', ')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(info.status, 'releasing', 'finished', 'on_hiatus', 'discontinued')
+	MANGAINFO.Summary   = info.synopsis
 
 	local interceptor = [[
 		const items = window._capturedChapters || [];
