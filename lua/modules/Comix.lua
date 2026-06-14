@@ -13,7 +13,6 @@ function Init()
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
 	m.OnDownloadImage          = 'DownloadImage'
-	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 	m.SortedList               = true
 	m.MaxTaskLimit             = 2
 	m.MaxConnectionLimit       = 4
@@ -77,10 +76,51 @@ local function GetNodejsScript(interceptor)
 	]]
 end
 
-local function DecodeEncodedPrefix(data, seed, length)
+local function GetPermutationMatrixLcg(seed, n)
+	local arr = {}
+	for i = 0, n - 1 do arr[i] = i end
+	
+	local state = seed
+	local LCG_MULTIPLIER = 1664525
+	local LCG_INCREMENT = 1013904223
+	
+	for i = n - 1, 1, -1 do
+		state = (state * LCG_MULTIPLIER + LCG_INCREMENT) & 0xffffffff
+
+		local j = state % (i + 1)
+
+		local tmp = arr[i]
+		arr[i] = arr[j]
+		arr[j] = tmp
+	end
+
+	return arr
+end
+
+local function GetPermutationMatrixXorshift(seed, n)
+	local arr = {}
+	for i = 0, n - 1 do arr[i] = i end
+	
+	local state = seed | 1
+	for i = n - 1, 1, -1 do
+		state = (state ~ (state << 13)) & 0xffffffff
+		state = (state ~ (state >> 17)) & 0xffffffff
+		state = (state ~ (state << 5)) & 0xffffffff
+
+		local j = state % (i + 1)
+
+		local tmp = arr[i]
+		arr[i] = arr[j]
+		arr[j] = tmp
+	end
+
+	return arr
+end
+
+local function DecodeLcg(data, seed, length)
 	local ENC_MULTIPLIER = 1000005
 	local ENC_INCREMENT = 1234567891
-	local state = seed
+	local state = seed & 0xffffffff
 	local limit = math.min(length, #data)
 
 	local decoded = {}
@@ -92,6 +132,80 @@ local function DecodeEncodedPrefix(data, seed, length)
 	end
 
 	return table.concat(decoded) .. string.sub(data, limit + 1)
+end
+
+local function DecodeXorshift(data, seed, length, highByte)
+	local state = seed & 0xffffffff
+	local limit = math.min(length, #data)
+
+	local decoded = {}
+	for i = 1, limit do
+		state = (state ~ (state << 13)) & 0xffffffff
+		state = (state ~ (state >> 17)) & 0xffffffff
+		state = (state ~ (state << 5)) & 0xffffffff
+		
+		local key = highByte and ((state >> 24) & 0xff) or (state & 0xff)
+		local byte = string.byte(data, i)
+		decoded[i] = string.char(byte ~ key)
+	end
+
+	return table.concat(decoded) .. string.sub(data, limit + 1)
+end
+
+local function HasImageSignature(data)
+	if #data < 12 then return false end
+	local b1, b2, b3, b4 = data:byte(1, 4)
+	
+	if b1 == 82 and b2 == 73 and b3 == 70 and b4 == 70 then -- RIFF
+		local b9, b10, b11, b12 = data:byte(9, 12)
+		if b9 == 87 and b10 == 69 and b11 == 66 and b12 == 80 then -- WEBP
+			return true
+		end
+	end
+	if b1 == 0xFF and b2 == 0xD8 then return true end -- JPEG
+	if b1 == 0x89 and b2 == 80 and b3 == 78 and b4 == 71 then return true end -- PNG
+	return false
+end
+
+local function DecodeEncodedBytes(data, seed, length)
+	seed = seed & 0xffffffff
+	
+	local c1 = DecodeXorshift(data, seed, length, false)
+	if HasImageSignature(c1) then return c1 end
+
+	local c2 = DecodeXorshift(data, seed | 1, length, false)
+	if HasImageSignature(c2) then return c2 end
+
+	local c3 = DecodeXorshift(data, seed, length, true)
+	if HasImageSignature(c3) then return c3 end
+
+	local c4 = DecodeXorshift(data, seed | 1, length, true)
+	if HasImageSignature(c4) then return c4 end
+
+	local l1 = DecodeLcg(data, seed, length)
+	if HasImageSignature(l1) then return l1 end
+	
+	local l2 = DecodeLcg(data, seed | 1, length)
+	if HasImageSignature(l2) then return l2 end
+
+	return c1
+end
+
+local function ParseGrid(header)
+	if header == '' then return 5, 5 end
+
+	local parts = {}
+	for part in header:lower():gmatch('%d+') do
+		table.insert(parts, tonumber(part))
+	end
+	
+	if #parts == 1 and parts[1] > 1 then
+		return parts[1], parts[1]
+	elseif #parts >= 2 and parts[1] > 1 and parts[2] > 1 then
+		return parts[1], parts[2]
+	end
+	
+	return 5, 5
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -130,6 +244,7 @@ function GetInfo()
 
 	if not HTTP.GET(u) then return net_problem end
 
+	if HTTP.ResultCode ~= 200 then MANGAINFO.Title = 'Cloudflare workaround is required' return no_error end
 	local x = CreateTXQuery(HTTP.Document)
 	local info = require 'utils.json'.decode(x.XPathString('//script[@id="initial-data"]')).queries['["manga","detail","' .. mid .. '"]']
 
@@ -316,10 +431,23 @@ function GetPageNumber()
 			const items = pages.items || (Array.isArray(pages) ? pages : []);
 			let base = (pages.baseUrl || '').replace(/\/$/, '');
 
-			for (let item of items) {
+			for (let i = 0; i < items.length; i++) {
+				let item = items[i];
 				let url = typeof item === 'string' ? item : item.url;
 				if (!url) continue;
-				links.push(url.startsWith('http') ? url : base + '/' + url.replace(/^\//, ''));
+				let full = url.startsWith('http') ? url : base + '/' + url.replace(/^\//, '');
+				
+				let isV3 = (item.s === 1) || full.includes('?v3') || full.includes('&v3');
+				let isLegacy = !isV3 && ((i + 1) % 4 === 0);
+				
+				if (isV3) {
+					if (!full.includes('v3')) {
+						full += (full.includes('?') ? '&' : '?') + 'v3';
+					}
+				} else if (isLegacy) {
+					full += '#scrambled';
+				}
+				links.push(full);
 			}
 			submit({ links: links });
 		}
@@ -337,25 +465,51 @@ function GetPageNumber()
 	return true
 end
 
--- Download and decrypt image given the image URL.
+-- Download, decrypt and/or descramble image given the image URL.
 function DownloadImage()
+	local is_legacy_scramble = URL:find('#scrambled', 1, true)
+	local is_comix = URL:find('comix.to', 1, true)
+
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
+	if is_comix or is_legacy_scramble then
+		HTTP.Headers.Values['Origin'] = MODULE.RootURL
+	end
+
 	if not HTTP.GET(URL) then return false end
 
 	local enc_seed = tonumber(HTTP.Headers.Values['X-Enc-Seed'])
 	local enc_len = tonumber(HTTP.Headers.Values['X-Enc-Len'])
+	local enc_algo = HTTP.Headers.Values['X-Enc-Algo']
 
 	if enc_seed and enc_seed ~= 0 and enc_len then
 		local data = HTTP.Document.ToString()
-		local decrypted_data = DecodeEncodedPrefix(data, enc_seed, enc_len)
+		local decrypted_data = DecodeEncodedBytes(data, enc_seed, enc_len, enc_algo)
 		HTTP.Document.WriteString(decrypted_data)
 	end
 
-	return true
-end
+	local seed = tonumber(HTTP.Headers.Values['X-Scramble-Seed'])
+	local scramble_algo = tonumber(HTTP.Headers.Values['X-Scramble-Algo'])
 
--- Prepare the URL, http header and/or http cookies before downloading an image.
-function BeforeDownloadImage()
-	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+	if seed and seed ~= 0 then
+		local grid_header = HTTP.Headers.Values['X-Scramble-Grid']
+		local cols, rows = ParseGrid(grid_header)
+		local grid_size = cols * rows
+
+		local puzzle = require 'fmd.imagepuzzle'.Create(cols, rows)
+		local matrix
+		
+		if scramble_algo == 3 then
+			matrix = GetPermutationMatrixXorshift(seed, grid_size)
+		else
+			matrix = GetPermutationMatrixLcg(seed, grid_size)
+		end
+
+		for src_idx = 0, grid_size - 1 do
+			puzzle.Matrix[src_idx] = matrix[src_idx]
+		end
+
+		puzzle.DeScramble(HTTP.Document, HTTP.Document)
+	end
 
 	return true
 end
