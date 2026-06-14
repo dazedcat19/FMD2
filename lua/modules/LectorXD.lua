@@ -13,15 +13,12 @@ function Init()
 	m.OnGetInfo                 = 'GetInfo'
 	m.OnGetPageNumber           = 'GetPageNumber'
 	m.OnBeforeDownloadImage     = 'BeforeDownloadImage'
-	m.SortedList                = true
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
--- Note: The site does not support sorting by newest. All sort/order parameters
--- (?sort=created_at, ?sort=newest, ?order=latest) are ignored and return the same default listing.
 local DirectoryPagination = '/catalogo?page='
 
 ----------------------------------------------------------------------------------------------------
