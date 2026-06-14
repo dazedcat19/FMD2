@@ -158,7 +158,7 @@ local function isolatevm_js(js_code, pass_page)
     ]]
 end
 
--- Helper function to fetch FlareSolverr IP, Port, and Status from FMD2 config
+-- Helper function to fetch FlareSolverr configuration
 local function get_flaresolverr_config()
     local ip = "127.0.0.1"
     local port = 8191
@@ -172,9 +172,9 @@ local function get_flaresolverr_config()
         
         local json = require "utils.json"
         local config_table = json.decode(content)
-        ip = config_table['flaresolverr_ip']
-        port = tonumber(config_table['flaresolverr_port'])
-        use_fs = config_table['use_webdriver']
+        ip = config_table['flaresolverr_ip'] or ip
+        port = tonumber(config_table['flaresolverr_port']) or port
+        use_fs = config_table['use_webdriver'] or false
     end
     return ip, port, use_fs
 end
@@ -183,13 +183,12 @@ end
 local function get_stored_data()
     local cookies = "[]"
     local ua = "null"
-    local stored_cookies = MODULE.Storage["puppeteer_cookies"]
-    if stored_cookies ~= "" then
-        cookies = stored_cookies
+    
+    if MODULE.Storage["puppeteer_cookies"] ~= "" then
+        cookies = MODULE.Storage["puppeteer_cookies"]
     end
-    local stored_ua = MODULE.Storage["puppeteer_ua"]
-    if stored_ua ~= "" then
-        ua = string.format("%q", stored_ua) -- Escape the string for JS injection
+    if MODULE.Storage["puppeteer_ua"] ~= "" then
+        ua = string.format("%q", MODULE.Storage["puppeteer_ua"])
     end
     return cookies, ua
 end
@@ -204,32 +203,22 @@ local function run_html_with_js(url, js_code)
     local fs_ip, fs_port, use_fs = get_flaresolverr_config()
     local stored_cookies, stored_ua = get_stored_data()
 
-    if not use_fs then
-        if HTTP.UserAgent ~= "" then
-            stored_ua = string.format("%q", HTTP.UserAgent)
-        end
+    -- ALWAYS attempt to use active FMD2 session tokens first
+    if HTTP.UserAgent ~= "" then
+        stored_ua = string.format("%q", HTTP.UserAgent)
+    end
 
-        local raw_cookie = ""
-        local cf = HTTP.Cookies.Values["cf_clearance"]
-        if cf ~= "" then
-            raw_cookie = "cf_clearance=" .. cf
-        end
-
-        if raw_cookie ~= "" then
-            local domain = url:match("https?://([^/]+)")
-            local cookies_kv = {}
-            for k, v in raw_cookie:gmatch("([^%s=;]+)=([^;]*)") do
-                table.insert(cookies_kv, {
-                    name = k,
-                    value = v,
-                    domain = domain,
-                    path = "/"
-                })
-            end
-            if #cookies_kv > 0 then
-                local json = require "utils.json"
-                stored_cookies = json.encode(cookies_kv)
-            end
+    local cf = HTTP.Cookies.Values["cf_clearance"]
+    if cf ~= "" then
+        local domain = url:match("https?://([^/]+)")
+        if domain then
+            local json = require "utils.json"
+            stored_cookies = json.encode({{
+                name = "cf_clearance",
+                value = cf,
+                domain = domain,
+                path = "/"
+            }})
         end
     end
 
@@ -285,13 +274,7 @@ local function run_html_with_js(url, js_code)
                     await page.setUserAgent(currentUA);
                 }
                 if (currentCookies && currentCookies.length > 0) {
-                    const validCookies = currentCookies.map(c => ({
-                        name: c.name,
-                        value: c.value,
-                        domain: c.domain,
-                        path: c.path
-                    }));
-                    await page.setCookie(...validCookies);
+                    await page.setCookie(...currentCookies);
                 }
 
                 let response;
@@ -303,44 +286,29 @@ local function run_html_with_js(url, js_code)
 
                 let status = response ? response.status() : 200;
                 let title = await page.title();
-                let isCloudflare = false;
+                
+                // Determine if active FMD2 credentials hit a wall
+                let isCloudflare = [503, 403, 429].includes(status) || /Just a moment|Attention Required|Cloudflare/i.test(title);
 
-                if (status === 503 || status === 403 || status === 429) {
-                    isCloudflare = true;
-                } else if (title.includes("Just a moment") || title.includes("Attention Required") || title.includes("Cloudflare")) {
-                    isCloudflare = true;
-                }
+                if (isCloudflare && useFS) {
+                    const fsData = await fsRequest();
+                    
+                    if (fsData && fsData.status === 'ok') {
+                        currentUA = fsData.solution.userAgent;
+                        currentCookies = fsData.solution.cookies;
 
-                if (isCloudflare) {
-                    if (useFS) {
-                        const fsData = await fsRequest();
-                        
-                        if (fsData && fsData.status === 'ok') {
-                            const fsCookies = fsData.solution.cookies;
-                            const fsUA = fsData.solution.userAgent;
-
-                            if (fsUA) {
-                                currentUA = fsUA;
-                                await page.setUserAgent(fsUA);
-                            }
-                            if (fsCookies && fsCookies.length > 0) {
-                                const validCookies = fsCookies.map(c => ({
-                                    name: c.name,
-                                    value: c.value,
-                                    domain: c.domain,
-                                    path: c.path
-                                }));
-                                await page.setCookie(...validCookies);
-                            }
-
-                            try {
-                                await page.goto(url, { waitUntil: "domcontentloaded", timeout: 90000 });
-                            } catch (navError) {
-                                console.log("Re-navigation error:", navError.message);
-                            }
-                        } else {
-                            console.log("FlareSolverr failed or isn't running on " + fsHost + ":" + fsPort + ". Attempting to continue...");
+                        if (currentUA) await page.setUserAgent(currentUA);
+                        if (currentCookies && currentCookies.length > 0) {
+                            await page.setCookie(...currentCookies);
                         }
+
+                        try {
+                            await page.goto(url, { waitUntil: "domcontentloaded", timeout: 90000 });
+                        } catch (navError) {
+                            console.log("Re-navigation error:", navError.message);
+                        }
+                    } else {
+                        console.log("FlareSolverr failed or unreachable. Proceeding with existing structure...");
                     }
                 }
 
@@ -379,7 +347,7 @@ local function run_html_with_js(url, js_code)
         
         local json = require "utils.json"
         local parsed = json.decode(content)
-        if parsed.cookies then
+        if parsed and parsed.cookies then
             save_stored_data(json.encode(parsed.cookies), parsed.ua)
         end
     end
