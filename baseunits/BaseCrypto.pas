@@ -20,9 +20,10 @@ function AESEncryptCBCSHA256Base64Pkcs7(const s, key, iv: String): string;
 function AESDecryptCBCSHA256Base64Pkcs7(const s, key, iv: String): string;
 function AESDecryptCBCMD5Base64ZerosPadding(const s, key, iv: String): String;
 function AESDecryptCBCHexBase64ZerosPadding(const s, key, iv: String): String;
-function MD5Hex(const s: String): String;
 function AESEncryptCBC(const s, key, iv: String): String;
 function AESDecryptCBC(const s, key, iv: String): String;
+function AESCTR(const s, key, iv: String): String;
+function MD5Hex(const s: String): String;
 function RC4(const s, key: String): String;
 
 function SHA256(const s: String): String;
@@ -247,6 +248,64 @@ begin
         Burn;
         while (Length(Result) > 0) and (Result[Length(Result)] = #0) do
           SetLength(Result, Length(Result) - 1);
+      except
+        Result := '';
+      end;
+    finally
+      Free;
+    end;
+end;
+
+function AESCTR(const s, key, iv: String): String;
+var
+  keyBytes: TBytes;
+  Counter: array[0..15] of Byte;
+  Keystream: array[0..15] of Byte;
+  i, j, n: Integer;
+  ptrS, ptrR: PChar;
+begin
+  Result := '';
+  if (s = '') or (key = '') or (iv = '') then Exit;
+
+  SetLength(keyBytes, Length(key));
+  for i := 0 to Length(key) - 1 do
+    keyBytes[i] := Byte(key[i + 1]);
+
+  FillChar(Counter, SizeOf(Counter), 0);
+  for i := 0 to Min(15, Length(iv) - 1) do
+    Counter[i] := Byte(iv[i + 1]);
+
+  SetLength(Result, Length(s));
+  ptrS := @s[1];
+  ptrR := @Result[1];
+
+  with TDCP_rijndael.Create(nil) do
+    try
+      try
+        Init(keyBytes[0], Length(keyBytes) * 8, nil);
+        i := 0;
+        while i < Length(s) do
+        begin
+          EncryptECB(Counter, Keystream);
+          n := Min(16, Length(s) - i);
+
+          for j := 0 to n - 1 do
+            ptrR[i + j] := Char(Byte(ptrS[i + j]) xor Keystream[j]);
+
+          for j := 15 downto 0 do
+          begin
+            if Counter[j] = 255 then
+              Counter[j] := 0
+            else
+            begin
+              Inc(Counter[j]);
+              Break;
+            end;
+          end;
+
+          Inc(i, 16);
+        end;
+        Burn;
       except
         Result := '';
       end;

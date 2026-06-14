@@ -253,6 +253,12 @@ begin
   Result := 1;
 end;
 
+function crypto_aesctr(L: Plua_State): Integer; cdecl;
+begin
+  PushLuaString(L, AESCTR(GetLuaString(L, 1), GetLuaString(L, 2), GetLuaString(L, 3)));
+  Result := 1;
+end;
+
 function crypto_rc4(L: Plua_State): Integer; cdecl;
 begin
   PushLuaString(L, RC4(GetLuaString(L, 1), GetLuaString(L, 2)));
@@ -260,7 +266,7 @@ begin
 end;
 
 const
-  cryptomethods: packed array [0..22] of luaL_Reg = (
+  cryptomethods: packed array [0..23] of luaL_Reg = (
     (name: 'EncryptString'; func: @lua_encryptstring),
     (name: 'DecryptString'; func: @lua_decryptstring),
     (name: 'HTMLDecode'; func: @lua_htmldecode),
@@ -282,6 +288,7 @@ const
     (name: 'AESDecryptCBCSHA256Base64Pkcs7'; func: @crypto_AESDecryptCBCSHA256Base64Pkcs7),
     (name: 'AESDecryptCBCMD5Base64ZerosPadding'; func: @crypto_AESDecryptCBCMD5Base64ZerosPadding),
     (name: 'AESDecryptCBCHexBase64ZerosPadding'; func: @crypto_AESDecryptCBCHexBase64ZerosPadding),
+    (name: 'AESCTR'; func: @crypto_aesctr),
     (name: 'RC4'; func: @crypto_rc4),
     (name: nil; func: nil)
     );
