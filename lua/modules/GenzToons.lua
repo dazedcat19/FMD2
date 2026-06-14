@@ -6,29 +6,23 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'ef9347dbab424553b9909332c8739f32'
 	m.Name                     = 'Genz Toons'
-	m.RootURL                  = 'https://genzupdates.com'
+	m.RootURL                  = 'https://genztoons.org'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
 
-	local fmd = require 'fmd.env'
-	local slang = fmd.SelectedLanguage
-	local lang = {
+	local slang = require 'fmd.env'.SelectedLanguage
+	local translations = {
 		['en'] = {
 			['showpaidchapters'] = 'Show paid chapters'
 		},
 		['id_ID'] = {
 			['showpaidchapters'] = 'Tampilkan bab berbayar'
-		},
-		get =
-			function(self, key)
-				local sel = self[slang]
-				if sel == nil then sel = self['en'] end
-				return sel[key]
-			end
+		}
 	}
-	m.AddOptionCheckBox('showpaidchapters', lang:get('showpaidchapters'), false)
+	local lang = translations[slang] or translations.en
+	m.AddOptionCheckBox('showpaidchapters', lang.showpaidchapters, false)
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -55,9 +49,9 @@ function GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
 end
