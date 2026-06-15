@@ -130,7 +130,9 @@ function GetPageNumber()
                     )
                 else
                     img_url = json.XPathString('.', page)
-                    TASK.PageLinks.Add(MaybeFillHost(MODULE.RootURL, img_url))
+                    if not img_url:lower():match('%.svg[%?#]?') then
+                        TASK.PageLinks.Add(MaybeFillHost(MODULE.RootURL, img_url))
+                    end 
                 end
             end
             break
