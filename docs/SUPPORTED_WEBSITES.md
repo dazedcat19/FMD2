@@ -612,6 +612,7 @@
 | WieManga | [![https://www.wiemanga.com](https://img.shields.io/website?url=https://www.wiemanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.wiemanga.com)](https://www.wiemanga.com) | - | - | - |
 | Witch Scans | [![https://witchscans.com](https://img.shields.io/website?url=https://witchscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://witchscans.com)](https://witchscans.com) | OK | 14.06.2025 | - |
 | Wnacg | [![https://www.wnacg.org](https://img.shields.io/website?url=https://www.wnacg.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.wnacg.org)](https://www.wnacg.org) | - | - | - |
+| WolfManga | [![https://www.wolfmanga.com](https://img.shields.io/website?url=https://www.wolfmanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.wolfmanga.com)](https://www.wolfmanga.com) | OK | 16.06.2026 | - |
 | WoweScans | [![http://wowescans.co](https://img.shields.io/website?url=http://wowescans.co%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://wowescans.co)](http://wowescans.co) | - | - | - |
 | WuxiaWorld | [![https://wuxiaworld.site](https://img.shields.io/website?url=https://wuxiaworld.site%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://wuxiaworld.site)](https://wuxiaworld.site) | - | - | - |
 | XBatCat | [![https://xbat.app](https://img.shields.io/website?url=https://xbat.app%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://xbat.app)](https://xbat.app) | OK | 21.01.2026 | - |
