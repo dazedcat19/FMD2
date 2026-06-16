@@ -253,9 +253,85 @@ begin
   Result := 1;
 end;
 
+function crypto_aesencryptecbpkcs7(L: Plua_State): Integer; cdecl;
+begin
+  PushLuaString(L, AESEncryptECBPkcs7(GetLuaString(L, 1), GetLuaString(L, 2)));
+  Result := 1;
+end;
+
+function crypto_aesdecryptecbpkcs7(L: Plua_State): Integer; cdecl;
+begin
+  PushLuaString(L, AESDecryptECBPkcs7(GetLuaString(L, 1), GetLuaString(L, 2)));
+  Result := 1;
+end;
+
 function crypto_aesctr(L: Plua_State): Integer; cdecl;
 begin
   PushLuaString(L, AESCTR(GetLuaString(L, 1), GetLuaString(L, 2), GetLuaString(L, 3)));
+  Result := 1;
+end;
+
+function crypto_aescfb(L: Plua_State): Integer; cdecl;
+begin
+  PushLuaString(L, AESCFB(GetLuaString(L, 1), GetLuaString(L, 2), GetLuaString(L, 3)));
+  Result := 1;
+end;
+
+function crypto_aesofb(L: Plua_State): Integer; cdecl;
+begin
+  PushLuaString(L, AESOFB(GetLuaString(L, 1), GetLuaString(L, 2), GetLuaString(L, 3)));
+  Result := 1;
+end;
+
+function crypto_pbkdf2sha256(L: Plua_State): Integer; cdecl;
+begin
+  PushLuaString(L, PBKDF2SHA256(GetLuaString(L, 1), GetLuaString(L, 2), lua_tointeger(L, 3), lua_tointeger(L, 4)));
+  Result := 1;
+end;
+
+function crypto_base64urlencode(L: Plua_State): Integer; cdecl;
+begin
+  lua_pushstring(L, Base64URLEncode(GetLuaString(L, 1)));
+  Result := 1;
+end;
+
+function crypto_base64urldecode(L: Plua_State): Integer; cdecl;
+begin
+  PushLuaString(L, Base64URLDecode(GetLuaString(L, 1)));
+  Result := 1;
+end;
+
+function crypto_sha1hex(L: Plua_State): Integer; cdecl;
+begin
+  lua_pushstring(L, SHA1Hex(GetLuaString(L, 1)));
+  Result := 1;
+end;
+
+function crypto_hmac_sha1hex(L: Plua_State): Integer; cdecl;
+begin
+  lua_pushstring(L, HMAC_SHA1Hex(GetLuaString(L, 1), GetLuaString(L, 2)));
+  Result := 1;
+end;
+
+function crypto_aesgcmencrypt(L: Plua_State): Integer; cdecl;
+var
+  tagLen: Integer;
+begin
+  tagLen := 16;
+  if lua_gettop(L) >= 4 then
+    tagLen := lua_tointeger(L, 4);
+  PushLuaString(L, AESGCMEncrypt(GetLuaString(L, 1), GetLuaString(L, 2), GetLuaString(L, 3), tagLen));
+  Result := 1;
+end;
+
+function crypto_aesgcmdecrypt(L: Plua_State): Integer; cdecl;
+var
+  tagLen: Integer;
+begin
+  tagLen := 16;
+  if lua_gettop(L) >= 4 then
+    tagLen := lua_tointeger(L, 4);
+  PushLuaString(L, AESGCMDecrypt(GetLuaString(L, 1), GetLuaString(L, 2), GetLuaString(L, 3), tagLen));
   Result := 1;
 end;
 
@@ -266,7 +342,7 @@ begin
 end;
 
 const
-  cryptomethods: packed array [0..23] of luaL_Reg = (
+  cryptomethods: packed array [0..34] of luaL_Reg = (
     (name: 'EncryptString'; func: @lua_encryptstring),
     (name: 'DecryptString'; func: @lua_decryptstring),
     (name: 'HTMLDecode'; func: @lua_htmldecode),
@@ -274,22 +350,33 @@ const
     (name: 'HexToStr'; func: @crypto_hextostr),
     (name: 'StrToHexStr'; func: @crypto_strtohexstr),
     (name: 'MD5Hex'; func: @crypto_md5hex),
+    (name: 'SHA1Hex'; func: @crypto_sha1hex),
+    (name: 'HMAC_SHA1Hex'; func: @crypto_hmac_sha1hex),
     (name: 'SHA256'; func: @crypto_sha256),
-    (name: 'SHA512'; func: @crypto_sha512),
     (name: 'SHA256Hex'; func: @crypto_sha256hex),
+    (name: 'SHA512'; func: @crypto_sha512),
     (name: 'SHA512Hex'; func: @crypto_sha512hex),
     (name: 'HMAC_SHA256'; func: @crypto_hmac_sha256),
-    (name: 'HMAC_SHA512'; func: @crypto_hmac_sha512),
     (name: 'HMAC_SHA256Hex'; func: @crypto_hmac_sha256hex),
+    (name: 'HMAC_SHA512'; func: @crypto_hmac_sha512),
     (name: 'HMAC_SHA512Hex'; func: @crypto_hmac_sha512hex),
-	(name: 'AESEncryptCBC'; func: @crypto_aesencryptcbc),
+    (name: 'AESEncryptCBC'; func: @crypto_aesencryptcbc),
     (name: 'AESDecryptCBC'; func: @crypto_aesdecryptcbc),
     (name: 'AESEncryptCBCSHA256Base64Pkcs7'; func: @crypto_AESEncryptCBCSHA256Base64Pkcs7),
     (name: 'AESDecryptCBCSHA256Base64Pkcs7'; func: @crypto_AESDecryptCBCSHA256Base64Pkcs7),
     (name: 'AESDecryptCBCMD5Base64ZerosPadding'; func: @crypto_AESDecryptCBCMD5Base64ZerosPadding),
     (name: 'AESDecryptCBCHexBase64ZerosPadding'; func: @crypto_AESDecryptCBCHexBase64ZerosPadding),
+    (name: 'AESEncryptECBPkcs7'; func: @crypto_aesencryptecbpkcs7),
+    (name: 'AESDecryptECBPkcs7'; func: @crypto_aesdecryptecbpkcs7),
     (name: 'AESCTR'; func: @crypto_aesctr),
+    (name: 'AESCFB'; func: @crypto_aescfb),
+    (name: 'AESOFB'; func: @crypto_aesofb),
+    (name: 'AESGCMEncrypt'; func: @crypto_aesgcmencrypt),
+    (name: 'AESGCMDecrypt'; func: @crypto_aesgcmdecrypt),
     (name: 'RC4'; func: @crypto_rc4),
+    (name: 'PBKDF2SHA256'; func: @crypto_pbkdf2sha256),
+    (name: 'Base64URLEncode'; func: @crypto_base64urlencode),
+    (name: 'Base64URLDecode'; func: @crypto_base64urldecode),
     (name: nil; func: nil)
     );
 
