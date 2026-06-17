@@ -301,6 +301,32 @@ begin
   Result := 1;
 end;
 
+function crypto_aesencryptgcm(L: Plua_State): Integer; cdecl;
+var
+  aad: String;
+begin
+  if lua_gettop(L) >= 4 then
+    aad := GetLuaString(L, 4)
+  else
+    aad := '';
+    
+  PushLuaString(L, AESEncryptGCM(GetLuaString(L, 1), GetLuaString(L, 2), GetLuaString(L, 3), aad));
+  Result := 1;
+end;
+
+function crypto_aesdecryptgcm(L: Plua_State): Integer; cdecl;
+var
+  aad: String;
+begin
+  if lua_gettop(L) >= 4 then
+    aad := GetLuaString(L, 4)
+  else
+    aad := '';
+    
+  PushLuaString(L, AESDecryptGCM(GetLuaString(L, 1), GetLuaString(L, 2), GetLuaString(L, 3), aad));
+  Result := 1;
+end;
+
 function crypto_sha1hex(L: Plua_State): Integer; cdecl;
 begin
   lua_pushstring(L, SHA1Hex(GetLuaString(L, 1)));
@@ -310,28 +336,6 @@ end;
 function crypto_hmac_sha1hex(L: Plua_State): Integer; cdecl;
 begin
   lua_pushstring(L, HMAC_SHA1Hex(GetLuaString(L, 1), GetLuaString(L, 2)));
-  Result := 1;
-end;
-
-function crypto_aesgcmencrypt(L: Plua_State): Integer; cdecl;
-var
-  tagLen: Integer;
-begin
-  tagLen := 16;
-  if lua_gettop(L) >= 4 then
-    tagLen := lua_tointeger(L, 4);
-  PushLuaString(L, AESGCMEncrypt(GetLuaString(L, 1), GetLuaString(L, 2), GetLuaString(L, 3), tagLen));
-  Result := 1;
-end;
-
-function crypto_aesgcmdecrypt(L: Plua_State): Integer; cdecl;
-var
-  tagLen: Integer;
-begin
-  tagLen := 16;
-  if lua_gettop(L) >= 4 then
-    tagLen := lua_tointeger(L, 4);
-  PushLuaString(L, AESGCMDecrypt(GetLuaString(L, 1), GetLuaString(L, 2), GetLuaString(L, 3), tagLen));
   Result := 1;
 end;
 
@@ -371,12 +375,12 @@ const
     (name: 'AESCTR'; func: @crypto_aesctr),
     (name: 'AESCFB'; func: @crypto_aescfb),
     (name: 'AESOFB'; func: @crypto_aesofb),
-    (name: 'AESGCMEncrypt'; func: @crypto_aesgcmencrypt),
-    (name: 'AESGCMDecrypt'; func: @crypto_aesgcmdecrypt),
     (name: 'RC4'; func: @crypto_rc4),
     (name: 'PBKDF2SHA256'; func: @crypto_pbkdf2sha256),
     (name: 'Base64URLEncode'; func: @crypto_base64urlencode),
     (name: 'Base64URLDecode'; func: @crypto_base64urldecode),
+    (name: 'AESEncryptGCM'; func: @crypto_aesencryptgcm),
+    (name: 'AESDecryptGCM'; func: @crypto_aesdecryptgcm),
     (name: nil; func: nil)
     );
 

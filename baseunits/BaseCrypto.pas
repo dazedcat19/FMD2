@@ -32,8 +32,8 @@ function RC4(const s, key: String): String;
 function PBKDF2SHA256(const password, salt: String; iterations, dkLen: Integer): String;
 function Base64URLEncode(const s: String): String;
 function Base64URLDecode(const s: String): String;
-function AESGCMEncrypt(const plaintext, key, iv: String; tagLen: Integer = 16): String;
-function AESGCMDecrypt(const ciphertext, key, iv: String; tagLen: Integer = 16): String;
+function AESEncryptGCM(const s, key, iv, aad: String): String;
+function AESDecryptGCM(const s, key, iv, aad: String): String;
 
 function SHA1Hex(const s: String): String;
 function HMAC_SHA1Hex(const s, key: String): String;
@@ -795,301 +795,272 @@ begin
   Result := DecodeStringBase64(padded);
 end;
 
-// -------------------------------------------------------------------------
-// AES-GCM (NIST SP 800-38D)
-//
-// Internals:
-//   GHASH   — GF(2^128) multiply with the GCM reduction polynomial
-//   GCM_CTR — AES-CTR with big-endian 32-bit counter in the low 4 bytes
-//
-// Public API:
-//   AESGCMEncrypt(plaintext, key, iv [, tagLen]) -> ciphertext || tag
-//   AESGCMDecrypt(ciphertext||tag, key, iv [, tagLen]) -> plaintext
-//                 returns '' on auth failure
-//
-// tagLen defaults to 16 (full 128-bit tag). Values 12..16 are typical.
-// The IV (nonce) is almost always 12 bytes in practice; other lengths are
-// supported via the GHASH-based J0 derivation path.
-// -------------------------------------------------------------------------
-
 type
-  TGCMBlock = array[0..15] of Byte;
+  TBlock128 = array[0..15] of Byte;
 
-// GF(2^128) multiply: result = X * Y mod (x^128 + x^7 + x^2 + x + 1)
-procedure GHASHMul(const X, Y: TGCMBlock; out R: TGCMBlock);
+procedure XorBlock128(var Dest: TBlock128; const Src: TBlock128);
 var
-  V: TGCMBlock;
-  Z: TGCMBlock;
-  i, j, k: Integer;
-  bit: Byte;
-  lsb: Byte;
+  i: Integer;
 begin
-  FillChar(Z, SizeOf(Z), 0);
-  Move(Y, V, SizeOf(V));
-
   for i := 0 to 15 do
-  begin
-    for j := 7 downto 0 do
-    begin
-      bit := (X[i] shr j) and 1;
-      if bit = 1 then
-        for k := 0 to 15 do
-          Z[k] := Z[k] xor V[k];
-
-      // save lsb of V before shifting
-      lsb := V[15] and 1;
-      // V = V >> 1 (big-endian bitstream)
-      for k := 15 downto 1 do
-        V[k] := (V[k] shr 1) or ((V[k - 1] and 1) shl 7);
-      V[0] := V[0] shr 1;
-
-      if lsb = 1 then
-        V[0] := V[0] xor $E1;
-    end;
-  end;
-
-  Move(Z, R, SizeOf(R));
+    Dest[i] := Dest[i] xor Src[i];
 end;
 
-// GHASH(H, A, C): authenticate additional data A and ciphertext C under key H
-// All lengths are in bytes; both A and C may be empty.
-procedure GHASH(const H: TGCMBlock; const A, C: String; out Tag: TGCMBlock);
-var
-  Y, tmp: TGCMBlock;
-  i, j, n: Integer;
-  lenA, lenC: QWord;
-  lenBuf: array[0..15] of Byte;
-begin
-  FillChar(Y, SizeOf(Y), 0);
-
-  // Process A (additional authenticated data) in 16-byte blocks
-  i := 1;
-  while i <= Length(A) do
-  begin
-    FillChar(tmp, SizeOf(tmp), 0);
-    n := Min(16, Length(A) - i + 1);
-    Move(A[i], tmp[0], n);
-    for j := 0 to 15 do tmp[j] := tmp[j] xor Y[j];
-    GHASHMul(tmp, H, Y);
-    Inc(i, 16);
-  end;
-
-  // Process C (ciphertext) in 16-byte blocks
-  i := 1;
-  while i <= Length(C) do
-  begin
-    FillChar(tmp, SizeOf(tmp), 0);
-    n := Min(16, Length(C) - i + 1);
-    Move(C[i], tmp[0], n);
-    for j := 0 to 15 do tmp[j] := tmp[j] xor Y[j];
-    GHASHMul(tmp, H, Y);
-    Inc(i, 16);
-  end;
-
-  // Final block: len(A) || len(C) in bits, big-endian 64-bit each
-  lenA := QWord(Length(A)) * 8;
-  lenC := QWord(Length(C)) * 8;
-  lenBuf[0]  := (lenA shr 56) and $FF;
-  lenBuf[1]  := (lenA shr 48) and $FF;
-  lenBuf[2]  := (lenA shr 40) and $FF;
-  lenBuf[3]  := (lenA shr 32) and $FF;
-  lenBuf[4]  := (lenA shr 24) and $FF;
-  lenBuf[5]  := (lenA shr 16) and $FF;
-  lenBuf[6]  := (lenA shr  8) and $FF;
-  lenBuf[7]  :=  lenA         and $FF;
-  lenBuf[8]  := (lenC shr 56) and $FF;
-  lenBuf[9]  := (lenC shr 48) and $FF;
-  lenBuf[10] := (lenC shr 40) and $FF;
-  lenBuf[11] := (lenC shr 32) and $FF;
-  lenBuf[12] := (lenC shr 24) and $FF;
-  lenBuf[13] := (lenC shr 16) and $FF;
-  lenBuf[14] := (lenC shr  8) and $FF;
-  lenBuf[15] :=  lenC         and $FF;
-
-  for j := 0 to 15 do lenBuf[j] := lenBuf[j] xor Y[j];
-  GHASHMul(lenBuf, H, Tag);
-end;
-
-// Increment the 32-bit big-endian counter in the low 4 bytes of a GCM block
-procedure GCMIncCounter(var ctr: TGCMBlock);
+procedure Inc32Block(var Block: TBlock128);
 var
   i: Integer;
 begin
   for i := 15 downto 12 do
   begin
-    Inc(ctr[i]);
-    if ctr[i] <> 0 then Break;
-  end;
-end;
-
-// CTR-mode encrypt/decrypt using a pre-initialised rijndael cipher object.
-// Counter starts at ctr0 and is incremented per 16-byte block.
-procedure GCMCTRCrypt(cipher: TDCP_rijndael; const ctr0: TGCMBlock; const src: String; out dst: String);
-var
-  ctr: TGCMBlock;
-  ks: TGCMBlock;
-  i, j, n: Integer;
-begin
-  Move(ctr0, ctr, SizeOf(ctr));
-  SetLength(dst, Length(src));
-  i := 0;
-  while i < Length(src) do
-  begin
-    cipher.EncryptECB(ctr, ks);
-    n := Min(16, Length(src) - i);
-    for j := 0 to n - 1 do
-      dst[i + j + 1] := Char(Byte(src[i + j + 1]) xor ks[j]);
-    GCMIncCounter(ctr);
-    Inc(i, 16);
-  end;
-end;
-
-// Derive J0 (the initial counter block) from the IV.
-// For a 12-byte IV: J0 = IV || 0x00000001 (big-endian).
-// For other lengths: J0 = GHASH(H, '', IV) per NIST SP 800-38D §7.1.
-procedure GCMDeriveJ0(const H: TGCMBlock; const iv: String; out J0: TGCMBlock);
-begin
-  if Length(iv) = 12 then
-  begin
-    FillChar(J0, SizeOf(J0), 0);
-    Move(iv[1], J0[0], 12);
-    J0[15] := 1;
-  end
-  else
-    GHASH(H, '', iv, J0);
-end;
-
-function AESGCMEncrypt(const plaintext, key, iv: String; tagLen: Integer): String;
-var
-  keyBytes: TBytes;
-  i: Integer;
-  H: TGCMBlock;
-  J0: TGCMBlock;
-  ctr1: TGCMBlock;
-  zeroBlock: TGCMBlock;
-  ciphertext: String;
-  ghashTag, eJ0: TGCMBlock;
-  tag: String;
-  cipher: TDCP_rijndael;
-begin
-  Result := '';
-  if (key = '') or (iv = '') then Exit;
-  if tagLen < 1 then tagLen := 16;
-  if tagLen > 16 then tagLen := 16;
-
-  SetLength(keyBytes, Length(key));
-  for i := 0 to Length(key) - 1 do
-    keyBytes[i] := Byte(key[i + 1]);
-
-  cipher := TDCP_rijndael.Create(nil);
-  try
-    try
-      cipher.Init(keyBytes[0], Length(keyBytes) * 8, nil);
-
-      // H = E(K, 0^128)
-      FillChar(zeroBlock, SizeOf(zeroBlock), 0);
-      cipher.EncryptECB(zeroBlock, H);
-
-      // Derive J0
-      GCMDeriveJ0(H, iv, J0);
-
-      // CTR starts at J0+1
-      Move(J0, ctr1, SizeOf(J0));
-      GCMIncCounter(ctr1);
-
-      // Encrypt plaintext
-      if plaintext <> '' then
-        GCMCTRCrypt(cipher, ctr1, plaintext, ciphertext)
-      else
-        ciphertext := '';
-
-      // Tag = GHASH(H, '', ciphertext) xor E(K, J0)
-      GHASH(H, '', ciphertext, ghashTag);
-      cipher.EncryptECB(J0, eJ0);
-      SetLength(tag, tagLen);
-      for i := 0 to tagLen - 1 do
-        tag[i + 1] := Char(ghashTag[i] xor eJ0[i]);
-
-      cipher.Burn;
-      Result := ciphertext + tag;
-    except
-      Result := '';
+    if Block[i] = 255 then
+      Block[i] := 0
+    else begin
+      Inc(Block[i]);
+      Break;
     end;
-  finally
-    cipher.Free;
   end;
 end;
 
-function AESGCMDecrypt(const ciphertext, key, iv: String; tagLen: Integer): String;
+procedure GFMult128(var X: TBlock128; const Y: TBlock128);
 var
-  keyBytes: TBytes;
-  i: Integer;
-  H: TGCMBlock;
-  J0: TGCMBlock;
-  ctr1: TGCMBlock;
-  zeroBlock: TGCMBlock;
-  ct, storedTag: String;
-  ghashTag, eJ0: TGCMBlock;
-  computedTag: String;
-  ok: Boolean;
-  cipher: TDCP_rijndael;
+  Z, V: TBlock128;
+  i, j, k: Integer;
+  carry, nextCarry: Boolean;
 begin
-  Result := '';
-  if (key = '') or (iv = '') then Exit;
-  if tagLen < 1 then tagLen := 16;
-  if tagLen > 16 then tagLen := 16;
-  if Length(ciphertext) < tagLen then Exit;
+  FillChar(Z, SizeOf(Z), 0);
+  V := X;
+  for i := 0 to 15 do
+  begin
+    for j := 7 downto 0 do
+    begin
+      if (Y[i] and (1 shl j)) <> 0 then
+        XorBlock128(Z, V);
 
-  ct := Copy(ciphertext, 1, Length(ciphertext) - tagLen);
-  storedTag := Copy(ciphertext, Length(ciphertext) - tagLen + 1, tagLen);
-
-  SetLength(keyBytes, Length(key));
-  for i := 0 to Length(key) - 1 do
-    keyBytes[i] := Byte(key[i + 1]);
-
-  cipher := TDCP_rijndael.Create(nil);
-  try
-    try
-      cipher.Init(keyBytes[0], Length(keyBytes) * 8, nil);
-
-      FillChar(zeroBlock, SizeOf(zeroBlock), 0);
-      cipher.EncryptECB(zeroBlock, H);
-
-      GCMDeriveJ0(H, iv, J0);
-
-      // Verify tag before decrypting
-      GHASH(H, '', ct, ghashTag);
-      cipher.EncryptECB(J0, eJ0);
-      SetLength(computedTag, tagLen);
-      for i := 0 to tagLen - 1 do
-        computedTag[i + 1] := Char(ghashTag[i] xor eJ0[i]);
-
-      // Constant-time comparison
-      ok := True;
-      for i := 1 to tagLen do
-        if Byte(computedTag[i]) xor Byte(storedTag[i]) <> 0 then
-          ok := False;
-
-      if not ok then
+      carry := False;
+      for k := 0 to 15 do
       begin
-        cipher.Burn;
-        Exit;
+        nextCarry := (V[k] and 1) <> 0;
+        V[k] := V[k] shr 1;
+        if carry then
+          V[k] := V[k] or $80;
+        carry := nextCarry;
       end;
-
-      // Decrypt
-      Move(J0, ctr1, SizeOf(J0));
-      GCMIncCounter(ctr1);
-      if ct <> '' then
-        GCMCTRCrypt(cipher, ctr1, ct, Result)
-      else
-        Result := '';
-
-      cipher.Burn;
-    except
-      Result := '';
+      if carry then
+        V[0] := V[0] xor $E1;
     end;
+  end;
+  X := Z;
+end;
+
+procedure ComputeGHASH(const H: TBlock128; const AAD, C: String; var OutTag: TBlock128);
+var
+  X, tmp: TBlock128;
+  i, blocks, rem: Integer;
+  lenA, lenC: Int64;
+begin
+  FillChar(X, SizeOf(X), 0);
+
+  // Process AAD
+  blocks := Length(AAD) div 16;
+  for i := 0 to blocks - 1 do
+  begin
+    Move(AAD[i * 16 + 1], tmp, 16);
+    XorBlock128(X, tmp);
+    GFMult128(X, H);
+  end;
+  rem := Length(AAD) mod 16;
+  if rem > 0 then
+  begin
+    FillChar(tmp, SizeOf(tmp), 0);
+    Move(AAD[blocks * 16 + 1], tmp, rem);
+    XorBlock128(X, tmp);
+    GFMult128(X, H);
+  end;
+
+  // Process Ciphertext
+  blocks := Length(C) div 16;
+  for i := 0 to blocks - 1 do
+  begin
+    Move(C[i * 16 + 1], tmp, 16);
+    XorBlock128(X, tmp);
+    GFMult128(X, H);
+  end;
+  rem := Length(C) mod 16;
+  if rem > 0 then
+  begin
+    FillChar(tmp, SizeOf(tmp), 0);
+    Move(C[blocks * 16 + 1], tmp, rem);
+    XorBlock128(X, tmp);
+    GFMult128(X, H);
+  end;
+
+  // Length block (64-bit Big Endian)
+  FillChar(tmp, SizeOf(tmp), 0);
+  lenA := Length(AAD) * 8;
+  lenC := Length(C) * 8;
+  
+  tmp[0] := (lenA shr 56) and $FF;
+  tmp[1] := (lenA shr 48) and $FF;
+  tmp[2] := (lenA shr 40) and $FF;
+  tmp[3] := (lenA shr 32) and $FF;
+  tmp[4] := (lenA shr 24) and $FF;
+  tmp[5] := (lenA shr 16) and $FF;
+  tmp[6] := (lenA shr 8) and $FF;
+  tmp[7] := lenA and $FF;
+  
+  tmp[8] := (lenC shr 56) and $FF;
+  tmp[9] := (lenC shr 48) and $FF;
+  tmp[10] := (lenC shr 40) and $FF;
+  tmp[11] := (lenC shr 32) and $FF;
+  tmp[12] := (lenC shr 24) and $FF;
+  tmp[13] := (lenC shr 16) and $FF;
+  tmp[14] := (lenC shr 8) and $FF;
+  tmp[15] := lenC and $FF;
+
+  XorBlock128(X, tmp);
+  GFMult128(X, H);
+
+  OutTag := X;
+end;
+
+function AESEncryptGCM(const s, key, iv, aad: String): String;
+var
+  keyBytes: TBytes;
+  Cipher: TDCP_rijndael;
+  H, J0, CB, TagBlock, E_J0, tmp: TBlock128;
+  i, j, blocks, rem: Integer;
+  ZeroBlock: TBlock128;
+  CText: String;
+begin
+  Result := '';
+  if (s = '') or (key = '') or (iv = '') then Exit;
+
+  SetLength(keyBytes, Length(key));
+  for i := 0 to Length(key) - 1 do
+    keyBytes[i] := Byte(key[i + 1]);
+
+  FillChar(ZeroBlock, SizeOf(ZeroBlock), 0);
+
+  Cipher := TDCP_rijndael.Create(nil);
+  try
+    Cipher.Init(keyBytes[0], Length(keyBytes) * 8, nil);
+    Cipher.EncryptECB(ZeroBlock, H);
+
+    if Length(iv) = 12 then
+    begin
+      FillChar(J0, SizeOf(J0), 0);
+      Move(iv[1], J0[0], 12);
+      J0[15] := 1;
+    end
+    else
+      ComputeGHASH(H, '', iv, J0);
+
+    CB := J0;
+    Inc32Block(CB);
+
+    SetLength(CText, Length(s));
+    blocks := Length(s) div 16;
+    for i := 0 to blocks - 1 do
+    begin
+      Cipher.EncryptECB(CB, tmp);
+      for j := 0 to 15 do
+        CText[i * 16 + j + 1] := Char(Byte(s[i * 16 + j + 1]) xor tmp[j]);
+      Inc32Block(CB);
+    end;
+    
+    rem := Length(s) mod 16;
+    if rem > 0 then
+    begin
+      Cipher.EncryptECB(CB, tmp);
+      for j := 0 to rem - 1 do
+        CText[blocks * 16 + j + 1] := Char(Byte(s[blocks * 16 + j + 1]) xor tmp[j]);
+    end;
+
+    ComputeGHASH(H, aad, CText, TagBlock);
+    Cipher.EncryptECB(J0, E_J0);
+    XorBlock128(TagBlock, E_J0);
+
+    Result := CText;
+    SetLength(Result, Length(CText) + 16);
+    Move(TagBlock[0], Result[Length(CText) + 1], 16);
   finally
-    cipher.Free;
+    Cipher.Free;
+  end;
+end;
+
+function AESDecryptGCM(const s, key, iv, aad: String): String;
+var
+  keyBytes: TBytes;
+  Cipher: TDCP_rijndael;
+  H, J0, CB, TagBlock, E_J0, tmp, ExpectedTag: TBlock128;
+  i, j, blocks, rem: Integer;
+  ZeroBlock: TBlock128;
+  CText, PText: String;
+  diff: Byte;
+begin
+  Result := '';
+  if (Length(s) < 16) or (key = '') or (iv = '') then Exit;
+
+  SetLength(keyBytes, Length(key));
+  for i := 0 to Length(key) - 1 do
+    keyBytes[i] := Byte(key[i + 1]);
+
+  // Extract Ciphertext and 16-byte Authentication Tag
+  CText := Copy(s, 1, Length(s) - 16);
+  Move(s[Length(s) - 15], ExpectedTag[0], 16);
+
+  FillChar(ZeroBlock, SizeOf(ZeroBlock), 0);
+
+  Cipher := TDCP_rijndael.Create(nil);
+  try
+    Cipher.Init(keyBytes[0], Length(keyBytes) * 8, nil);
+    Cipher.EncryptECB(ZeroBlock, H);
+
+    if Length(iv) = 12 then
+    begin
+      FillChar(J0, SizeOf(J0), 0);
+      Move(iv[1], J0[0], 12);
+      J0[15] := 1;
+    end
+    else
+      ComputeGHASH(H, '', iv, J0);
+
+    // Authenticate Tag first
+    ComputeGHASH(H, aad, CText, TagBlock);
+    Cipher.EncryptECB(J0, E_J0);
+    XorBlock128(TagBlock, E_J0);
+
+    // Constant-time tag validation to prevent timing attacks
+    diff := 0;
+    for i := 0 to 15 do
+      diff := diff or (TagBlock[i] xor ExpectedTag[i]);
+    if diff <> 0 then Exit; // Auth failed, return empty string
+
+    // Decrypt
+    CB := J0;
+    Inc32Block(CB);
+
+    SetLength(PText, Length(CText));
+    blocks := Length(CText) div 16;
+    for i := 0 to blocks - 1 do
+    begin
+      Cipher.EncryptECB(CB, tmp);
+      for j := 0 to 15 do
+        PText[i * 16 + j + 1] := Char(Byte(CText[i * 16 + j + 1]) xor tmp[j]);
+      Inc32Block(CB);
+    end;
+    
+    rem := Length(CText) mod 16;
+    if rem > 0 then
+    begin
+      Cipher.EncryptECB(CB, tmp);
+      for j := 0 to rem - 1 do
+        PText[blocks * 16 + j + 1] := Char(Byte(CText[blocks * 16 + j + 1]) xor tmp[j]);
+    end;
+
+    Result := PText;
+  finally
+    Cipher.Free;
   end;
 end;
 
