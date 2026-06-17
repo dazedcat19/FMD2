@@ -73,7 +73,7 @@ end
 
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
-	local u = MODULE.RootURL .. '/browse?sort=created_at'
+	local u = MODULE.RootURL .. '/browse?sort=release_date'
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -92,20 +92,18 @@ end
 function GetNameAndLink()
 	local u = MODULE.RootURL .. '/livewire/update'
 	local s = '{"_token":"' .. MODULE.Storage['token'] .. '","components":[{"snapshot":"{\\"data\\":{\\"param\\":[{\\"type\\":null,\\"genre\\":[[],{\\"s\\":\\"arr\\"}],\\"heading\\":\\"Browse\\"},' ..
-	'{\\"s\\":\\"arr\\"}],\\"genre\\":[[],{\\"s\\":\\"arr\\"}],\\"scene\\":null,\\"release\\":null,\\"vote_average\\":null,\\"platform\\":null,\\"type\\":null,\\"search\\":null,\\"sort\\":\\"created_at\\",' ..
-	'\\"status\\":null,\\"min_chapters\\":null,\\"excludeGenre\\":[[],{\\"s\\":\\"arr\\"}],\\"release_start\\":null,\\"release_end\\":null,\\"loading\\":false,\\"filterOpen\\":false,\\"openSort\\":false,' ..
+	'{\\"s\\":\\"arr\\"}],\\"genre\\":[[],{\\"s\\":\\"arr\\"}],\\"scene\\":null,\\"release\\":null,\\"vote_average\\":null,\\"platform\\":null,\\"type\\":null,\\"search\\":null,\\"sort\\":\\"release_date\\",' ..
+	'\\"status\\":null,\\"min_chapters\\":null,\\"group\\":null,\\"excludeGenre\\":[[],{\\"s\\":\\"arr\\"}],\\"release_start\\":null,\\"release_end\\":null,\\"loading\\":false,\\"filterOpen\\":false,\\"openSort\\":false,' ..
 	'\\"paginators\\":[{\\"page\\":1},{\\"s\\":\\"arr\\"}]},\\"memo\\":{\\"id\\":\\"' .. MODULE.Storage['id'] .. '\\",\\"name\\":\\"post-filter\\",\\"path\\":\\"browse\\",\\"method\\":\\"GET\\",' ..
 	'\\"release\\":\\"a-a-a\\",\\"children\\":[],\\"scripts\\":[],\\"assets\\":[],\\"errors\\":[],\\"locale\\":\\"en\\"},\\"checksum\\":\\"' .. MODULE.Storage['checksum'] .. '\\"}","updates":{},' ..
 	'"calls":[{"path":"","method":"gotoPage","params":[' .. (URL + 1) .. ']}]}]}'
 
-	HTTP.Reset()
 	HTTP.MimeType = 'application/json'
 
 	if not HTTP.POST(u, s) then return net_problem end
 
-	local body = HTTP.Document.ToString()
-	if body:sub(1, 1) == '<' then print('Cookies workaround is needed') return no_error end
-	CreateTXQuery(json.decode(body).components[1].effects.html).XPathHREFTitleAll('//a[@title]', LINKS, NAMES)
+	if HTTP.ResultCode ~= 200 then print('Cloudflare workaround is required') return no_error end
+	CreateTXQuery(json.decode(HTTP.Document.ToString()).components[1].effects.html).XPathHREFTitleAll('//a[@title]', LINKS, NAMES)
 
 	return no_error
 end
@@ -145,9 +143,8 @@ function GetInfo()
 
 		if not HTTP.POST(MODULE.RootURL .. '/livewire/update', s) then return net_problem end
 
-		local body = HTTP.Document.ToString()
-		if body:sub(1, 1) == '<' then MANGAINFO.Title = 'Cookies workaround is needed' return no_error end
-		local data = json.decode(body).components[1]
+		if HTTP.ResultCode ~= 200 then MANGAINFO.Title = 'Cloudflare workaround is required' return no_error end
+		local data = json.decode(HTTP.Document.ToString()).components[1]
 		checksum = json.decode(data.snapshot).checksum
 		x.ParseHTML(data.effects.html)
 
