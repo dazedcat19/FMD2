@@ -293,31 +293,31 @@ const
   MB = 1024 * KB;
   GB = 1024 * MB;
 begin
-  if bytes > GB then
-    Result := FormatFloat('#.## GB', bytes / GB)
-  else
-  if bytes > MB then
-    Result := FormatFloat('#.## MB', bytes / MB)
-  else
-  if bytes > KB then
-    Result := FormatFloat('#.## KB', bytes / KB)
-  else
-  if bytes = 0 then
+  if bytes < KB then
   begin
+    Result := FormatFloat('#.##', bytes);
+
     if persecond then
-      Result := '0 B'
+    begin
+      Result += ' B ps';
+    end
     else
-      Result := '0 bytes';
+    begin
+      Result += ' bytes';
+    end;
   end
-  else
+  else if bytes >= KB then
   begin
-    if persecond then
-      Result := FormatFloat('#.## B', bytes)
-    else
-      Result := FormatFloat('#.## bytes', bytes);
+    Result := FormatFloat('#.## KB', bytes / KB);
+  end
+  else if bytes >= MB then
+  begin
+    Result := FormatFloat('#.## MB', bytes / MB);
+  end
+  else if bytes >= GB then
+  begin
+    Result := FormatFloat('#.## GB', bytes / GB);
   end;
-  if persecond then
-    Result := Result + 'ps';
 end;
 
 
