@@ -14,6 +14,8 @@ function Init()
 	m.OnGetPageNumber          = 'GetPageNumber'
 	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 	m.SortedList               = true
+
+	m.AddOptionEdit('session', 'Session ID:')
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -56,6 +58,7 @@ end
 function GetInfo()
 	local source, slug = URL:match('source=([^&]+).*slug=([^&]+)')
 	local u = MODULE.RootURL .. '/api/manga.php?source=' .. source .. '&slug=' .. slug
+	HTTP.Cookies.Values['comicaso_session'] = MODULE.GetOption('session')
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -93,6 +96,8 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
+	HTTP.Reset()
+	HTTP.Cookies.Values['comicaso_session'] = MODULE.GetOption('session')
 	local source, slug, cid = URL:match('^/([^/]+)/([^/]+)/([^/]+)$')
 	local u = MODULE.RootURL .. '/api/chapter.php?source=' .. source .. '&manga=' .. slug .. '&chapter=' .. cid
 
