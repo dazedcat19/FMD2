@@ -130,6 +130,9 @@ function GetInfo()
 	local id = ss.memo.id
 	local checksum = ss.checksum
 
+	local optlang   = MODULE.GetOption('lang')
+	local optlangid = FindLanguage(optlang)
+
 	local page = 1
 	local pages = math.ceil(x.XPathString('//div[contains(@class, "whitespace-nowrap -mt-1 -mb-1")]') / 100 - 1) or 1
 	while true do
@@ -147,9 +150,6 @@ function GetInfo()
 		local data = json.decode(HTTP.Document.ToString()).components[1]
 		checksum = json.decode(data.snapshot).checksum
 		x.ParseHTML(data.effects.html)
-
-		local optlang   = MODULE.GetOption('lang')
-		local optlangid = FindLanguage(optlang)
 
 		for v in x.XPath('//div[@class="relative"]//a').Get() do
 			local title = x.XPathString('.//div[@data-flux-heading]', v)
