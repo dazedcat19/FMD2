@@ -4,15 +4,16 @@
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                         = '1a7b98800a114a3da5f48de91f45a880'
-	m.Name                       = 'ReadComicOnline'
-	m.RootURL                    = 'https://rcostation.xyz'
-	m.Category                   = 'English'
-	m.OnGetDirectoryPageNumber   = 'GetDirectoryPageNumber'
-	m.OnGetNameAndLink           = 'GetNameAndLink'
-	m.OnGetInfo                  = 'GetInfo'
-	m.OnGetPageNumber            = 'GetPageNumber'
-	m.SortedList                 = true
+	m.ID                       = '1a7b98800a114a3da5f48de91f45a880'
+	m.Name                     = 'ReadComicOnline'
+	m.RootURL                  = 'https://rcostation.xyz'
+	m.Category                 = 'English'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
+	m.SortedList               = true
 
 	local slang = require 'fmd.env'.SelectedLanguage
 	local translations = {
@@ -71,7 +72,7 @@ function GetInfo()
 
 	local x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Title     = x.XPathString('//a[@class="bigChar"]')
-	MANGAINFO.CoverLink = MaybeFillHost(MODULE.RootURL, x.XPathString('//div[@id="rightside" and div="Cover"]//img/@src'))
+	MANGAINFO.CoverLink = MaybeFillHost(MODULE.RootURL, x.XPathString('//link[@rel="image_src"]/@href'))
 	MANGAINFO.Authors   = x.XPathStringAll('//div[@class="barContent"]//p[span=("Author:","Writer:")]/a')
 	MANGAINFO.Artists   = x.XPathStringAll('//div[@class="barContent"]//p[span="Artist:"]/a')
 	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="barContent"]//p[span="Genres:"]/a')
@@ -103,10 +104,28 @@ function GetPageNumber()
 		var pageLinks = [];
 		var urlPattern = /^https?:\/\/(?:www\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)+\b(?:[\/a-z0-9-._~:?#@!$&'()*+,;=%]*)$/i;
 		var reverseOrder = false;
-		var replacePatternRegex = /\.replace\(\s*\/(\w+__\w+_)\/g\s*,\s*['"](\w)['"]\s*\)/;
+		var replacePatternRegex = /\.replace\(\s*\/(\w+__\w+_)\/g\s*,\s*(?:['"](\w)['"]|(\w+))\s*\)/;
 		var replaceMatch = _encryptedString.match(replacePatternRegex);
-		var obfuscationPattern = replaceMatch ? new RegExp(replaceMatch[1], "g") : /\w{2}__\w{6}_/g;
-		var replacementChar = replaceMatch ? replaceMatch[2] : "e";
+		var obfuscationPattern = /\w{2}__\w{6}_/g;
+		var replacementChar = "e";
+
+		if (replaceMatch) {
+			obfuscationPattern = new RegExp(replaceMatch[1], "g");
+			if (replaceMatch[2]) {
+				replacementChar = replaceMatch[2];
+			} else {
+				var t_var = replaceMatch[3];
+				var e_regex = new RegExp(t_var + "\\s*=\\s*['\"](\\w)['\"]", "g");
+				var sMatches = [];
+				var sMatch;
+				while ((sMatch = e_regex.exec(_encryptedString)) !== null) {
+					sMatches.push(sMatch);
+				}
+				if (sMatches.length > 0) {
+					replacementChar = sMatches[sMatches.length - 1][1];
+				}
+			}
+		}
 
 		var arrayVars = [];
 		var varRegex = /var\s+(\w+)\s*=\s*new\s+Array\(\)\s*;/g;
@@ -120,26 +139,36 @@ function GetPageNumber()
 
 		for (var i = 0; i < arrayVars.length; i++) {
 			var t = arrayVars[i];
-			var e = new RegExp("\\w+\\s*\\([^)]*\\b" + t + "\\b[^)]*,\\s*[\"']([^\"']{20,})[\"'][,\\s]*\\)", "g");
+			var e = new RegExp("\\w+\\s*\\([^)]*\\b" + t + "\\b[^)]*\\)", "g");
 			
-			var sMatches = [];
-			var sMatch;
-			while ((sMatch = e.exec(_encryptedString)) !== null) {
-				sMatches.push(sMatch);
+			var sMatches2 = [];
+			var sMatch2;
+			while ((sMatch2 = e.exec(_encryptedString)) !== null) {
+				sMatches2.push(sMatch2);
 			}
 			
-			if (sMatches.length === 0) continue;
+			if (sMatches2.length === 0) continue;
 			
 			var r = [];
-			for (var j = 0; j < sMatches.length; j++) {
-				r.push(sMatches[j][1]);
+			for (var j = 0; j < sMatches2.length; j++) {
+				var fullMatch = sMatches2[j][0];
+				var innerRegex = /["']([^"']{20,})["']/g;
+				var eMatches = [];
+				var eMatch;
+				while ((eMatch = innerRegex.exec(fullMatch)) !== null) {
+					eMatches.push(eMatch[1]);
+				}
+				eMatches.sort(function(a, b) { return b.length - a.length; });
+				if (eMatches.length > 0 && eMatches[0]) {
+					r.push(eMatches[0]);
+				}
 			}
 			
+			if (r.length === 0) continue;
+			
 			var n = findPrefixOffset(r);
-			for (var k = 0; k < sMatches.length; k++) {
-				if (sMatches[k][1]) {
-					pageLinks.push(decryptLink(sMatches[k][1], n));
-				}
+			for (var k = 0; k < r.length; k++) {
+				pageLinks.push(decryptLink(r[k], n));
 			}
 		}
 
@@ -171,7 +200,7 @@ function GetPageNumber()
 			var s = String(t).replace(/=+$/, "");
 			if (s.length % 4 === 1) throw new Error("'atob' failed: The string to be decoded is not correctly encoded.");
 			var r = "";
-			for (var t_idx = 0, n, o, c = 0; o = s.charAt(c++); ~o && (n = t_idx % 4 ? n * 64 + o : o, t_idx++ % 4) ? r += String.fromCharCode(255 & n >> (-2 * t_idx & 6)) : 0) o = e.indexOf(o);
+			for (var t_idx = 0, n, c, o = 0; c = s.charAt(o++); ~c && (n = t_idx % 4 ? n * 64 + c : c, t_idx++ % 4) ? r += String.fromCharCode(255 & n >> (-2 * t_idx & 6)) : 0) c = e.indexOf(c);
 			return r;
 		}
 
@@ -197,16 +226,16 @@ function GetPageNumber()
 				var e_str = s.substring(t_idx);
 				var r = s.indexOf("=s0?") !== -1;
 				var n = r ? s.indexOf("=s0?") : s.indexOf("=s1600?");
-				var o = s.substring(0, n);
-				o = o.substring(15, 33) + o.substring(50);
-				var c = o.length;
-				o = o.substring(0, c - 11) + o.charAt(c - 2) + o.charAt(c - 1);
-				var a = atob(o);
-				var i = decodeURIComponent(a);
-				i = i.substring(0, 13) + i.substring(17);
-				i = i.substring(0, i.length - 2) + (r ? "=s0" : "=s1600");
-				var p = detectedBaseUrl ? detectedBaseUrl : (_useServer2 ? "https://ano1.rconet.biz/pic" : "https://2.bp.blogspot.com");
-				s = p + "/" + i + e_str + (_useServer2 ? "&t=10" : "");
+				var c = s.substring(0, n);
+				c = c.substring(15, 33) + c.substring(50);
+				var o = c.length;
+				c = c.substring(0, o - 11) + c.charAt(o - 2) + c.charAt(o - 1);
+				var a = atob(c);
+				var l = decodeURIComponent(a);
+				l = l.substring(0, 13) + l.substring(17);
+				l = l.substring(0, l.length - 2) + (r ? "=s0" : "=s1600");
+				var i = detectedBaseUrl ? detectedBaseUrl : (_useServer2 ? "https://ano1.rconet.biz/pic" : "https://2.bp.blogspot.com");
+				s = i + "/" + l + e_str + (_useServer2 ? "&t=10" : "");
 			}
 			return s;
 		}
@@ -229,9 +258,9 @@ function GetPageNumber()
 				}
 				
 				var n = blocklist.indexOf(s) === -1;
-				var o = urlPattern.test(s);
+				var c = urlPattern.test(s);
 				
-				if (isFirst && n && o) {
+				if (isFirst && n && c) {
 					filtered.push(t);
 				}
 			}
@@ -248,6 +277,13 @@ function GetPageNumber()
 	for i = 1, #links do
 		TASK.PageLinks.Add(links[i])
 	end
+
+	return true
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
 
 	return true
 end
