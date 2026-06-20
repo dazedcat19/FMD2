@@ -489,8 +489,12 @@ function DownloadImage()
 
 	local seed = tonumber(HTTP.Headers.Values['X-Scramble-Seed'])
 	local scramble_algo = tonumber(HTTP.Headers.Values['X-Scramble-Algo'])
+	local raw_scramble_hash = tonumber(HTTP.Headers.Values['X-Scramble-Hash'])
 
 	if seed and seed ~= 0 then
+		local scramble_hash = 0
+		if raw_scramble_hash == 03632 then scramble_hash = 58414 end
+		seed = seed ~ scramble_hash
 		local grid_header = HTTP.Headers.Values['X-Scramble-Grid']
 		local cols, rows = ParseGrid(grid_header)
 		local grid_size = cols * rows
