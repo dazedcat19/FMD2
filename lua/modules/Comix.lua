@@ -12,7 +12,7 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
+	m.OnDownloadImage          = 'DownloadImage'
 	m.SortedList               = true
 	m.MaxTaskLimit             = 2
 	m.MaxConnectionLimit       = 4
@@ -46,115 +46,166 @@ local crypto = require 'fmd.crypto'
 -- Helper Functions
 ----------------------------------------------------------------------------------------------------
 
-local function GetNodejsScript(fetch_code, arg)
+local function GetNodejsScript(interceptor)
 	return [[
-	const resultJSON = await page.evaluate(async (arg) => {
-		function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+	const resultJSON = await page.evaluate(async () => {
+		return new Promise((resolve) => {
+			const originalParse = JSON.parse;
+			let submitted = false;
+			
+			const submit = (data) => {
+				if (submitted) return;
+				submitted = true;
+				resolve(data);
+			};
 
-		var nameRe  = /^vm[A-Za-z]_/;
-		var shortRe = /^[A-Za-z]{1,3}$/;
-		var tokenRe = /^[A-Za-z0-9_-]{40,200}$/;
-
-		function tryProbe(ns) {
-			let sig = null, inst = null;
-			let fnames;
-			try { fnames = Object.keys(ns); } catch(e) { return null; }
-			for (let fname of fnames) {
-				let fn = ns[fname];
-				if (typeof fn !== 'function') continue;
-				if (!sig) {
+			JSON.parse = new Proxy(originalParse, {
+				apply(target, thisArg, args) {
+					const parsed = Reflect.apply(target, thisArg, args);
 					try {
-						let testPath = '/manga/d1w0r/chapters';
-						let out = fn(testPath);
-						if (typeof out === 'string' && out !== testPath && tokenRe.test(out)) sig = fn;
-					} catch(e) {}
+						]] .. interceptor .. [[
+					} catch (e) {}
+					return parsed;
 				}
-				if (!inst) {
-					try {
-						let got = false;
-						let fakeAxios = {
-							interceptors: { request: { use: () => {} }, response: { use: () => { got = true; } } },
-							defaults: { headers: { common: {} }, transformRequest: [], transformResponse: [] }
-						};
-						fn(fakeAxios);
-						if (got) inst = fn;
-					} catch(e) {}
-				}
-				if (sig && inst) return { sig, inst };
-			}
-			return null;
-		}
-
-		let sig = null, inst = null;
-		for (let attempt = 0; attempt < 40; attempt++) {
-			let keys = Object.keys(window);
-
-			for (let topName of keys) {
-				if (!nameRe.test(topName)) continue;
-				let ns = window[topName];
-				if (!ns || typeof ns !== 'object') continue;
-				let hit = tryProbe(ns);
-				if (hit) { sig = hit.sig; inst = hit.inst; break; }
-			}
-
-			if (!sig || !inst) {
-				for (let topName of keys) {
-					if (nameRe.test(topName)) continue;
-					let ns = window[topName];
-					if (!ns || typeof ns !== 'object' || ns === window) continue;
-					let fnames;
-					try { fnames = Object.keys(ns); } catch(e) { continue; }
-					if (fnames.length < 5) continue;
-					let shortAlpha = fnames.filter(f => shortRe.test(f)).length;
-					if (shortAlpha < 3) continue;
-					let hit = tryProbe(ns);
-					if (hit) { sig = hit.sig; inst = hit.inst; break; }
-				}
-			}
-
-			if (sig && inst) break;
-			await sleep(250);
-		}
-		if (!sig || !inst) return { error: 'Could not find signer/installer' };
-		let captured = { res: null };
-		let fakeAxios = {
-			interceptors: {
-				request:  { use: () => {} },
-				response: { use: (fn) => { captured.res = fn; } }
-			},
-			defaults: { headers: { common: {} }, transformRequest: [], transformResponse: [] }
-		};
-		inst(fakeAxios);
-		async function fetchDecrypted(apiPath) {
-			let signablePath = apiPath.split('?')[0].replace('/api/v1', '');
-			let token = sig(signablePath);
-			let sep = apiPath.indexOf('?') === -1 ? '?' : '&';
-			let url = '/api/v1' + apiPath + sep + '_=' + encodeURIComponent(token);
-			let resp = await fetch(url, {
-				headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
 			});
-			let text = await resp.text();
-			let raw;
-			try { raw = JSON.parse(text); } catch(e) { return null; }
 
-			if (raw && typeof raw === 'object' && 'e' in raw && captured.res) {
-				let fakeResp = {
-					data: raw, status: resp.status, statusText: resp.statusText,
-					headers: Object.fromEntries([...resp.headers.entries()]),
-					config: { url: url, method: 'get', baseURL: '/api/v1' },
-					request: {}
-				};
-				let decoded = await captured.res(fakeResp);
-				return { result: decoded ? decoded.data : null };
-			} else if (raw && typeof raw === 'object' && 'result' in raw) {
-				return raw;
-			}
-			return { result: raw };
-		}
-		]] .. fetch_code .. [[
-	}, ']] .. arg .. [[');
+			setTimeout(() => submit({ error: 'Timed out waiting for data' }), 60000);
+		});
+	});
 	console.log(JSON.stringify(resultJSON));
 	]]
+end
+
+local function GetPermutationMatrixLcg(seed, n)
+	local arr = {}
+	for i = 0, n - 1 do arr[i] = i end
+	
+	local state = seed
+	local LCG_MULTIPLIER = 1664525
+	local LCG_INCREMENT = 1013904223
+	
+	for i = n - 1, 1, -1 do
+		state = (state * LCG_MULTIPLIER + LCG_INCREMENT) & 0xffffffff
+
+		local j = state % (i + 1)
+
+		local tmp = arr[i]
+		arr[i] = arr[j]
+		arr[j] = tmp
+	end
+
+	return arr
+end
+
+local function GetPermutationMatrixXorshift(seed, n)
+	local arr = {}
+	for i = 0, n - 1 do arr[i] = i end
+	
+	local state = seed | 1
+	for i = n - 1, 1, -1 do
+		state = (state ~ (state << 13)) & 0xffffffff
+		state = (state ~ (state >> 17)) & 0xffffffff
+		state = (state ~ (state << 5)) & 0xffffffff
+
+		local j = state % (i + 1)
+
+		local tmp = arr[i]
+		arr[i] = arr[j]
+		arr[j] = tmp
+	end
+
+	return arr
+end
+
+local function DecodeLcg(data, seed, length)
+	local ENC_MULTIPLIER = 1000005
+	local ENC_INCREMENT = 1234567891
+	local state = seed & 0xffffffff
+	local limit = math.min(length, #data)
+
+	local decoded = {}
+	for i = 1, limit do
+		state = (state * ENC_MULTIPLIER + ENC_INCREMENT) & 0xffffffff
+		local shift = (state >> 24) & 0xff
+		local byte = string.byte(data, i)
+		decoded[i] = string.char(byte ~ shift)
+	end
+
+	return table.concat(decoded) .. string.sub(data, limit + 1)
+end
+
+local function DecodeXorshift(data, seed, length, highByte)
+	local state = seed & 0xffffffff
+	local limit = math.min(length, #data)
+
+	local decoded = {}
+	for i = 1, limit do
+		state = (state ~ (state << 13)) & 0xffffffff
+		state = (state ~ (state >> 17)) & 0xffffffff
+		state = (state ~ (state << 5)) & 0xffffffff
+		
+		local key = highByte and ((state >> 24) & 0xff) or (state & 0xff)
+		local byte = string.byte(data, i)
+		decoded[i] = string.char(byte ~ key)
+	end
+
+	return table.concat(decoded) .. string.sub(data, limit + 1)
+end
+
+local function HasImageSignature(data)
+	if #data < 12 then return false end
+	local b1, b2, b3, b4 = data:byte(1, 4)
+	
+	if b1 == 82 and b2 == 73 and b3 == 70 and b4 == 70 then -- RIFF
+		local b9, b10, b11, b12 = data:byte(9, 12)
+		if b9 == 87 and b10 == 69 and b11 == 66 and b12 == 80 then -- WEBP
+			return true
+		end
+	end
+	if b1 == 0xFF and b2 == 0xD8 then return true end -- JPEG
+	if b1 == 0x89 and b2 == 80 and b3 == 78 and b4 == 71 then return true end -- PNG
+	return false
+end
+
+local function DecodeEncodedBytes(data, seed, length)
+	seed = seed & 0xffffffff
+	
+	local c1 = DecodeXorshift(data, seed, length, false)
+	if HasImageSignature(c1) then return c1 end
+
+	local c2 = DecodeXorshift(data, seed | 1, length, false)
+	if HasImageSignature(c2) then return c2 end
+
+	local c3 = DecodeXorshift(data, seed, length, true)
+	if HasImageSignature(c3) then return c3 end
+
+	local c4 = DecodeXorshift(data, seed | 1, length, true)
+	if HasImageSignature(c4) then return c4 end
+
+	local l1 = DecodeLcg(data, seed, length)
+	if HasImageSignature(l1) then return l1 end
+	
+	local l2 = DecodeLcg(data, seed | 1, length)
+	if HasImageSignature(l2) then return l2 end
+
+	return c1
+end
+
+local function ParseGrid(header)
+	if header == '' then return 5, 5 end
+
+	local parts = {}
+	for part in header:lower():gmatch('%d+') do
+		table.insert(parts, tonumber(part))
+	end
+	
+	if #parts == 1 and parts[1] > 1 then
+		return parts[1], parts[1]
+	elseif #parts >= 2 and parts[1] > 1 and parts[2] > 1 then
+		return parts[1], parts[2]
+	end
+	
+	return 5, 5
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -189,20 +240,83 @@ end
 -- Get info and chapter list for the current manga.
 function GetInfo()
 	local mid = URL:match('/title/([^%-]+)%-')
-	local u = API_URL .. '/manga/' .. mid
+	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	local x = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString()))
-	local info = x.XPath('json(*).result')
-	MANGAINFO.Title     = x.XPathString('title', info)
-	MANGAINFO.AltTitles = x.XPathString('string-join(altTitles?*, ", ")', info)
-	MANGAINFO.CoverLink = x.XPathString('poster?medium', info)
-	MANGAINFO.Authors   = x.XPathString('string-join(authors?*?title, ", ")', info)
-	MANGAINFO.Artists   = x.XPathString('string-join(artists?*?title, ", ")', info)
-	MANGAINFO.Genres    = x.XPathString('string-join((genres?*?title, theme?*?title, demographics?*?title, concat(upper-case(substring(type, 1, 1)), lower-case(substring(type, 2)))), ", ")', info)
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status', info), 'releasing', 'finished', 'on_hiatus', 'discontinued')
-	MANGAINFO.Summary   = x.XPathString('synopsis', info)
+	if HTTP.ResultCode ~= 200 then MANGAINFO.Title = 'Cloudflare workaround is required' return no_error end
+	local x = CreateTXQuery(HTTP.Document)
+	local info = require 'utils.json'.decode(x.XPathString('//script[@id="initial-data"]')).queries['["manga","detail","' .. mid .. '"]']
+
+	local authors = {}
+	for _, author in ipairs(info.authors or {}) do
+		table.insert(authors, author.title)
+	end
+
+	local artists = {}
+	for _, artist in ipairs(info.artists or {}) do
+		table.insert(artists, artist.title)
+	end
+
+	local genres = {}
+	for _, genre in ipairs(info.genres or {}) do
+		table.insert(genres, genre.title)
+	end
+	for _, demo in ipairs(info.demographics or {}) do
+		table.insert(genres, demo.title)
+	end
+	for _, theme in ipairs(info.theme or {}) do
+		table.insert(genres, theme.title)
+	end
+	if info.type then
+		local capitalized = info.type:sub(1,1):upper() .. info.type:sub(2):lower()
+		table.insert(genres, capitalized)
+	end
+
+	MANGAINFO.Title     = info.title
+	MANGAINFO.AltTitles = table.concat(info.altTitles or {}, ', ')
+	MANGAINFO.CoverLink = info.poster.medium
+	MANGAINFO.Authors   = table.concat(authors, ', ')
+	MANGAINFO.Artists   = table.concat(artists, ', ')
+	MANGAINFO.Genres    = table.concat(genres, ', ')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(info.status, 'releasing', 'finished', 'on_hiatus', 'discontinued')
+	MANGAINFO.Summary   = info.synopsis
+
+	local interceptor = [[
+		const items = window._capturedChapters || [];
+		window._capturedChapters = items;
+
+		if (parsed && parsed.result && Array.isArray(parsed.result.items) && parsed.result.items.length > 0) {
+			if (parsed.result.items[0].mangaId) {
+				const meta = parsed.result.meta || parsed.result.pagination;
+				for (const it of parsed.result.items) items.push(it);
+
+				if (meta && meta.hasNext) {
+					setTimeout(() => {
+						const btn = document.querySelector('.mchap-foot button[aria-label*=Next]');
+						if (btn && !btn.disabled) btn.click();
+					}, 200);
+				} else {
+					submit({ items: items });
+				}
+			}
+		}
+	]]
+
+	local now = os.time()
+	local output = MODULE.Storage[mid]
+	local timestamp = tonumber(MODULE.Storage[mid .. '_time']) or 0
+
+	if output == '' or (now - timestamp) >= 900 then
+		local js_code = GetNodejsScript(interceptor)
+		output = require 'utils.nodejs'.run_html_load_with_js(MODULE.RootURL .. URL, js_code)
+
+		if not output:find('Timed out', 1, true) then
+			MODULE.Storage[mid] = output
+			MODULE.Storage[mid .. '_time'] = tostring(now)
+		end
+	end
+	x.ParseHTML(output)
 
 	local deduplicate  = MODULE.GetOption('deduplicatechapters')
 	local optgroup     = MODULE.GetOption('showscangroup')
@@ -210,27 +324,7 @@ function GetInfo()
 	local chapter_list = {}
 	local has_integer  = {}
 
-	local fetch_code = [[
-		let allItems = [];
-		let pageNum = 1;
-		let lastPage = 1;
-		while (pageNum <= lastPage) {
-			let path = '/manga/' + arg + '/chapters?order[number]=asc&limit=100&page=' + pageNum;
-			let data = await fetchDecrypted(path);
-			let res = data ? data.result : null;
-			if (!res || !res.items) break;
-			allItems.push(...res.items);
-			lastPage = res.meta ? res.meta.lastPage : 1;
-			pageNum++;
-		}
-		return { items: allItems };
-	]]
-	
-	local js_code = GetNodejsScript(fetch_code, mid)
-	local output = require 'utils.nodejs'.run_html_load_with_js(MODULE.RootURL, js_code)
-	if output:find('Could not find signer/installer', 1, true) then MANGAINFO.Title = 'Could not find signer/installer' return no_error end
-
-	for v in CreateTXQuery(output).XPath('json(*).items()').Get() do
+	for v in x.XPath('json(*).items()').Get() do
 		local number = v.GetProperty('number').ToString()
 		local id = v.GetProperty('id').ToString()
 		local name = v.GetProperty('name').ToString()
@@ -238,9 +332,9 @@ function GetInfo()
 		local scan_group_id = tonumber(v.GetProperty('group').GetProperty('id').ToString()) or 0
 		local scan_group_name = v.GetProperty('group').GetProperty('name').ToString()
 		local votes = tonumber(v.GetProperty('votes').ToString()) or 0
-		local updated_at = tonumber(v.GetProperty('updated_at').ToString()) or 0
 		local official_str = v.GetProperty('isOfficial').ToString()
 		local official = (official_str == '1' or official_str == 'true') and 1 or 0
+		local url = v.GetProperty('url').ToString()
 
 		if not number:find('%.') then
 			has_integer[number] = true
@@ -261,7 +355,7 @@ function GetInfo()
 				end
 			end
 
-			MANGAINFO.ChapterLinks.Add(id)
+			MANGAINFO.ChapterLinks.Add(url)
 			MANGAINFO.ChapterNames.Add(volume .. chapter .. title .. scanlator)
 		else
 			local base = number:match('^(%d+)')
@@ -270,7 +364,7 @@ function GetInfo()
 			local ch_data = {
 				id = id, name = name, vol_num = vol_num, number = number,
 				scan_group_id = scan_group_id, scan_group_name = scan_group_name,
-				votes = votes, updated_at = updated_at, official = official
+				votes = votes, official = official, url = url
 			}
 
 			if not current then
@@ -318,53 +412,108 @@ function GetInfo()
 				end
 			end
 
-			MANGAINFO.ChapterLinks.Add(ch.id)
+			MANGAINFO.ChapterLinks.Add(ch.url)
 			MANGAINFO.ChapterNames.Add(volume .. chapter .. title .. scanlator)
 		end
 	end
+	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
 end
 
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local fetch_code = [[
-		let data = await fetchDecrypted(arg);
-		let res = data?.result;
-		let links = [];
+	local interceptor = [[
+		if (parsed && parsed.result && parsed.result.pages) {
+			const res = parsed.result;
+			const links = [];
+			const pages = res.pages;
+			const items = pages.items || (Array.isArray(pages) ? pages : []);
+			let base = (pages.baseUrl || '').replace(/\/$/, '');
 
-		if (res?.pages) {
-			let pages = res.pages;
-			let items = pages.items ?? (Array.isArray(pages) ? pages : []);
-			let base = pages.baseUrl ?? '';
-			if (base.endsWith('/')) base = base.slice(0, -1);
-
-			for (let item of items) {
-				let url = typeof item === 'string' ? item : item?.url;
+			for (let i = 0; i < items.length; i++) {
+				let item = items[i];
+				let url = typeof item === 'string' ? item : item.url;
 				if (!url) continue;
-				links.push(
-					url.startsWith('http')
-						? url
-						: base + (url.startsWith('/') ? url : '/' + url)
-				);
+				let full = url.startsWith('http') ? url : base + '/' + url.replace(/^\//, '');
+				
+				let isV3 = (item.s === 1) || full.includes('?v3') || full.includes('&v3');
+				let isLegacy = !isV3 && ((i + 1) % 4 === 0);
+				
+				if (isV3) {
+					if (!full.includes('v3')) {
+						full += (full.includes('?') ? '&' : '?') + 'v3';
+					}
+				} else if (isLegacy) {
+					full += '#scrambled';
+				}
+				links.push(full);
 			}
+			submit({ links: links });
 		}
-
-		return { links: links };
 	]]
 
-	local js_code = GetNodejsScript(fetch_code, '/chapters' .. URL)
-	local output = require 'utils.nodejs'.run_html_load_with_js(MODULE.RootURL, js_code)
-	if output:find('Could not find signer/installer', 1, true) then print('Could not find signer/installer') return false end
+	local output = MODULE.Storage[URL]
+	if output == '' then
+		local js_code = GetNodejsScript(interceptor)
+		output = require 'utils.nodejs'.run_html_load_with_js(MODULE.RootURL .. URL, js_code)
+		MODULE.Storage[URL] = output
+	end
 
 	CreateTXQuery(output).XPathStringAll('json(*).links()', TASK.PageLinks)
 
 	return true
 end
 
--- Prepare the URL, http header and/or http cookies before downloading an image.
-function BeforeDownloadImage()
-	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+-- Download, decrypt and/or descramble image given the image URL.
+function DownloadImage()
+	local is_legacy_scramble = URL:find('#scrambled', 1, true)
+	local is_comix = URL:find('comix.to', 1, true)
+
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
+	if is_comix or is_legacy_scramble then
+		HTTP.Headers.Values['Origin'] = MODULE.RootURL
+	end
+
+	if not HTTP.GET(URL) then return false end
+
+	local enc_seed = tonumber(HTTP.Headers.Values['X-Enc-Seed'])
+	local enc_len = tonumber(HTTP.Headers.Values['X-Enc-Len'])
+	local enc_algo = HTTP.Headers.Values['X-Enc-Algo']
+
+	if enc_seed and enc_seed ~= 0 and enc_len then
+		local data = HTTP.Document.ToString()
+		local decrypted_data = DecodeEncodedBytes(data, enc_seed, enc_len, enc_algo)
+		HTTP.Document.WriteString(decrypted_data)
+	end
+
+	local seed = tonumber(HTTP.Headers.Values['X-Scramble-Seed'])
+	local scramble_algo = tonumber(HTTP.Headers.Values['X-Scramble-Algo'])
+	local raw_scramble_hash = tonumber(HTTP.Headers.Values['X-Scramble-Hash'])
+
+	if seed and seed ~= 0 then
+		local scramble_hash = 0
+		if raw_scramble_hash == 03632 then scramble_hash = 58414 end
+		seed = seed ~ scramble_hash
+		local grid_header = HTTP.Headers.Values['X-Scramble-Grid']
+		local cols, rows = ParseGrid(grid_header)
+		local grid_size = cols * rows
+
+		local puzzle = require 'fmd.imagepuzzle'.Create(cols, rows)
+		local matrix
+		
+		if scramble_algo == 3 then
+			matrix = GetPermutationMatrixXorshift(seed, grid_size)
+		else
+			matrix = GetPermutationMatrixLcg(seed, grid_size)
+		end
+
+		for src_idx = 0, grid_size - 1 do
+			puzzle.Matrix[src_idx] = matrix[src_idx]
+		end
+
+		puzzle.DeScramble(HTTP.Document, HTTP.Document)
+	end
 
 	return true
 end

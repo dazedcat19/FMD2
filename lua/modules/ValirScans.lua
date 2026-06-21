@@ -120,7 +120,7 @@ function GetPageNumber()
 
 	local s = HTTP.Document.ToString():gsub('\\"', '"'):gsub('\\\\', '\\'):gsub('"%]%)</script><script>self%.__next_f%.push%(%[1,"', '')
 	local x = CreateTXQuery(s)
-	x.ParseHTML('{"chapter"' .. x.XPathString('//script[contains(., "originalTitle")]/substring-before(substring-after(., "{""chapter"""), "},""")') .. '}}')
+	x.ParseHTML('{"chapter"' .. x.XPathString('//script[contains(., "pageCount")]/substring-before(substring-after(., "{""chapter"""), "},""")') .. '}}')
 	for v in x.XPath('json(*).chapter.pages().imageUrl').Get() do
 		TASK.PageLinks.Add(MaybeFillHost(MODULE.RootURL, v.ToString()))
 	end

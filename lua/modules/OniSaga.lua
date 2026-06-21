@@ -14,6 +14,8 @@ function Init()
 	m.OnGetPageNumber          = 'GetPageNumber'
 	m.OnGetImageURL            = 'GetImageURL'
 	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
+	m.MaxTaskLimit             = 1
+	m.MaxThreadPerTaskLimit    = 1
 	m.SortedList               = true
 
 	local slang = require 'fmd.env'.SelectedLanguage
@@ -71,7 +73,7 @@ end
 
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
-	local u = MODULE.RootURL .. '/browse?sort=created_at'
+	local u = MODULE.RootURL .. '/browse?sort=release_date'
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -90,20 +92,18 @@ end
 function GetNameAndLink()
 	local u = MODULE.RootURL .. '/livewire/update'
 	local s = '{"_token":"' .. MODULE.Storage['token'] .. '","components":[{"snapshot":"{\\"data\\":{\\"param\\":[{\\"type\\":null,\\"genre\\":[[],{\\"s\\":\\"arr\\"}],\\"heading\\":\\"Browse\\"},' ..
-	'{\\"s\\":\\"arr\\"}],\\"genre\\":[[],{\\"s\\":\\"arr\\"}],\\"scene\\":null,\\"release\\":null,\\"vote_average\\":null,\\"platform\\":null,\\"type\\":null,\\"search\\":null,\\"sort\\":\\"created_at\\",' ..
-	'\\"status\\":null,\\"min_chapters\\":null,\\"excludeGenre\\":[[],{\\"s\\":\\"arr\\"}],\\"release_start\\":null,\\"release_end\\":null,\\"loading\\":false,\\"filterOpen\\":false,\\"openSort\\":false,' ..
+	'{\\"s\\":\\"arr\\"}],\\"genre\\":[[],{\\"s\\":\\"arr\\"}],\\"scene\\":null,\\"release\\":null,\\"vote_average\\":null,\\"platform\\":null,\\"type\\":null,\\"search\\":null,\\"sort\\":\\"release_date\\",' ..
+	'\\"status\\":null,\\"min_chapters\\":null,\\"group\\":null,\\"excludeGenre\\":[[],{\\"s\\":\\"arr\\"}],\\"release_start\\":null,\\"release_end\\":null,\\"loading\\":false,\\"filterOpen\\":false,\\"openSort\\":false,' ..
 	'\\"paginators\\":[{\\"page\\":1},{\\"s\\":\\"arr\\"}]},\\"memo\\":{\\"id\\":\\"' .. MODULE.Storage['id'] .. '\\",\\"name\\":\\"post-filter\\",\\"path\\":\\"browse\\",\\"method\\":\\"GET\\",' ..
 	'\\"release\\":\\"a-a-a\\",\\"children\\":[],\\"scripts\\":[],\\"assets\\":[],\\"errors\\":[],\\"locale\\":\\"en\\"},\\"checksum\\":\\"' .. MODULE.Storage['checksum'] .. '\\"}","updates":{},' ..
 	'"calls":[{"path":"","method":"gotoPage","params":[' .. (URL + 1) .. ']}]}]}'
 
-	HTTP.Reset()
 	HTTP.MimeType = 'application/json'
 
 	if not HTTP.POST(u, s) then return net_problem end
 
-	local body = HTTP.Document.ToString()
-	if body:sub(1, 1) == '<' then print('Cookies workaround is needed') return no_error end
-	CreateTXQuery(json.decode(body).components[1].effects.html).XPathHREFTitleAll('//a[@title]', LINKS, NAMES)
+	if HTTP.ResultCode ~= 200 then print('Cloudflare workaround is required') return no_error end
+	CreateTXQuery(json.decode(HTTP.Document.ToString()).components[1].effects.html).XPathHREFTitleAll('//a[@title]', LINKS, NAMES)
 
 	return no_error
 end
@@ -130,11 +130,14 @@ function GetInfo()
 	local id = ss.memo.id
 	local checksum = ss.checksum
 
+	local optlang   = MODULE.GetOption('lang')
+	local optlangid = FindLanguage(optlang)
+
 	local page = 1
 	local pages = math.ceil(x.XPathString('//div[contains(@class, "whitespace-nowrap -mt-1 -mb-1")]') / 100 - 1) or 1
 	while true do
 		local s = '{"_token":"' .. token .. '","components":[{"snapshot":"{\\"data\\":{\\"manga\\":[null,{\\"class\\":\\"App\\\\\\\\Models\\\\\\\\Post\\",\\"key\\":' .. key .. ',\\"s\\":\\"mdl\\"}],' ..
-		'\\"view\\":\\"chapters\\",\\"sortOrder\\":\\"asc\\",\\"search\\":\\"\\",\\"chaptersLoaded\\":' .. page .. ',\\"volumesLoaded\\":1,\\"rateLimited\\":false,\\"importingChapters\\":false},\\"memo\\":{\\"id\\":\\"' .. id ..
+		'\\"view\\":\\"chapters\\",\\"sortOrder\\":\\"asc\\",\\"search\\":\\"\\",\\"groupFilter\\":null,\\"chaptersLoaded\\":' .. page .. ',\\"volumesLoaded\\":1,\\"rateLimited\\":false,\\"importingChapters\\":false},\\"memo\\":{\\"id\\":\\"' .. id ..
 		'\\",\\"name\\":\\"manga.chapter-list\\",\\"path\\":\\"manga\\\\/' .. slug .. '\\",\\"method\\":\\"GET\\",\\"release\\":\\"a-a-a\\",\\"children\\":[],\\"scripts\\":[],\\"assets\\":[],\\"errors\\":[],' ..
 		'\\"locale\\":\\"en\\"},\\"checksum\\":\\"' .. checksum .. '\\"}","updates":{},"calls":[{"path":"","method":"loadMoreChapters","params":[]}]}]}'
 
@@ -143,14 +146,10 @@ function GetInfo()
 
 		if not HTTP.POST(MODULE.RootURL .. '/livewire/update', s) then return net_problem end
 
-		local body = HTTP.Document.ToString()
-		if body:sub(1, 1) == '<' then MANGAINFO.Title = 'Cookies workaround is needed' return no_error end
-		local data = json.decode(body).components[1]
+		if HTTP.ResultCode ~= 200 then MANGAINFO.Title = 'Cloudflare workaround is required' return no_error end
+		local data = json.decode(HTTP.Document.ToString()).components[1]
 		checksum = json.decode(data.snapshot).checksum
 		x.ParseHTML(data.effects.html)
-
-		local optlang   = MODULE.GetOption('lang')
-		local optlangid = FindLanguage(optlang)
 
 		for v in x.XPath('//div[@class="relative"]//a').Get() do
 			local title = x.XPathString('.//div[@data-flux-heading]', v)
@@ -200,6 +199,7 @@ end
 
 -- Extract/Build/Repair image urls before downloading them.
 function GetImageURL()
+	sleep(1500)
 	local cid = URL:match('/(%d+)$')
 	local u = MODULE.RootURL .. '/api/chapter/' .. cid .. '/page/' .. TASK.PageContainerLinks[WORKID]
 	HTTP.Headers.Values['X-Reader-Token'] = MODULE.Storage[URL]
@@ -208,7 +208,22 @@ function GetImageURL()
 
 	if not HTTP.GET(u) then return false end
 
-	TASK.PageLinks[WORKID] = CreateTXQuery(HTTP.Document).XPathString('json(*).url')
+	local s = HTTP.Document.ToString()
+	if s:find('expired', 1, true) then
+		if not HTTP.GET(MaybeFillHost(MODULE.RootURL, URL)) then return false end
+
+		MODULE.Storage[URL] = HTTP.Document.ToString():match('readerToken:%s*"([^"]+)"')
+		HTTP.Reset()
+		HTTP.Headers.Values['X-Reader-Token'] = MODULE.Storage[URL]
+		HTTP.Headers.Values['Sec-Fetch-Mode'] = 'cors'
+		HTTP.Headers.Values['Sec-Fetch-Site'] = 'same-origin'
+
+		if not HTTP.GET(u) then return false end
+
+		s = HTTP.Document.ToString()
+	end
+
+	TASK.PageLinks[WORKID] = CreateTXQuery(s).XPathString('json(*).url')
 
 	return true
 end

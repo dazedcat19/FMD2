@@ -594,9 +594,6 @@ function PNGToJPEGStream(const AStream: TMemoryStream; const AQuality: Integer =
 function SaveImageStreamToFile(Stream: TMemoryStream; Path, FileName: String; Age: LongInt = 0): String; overload;
 function SaveImageStreamToFile(AHTTP: THTTPSend; Path, FileName: String): String; overload;
 
-// detect archive type from stream magic bytes; returns 'zip', 'rar', or ''
-function GetArchiveStreamExt(const Stream: TStream): String;
-
 // check file exist with known extensions. AFilename is a filename without extensions
 function ImageFileExists(const AFileName: String): Boolean;
 function ImageFileExtExists(const AFileName, AFileExt: String): Boolean;
@@ -2393,56 +2390,6 @@ begin
   end;
 end;
 
-// Returns 'zip' for ZIP/CBZ archives (PK magic), 'rar' for RAR archives, '' for unknown.
-// CBZ is just a renamed ZIP so it is covered by 'zip' detection.
-function GetArchiveStreamExt(const Stream: TStream): String;
-var
-  Hdr: array[0..3] of Byte;
-  TarMagic: array[0..4] of AnsiChar;
-  SavePos: Int64;
-begin
-  Result := '';
-  if (Stream = nil) or (Stream.Size < 4) then Exit;
-  SavePos := Stream.Position;
-  try
-    Stream.Position := 0;
-    if Stream.Read(Hdr[0], 4) < 4 then Exit;
-    // ZIP / CBZ: PK signature 50 4B
-    if (Hdr[0] = $50) and (Hdr[1] = $4B) then
-    begin
-      Result := 'zip';
-      Exit;
-    end;
-    // RAR 4.x/5.x: "Rar!" = 52 61 72 21
-    if (Hdr[0] = $52) and (Hdr[1] = $61) and (Hdr[2] = $72) and (Hdr[3] = $21) then
-    begin
-      Result := 'rar';
-      Exit;
-    end;
-    // 7-Zip: 37 7A BC AF
-    if (Hdr[0] = $37) and (Hdr[1] = $7A) and (Hdr[2] = $BC) and (Hdr[3] = $AF) then
-    begin
-      Result := '7z';
-      Exit;
-    end;
-    // POSIX/USTAR TAR: "ustar" signature sits at byte offset 257 (not at the
-    // start of the file like other archive formats). Covers both POSIX
-    // ("ustar\0" + "00") and old GNU tar ("ustar  \0") variants.
-    if Stream.Size >= 262 then
-    begin
-      Stream.Position := 257;
-      FillChar(TarMagic, SizeOf(TarMagic), 0);
-      if (Stream.Read(TarMagic[0], 5) = 5) and (TarMagic = 'ustar') then
-      begin
-        Result := 'tar';
-        Exit;
-      end;
-    end;
-  finally
-    Stream.Position := SavePos;
-  end;
-end;
-
 function SaveImageStreamToFile(Stream: TMemoryStream; Path, FileName: String; Age: LongInt): String;
 var
   FilePath, PathDirectory, FileExt: String;
@@ -2494,11 +2441,7 @@ begin
 
     if FileExt = '' then
     begin
-      // Not a recognised image format — check if it is an archive (ZIP/CBZ or RAR).
-      // Saving it lets the downloader later extract its contents.
-      FileExt := GetArchiveStreamExt(Stream);
-      if FileExt = '' then
-        Exit;
+      Exit;
     end;
 
     FilePath := PathDirectory + FileName + '.' + FileExt;

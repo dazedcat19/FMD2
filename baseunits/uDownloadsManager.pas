@@ -12,7 +12,7 @@ interface
 
 uses
   LazFileUtils, Classes, SysUtils, ExtCtrls, typinfo, fgl, FileUtil, synautil,
-  blcksock, MultiLog, uBaseUnit, uPacker, uMisc, DownloadedChaptersDB, FMDOptions, ImgInfos, NaturalSortUnit,
+  blcksock, MultiLog, uBaseUnit, uPacker, uMisc, DownloadedChaptersDB, FMDOptions, ImgInfos,
   httpsendthread, DownloadsDB, BaseThread, SQLiteData, dateutils, strutils, ImageMagickManager,
   uComicInfo;
 
@@ -292,317 +292,12 @@ resourcestring
 implementation
 
 uses
-  frmMain, WebsiteModules, SimpleException, process;
+  frmMain, WebsiteModules, SimpleException;
 
 function IntToStr(Value: Cardinal): String;
 begin
   Result := SysUtils.IntToStr(QWord(Value));
 end;
-
-// ---------------------------------------------------------------------------
-// Archive handling helpers
-// ---------------------------------------------------------------------------
-
-// Returns True if the file extension indicates an archive we can handle.
-function IsArchiveFileExt(const FilePath: String): Boolean;
-var
-  Ext: String;
-begin
-  Ext := LowerCase(ExtractFileExt(FilePath));
-  Result := (Ext = '.zip') or (Ext = '.cbz') or
-            (Ext = '.rar') or (Ext = '.cbr') or
-            (Ext = '.7z')  or (Ext = '.tar');
-end;
-
-// Extract ArchivePath flat into DestDir using the bundled 7za binary.
-// Uses TProcess (same as uPacker) so arguments with spaces are safe and
-// we get a real exit code back.  Returns True on 7za exit 0 or 1 (warning).
-function RunArchiveExtractTo(const ArchivePath, DestDir: String): Boolean;
-var
-  P: TProcess;
-  sout, serr: String;
-  ExitCode: Integer;
-begin
-  Result := False;
-  if not FileExists(ArchivePath) then Exit;
-  if not ForceDirectories(DestDir) then Exit;
-  P := TProcess.Create(nil);
-  try
-    P.Executable := CURRENT_ZIP_EXE;
-    P.Parameters.Add('e');              // extract without internal paths
-    P.Parameters.Add(ArchivePath);      // source archive (safe with spaces)
-    P.Parameters.Add('-o' + DestDir);   // output dir   (safe with spaces)
-    P.Parameters.Add('-y');             // yes to all prompts
-    P.Parameters.Add('-sccUTF-8');      // UTF-8 console
-    P.ShowWindow := swoHIDE;
-    P.RunCommandLoop(sout, serr, ExitCode);
-    Result := (ExitCode = 0) or (ExitCode = 1);
-    if not Result then
-      Logger.SendWarning(Format('RunArchiveExtractTo: 7za exit %d  %s', [ExitCode, Trim(serr)]));
-  finally
-    P.Free;
-  end;
-end;
-
-// Inspect HTTP response headers and the request URL to detect an archive
-// format when magic-byte sniffing was inconclusive.
-// Priority: Content-Type → Content-Disposition filename → URL extension.
-// Returns extension WITHOUT dot ('zip','rar','7z') or '' if unknown.
-function GetHTTPArchiveExt(AHTTP: THTTPSendThread; const AURL: String): String;
-var
-  Val, Ext, URLPath, FName: String;
-  p: Integer;
-begin
-  Result := '';
-
-  // 1. Content-Type
-  Val := LowerCase(Trim(AHTTP.Headers.Values['Content-Type']));
-  p := Pos(';', Val);
-  if p > 0 then Val := Trim(Copy(Val, 1, p - 1));
-  if (Val = 'application/zip') or (Val = 'application/x-zip') or
-     (Val = 'application/x-zip-compressed') or (Val = 'application/octet-stream') then
-    begin Result := 'zip'; Exit; end;
-  if (Val = 'application/x-cbz') then
-    begin Result := 'zip'; Exit; end;
-  if (Val = 'application/x-rar-compressed') or (Val = 'application/vnd.rar') then
-    begin Result := 'rar'; Exit; end;
-  if (Val = 'application/x-cbr') then
-    begin Result := 'rar'; Exit; end;
-  if Val = 'application/x-7z-compressed' then
-    begin Result := '7z'; Exit; end;
-  if (Val = 'application/x-tar') or (Val = 'application/x-gtar') then
-    begin Result := 'tar'; Exit; end;
-
-  // 2. Content-Disposition: attachment; filename="chapter.cbz"
-  Val := AHTTP.Headers.Values['Content-Disposition'];
-  if Val <> '' then
-  begin
-    p := Pos('filename=', LowerCase(Val));
-    if p > 0 then
-    begin
-      FName := Trim(Copy(Val, p + Length('filename='), MaxInt));
-      if (FName <> '') and (FName[1] = '"') then
-      begin
-        Delete(FName, 1, 1);
-        p := Pos('"', FName);
-        if p > 0 then FName := Copy(FName, 1, p - 1);
-      end
-      else
-      begin
-        // unquoted — ends at first space or semicolon
-        p := Pos(' ', FName); if (p > 0) and (p < Length(FName)) then FName := Copy(FName, 1, p - 1);
-        p := Pos(';', FName); if (p > 0) then FName := Copy(FName, 1, p - 1);
-      end;
-      Ext := LowerCase(ExtractFileExt(FName));
-      if (Ext = '.zip') or (Ext = '.cbz') then begin Result := 'zip'; Exit; end;
-      if (Ext = '.rar') or (Ext = '.cbr') then begin Result := 'rar'; Exit; end;
-      if Ext = '.7z'                        then begin Result := '7z';  Exit; end;
-      if Ext = '.tar'                       then begin Result := 'tar'; Exit; end;
-    end;
-  end;
-
-  // 3. URL extension (strip query-string and fragment first)
-  URLPath := AURL;
-  p := Pos('?', URLPath); if p > 0 then URLPath := Copy(URLPath, 1, p - 1);
-  p := Pos('#', URLPath); if p > 0 then URLPath := Copy(URLPath, 1, p - 1);
-  Ext := LowerCase(ExtractFileExt(URLPath));
-  if (Ext = '.zip') or (Ext = '.cbz') then begin Result := 'zip'; Exit; end;
-  if (Ext = '.rar') or (Ext = '.cbr') then begin Result := 'rar'; Exit; end;
-  if Ext = '.7z'                        then begin Result := '7z';  Exit; end;
-  if Ext = '.tar'                       then begin Result := 'tar'; Exit; end;
-end;
-
-// Called when DownloadImage saved an archive to ArchivePath (e.g. 001.zip).
-// Extracts the archive, renames each found image to FMD's expected naming
-// (001.ext, 002.ext, …), expands Container.PageLinks to cover all images,
-// and marks every extracted page as done.
-function ExtractArchiveAndSetupPages(const ATask: TTaskThread;
-  const AWorkId: Integer; const ArchivePath: String): Boolean;
-var
-  TempDir: String;
-  SR: TSearchRec;
-  ExtractedImages: TStringList;
-  i: Integer;
-  Ext, SrcFile, DstFile: String;
-begin
-  Result := False;
-  TempDir := CorrectPathSys(ATask.CurrentWorkingDir + '_arc_extract');
-
-  if not RunArchiveExtractTo(ArchivePath, TempDir) then
-  begin
-    if DirectoryExists(TempDir) then
-      DeleteDirectory(TempDir, False);
-    Logger.SendWarning('ExtractArchiveAndSetupPages: extraction failed for ' + ArchivePath);
-    Exit;
-  end;
-
-  ExtractedImages := TStringList.Create;
-  try
-    if FindFirst(IncludeTrailingPathDelimiter(TempDir) + '*.*', faAnyFile, SR) = 0 then
-    try
-      repeat
-        if (SR.Attr and faDirectory) = 0 then
-        begin
-          Ext := LowerCase(ExtractFileExt(SR.Name));
-          if (Ext = '.jpg') or (Ext = '.jpeg') or (Ext = '.png') or
-             (Ext = '.gif') or (Ext = '.bmp') or (Ext = '.webp') or
-             (Ext = '.tif') or (Ext = '.tiff') then
-            ExtractedImages.Add(IncludeTrailingPathDelimiter(TempDir) + SR.Name);
-        end;
-      until FindNext(SR) <> 0;
-    finally
-      FindClose(SR);
-    end;
-
-    ExtractedImages.CustomSort(@NaturalCustomSort);
-
-    if ExtractedImages.Count = 0 then
-    begin
-      Logger.SendWarning('ExtractArchiveAndSetupPages: no images found in ' + ArchivePath);
-      EnterCriticalSection(ATask.Container.CS_Container);
-      try
-        ATask.Container.PageLinks[AWorkId] := 'D';
-      finally
-        LeaveCriticalSection(ATask.Container.CS_Container);
-      end;
-      Result := True;
-      Exit;
-    end;
-
-    for i := 0 to ExtractedImages.Count - 1 do
-    begin
-      SrcFile := ExtractedImages[i];
-      Ext     := LowerCase(ExtractFileExt(SrcFile));
-      DstFile := ATask.CurrentWorkingDir + ATask.GetFileName(AWorkId + i) + Ext;
-      if not RenameFileUTF8(SrcFile, DstFile) then
-        CopyFile(SrcFile, DstFile, [cffOverwriteFile, cffPreserveTime]);
-    end;
-
-    EnterCriticalSection(ATask.Container.CS_Container);
-    try
-      while ATask.Container.PageLinks.Count < AWorkId + ExtractedImages.Count do
-        ATask.Container.PageLinks.Add('W');
-      for i := 0 to ExtractedImages.Count - 1 do
-        ATask.Container.PageLinks[AWorkId + i] := 'D';
-      for i := 1 to ExtractedImages.Count - 1 do
-        InterLockedIncrement(ATask.Container.DownCounter);
-      ATask.Container.PageNumber := ATask.Container.PageLinks.Count;
-    finally
-      LeaveCriticalSection(ATask.Container.CS_Container);
-    end;
-
-    Result := True;
-  finally
-    ExtractedImages.Free;
-    if DirectoryExists(TempDir) then DeleteDirectory(TempDir, False);
-    if FileExists(ArchivePath)  then DeleteFile(ArchivePath);
-  end;
-end;
-
-// When ExtractArchiveAfterDownloading = false the archive was saved as
-// {WorkingDir}/001.zip (or .rar / .7z).  This procedure moves it up to
-// {manga path}/{chapter name}.zip  (or .rar / .7z), mirroring exactly
-// what the normal compress step would produce for other output formats.
-//
-// If the chapter name already carries a file extension
-// (e.g. the site named it "Volume_1_Ch_01.cbz"), the archive is placed at
-// {manga path}/{chapter name}  — the extension is already part of the name.
-//
-// IMPORTANT: when OptionGenerateChapterFolder is enabled (the normal case),
-// CurrentWorkingDir is built as {manga path}/{chapter name} — see the
-// "CurrentWorkingDir := ... + ChapterNames[...]" assignment in Execute.
-// If the chapter name already has an extension, TargetPath above is THE
-// SAME PATH as CurrentWorkingDir itself (a folder, not a file yet). We
-// cannot rename a file to be the same path as its own parent directory in
-// one step, so the archive is first staged to a temp path outside the
-// chapter folder, the folder is then removed, and only then is the temp
-// file renamed to the real TargetPath.
-procedure MoveArchiveToChapterFile(const ATask: TTaskThread);
-var
-  SR: TSearchRec;
-  ArchivePath, ArchiveExt, ChapterBase, TargetPath, TempPath: String;
-
-  function DoMove(const Src, Dst: String): Boolean;
-  begin
-    Result := RenameFileUTF8(Src, Dst);
-    if not Result then
-    begin
-      // Cross-volume fallback: copy then delete
-      Result := CopyFile(Src, Dst, [cffOverwriteFile]);
-      if Result then
-        DeleteFile(Src);
-    end;
-  end;
-
-begin
-  // Locate the downloaded archive (saved as 001.zip / 001.rar / 001.7z)
-  ArchivePath := '';
-  ArchiveExt  := '';
-  if FindFirst(IncludeTrailingPathDelimiter(ATask.CurrentWorkingDir) + '001.*', faAnyFile, SR) = 0 then
-  try
-    repeat
-      if (SR.Attr and faDirectory) = 0 then
-      begin
-        ArchiveExt := LowerCase(ExtractFileExt(SR.Name));
-        if (ArchiveExt = '.zip') or (ArchiveExt = '.rar') or
-           (ArchiveExt = '.7z')  or (ArchiveExt = '.tar') then
-        begin
-          ArchivePath := IncludeTrailingPathDelimiter(ATask.CurrentWorkingDir) + SR.Name;
-          Break;
-        end;
-        ArchiveExt := '';
-      end;
-    until FindNext(SR) <> 0;
-  finally
-    FindClose(SR);
-  end;
-
-  if ArchivePath = '' then
-  begin
-    Logger.SendWarning('MoveArchiveToChapterFile: no archive found in ' + ATask.CurrentWorkingDir);
-    Exit;
-  end;
-
-  // Build target path: {manga path}/{chapter name}   (same formula as uPacker.FileName)
-  ChapterBase := RemovePathDelim(
-    CorrectPathSys(CorrectPathSys(ATask.Container.DownloadInfo.SaveTo) +
-      ATask.Container.ChapterNames[ATask.Container.CurrentDownloadChapterPtr]));
-
-  if ExtractFileExt(ExtractFileName(ChapterBase)) <> '' then
-    // Chapter name already has an extension (e.g. "Ch_01.cbz") → keep as-is
-    TargetPath := ChapterBase
-  else
-    // No extension → append the archive's own extension
-    TargetPath := ChapterBase + ArchiveExt;
-
-  // Stage to a temp path that can never collide with CurrentWorkingDir or
-  // TargetPath, regardless of whether the chapter name already had an
-  // extension. This avoids "rename file to its own parent directory" errors.
-  TempPath := ChapterBase + '.fmdtmp' + ArchiveExt;
-  if FileExists(TempPath) then
-    DeleteFile(TempPath);
-
-  if not DoMove(ArchivePath, TempPath) then
-  begin
-    Logger.SendWarning('MoveArchiveToChapterFile: failed to stage ' +
-      ArchivePath + ' → ' + TempPath);
-    Exit;
-  end;
-
-  // Remove the now-empty chapter sub-folder (it only ever held the archive)
-  if IsDirectoryEmpty(ATask.CurrentWorkingDir) then
-    RemoveDirUTF8(ATask.CurrentWorkingDir);
-
-  // Finally move the staged file to its real target
-  if FileExists(TargetPath) then
-    DeleteFile(TargetPath);
-
-  if not DoMove(TempPath, TargetPath) then
-    Logger.SendWarning('MoveArchiveToChapterFile: failed to move ' +
-      TempPath + ' → ' + TargetPath);
-end;
-
-// ---------------------------------------------------------------------------
 
 { TDownloadThread }
 
@@ -641,8 +336,7 @@ function TDownloadThread.DownloadImage: Boolean;
 var
   workFilename,
   workURL,
-  savedFilename,
-  archiveExt: String;
+  savedFilename: String;
 begin
   Result := False;
 
@@ -702,35 +396,6 @@ begin
       else
         savedFilename := SaveImageStreamToFile(HTTP, Task.CurrentWorkingDir, workFilename);
       Result := savedFilename <> '';
-
-      // Fallback: magic-byte detection failed (e.g. 7z format, gzip-wrapped
-      // content, or unusual Content-Type).  Check HTTP headers and the request
-      // URL for an archive extension hint and save the stream directly.
-      if not Result and not Assigned(TModuleContainer(Task.Container.DownloadInfo.Module).OnSaveImage) then
-      begin
-        archiveExt := GetHTTPArchiveExt(HTTP, workURL);
-        if archiveExt <> '' then
-        begin
-          savedFilename := CorrectPathSys(Task.CurrentWorkingDir) + workFilename + '.' + archiveExt;
-          try
-            HTTP.Document.Position := 0;
-            with TFileStream.Create(savedFilename, fmCreate) do
-            try
-              CopyFrom(HTTP.Document, HTTP.Document.Size);
-            finally
-              Free;
-            end;
-            Result := FileExists(savedFilename);
-          except
-            on E: Exception do
-            begin
-              Logger.SendWarning('DownloadImage archive fallback failed: ' + E.Message);
-              savedFilename := '';
-              Result := False;
-            end;
-          end;
-        end;
-      end;
     end;
   end;
 
@@ -740,28 +405,6 @@ begin
   if Terminated then Exit(False);
   if Result then
   begin
-    // If we saved an archive (ZIP/CBZ/RAR) instead of a plain image,
-    // dispatch based on the module's ExtractArchiveAfterDownloading setting:
-    //   true  (default) – extract images and expand page tracking
-    //   false           – leave the archive on disk and mark the page done
-    if IsArchiveFileExt(savedFilename) then
-    begin
-      if not TModuleContainer(Task.Container.DownloadInfo.Module).ExtractArchiveAfterDownloading then
-      begin
-        // Keep mode: the archive is already saved; just mark the page done.
-        Task.Container.PageLinks[WorkId] := 'D';
-        Result := True;
-      end
-      else
-      begin
-        // Extract mode (default): unpack and rename images, expand PageLinks.
-        Result := ExtractArchiveAndSetupPages(Task, WorkId, savedFilename);
-        // PageLinks[WorkId] is set to 'D' inside the helper.
-      end;
-      // OnAfterImageSaved is intentionally skipped for archives.
-      Exit;
-    end;
-
     Task.Container.PageLinks[WorkId] := 'D';
     // OnAfterImageSaved
     if Assigned(TModuleContainer(Task.Container.DownloadInfo.Module).OnAfterImageSaved) then
@@ -916,24 +559,6 @@ var
   FilePath, FileExt: String;
 begin
   Result := True;
-
-  // When ExtractArchiveAfterDownloading is false the module keeps downloaded
-  // archives as-is, so there are no individual image files to pack into a
-  // ZIP/CBZ/PDF/EPUB. Move the archive to its final {manga path}/{chapter
-  // name} location and return, regardless of the user's CompressType output
-  // setting (CompressType may be 0 / "no compression", in which case the
-  // block below would never run otherwise).
-  if not TModuleContainer(Container.DownloadInfo.Module).ExtractArchiveAfterDownloading then
-  begin
-    // No extraction was done — move the archive from the chapter sub-folder
-    // up to {manga path}/{chapter name}.zip so the folder layout matches
-    // what a normal compressed download would produce, then remove the
-    // now-empty chapter sub-folder.
-    MoveArchiveToChapterFile(Self);
-    Logger.Send(ClassName + '.Compress: skipped — ExtractArchiveAfterDownloading = false');
-    Exit;
-  end;
-
   if (Container.Manager.CompressType >= 1) then
   begin
     Container.DownloadInfo.Status :=
@@ -1427,34 +1052,6 @@ var
           begin
             FileExists := ImageFileExtExists(CurrentWorkingFile, TImageMagickManager.Instance.SaveAs);
           end;
-
-          // When ExtractArchiveAfterDownloading = false, the page is stored as
-          // a downloaded archive file (.zip/.rar/.7z/.tar) rather than as an image.
-          // Check both locations:
-          //   1. Inside CurrentWorkingDir (001.zip) — set during download
-          //   2. At {manga path}/{chapter name}.zip  — after MoveArchiveToChapterFile ran
-          if not FileExists then
-            if not TModuleContainer(Container.DownloadInfo.Module).ExtractArchiveAfterDownloading then
-            begin
-              FileExists :=
-                FileExistsUTF8(CurrentWorkingDir + GetFileName(i) + '.zip') or
-                FileExistsUTF8(CurrentWorkingDir + GetFileName(i) + '.rar') or
-                FileExistsUTF8(CurrentWorkingDir + GetFileName(i) + '.7z')  or
-                FileExistsUTF8(CurrentWorkingDir + GetFileName(i) + '.tar');
-              // Also check the moved location: {manga path}/{chapter name}.*
-              if not FileExists then
-                FileExists :=
-                  FileExistsUTF8(RemovePathDelim(CorrectPathSys(CorrectPathSys(Container.DownloadInfo.SaveTo) +
-                    Container.ChapterNames[Container.CurrentDownloadChapterPtr])) + '.zip') or
-                  FileExistsUTF8(RemovePathDelim(CorrectPathSys(CorrectPathSys(Container.DownloadInfo.SaveTo) +
-                    Container.ChapterNames[Container.CurrentDownloadChapterPtr])) + '.rar') or
-                  FileExistsUTF8(RemovePathDelim(CorrectPathSys(CorrectPathSys(Container.DownloadInfo.SaveTo) +
-                    Container.ChapterNames[Container.CurrentDownloadChapterPtr])) + '.7z') or
-                  FileExistsUTF8(RemovePathDelim(CorrectPathSys(CorrectPathSys(Container.DownloadInfo.SaveTo) +
-                    Container.ChapterNames[Container.CurrentDownloadChapterPtr])) + '.tar') or
-                  FileExistsUTF8(RemovePathDelim(CorrectPathSys(CorrectPathSys(Container.DownloadInfo.SaveTo) +
-                    Container.ChapterNames[Container.CurrentDownloadChapterPtr])));
-            end;
 
           if not FileExists then
           begin
