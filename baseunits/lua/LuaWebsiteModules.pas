@@ -1007,6 +1007,12 @@ begin
     luaClassAddBooleanProperty(L, MetaTable, 'InformationAvailable', @Module.InformationAvailable);
     luaClassAddBooleanProperty(L, MetaTable, 'FavoriteAvailable', @Module.FavoriteAvailable);
     luaClassAddBooleanProperty(L, MetaTable, 'DynamicPageLink', @Module.DynamicPageLink);
+    // When true (default), downloaded ZIP/CBZ/RAR archives are automatically
+    // extracted after downloading; images are renamed sequentially and the
+    // normal compress/pack step runs on them.
+    // When false, the archive is kept as-is and no repacking is performed.
+    // Usage in Init():  m.ExtractArchiveAfterDownloading = false
+    luaClassAddBooleanProperty(L, MetaTable, 'ExtractArchiveAfterDownloading', @Module.ExtractArchiveAfterDownloading);
     luaClassAddStringProperty(L, MetaTable, 'OnBeforeUpdateList', @OnBeforeUpdateList);
     luaClassAddStringProperty(L, MetaTable, 'OnAfterUpdateList', @OnAfterUpdateList);
     luaClassAddStringProperty(L, MetaTable, 'OnGetDirectoryPageNumber', @OnGetDirectoryPageNumber);
