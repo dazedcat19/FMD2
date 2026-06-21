@@ -61,10 +61,6 @@ type
   TOnAccountState = function(const AModule: TModuleContainer): Boolean;
   TOnCheckSite = function(const AModule: TModuleContainer): Boolean;
 
-  TOnDownloadArchive = function(const ATaskThread: TTaskThread;
-    const AURL: String; const ASavePath, ASaveFileName: String;
-    const AModule: TModuleContainer): Boolean;
-
   TModuleMethod = (MMGetDirectoryPageNumber, MMGetNameAndLink, MMGetInfo,
     MMTaskStart, MMGetPageNumber, MMGetImageURL, MMBeforeDownloadImage,
     MMDownloadImage, MMSaveImage, MMAfterImageSaved, MMLogin);
@@ -135,7 +131,18 @@ type
     InformationAvailable: Boolean;
     FavoriteAvailable: Boolean;
     DynamicPageLink: Boolean;
-    SupportArchiveDownloading: Boolean;
+    // When True (default), any ZIP/CBZ/RAR file returned by the site as a
+    // page download is automatically extracted after downloading. The images
+    // inside are renamed to FMD's sequential numbering (001.jpg, 002.jpg …)
+    // and the normal compress/pack step runs on them afterward.
+    //
+    // When False, the archive is saved as-is (e.g. 001.zip) in the chapter
+    // working directory and no extraction or repacking is performed.
+    //
+    // Set this in the Lua module Init() function:
+    //   m.ExtractArchiveAfterDownloading = true   -- extract (default)
+    //   m.ExtractArchiveAfterDownloading = false  -- keep the archive
+    ExtractArchiveAfterDownloading: Boolean;
     TotalDirectoryPage: array of Integer;
     CurrentDirectoryIndex: Integer;
     MaxTaskLimit: Integer;
@@ -156,7 +163,6 @@ type
     OnLogin: TOnLogin;
     OnAccountState: TOnAccountState;
     OnCheckSite: TOnCheckSite;
-    OnDownloadArchive: TOnDownloadArchive;
     constructor Create;
     destructor Destroy; override;
   public
@@ -308,7 +314,7 @@ begin
   InformationAvailable := True;
   FavoriteAvailable := True;
   DynamicPageLink := False;
-  SupportArchiveDownloading := False;
+  ExtractArchiveAfterDownloading := True;
   TotalDirectory := 1;
   CurrentDirectoryIndex := 0;
   FWebsiteBypass := TWebsiteBypass.Create(self);
