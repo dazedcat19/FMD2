@@ -115,14 +115,14 @@ function GetPageNumber()
 				replacementChar = replaceMatch[2];
 			} else {
 				var t_var = replaceMatch[3];
-				var e_regex = new RegExp(t_var + "\\s*=\\s*['\"](\\w)['\"]", "g");
+				var e_regex = new RegExp(t_var + "\\s*=\\s*(?:['\"](.*?)['\"]\\s*\\+\\s*)?['\"](.)['\"]", "g");
 				var sMatches = [];
 				var sMatch;
 				while ((sMatch = e_regex.exec(_encryptedString)) !== null) {
 					sMatches.push(sMatch);
 				}
 				if (sMatches.length > 0) {
-					replacementChar = sMatches[sMatches.length - 1][1];
+					replacementChar = sMatches[sMatches.length - 1][2];
 				}
 			}
 		}
@@ -139,33 +139,41 @@ function GetPageNumber()
 
 		for (var i = 0; i < arrayVars.length; i++) {
 			var t = arrayVars[i];
-			var e = new RegExp("\\w+\\s*\\([^)]*\\b" + t + "\\b[^)]*\\)", "g");
-			
-			var sMatches2 = [];
-			var sMatch2;
-			while ((sMatch2 = e.exec(_encryptedString)) !== null) {
-				sMatches2.push(sMatch2);
-			}
-			
-			if (sMatches2.length === 0) continue;
-			
 			var r = [];
-			for (var j = 0; j < sMatches2.length; j++) {
-				var fullMatch = sMatches2[j][0];
-				var innerRegex = /["']([^"']{20,})["']/g;
-				var eMatches = [];
-				var eMatch;
-				while ((eMatch = innerRegex.exec(fullMatch)) !== null) {
-					eMatches.push(eMatch[1]);
+
+			var pushRegex = new RegExp(t + "\\.push\\(['\"]([^'\"]{20,})['\"]\\)", "g");
+			var pMatch;
+			while ((pMatch = pushRegex.exec(_encryptedString)) !== null) {
+				r.push(pMatch[1]);
+			}
+
+			if (r.length === 0) {
+				var e = new RegExp("\\w+\\s*\\([^)]*\\b" + t + "\\b[^)]*\\)", "g");
+				var sMatches2 = [];
+				var sMatch2;
+				while ((sMatch2 = e.exec(_encryptedString)) !== null) {
+					sMatches2.push(sMatch2);
 				}
-				eMatches.sort(function(a, b) { return b.length - a.length; });
-				if (eMatches.length > 0 && eMatches[0]) {
-					r.push(eMatches[0]);
+
+				if (sMatches2.length > 0) {
+					for (var j = 0; j < sMatches2.length; j++) {
+						var fullMatch = sMatches2[j][0];
+						var innerRegex = /["']([^"']{20,})["']/g;
+						var eMatches = [];
+						var eMatch;
+						while ((eMatch = innerRegex.exec(fullMatch)) !== null) {
+							eMatches.push(eMatch[1]);
+						}
+						eMatches.sort(function(a, b) { return b.length - a.length; });
+						if (eMatches.length > 0 && eMatches[0]) {
+							r.push(eMatches[0]);
+						}
+					}
 				}
 			}
-			
+
 			if (r.length === 0) continue;
-			
+
 			var n = findPrefixOffset(r);
 			for (var k = 0; k < r.length; k++) {
 				pageLinks.push(decryptLink(r[k], n));
@@ -247,6 +255,7 @@ function GetPageNumber()
 			for (var i = 0; i < pageLinks.length; i++) {
 				var t = pageLinks[i];
 				if (!t) continue;
+				if (t.indexOf("blank.gif") !== -1) continue;
 				var s = t.split("?")[0].split("=")[0];
 				
 				var isFirst = true;
