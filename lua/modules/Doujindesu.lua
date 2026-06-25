@@ -18,7 +18,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local DirectoryPagination = '/api/manga?search=&genre=&status=&type=&sort=newest&limit=100000offset=0'
+local DirectoryPagination = '/api/manga?search=&genre=&status=&type=&sort=newest&limit=100000&offset=0'
 local json = require 'utils.json'
 
 ----------------------------------------------------------------------------------------------------
