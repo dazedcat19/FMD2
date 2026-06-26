@@ -115,23 +115,48 @@ function GetPageNumber()
 				replacementChar = replaceMatch[2];
 			} else {
 				var t_var = replaceMatch[3];
-				var e_regex = new RegExp(t_var + "\\s*=\\s*(?:['\"](.*?)['\"]\\s*\\+\\s*)?['\"](.)['\"]", "g");
-				var sMatches = [];
-				var sMatch;
-				while ((sMatch = e_regex.exec(_encryptedString)) !== null) {
-					sMatches.push(sMatch);
+				var e_regex = new RegExp(t_var + "\\s*=\\s*([^;]+);", "g");
+				var r_matches = [];
+				var r_match;
+				while ((r_match = e_regex.exec(_encryptedString)) !== null) {
+					r_matches.push(r_match);
 				}
-				if (sMatches.length > 0) {
-					replacementChar = sMatches[sMatches.length - 1][2];
+				if (r_matches.length > 0) {
+					var t_val = r_matches[r_matches.length - 1][1];
+					var e_str = "";
+					var q_regex = /['"]([^'"]*)['"]/g;
+					var q_match;
+					while ((q_match = q_regex.exec(t_val)) !== null) {
+						e_str += q_match[1];
+					}
+					if (e_str) {
+						replacementChar = e_str;
+					}
 				}
 			}
 		}
 
+		var loaderArrayMatch = null;
+		var loaderRegex = /([a-zA-Z0-9_]+)\s*\[\s*currImage\s*\]/g;
+		var lMatch;
+		while ((lMatch = loaderRegex.exec(_encryptedString)) !== null) {
+			var prefix = _encryptedString.substring(Math.max(0, lMatch.index - 50), lMatch.index);
+			var lastNewline = prefix.lastIndexOf('\n');
+			if (lastNewline !== -1) prefix = prefix.substring(lastNewline);
+			if (prefix.indexOf('//') === -1) {
+				loaderArrayMatch = lMatch[1];
+			}
+		}
+
 		var arrayVars = [];
-		var varRegex = /var\s+(\w+)\s*=\s*new\s+Array\(\)\s*;/g;
-		var varMatch;
-		while ((varMatch = varRegex.exec(_encryptedString)) !== null) {
-			arrayVars.push(varMatch[1]);
+		if (loaderArrayMatch) {
+			arrayVars.push(loaderArrayMatch);
+		} else {
+			var varRegex = /var\s+(\w+)\s*=\s*new\s+Array\(\)\s*;/g;
+			var varMatch;
+			while ((varMatch = varRegex.exec(_encryptedString)) !== null) {
+				arrayVars.push(varMatch[1]);
+			}
 		}
 
 		var baseUrlMatch = _encryptedString.match(/baeu\(\w+,\s*["'](https?:\/\/[^"']+)["']\)/);
@@ -139,44 +164,40 @@ function GetPageNumber()
 
 		for (var i = 0; i < arrayVars.length; i++) {
 			var t = arrayVars[i];
+			var e_regex = new RegExp(t + "\\.push\\(\\s*[\"']([^\"']{20,})[\"']", "g");
 			var r = [];
-
-			var pushRegex = new RegExp(t + "\\.push\\(['\"]([^'\"]{20,})['\"]\\)", "g");
-			var pMatch;
-			while ((pMatch = pushRegex.exec(_encryptedString)) !== null) {
-				r.push(pMatch[1]);
+			var e_match;
+			while ((e_match = e_regex.exec(_encryptedString)) !== null) {
+				r.push(e_match[1]);
 			}
 
 			if (r.length === 0) {
-				var e = new RegExp("\\w+\\s*\\([^)]*\\b" + t + "\\b[^)]*\\)", "g");
-				var sMatches2 = [];
-				var sMatch2;
-				while ((sMatch2 = e.exec(_encryptedString)) !== null) {
-					sMatches2.push(sMatch2);
+				var e2_regex = new RegExp("\\w+\\s*\\([^)]*\\b" + t + "\\b[^)]*\\)", "g");
+				var r_matches2 = [];
+				var e2_match;
+				while ((e2_match = e2_regex.exec(_encryptedString)) !== null) {
+					r_matches2.push(e2_match[0]);
 				}
 
-				if (sMatches2.length > 0) {
-					for (var j = 0; j < sMatches2.length; j++) {
-						var fullMatch = sMatches2[j][0];
-						var innerRegex = /["']([^"']{20,})["']/g;
-						var eMatches = [];
-						var eMatch;
-						while ((eMatch = innerRegex.exec(fullMatch)) !== null) {
-							eMatches.push(eMatch[1]);
-						}
-						eMatches.sort(function(a, b) { return b.length - a.length; });
-						if (eMatches.length > 0 && eMatches[0]) {
-							r.push(eMatches[0]);
-						}
+				for (var j = 0; j < r_matches2.length; j++) {
+					var inner_matches = [];
+					var inner_regex = /["']([^"']{20,})["']/g;
+					var inner_match;
+					while ((inner_match = inner_regex.exec(r_matches2[j])) !== null) {
+						inner_matches.push(inner_match[1]);
+					}
+					inner_matches.sort(function(a, b) { return b.length - a.length; });
+					if (inner_matches.length > 0 && inner_matches[0]) {
+						r.push(inner_matches[0]);
 					}
 				}
 			}
 
 			if (r.length === 0) continue;
 
-			var n = findPrefixOffset(r);
+			var s = findPrefixOffset(r);
 			for (var k = 0; k < r.length; k++) {
-				pageLinks.push(decryptLink(r[k], n));
+				pageLinks.push(decryptLink(r[k], s));
 			}
 		}
 
@@ -222,58 +243,57 @@ function GetPageNumber()
 
 		function decryptLink(t, e) {
 			e = e || 0;
-			var s = t.replace(obfuscationPattern, replacementChar).replace(/pw_.g28x/g, "b").replace(/d2pr.x_27/g, "h");
-			if (e != 0) s = s.substr(e, s.length - e);
+			var r = t.replace(obfuscationPattern, replacementChar).replace(/pw_.g28x/g, "b").replace(/d2pr.x_27/g, "h");
+			if (e != 0) r = r.substr(e, r.length - e);
 			
-			if (endsWith(s, "=s0") || endsWith(s, "=s1600")) {
-				s = s.replace("https://2.bp.blogspot.com/", "") + "?";
+			if (endsWith(r, "=s0") || endsWith(r, "=s1600")) {
+				r = r.replace("https://2.bp.blogspot.com/", "") + "?";
 			}
-			
-			if (!startsWith(s, "https")) {
-				var t_idx = s.indexOf("?");
-				var e_str = s.substring(t_idx);
-				var r = s.indexOf("=s0?") !== -1;
-				var n = r ? s.indexOf("=s0?") : s.indexOf("=s1600?");
-				var c = s.substring(0, n);
+
+			if (!startsWith(r, "https")) {
+				var t_idx = r.indexOf("?");
+				var e_str = r.substring(t_idx);
+				var s = r.indexOf("=s0?") !== -1;
+				var n = s ? r.indexOf("=s0?") : r.indexOf("=s1600?");
+				var c = r.substring(0, n);
 				c = c.substring(15, 33) + c.substring(50);
 				var o = c.length;
 				c = c.substring(0, o - 11) + c.charAt(o - 2) + c.charAt(o - 1);
 				var a = atob(c);
 				var l = decodeURIComponent(a);
 				l = l.substring(0, 13) + l.substring(17);
-				l = l.substring(0, l.length - 2) + (r ? "=s0" : "=s1600");
-				var i = detectedBaseUrl ? detectedBaseUrl : (_useServer2 ? "https://ano1.rconet.biz/pic" : "https://2.bp.blogspot.com");
-				s = i + "/" + l + e_str + (_useServer2 ? "&t=10" : "");
+				l = l.substring(0, l.length - 2) + (s ? "=s0" : "=s1600");
+				var p = detectedBaseUrl ? detectedBaseUrl : (_useServer2 ? "https://ano1.rconet.biz/pic" : "https://2.bp.blogspot.com");
+				r = p + "/" + l + e_str + (_useServer2 ? "&t=10" : "");
 			}
-			return s;
+			return r;
 		}
 
 		var blocklist = ["https://2.bp.blogspot.com/pw/AP1GczP6zCVVfdmN6OoVnm7CLvEfmHMUawyEwJWouX9C6SHwsiuYfLkUr9FsM6Zo34qNzPKeQeahBx9ckBZJQckiJmX1UwKD7uh900yz5rKyG4zT2rfIrqFviEJIev1Pg_pGRuSG57rIH6BDwGCTmiE4MjA", "https://2.bp.blogspot.com/pw/AP1GczP48thKMga7cud0tjtHtYqsvZzhYY0HyAxVzM3O1D6tkLbi0fT9NDZFFFH69hNnoGsnqJSEIh4mmpEoU1BJSfNXIz1f5aLXl41RM9os7ePn7ipbrYbIuqiQxAV0hhJZrNLl7FmauwLQ01paCrP6KAE", "https://2.bp.blogspot.com/pw/AP1GczNXprTMfAP2AHFFWvCbKq6qReXrqSohz87KeBjV0nh6XoLsE1NpzL7Rp9llxoY208IPARiIDON_TO6dZB0ZMNeB8J7xzUzbS9h6To7aGpOZshFofw-wFQ0KJ3y3wolSwzLrduZZ_0w8_6gGuTEB-98", "https://2.bp.blogspot.com/pw/AP1GczMVY_zWeag2n981CRX7jaZ73Sr0NtidtJhnvJ3-Rmh2fIo-PoQRI0ZksQEbpTjDHgBeNYbQ2hQodsY-Dv0FXUhiU_mus5z5L5lMVAH82kXYqOd2IEw", "https://2.bp.blogspot.com/pw/AP1GczOKY-6EDGVvlQGB2wj0xxB5JgcyiujFJC3CHgwqBOLIidwmoP6DLiMpX__Fw6MMPvLezN6soeV0A8pKSHUrC4rxZyO5vov40g1g4ipZdkFlzUouAFA", "https://2.bp.blogspot.com/pw/AP1GczO8AETT3k19nhJwxHm0sHCSy0tXyhSOYxnq3EUrmlvgY5yPqDaxcd1XZ7reQKH-lKgpGK4o3sW_9Yu6feqii79riXN3Ghi8Xs1S5Z4wi-aeHrq5PzOX"];
 
 		function getCleanedLinks() {
-			var filtered = [];
+			var t = [];
 			for (var i = 0; i < pageLinks.length; i++) {
-				var t = pageLinks[i];
-				if (!t) continue;
-				if (t.indexOf("blank.gif") !== -1) continue;
-				var s = t.split("?")[0].split("=")[0];
+				var item = pageLinks[i];
+				if (!item) continue;
+				var r = item.split("?")[0].split("=")[0];
 				
 				var isFirst = true;
 				for (var j = 0; j < i; j++) {
-					if (pageLinks[j] && pageLinks[j].split("?")[0].split("=")[0] === s) {
+					if (pageLinks[j] && pageLinks[j].split("?")[0].split("=")[0] === r) {
 						isFirst = false;
 						break;
 					}
 				}
-				
-				var n = blocklist.indexOf(s) === -1;
-				var c = urlPattern.test(s);
+
+				var n = blocklist.indexOf(r) === -1;
+				var c = urlPattern.test(r);
 				
 				if (isFirst && n && c) {
-					filtered.push(t);
+					t.push(item);
 				}
 			}
-			return reverseOrder ? filtered.reverse() : filtered;
+			return reverseOrder ? t.reverse() : t;
 		}
 
 		JSON.stringify(getCleanedLinks());
