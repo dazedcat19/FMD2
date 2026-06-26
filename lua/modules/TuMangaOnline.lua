@@ -20,7 +20,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local DirectoryPagination = '/biblioteca?order_item=creation&order_dir=desc&page='
+local DirectoryPagination = '/biblioteca?order_item=release_date&order_dir=desc&title&_pg=1&filter_by=title&author_filter&type&demography&status&page='
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -29,7 +29,7 @@ local DirectoryPagination = '/biblioteca?order_item=creation&order_dir=desc&page
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
 	local u = MODULE.RootURL .. DirectoryPagination
-	local page = 1275
+	local page = 1290
 
 	if not HTTP.GET(u .. page) then return net_problem end
 
