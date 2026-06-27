@@ -244,7 +244,8 @@ function GetInfo()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	if HTTP.ResultCode ~= 200 then MANGAINFO.Title = 'Cloudflare workaround is required' return no_error end
+	local rc = HTTP.ResultCode
+	if (rc == 403) or (rc == 429) or (rc == 503) then MANGAINFO.Title = 'Cloudflare workaround is required' return no_error end
 	local x = CreateTXQuery(HTTP.Document)
 	local info = require 'utils.json'.decode(x.XPathString('//script[@id="initial-data"]')).queries['["manga","detail","' .. mid .. '"]']
 
@@ -269,7 +270,7 @@ function GetInfo()
 		table.insert(genres, theme.title)
 	end
 	if info.type then
-		local capitalized = info.type:sub(1,1):upper() .. info.type:sub(2):lower()
+		local capitalized = info.type:sub(1, 1):upper() .. info.type:sub(2):lower()
 		table.insert(genres, capitalized)
 	end
 
@@ -493,8 +494,13 @@ function DownloadImage()
 
 	if seed and seed ~= 0 then
 		local scramble_hash = 0
-		if raw_scramble_hash == 03632 then scramble_hash = 58414 end
+		if raw_scramble_hash == 03632 then
+			scramble_hash = 58414
+		elseif raw_scramble_hash == 02900 then
+			scramble_hash = 117532
+		end
 		seed = seed ~ scramble_hash
+
 		local grid_header = HTTP.Headers.Values['X-Scramble-Grid']
 		local cols, rows = ParseGrid(grid_header)
 		local grid_size = cols * rows
