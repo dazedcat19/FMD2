@@ -5684,6 +5684,11 @@ object MainForm: TMainForm
       ImageIndex = 21
       OnClick = miFavoritesCheckNewChapterClick
     end
+    object miFavoritesCheckMissingChapters: TMenuItem
+      Caption = 'Check for missing chapters'
+      ImageIndex = 21
+      OnClick = miFavoritesCheckMissingChaptersClick
+    end
     object miFavoritesStopCheckNewChapter: TMenuItem
       Caption = 'Stop check for new chapter'
       ImageIndex = 7
