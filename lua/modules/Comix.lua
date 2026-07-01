@@ -294,7 +294,11 @@ function GetInfo()
 
 				if (meta && meta.hasNext) {
 					setTimeout(() => {
-						const btn = document.querySelector('.mchap-foot button[aria-label*=Next]');
+						let btn = null;
+						const active = document.querySelector('.mchap-foot .npager__num.is-active');
+						if (active && active.nextElementSibling && active.nextElementSibling.classList.contains('npager__num')) {
+							btn = active.nextElementSibling;
+						}
 						if (btn && !btn.disabled) btn.click();
 					}, 200);
 				} else {
