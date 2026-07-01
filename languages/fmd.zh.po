@@ -2922,8 +2922,3 @@ msgstr "同步数据"
 msgid "Updating list"
 msgstr "更新列表"
 
-#: webp.serrloadfailed
-#, object-pascal-format
-msgid "Can not load WebP codec library \"%s\". Check your installation."
-msgstr "无法加载 WebP 编解码器库 \"%s\". 请检查是否正常安装"
-
