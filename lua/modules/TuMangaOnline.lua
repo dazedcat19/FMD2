@@ -67,14 +67,14 @@ function GetInfo()
 	if not HTTP.GET(u) then return net_problem end
 
 	local x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//h1[contains(@class, "element-title")]/text()')
+	MANGAINFO.Title     = x.XPathString('//h1[contains(@class, "element-title")]')
 	MANGAINFO.AltTitles = x.XPathString('//p[@class="element-alternative-title"]/span')
 	MANGAINFO.CoverLink = x.XPathString('//img[contains(@class,"book-thumbnail")]/@src')
 	MANGAINFO.Authors   = x.XPathStringAll('//div[@class="staff-card"]//a[contains(@href, "author")]')
 	MANGAINFO.Artists   = x.XPathStringAll('//div[@class="staff-card"]//a[contains(@href, "artist")]')
-	MANGAINFO.Genres    = x.XPathStringAll('(//a[contains(@class, "badge")], //div[contains(@class, "demography")], concat(upper-case(substring(//h1[contains(@class, "book-type")], 1, 1)), lower-case(substring(//h1[contains(@class, "book-type")], 2))))')
+	MANGAINFO.Genres    = x.XPathStringAll('(//a[contains(@class, "badge")], //div[contains(@class, "demography")], upper-case(substring(//h1[contains(@class, "book-type")], 1, 1)) || lower-case(substring(//h1[contains(@class, "book-type")], 2)))')
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//span[contains(@class, "book-status")]'), 'public', 'final')
-	MANGAINFO.Summary   = x.XPathString('//p[@class="element-description"]/text()')
+	MANGAINFO.Summary   = x.XPathString('//p[@id="manga-synopsis"]')
 
 	for v in x.XPath('//ul[@class="list-group list-chapters"]/li').Get() do
 		MANGAINFO.ChapterLinks.Add(x.XPathString('.//a[contains(@class, "btn-primary")]/@href', v))
@@ -94,7 +94,7 @@ function GetPageNumber()
 
 	if not HTTP.GET(u) then return false end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('//div[@class="reader-img-wrap"]/img/@data-src', TASK.PageLinks)
+	CreateTXQuery(HTTP.Document).XPathStringAll('//div[@class="reader-img-wrap"]/img/@src', TASK.PageLinks)
 
 	return true
 end
