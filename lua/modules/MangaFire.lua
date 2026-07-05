@@ -126,11 +126,8 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	print('MangaFire GetInfo URL: ' .. URL)
 	local hid = URL:match('/title/(.-)%-') or URL:match('^(%w+)%-') or URL:match('%.(%w+)$')
-	print('MangaFire extracted hid: ' .. (hid or 'nil'))
 	local u = MODULE.RootURL .. API_URL .. '/titles/' .. hid
-	print('MangaFire API request: ' .. u)
 
 	HTTP.Reset()
 	HTTP.Headers.Values['Referer'] = MODULE.RootURL
@@ -145,7 +142,6 @@ function GetInfo()
 	if HTTP.Document ~= nil and HTTP.Document.Size ~= nil then
 		doc_size = tostring(HTTP.Document.Size)
 	end
-	print('MangaFire HTTP.GET succeeded, document size: ' .. doc_size)
 
 	if HTTP.Document == nil or HTTP.Document.Size == 0 then
 		print('MangaFire HTTP.Document is empty')
@@ -173,12 +169,6 @@ function GetInfo()
 	MANGAINFO.Genres    = MANGAINFO.Genres:gsub('^, ', ''):gsub(', , ', ', '):gsub(', $', '')
 	local status_text = x.XPathString('data/status', json) or ''
 	MANGAINFO.Status = MangaInfoStatusIfPos(status_text, 'Ongoing|Releasing', 'Completed|Finished', 'Hiatus|On Hold', 'Canceled|Dropped')
-
-	print('MangaFire Title: ' .. (MANGAINFO.Title or ''))
-	print('MangaFire CoverLink: ' .. (MANGAINFO.CoverLink or ''))
-	print('MangaFire Authors: ' .. (MANGAINFO.Authors or ''))
-	print('MangaFire Genres: ' .. (MANGAINFO.Genres or ''))
-	print('MangaFire Status: ' .. (MANGAINFO.Status or ''))
 
 	local slug         = x.XPathString('data/slug', json) or ''
 	local synopsis     = x.XPathString('data/synopsisHtml', json) or ''
