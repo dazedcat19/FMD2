@@ -19,13 +19,9 @@ function Init()
 	local lang = {
 		['en'] = {
 			['lang'] = 'Language:',
-			['listtype'] = 'List type:',
-			['type'] = 'Chapter\nVolume'
 		},
 		['id_ID'] = {
 			['lang'] = 'Bahasa:',
-			['listtype'] = 'Tipe daftar:',
-			['type'] = 'Bab\nJilid'
 		},
 		get =
 			function(self, key)
@@ -39,14 +35,14 @@ function Init()
 	local t = GetLangList()
 	for k, v in ipairs(t) do items = items .. '\r\n' .. v end
 	m.AddOptionComboBox('lang', lang:get('lang'), items, 1)
-	m.AddOptionComboBox('listtype', lang:get('listtype'), lang:get('type'), 0)
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local DirectoryPagination = '/newest?page='
+local API_URL = '/api'
+local DirectoryPagination = '/titles?order[chapter_updated_at]=desc&hot=1&page='
 
 local Langs = {
 	["en"] = "English",
@@ -61,155 +57,6 @@ local Langs = {
 ----------------------------------------------------------------------------------------------------
 -- Helper Functions
 ----------------------------------------------------------------------------------------------------
-
-local function ToBytes(s)
-	local t = {}
-	for i = 1, #s do
-		t[#t + 1] = string.byte(s, i) & 255
-	end
-	return t
-end
-
-local function FromBytes(t)
-	return string.char(table.unpack(t))
-end
-
-local function Rc4(key, input)
-	local s = {}
-	for i = 0, 255 do
-		s[i] = i
-	end
-	local j = 0
-	for i = 0, 255 do
-		j = (j + s[i] + key[(i % #key) + 1]) & 255
-		s[i], s[j] = s[j], s[i]
-	end
-	local out = {}
-	local i = 0
-	j = 0
-	for y = 1, #input do
-		i = (i + 1) & 255
-		j = (j + s[i]) & 255
-		s[i], s[j] = s[j], s[i]
-		local k = s[(s[i] + s[j]) & 255]
-		out[y] = (input[y] ~ k) & 255
-	end
-	return out
-end
-
-local function Transform(input, init_seed_bytes, prefix_key, prefix_len, schedule)
-	local out = {}
-	for i = 1, #input do
-		if (i - 1) < prefix_len then
-			out[#out + 1] = prefix_key[i] or 0
-		end
-		out[#out + 1] = schedule[((i - 1) % 10) + 1]((input[i] ~ init_seed_bytes[((i - 1) % 32) + 1]) & 255) & 255
-	end
-	return out
-end
-
-local function Add8(n) return function(c) return (c + n) & 255 end end
-local function Sub8(n) return function(c) return (c - n + 256) & 255 end end
-local function Xor8(n) return function(c) return (c ~ n) & 255 end end
-local function Rotl8(n) return function(c) return ((c << n) | (c >> (8 - n))) & 255 end end
-local function Rotr8(n) return function(c) return ((c >> n) | (c << (8 - n))) & 255 end end
-
-local schedule_c = {
-	Sub8(223), Rotr8(4), Rotr8(4), Add8(234), Rotr8(7),
-	Rotr8(2), Rotr8(7), Sub8(223), Rotr8(7), Rotr8(6),
-}
-
-local schedule_y = {
-	Add8(19), Rotr8(7), Add8(19), Rotr8(6), Add8(19),
-	Rotr8(1), Add8(19), Rotr8(6), Rotr8(7), Rotr8(4),
-}
-
-local schedule_b = {
-	Sub8(223), Rotr8(1), Add8(19), Sub8(223), Rotl8(2),
-	Sub8(223), Add8(19), Rotl8(1), Rotl8(2), Rotl8(1),
-}
-
-local schedule_j = {
-	Add8(19), Rotl8(1), Rotl8(1), Rotr8(1), Add8(234),
-	Rotl8(1), Sub8(223), Rotl8(6), Rotl8(4), Rotl8(1),
-}
-
-local schedule_e = {
-	Rotr8(1), Rotl8(1), Rotl8(6), Rotr8(1), Rotl8(2),
-	Rotr8(4), Rotl8(1), Rotl8(1), Sub8(223), Rotl8(2),
-}
-
-local rc4_keys = {
-	l = "FgxyJUQDPUGSzwbAq/ToWn4/e8jYzvabE+dLMb1XU1o=",
-	g = "CQx3CLwswJAnM1VxOqX+y+f3eUns03ulxv8Z+0gUyik=",
-	B = "fAS+otFLkKsKAJzu3yU+rGOlbbFVq+u+LaS6+s1eCJs=",
-	m = "Oy45fQVK9kq9019+VysXVlz1F9S1YwYKgXyzGlZrijo=",
-	F = "aoDIdXezm2l3HrcnQdkPJTDT8+W6mcl2/02ewBHfPzg=",
-}
-
-local seeds_32 = {
-	A = "yH6MXnMEcDVWO/9a6P9W92BAh1eRLVFxFlWTHUqQ474=",
-	V = "RK7y4dZ0azs9Uqz+bbFB46Bx2K9EHg74ndxknY9uknA=",
-	N = "rqr9HeTQOg8TlFiIGZpJaxcvAaKHwMwrkqojJCpcvoc=",
-	P = "/4GPpmZXYpn5RpkP7FC/dt8SXz7W30nUZTe8wb+3xmU=",
-	k = "wsSGSBXKWA9q1oDJpjtJddVxH+evCfL5SO9HZnUDFU8=",
-}
-
-local prefix_keys = {
-	O = "l9PavRg=",
-	v = "Ml2v7ag1Jg==",
-	L = "i/Va0UxrbMo=",
-	p = "WFjKAHGEkQM=",
-	W = "5Rr27rWd",
-}
-
-local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-
-local function EncodeBase64(data)
-	return ((data:gsub('.', function(x)
-		local r, bits = '', x:byte()
-		for i = 8, 1, -1 do
-			r = r .. (bits % 2 ^ i - bits % 2 ^ (i - 1) > 0 and '1' or '0')
-		end
-		return r
-	end) .. '0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
-		if (#x < 6) then return '' end
-		local c = 0
-		for i = 1, 6 do
-			c = c + (x:sub(i ,i) == '1' and 2 ^ (6 - i) or 0)
-		end
-		return b:sub(c + 1, c +1)
-	end) .. ({ '', '==', '=' })[#data % 3 + 1])
-end
-
-local function GenerateVRF(input)
-	local crypto = require 'fmd.crypto'
-	local bytes = ToBytes(crypto.EncodeURLElement(input))
-
-	local stages = {
-		{ rc4_keys.l, seeds_32.A, prefix_keys.O, schedule_c },
-		{ rc4_keys.g, seeds_32.V, prefix_keys.v, schedule_y },
-		{ rc4_keys.B, seeds_32.N, prefix_keys.L, schedule_b },
-		{ rc4_keys.m, seeds_32.P, prefix_keys.p, schedule_j },
-		{ rc4_keys.F, seeds_32.k, prefix_keys.W, schedule_e },
-	}
-
-	for _, st in ipairs(stages) do
-		local key_b64, seed_b64, prefix_b64, sched = st[1], st[2], st[3], st[4]
-
-		local rc4_key = ToBytes(crypto.DecodeBase64(key_b64))
-		bytes = Rc4(rc4_key, bytes)
-
-		local seed_bytes = ToBytes(crypto.DecodeBase64(seed_b64))
-		local prefix_bytes_str = crypto.DecodeBase64(prefix_b64)
-		local prefix_bytes = ToBytes(prefix_bytes_str)
-		local prefix_len = #prefix_bytes_str
-
-		bytes = Transform(bytes, seed_bytes, prefix_bytes, prefix_len, sched)
-	end
-
-	return EncodeBase64(FromBytes(bytes)):gsub("%+", "-"):gsub("/", "_"):gsub("=+$", "")
-end
 
 function GetLangList()
 	local t = {}
@@ -238,74 +85,165 @@ end
 
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
-	local u = MODULE.RootURL .. DirectoryPagination .. 1
+	local u = MODULE.RootURL .. API_URL .. DirectoryPagination .. 1 .. '&limit=30'
+
+	HTTP.Reset()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+	HTTP.Headers.Values['Accept'] = 'application/json'
+	HTTP.Headers.Values['X-Requested-With'] = 'XMLHttpRequest'
 
 	if not HTTP.GET(u) then return net_problem end
 
-	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//ul[@class="pagination"]/li[last()]/a/@href/substring-after(., "=")')) or 1
+	local crypto = require 'fmd.crypto'
+	local dx = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString()))
+	PAGENUMBER = tonumber(dx.XPathString('json(*).meta/lastPage')) or 1
 
 	return no_error
 end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1)
+	local u = MODULE.RootURL .. API_URL .. DirectoryPagination .. (URL + 1) .. '&limit=30'
+
+	HTTP.Reset()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+	HTTP.Headers.Values['Accept'] = 'application/json'
+	HTTP.Headers.Values['X-Requested-With'] = 'XMLHttpRequest'
 
 	if not HTTP.GET(u) then return net_problem end
 
-	CreateTXQuery(HTTP.Document).XPathHREFAll('//div[@class="info"]/a', LINKS, NAMES)
+	local crypto = require 'fmd.crypto'
+	local dx = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString()))
+	local items = dx.XPath('json(*).items()')
+	for ic = 1, (items and items.Count or 0) do
+		local v = items.Get(ic)
+		LINKS.Add(dx.XPathString('url', v) or '')
+		NAMES.Add(dx.XPathString('title', v) or '')
+	end
 
 	return no_error
 end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local u = MaybeFillHost(MODULE.RootURL, URL)
+	print('MangaFire GetInfo URL: ' .. URL)
+	local hid = URL:match('/title/(.-)%-') or URL:match('^(%w+)%-') or URL:match('%.(%w+)$')
+	print('MangaFire extracted hid: ' .. (hid or 'nil'))
+	local u = MODULE.RootURL .. API_URL .. '/titles/' .. hid
+	print('MangaFire API request: ' .. u)
 
-	if not HTTP.GET(u) then return net_problem end
+	HTTP.Reset()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+	HTTP.Headers.Values['Accept'] = 'application/json'
+	HTTP.Headers.Values['X-Requested-With'] = 'XMLHttpRequest'
 
-	local x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//h1')
-	MANGAINFO.AltTitles = x.XPathString('//div[@class="manga-detail"]//h6')
-	MANGAINFO.CoverLink = x.XPathString('(//div[@class="poster"])[1]//img/@src')
-	MANGAINFO.Authors   = x.XPathStringAll('//div[@class="meta"]/div[./span="Author:"]/span/a')
-	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="meta"]/div[./span="Genres:"]/span/a')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@class="info"]/p'), 'Releasing', 'Completed', 'On_hiatus', 'Discontinued')
-	MANGAINFO.Summary   = x.XPathString('string-join(//div[@class="modal-content p-4"]/text(), "\r\n")')
+	if not HTTP.GET(u) then
+		print('MangaFire HTTP.GET failed for: ' .. u)
+		return net_problem
+	end
+	local doc_size = 'unknown'
+	if HTTP.Document ~= nil and HTTP.Document.Size ~= nil then
+		doc_size = tostring(HTTP.Document.Size)
+	end
+	print('MangaFire HTTP.GET succeeded, document size: ' .. doc_size)
 
-	local listtype     = {'chapter', 'volume'}
-	local sel_listtype = (MODULE.GetOption('listtype') or 0) + 1
+	if HTTP.Document == nil or HTTP.Document.Size == 0 then
+		print('MangaFire HTTP.Document is empty')
+		return net_problem
+	end
+
+	local crypto = require 'fmd.crypto'
+	local x = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString()))
+	local json = x.XPath('json(*)')
+	if json == nil or json.Count == 0 then
+		print('MangaFire failed to parse JSON data')
+		return net_problem
+	end
+
+	MANGAINFO.Title     = x.XPathString('data/title', json) or ''
+	MANGAINFO.AltTitles = x.XPathString('string-join(data/altTitles(), ", ")', json) or ''
+	MANGAINFO.CoverLink = x.XPathString('data/poster/large', json) or ''
+	MANGAINFO.Authors   = x.XPathStringAll('data/authors()/title', json) or ''
+	MANGAINFO.Artists   = x.XPathStringAll('data/artists()/title', json) or ''
+	MANGAINFO.Genres    = x.XPathStringAll('data/genres()/title', json) or ''
+	local demographics = x.XPathStringAll('data/demographics()/title', json) or ''
+	local themes = x.XPathStringAll('data/themes()/title', json) or ''
+	if demographics ~= '' then MANGAINFO.Genres = MANGAINFO.Genres .. ', ' .. demographics end
+	if themes ~= '' then MANGAINFO.Genres = MANGAINFO.Genres .. ', ' .. themes end
+	MANGAINFO.Genres    = MANGAINFO.Genres:gsub('^, ', ''):gsub(', , ', ', '):gsub(', $', '')
+	local status_text = x.XPathString('data/status', json) or ''
+	MANGAINFO.Status = MangaInfoStatusIfPos(status_text, 'Ongoing|Releasing', 'Completed|Finished', 'Hiatus|On Hold', 'Canceled|Dropped')
+
+	print('MangaFire Title: ' .. (MANGAINFO.Title or ''))
+	print('MangaFire CoverLink: ' .. (MANGAINFO.CoverLink or ''))
+	print('MangaFire Authors: ' .. (MANGAINFO.Authors or ''))
+	print('MangaFire Genres: ' .. (MANGAINFO.Genres or ''))
+	print('MangaFire Status: ' .. (MANGAINFO.Status or ''))
+
+	local slug         = x.XPathString('data/slug', json) or ''
+	local synopsis     = x.XPathString('data/synopsisHtml', json) or ''
+	if synopsis ~= '' and synopsis ~= 'null' then
+		x.ParseHTML(synopsis)
+		MANGAINFO.Summary = x.XPathString('string-join(//text(), "\r\n")')
+	end
+
+	local title_url = '/title/' .. hid .. '-' .. slug
+
 	local optlang      = MODULE.GetOption('lang')
 	local optlangid    = FindLanguage(optlang)
+	local langparam    = optlangid and ('&language=' .. optlangid) or ''
 
-	if optlangid == nil then langparam = '' else langparam = optlangid end
-	local vrf = GenerateVRF(URL:match('%.(.-)$') .. '@' .. listtype[sel_listtype] .. '@' .. langparam)
+	local page = 1
+	while true do
+		local chapter_u = MODULE.RootURL .. API_URL .. '/titles/' .. hid .. '/chapters?sort=number&order=asc&page=' .. tostring(page) .. '&limit=100' .. langparam
 
-	if not HTTP.GET(MODULE.RootURL .. '/ajax/read/' .. URL:match('%.(.-)$') .. '/' .. listtype[sel_listtype] .. '/' .. langparam .. '?vrf=' .. vrf) then return net_problem end
+		HTTP.Reset()
+		HTTP.Headers.Values['Referer'] = MODULE.RootURL
+		HTTP.Headers.Values['Accept'] = 'application/json'
+		HTTP.Headers.Values['X-Requested-With'] = 'XMLHttpRequest'
 
-	local s = HTTP.Document.ToString()
-	if s:sub(1, 1) == '<' then print('VRF value mismatch') return no_error end
-	x.ParseHTML(require 'utils.json'.decode(s).result.html)
-	for v in x.XPath('//a').Get() do
-		MANGAINFO.ChapterLinks.Add(v.GetAttribute('data-id'))
-		MANGAINFO.ChapterNames.Add(x.XPathString('text()', v))
+		if not HTTP.GET(chapter_u) then break end
+
+		local cx = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString()))
+		local chapters = cx.XPath('json(*).items()')
+		for ic = 1, (chapters and chapters.Count or 0) do
+			local v = chapters.Get(ic)
+			local chapter_id = cx.XPathString('id', v) or ''
+			local number     = cx.XPathString('number', v) or ''
+			local name       = cx.XPathString('name', v) or ''
+
+			local chapter_name = 'Ch. ' .. number
+			if name ~= '' and name ~= 'null' then
+				chapter_name = chapter_name .. ' - ' .. name
+			end
+
+			MANGAINFO.ChapterLinks.Add(title_url .. '/' .. chapter_id)
+			MANGAINFO.ChapterNames.Add(chapter_name)
+		end
+
+		local last_page = tonumber(cx.XPathString('json(*).meta.lastPage')) or 1
+		if page >= last_page then break end
+		page = page + 1
 	end
-	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
 end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	local listtype     = {'chapter', 'volume'}
-	local sel_listtype = (MODULE.GetOption('listtype') or 0) + 1
-	local vrf = GenerateVRF(listtype[sel_listtype] .. '@' .. URL:match('/(.-)$'))
+	local chapter_id = URL:match('/(%d+)$') or URL:match('^(%d+)$')
+	local u = MODULE.RootURL .. API_URL .. '/chapters/' .. chapter_id
 
-	local u = MODULE.RootURL .. '/ajax/read/' .. listtype[sel_listtype] .. URL .. '?vrf=' .. vrf
+	HTTP.Reset()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+	HTTP.Headers.Values['Accept'] = 'application/json'
+	HTTP.Headers.Values['X-Requested-With'] = 'XMLHttpRequest'
 
 	if not HTTP.GET(u) then return false end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).result.images()(1)', TASK.PageLinks)
+	local crypto = require 'fmd.crypto'
+	local px = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString()))
+	px.XPathStringAll('json(*).data/pages()/url', TASK.PageLinks)
 
 	return true
 end
