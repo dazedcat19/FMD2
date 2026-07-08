@@ -95,7 +95,6 @@ function GetNameAndLink()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	local crypto = require 'fmd.crypto'
 	for v in CreateTXQuery(HTTP.Document).XPath('json(*).items()').Get() do
 		LINKS.Add(v.GetProperty('url').ToString())
 		NAMES.Add(v.GetProperty('title').ToString())
