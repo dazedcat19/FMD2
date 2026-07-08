@@ -12,11 +12,9 @@ function Init()
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
 	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
-	m.AddServerCookies('webtoons.com', 'ageGatePass=True; max-age=31556952')
 
-	local fmd = require 'fmd.env'
-	local slang = fmd.SelectedLanguage
-	local lang = {
+	local slang = require 'fmd.env'.SelectedLanguage
+	local translations = {
 		['en'] = {
 			['includechallengetitles'] = 'Include manga titles from WebToons Challenge (takes very very long to create manga list!)',
 			['lang'] = 'Language:'
@@ -24,65 +22,43 @@ function Init()
 		['id_ID'] = {
 			['includechallengetitles'] = 'Sertakan judul komik dari WebToons Challenge (perlu waktu yang sangat lama untuk membuat daftar komik!)',
 			['lang'] = 'Bahasa:'
-		},
-		get =
-			function(self, key)
-				local sel = self[slang]
-				if sel == nil then sel = self['en'] end
-				return sel[key]
-			end
+		}
 	}
-	m.AddOptionCheckBox('luaincludechallengetitles', lang:get('includechallengetitles'), false)
-
-	local items = 'All'
-	local t = GetLangList()
-	for k, v in ipairs(t) do items = items .. '\r\n' .. v; end
-	m.AddOptionComboBox('lualang', lang:get('lang'), items, 2)
+	local lang = translations[slang] or translations.en
+	local items = table.concat(GetLangList(), '\r\n')
+	m.AddOptionComboBox('lualang', lang.lang, items, 3)
+	m.AddOptionCheckBox('luaincludechallengetitles', lang.includechallengetitles, false)
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local langs = {
-	["en"] = "English",
-	["fr"] = "French",
-	["id"] = "Indonesian",
-	["zh-hant"] = "Chinese",
-	["th"] = "Thai"
+local Langs = {
+	{  nil, 'All' },
+	{ 'en', 'English' },
+	{ 'fr', 'French' },
+	{ 'id', 'Indonesian' },
+	{ 'zh-hant', 'Chinese' },
+	{ 'th', 'Thai' }
 }
 
 ----------------------------------------------------------------------------------------------------
--- Auxiliary Functions
+-- Helper Functions
 ----------------------------------------------------------------------------------------------------
 
-function GetLang(lang)
-	if langs[lang] ~= nil then
-		return langs[lang]
-	else
-		return 'Unknown'
-	end
-end
-
+-- Return language names in defined order
 function GetLangList()
 	local t = {}
-	for k, v in pairs(langs) do table.insert(t, v); end
-	table.sort(t)
+	for _, v in ipairs(Langs) do
+		table.insert(t, v[2])
+	end
 	return t
 end
 
-function FindLang(lang)
-	local t = GetLangList()
-	for i, v in ipairs(t) do
-		if i == lang then
-			lang = v
-			break
-		end
-	end
-	for k, v in pairs(langs) do
-		if v == lang then return k; end
-	end
-	return nil
+-- Return language key by index
+local function FindLang(lang)
+	return Langs[lang + 1][1]
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -94,12 +70,12 @@ function GetNameAndLink()
 	local selectedLang = MODULE.GetOption('lualang')
 	local l = langs
 	if selectedLang > 0 then
-		l = {[FindLang(selectedLang)] = ""}
+		l = {[FindLang(selectedLang)] = ''}
 	end
 	local key, dirurl, v
 	local x = CreateTXQuery()
 	for key, _ in pairs(l) do
-		dirurl = key..'/genre'
+		dirurl = key .. '/genre'
 		if HTTP.GET(MODULE.RootURL .. dirurl) then
 			x.ParseHTML(HTTP.Document)
 			for v in x.XPath('//div[@class="card_wrap genre"]/ul/li/a').Get() do
@@ -113,16 +89,15 @@ function GetNameAndLink()
 
 	if MODULE.GetOption('luaincludechallengetitles') then
 		for key, _ in pairs(l) do
-			dirurl = key..'/challenge/list?genreTab=ALL&sortOrder=UPDATE'
+			dirurl = key .. '/challenge/list?genreTab=ALL&sortOrder=UPDATE'
 			if HTTP.GET(MODULE.RootURL..dirurl) then
 				x.ParseHTML(HTTP.Document)
-				local v, p
 				while true do
 					for v in x.XPath('//div[@class="challenge_cont_area"]/div[contains(@class,"challenge_lst")]/ul/li/a[contains(@class,"challenge_item")]').Get() do
 						NAMES.Add(x.XPathString('./p[@class="subj"]', v)..' ['..key..']');
 						LINKS.Add(v.GetAttribute('href'));
 					end
-					p = x.XPathString('//div[@class="paginate"]/a[@href="#"]/following-sibling::a/@href')
+					local p = x.XPathString('//div[@class="paginate"]/a[@href="#"]/following-sibling::a/@href')
 					if (p ~= '') and HTTP.GET(MaybeFillHost(MODULE.RootURL, p)) then
 						x.ParseHTML(HTTP.Document)
 					else
@@ -140,26 +115,26 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local s, v, x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
+	local x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Title     = x.XPathString('//meta[@property="og:title"]/@content')
 	MANGAINFO.CoverLink = x.XPathString('//meta[@property="og:image"]/@content')
 	MANGAINFO.Authors   = x.XPathString('//div[@class="author_area"]/text()'):gsub('[^%a%d ,]', '')
-	MANGAINFO.Genres    = x.XPathString('//h2[contains(@class, "genre")]')
+	if MANGAINFO.Authors == '' then MANGAINFO.Authors = x.XPathStringAll('//div[@class="author_area"]/a') end
+	MANGAINFO.Genres    = x.XPathStringAll('//*[self::h2 or self::p][contains(@class, "genre")]')
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//p[@class="day_info"]'), 'UP')
-	MANGAINFO.Summary   = x.XPathString('//p[@class="summary"]')
+	MANGAINFO.Summary   = x.XPathString('//p[contains(@class, "summary")]')
+
+	local lang = x.XPathString('//script[contains(., "contentLang")]'):match("contentLang: '(.-)'")
 
 	if URL:find('/canvas/') then s = 'canvas' else s = 'webtoon' end
-	u = 'https://m.webtoons.com/api/v1/' .. s .. '/' .. URL:match('title_no=(%d+)') .. '/episodes?pageSize=99999'
 
-	if not HTTP.GET(u) then return net_problem end
+	if not HTTP.GET('https://m.webtoons.com/api/v1/' .. s .. '/' .. URL:match('title_no=(%d+)') .. '/episodes?pageSize=99999' .. '&readingLanguageCode=' .. lang) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
-	for v in x.XPath('json(*).result.episodeList()').Get() do
+	for v in CreateTXQuery(HTTP.Document).XPath('json(*).result.episodeList()').Get() do
 		MANGAINFO.ChapterLinks.Add(v.GetProperty('viewerLink').ToString())
 		MANGAINFO.ChapterNames.Add(v.GetProperty('episodeTitle').ToString())
 	end
