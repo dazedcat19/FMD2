@@ -76,7 +76,7 @@ function _M.GetInfo()
 
 	local type = data.result.data.json.type
 	if type then
-		MANGAINFO.Genres = MANGAINFO.Genres .. ', '.. type:gsub('^%l', string.upper)
+		MANGAINFO.Genres = (MANGAINFO.Genres ~= '' and MANGAINFO.Genres .. ', ' or '') .. type:gsub('^%l', string.upper)
 	end
 
 	local s = '/api/trpc/series.chapters?batch=1&input={"0":{"json":{"seriesId":' .. data.result.data.json.id .. '}}}'
