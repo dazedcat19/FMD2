@@ -71,7 +71,7 @@ function _M.GetInfo()
 	MANGAINFO.Authors   = table.concat(data.result.data.json.authors, ', ')
 	MANGAINFO.Artists   = table.concat(data.result.data.json.artists, ', ')
 	MANGAINFO.Genres    = table.concat(data.result.data.json.genres, ', ')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(data.result.data.json.status)
+	MANGAINFO.Status    = MangaInfoStatusIfPos(data.result.data.json.status, 'ongoing|releasing')
 	MANGAINFO.Summary   = data.result.data.json.synopsis
 
 	local type = data.result.data.json.type
