@@ -71,12 +71,12 @@ function _M.GetInfo()
 	MANGAINFO.Authors   = table.concat(data.result.data.json.authors, ', ')
 	MANGAINFO.Artists   = table.concat(data.result.data.json.artists, ', ')
 	MANGAINFO.Genres    = table.concat(data.result.data.json.genres, ', ')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(data.result.data.json.status)
+	MANGAINFO.Status    = MangaInfoStatusIfPos(data.result.data.json.status, 'ongoing|releasing')
 	MANGAINFO.Summary   = data.result.data.json.synopsis
 
 	local type = data.result.data.json.type
 	if type then
-		MANGAINFO.Genres = MANGAINFO.Genres .. ', '.. type:gsub('^%l', string.upper)
+		MANGAINFO.Genres = (MANGAINFO.Genres ~= '' and MANGAINFO.Genres .. ', ' or '') .. type:gsub('^%l', string.upper)
 	end
 
 	local s = '/api/trpc/series.chapters?batch=1&input={"0":{"json":{"seriesId":' .. data.result.data.json.id .. '}}}'
