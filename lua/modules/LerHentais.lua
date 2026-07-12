@@ -20,10 +20,10 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.Hiper'
-__st = '1df1ec97d7be092aab66180283e6f8206662bf59428fb8b1c8fb9d990dc0515f'
+__st = '6520a6000932f66189c71dd6fc74e7d08f43e2fbb4b5f1579cd1c37e63be5e91'
 ChapterName = 'Capítulo '
-Key = 'X-Lh-Nexus'
-Value = 'c37-block-q24'
+Key = 'X-Flux-Node'
+Value = 'G2ZsDdWhUwdU82Vw'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions

@@ -22,8 +22,8 @@ end
 local Template = require 'templates.Hiper'
 __st = '08fc7856f8d997ca38f029edc76d80a44ff8dc85b72bb8ca9b016f82a66ab72b'
 ChapterName = 'Chapter '
-Key = 'X-Hpx-Nexus'
-Value = 'hpx-block-f91'
+Key = 'X-Svc-Gate'
+Value = 'f5pabmx7sdek'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
