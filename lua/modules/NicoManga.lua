@@ -78,7 +78,7 @@ function GetPageNumber()
 	if not HTTP.GET(u) then return false end
 
 	local x = CreateTXQuery(HTTP.Document)
-	x.ParseHTML(x.XPathString('(//script[contains(., "function _loadImgs")])[1]/substring-before(substring-after(., "const images = "), ";")'))
+	x.ParseHTML(x.XPathString('//script[contains(., "const images")]/substring-before(substring-after(., "const images = "), ";")'):gsub('\\"', '"'):gsub('\\/', '/'))
 	x.XPathStringAll('json(*)()', TASK.PageLinks)
 
 	return true
