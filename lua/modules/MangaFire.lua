@@ -21,14 +21,16 @@ function Init()
 			['listtype'] = 'List type:',
 			['ltype'] = 'Chapter\nVolume',
 			['chaptertype'] = 'Chapter type:',
-			['ctype'] = 'All\nOfficial\nUnofficial'
+			['ctype'] = 'All\nOfficial\nUnofficial',
+			['deduplicatechapters'] = 'Deduplicate chapters (prefer official)'
 		},
 		['id_ID'] = {
 			['lang'] = 'Bahasa:',
 			['listtype'] = 'Tipe daftar:',
 			['ltype'] = 'Bab\nJilid',
 			['chaptertype'] = 'Tipe bab:',
-			['ctype'] = 'Semua\nResmi\nTidak resmi'
+			['ctype'] = 'Semua\nResmi\nTidak resmi',
+			['deduplicatechapters'] = 'Hapus bab ganda (utamakan bab resmi)'
 		}
 	}
 	local lang = translations[slang] or translations.en
@@ -36,6 +38,7 @@ function Init()
 	m.AddOptionComboBox('lang', lang.lang, items, 1)
 	m.AddOptionComboBox('listtype', lang.listtype, lang.ltype, 0)
 	m.AddOptionComboBox('chaptertype', lang.chaptertype, lang.ctype, 0)
+	m.AddOptionCheckBox('deduplicatechapters', lang.deduplicatechapters, false)
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -134,6 +137,10 @@ function GetInfo()
 	local optlangid       = FindLanguage(optlang)
 	local langparam       = optlangid and (sel_listtype == 1) and '&language=' .. optlangid or ''
 
+	local deduplicate = MODULE.GetOption('deduplicatechapters')
+	local chapter_map = {}
+	local chapter_list = {}
+
 	local page = 1
 	local pages = nil
 	while true do
@@ -150,19 +157,34 @@ function GetInfo()
 
 			if not optlangid or optlangid == lang then
 				if not chaptertype[sel_chaptertype] or chaptertype[sel_chaptertype] == ctype then
-					local chapter_name = (sel_listtype == 1) and 'Ch. ' .. number or 'Vol. ' .. number
-					if name ~= '' then
-						chapter_name = chapter_name .. ' - ' .. name
+					if not deduplicate then
+						local chapter_name = (sel_listtype == 1) and 'Ch. ' .. number or 'Vol. ' .. number
+						if name ~= '' then
+							chapter_name = chapter_name .. ' - ' .. name
+						end
+
+						if not chaptertype[sel_chaptertype] and ctype == 'official' then
+							chapter_name = chapter_name .. ' (Official)'
+						end
+
+						lang = not optlangid and ' [' .. lang .. ']' or ''
+
+						MANGAINFO.ChapterLinks.Add(hid .. '/' .. slug .. '/' .. cid)
+						MANGAINFO.ChapterNames.Add(chapter_name .. lang)
+					else
+						local ch_data = {
+							cid = cid, number = number, name = name,
+							ctype = ctype, lang = lang
+						}
+
+						local current = chapter_map[number]
+						if not current then
+							chapter_map[number] = ch_data
+							table.insert(chapter_list, number)
+						elseif ch_data.ctype == 'official' and current.ctype ~= 'official' then
+							chapter_map[number] = ch_data
+						end
 					end
-
-					if not chaptertype[sel_chaptertype] and ctype == 'official' then
-						chapter_name = chapter_name .. ' (Official)'
-					end
-
-					lang = not optlangid and ' [' .. lang .. ']' or ''
-
-					MANGAINFO.ChapterLinks.Add(hid .. '/' .. slug .. '/' .. cid)
-					MANGAINFO.ChapterNames.Add(chapter_name .. lang)
 				end
 			end
 		end
@@ -173,6 +195,27 @@ function GetInfo()
 		if page >= pages then break end
 		page = page + 1
 	end
+
+	if deduplicate then
+		for _, number in ipairs(chapter_list) do
+			local ch = chapter_map[number]
+
+			local chapter_name = (sel_listtype == 1) and 'Ch. ' .. ch.number or 'Vol. ' .. ch.number
+			if ch.name ~= '' then
+				chapter_name = chapter_name .. ' - ' .. ch.name
+			end
+
+			if ch.ctype == 'official' then
+				chapter_name = chapter_name .. ' (Official)'
+			end
+
+			local lang_suffix = not optlangid and ' [' .. ch.lang .. ']' or ''
+
+			MANGAINFO.ChapterLinks.Add(hid .. '/' .. slug .. '/' .. ch.cid)
+			MANGAINFO.ChapterNames.Add(chapter_name .. lang_suffix)
+		end
+	end
+
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
