@@ -21,14 +21,16 @@ function Init()
 			['listtype'] = 'List type:',
 			['ltype'] = 'Chapter\nVolume',
 			['chaptertype'] = 'Chapter type:',
-			['ctype'] = 'All\nOfficial\nUnofficial'
+			['ctype'] = 'All\nOfficial\nUnofficial',
+			['deduplicatechapters'] = 'Deduplicate chapters (prefer official)'
 		},
 		['id_ID'] = {
 			['lang'] = 'Bahasa:',
 			['listtype'] = 'Tipe daftar:',
 			['ltype'] = 'Bab\nJilid',
 			['chaptertype'] = 'Tipe bab:',
-			['ctype'] = 'Semua\nResmi\nTidak resmi'
+			['ctype'] = 'Semua\nResmi\nTidak resmi',
+			['deduplicatechapters'] = 'Hapus bab ganda (utamakan bab resmi)'
 		}
 	}
 	local lang = translations[slang] or translations.en
@@ -36,6 +38,7 @@ function Init()
 	m.AddOptionComboBox('lang', lang.lang, items, 1)
 	m.AddOptionComboBox('listtype', lang.listtype, lang.ltype, 0)
 	m.AddOptionComboBox('chaptertype', lang.chaptertype, lang.ctype, 0)
+	m.AddOptionCheckBox('deduplicatechapters', lang.deduplicatechapters, false)
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -134,6 +137,12 @@ function GetInfo()
 	local optlangid       = FindLanguage(optlang)
 	local langparam       = optlangid and (sel_listtype == 1) and '&language=' .. optlangid or ''
 
+	local deduplicate  = MODULE.GetOption('deduplicatechapters')
+	local chapter_map  = {}
+	local chapter_list = {}
+	local has_integer  = {}
+	local raw_chapters = {}
+
 	local page = 1
 	local pages = nil
 	while true do
@@ -150,19 +159,26 @@ function GetInfo()
 
 			if not optlangid or optlangid == lang then
 				if not chaptertype[sel_chaptertype] or chaptertype[sel_chaptertype] == ctype then
-					local chapter_name = (sel_listtype == 1) and 'Ch. ' .. number or 'Vol. ' .. number
-					if name ~= '' then
-						chapter_name = chapter_name .. ' - ' .. name
+					if not deduplicate then
+						local chapter_name = (sel_listtype == 1) and 'Ch. ' .. number or 'Vol. ' .. number
+						if name ~= '' then
+							chapter_name = chapter_name .. ' - ' .. name
+						end
+
+						if not chaptertype[sel_chaptertype] and ctype == 'official' then
+							chapter_name = chapter_name .. ' (Official)'
+						end
+
+						lang = not optlangid and ' [' .. lang .. ']' or ''
+
+						MANGAINFO.ChapterLinks.Add(hid .. '/' .. slug .. '/' .. cid)
+						MANGAINFO.ChapterNames.Add(chapter_name .. lang)
+					else
+						table.insert(raw_chapters, {
+							cid = cid, number = number, name = name,
+							ctype = ctype, lang = lang
+						})
 					end
-
-					if not chaptertype[sel_chaptertype] and ctype == 'official' then
-						chapter_name = chapter_name .. ' (Official)'
-					end
-
-					lang = not optlangid and ' [' .. lang .. ']' or ''
-
-					MANGAINFO.ChapterLinks.Add(hid .. '/' .. slug .. '/' .. cid)
-					MANGAINFO.ChapterNames.Add(chapter_name .. lang)
 				end
 			end
 		end
@@ -173,6 +189,51 @@ function GetInfo()
 		if page >= pages then break end
 		page = page + 1
 	end
+
+	if deduplicate then
+		-- Phase 1: track which chapter numbers are pure integers
+		for _, ch in ipairs(raw_chapters) do
+			if not ch.number:find('%.') then
+				has_integer[ch.number] = true
+			end
+		end
+
+		-- Phase 2: build deduplication map (official replaces non-official)
+		for _, ch in ipairs(raw_chapters) do
+			local base = ch.number:match('^(%d+)')
+			-- Only map decimal numbers to integer base for non-official chapters
+			-- Official chapters always keep their own key (e.g. official 1 and 1.1 are unique)
+			local key = (ch.ctype ~= 'official' and base and has_integer[base]) and base or ch.number
+			local current = chapter_map[key]
+
+			if not current then
+				chapter_map[key] = ch
+				table.insert(chapter_list, key)
+			elseif ch.ctype == 'official' and current.ctype ~= 'official' then
+				chapter_map[key] = ch
+			end
+		end
+
+		-- Phase 3: add deduplicated chapters to MANGAINFO
+		for _, key in ipairs(chapter_list) do
+			local ch = chapter_map[key]
+
+			local chapter_name = (sel_listtype == 1) and 'Ch. ' .. ch.number or 'Vol. ' .. ch.number
+			if ch.name ~= '' then
+				chapter_name = chapter_name .. ' - ' .. ch.name
+			end
+
+			if ch.ctype == 'official' then
+				chapter_name = chapter_name .. ' (Official)'
+			end
+
+			local lang_suffix = not optlangid and ' [' .. ch.lang .. ']' or ''
+
+			MANGAINFO.ChapterLinks.Add(hid .. '/' .. slug .. '/' .. ch.cid)
+			MANGAINFO.ChapterNames.Add(chapter_name .. lang_suffix)
+		end
+	end
+
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
