@@ -108,7 +108,7 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local hid = URL:match('/(%w+)%-') or URL:match('%.(%w+)$')
+	local hid = URL:match('%.(%w+)$') or URL:match('/(%w+)%-')
 	local u = MODULE.RootURL .. API_URL .. '/titles/' .. hid
 
 	if not HTTP.GET(u) then	return net_problem end
