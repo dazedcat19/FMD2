@@ -7,7 +7,8 @@ function Init()
 	m.ID                       = 'd41f6b0a2c8e4b7f9a3d5c1e8f2a6b4c'
 	m.Name                     = 'ManhwaUS'
 	m.RootURL                  = 'https://manhwaus.net'
-	m.Category                 = 'Webcomics'
+	m.Category                 = 'English'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
@@ -24,6 +25,25 @@ local DirectoryPagination = '/webtoons'
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
+
+-- Get the page count of the manga list of the current website.
+-- The site only exposes PREV/NEXT pagination, so take the highest visible
+-- "/page/N" link (usually just NEXT). GetNameAndLink keeps advancing past
+-- this value until an empty page is reached, mirroring the Madara template.
+function GetDirectoryPageNumber()
+	local u = MODULE.RootURL .. DirectoryPagination
+
+	if not HTTP.GET(u) then return net_problem end
+
+	local pages = 1
+	for v in CreateTXQuery(HTTP.Document).XPath('//a[contains(@href, "/page/")]').Get() do
+		local n = tonumber(v.GetAttribute('href'):match('/page/(%d+)'))
+		if n and n > pages then pages = n end
+	end
+	PAGENUMBER = pages
+
+	return no_error
+end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
