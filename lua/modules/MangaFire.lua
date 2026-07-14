@@ -137,9 +137,11 @@ function GetInfo()
 	local optlangid       = FindLanguage(optlang)
 	local langparam       = optlangid and (sel_listtype == 1) and '&language=' .. optlangid or ''
 
-	local deduplicate = MODULE.GetOption('deduplicatechapters')
-	local chapter_map = {}
+	local deduplicate  = MODULE.GetOption('deduplicatechapters')
+	local chapter_map  = {}
 	local chapter_list = {}
+	local has_integer  = {}
+	local raw_chapters = {}
 
 	local page = 1
 	local pages = nil
@@ -172,18 +174,10 @@ function GetInfo()
 						MANGAINFO.ChapterLinks.Add(hid .. '/' .. slug .. '/' .. cid)
 						MANGAINFO.ChapterNames.Add(chapter_name .. lang)
 					else
-						local ch_data = {
+						table.insert(raw_chapters, {
 							cid = cid, number = number, name = name,
 							ctype = ctype, lang = lang
-						}
-
-						local current = chapter_map[number]
-						if not current then
-							chapter_map[number] = ch_data
-							table.insert(chapter_list, number)
-						elseif ch_data.ctype == 'official' and current.ctype ~= 'official' then
-							chapter_map[number] = ch_data
-						end
+						})
 					end
 				end
 			end
@@ -197,8 +191,32 @@ function GetInfo()
 	end
 
 	if deduplicate then
-		for _, number in ipairs(chapter_list) do
-			local ch = chapter_map[number]
+		-- Phase 1: track which chapter numbers are pure integers
+		for _, ch in ipairs(raw_chapters) do
+			if not ch.number:find('%.') then
+				has_integer[ch.number] = true
+			end
+		end
+
+		-- Phase 2: build deduplication map (official replaces non-official)
+		for _, ch in ipairs(raw_chapters) do
+			local base = ch.number:match('^(%d+)')
+			-- Only map decimal numbers to integer base for non-official chapters
+			-- Official chapters always keep their own key (e.g. official 1 and 1.1 are unique)
+			local key = (ch.ctype ~= 'official' and base and has_integer[base]) and base or ch.number
+			local current = chapter_map[key]
+
+			if not current then
+				chapter_map[key] = ch
+				table.insert(chapter_list, key)
+			elseif ch.ctype == 'official' and current.ctype ~= 'official' then
+				chapter_map[key] = ch
+			end
+		end
+
+		-- Phase 3: add deduplicated chapters to MANGAINFO
+		for _, key in ipairs(chapter_list) do
+			local ch = chapter_map[key]
 
 			local chapter_name = (sel_listtype == 1) and 'Ch. ' .. ch.number or 'Vol. ' .. ch.number
 			if ch.name ~= '' then
