@@ -12,6 +12,7 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 	m.SortedList               = true
 end
 
@@ -22,8 +23,8 @@ end
 local Template = require 'templates.Hiper'
 __st = '08fc7856f8d997ca38f029edc76d80a44ff8dc85b72bb8ca9b016f82a66ab72b'
 ChapterName = 'Chapter '
-Key = 'X-Svc-Gate'
-Value = 'f5pabmx7sdek'
+Key = 'X-Cfg-Auth'
+Value = 'yceqt7qgu004'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -53,6 +54,13 @@ end
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	Template.GetPageNumber()
+
+	return true
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	Template.BeforeDownloadImage()
 
 	return true
 end

@@ -12,6 +12,7 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 	m.SortedList               = true
 end
 
@@ -20,7 +21,7 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.Hiper'
-__st = '6520a6000932f66189c71dd6fc74e7d08f43e2fbb4b5f1579cd1c37e63be5e91'
+__st = 'd2d8289f1ca41385bcc99afebbce2065ccca301d207d20e49abc7aac69594542'
 ChapterName = 'Capítulo '
 Key = 'X-Flux-Node'
 Value = 'G2ZsDdWhUwdU82Vw'
@@ -53,6 +54,13 @@ end
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	Template.GetPageNumber()
+
+	return true
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	Template.BeforeDownloadImage()
 
 	return true
 end
