@@ -37,7 +37,7 @@ local function SetRequestHeaders(mode)
 	local now = os.time() * 1000
 
 	local prefix   = (mode == 'chapter') and 'ch_' or ''
-	local endpoint = (mode == 'chapter') and ('/api/session/chapter/iuisxs') or ('/api/session/amsnuy')
+	local endpoint = (mode == 'chapter') and ('/api/session/chapter/oioa') or ('/api/session/iuiuiwqw')
 
 	local sign   = MODULE.Storage[prefix .. 'sign']
 	local token  = MODULE.Storage[prefix .. 'token']
