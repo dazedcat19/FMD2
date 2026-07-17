@@ -406,6 +406,7 @@
 | Mundo Manhwa | [![https://mundomanhwa.com](https://img.shields.io/website?url=https://mundomanhwa.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mundomanhwa.com)](https://mundomanhwa.com) | OK | 28.07.2025 | - |
 | MyReadingManga | [![https://myreadingmanga.info](https://img.shields.io/website?url=https://myreadingmanga.info%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://myreadingmanga.info)](https://myreadingmanga.info) | OK | 10.11.2025 | - |
 | MyToon | [![https://mytoon.net](https://img.shields.io/website?url=https://mytoon.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mytoon.net)](https://mytoon.net) | - | - | - |
+| Nanase Project | [![https://lmtos.net](https://img.shields.io/website?url=https://lmtos.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lmtos.net)](https://lmtos.net) | OK | 17.07.2026 | - |
 | Natsu | [![https://natsu.tv](https://img.shields.io/website?url=https://natsu.tv%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://natsu.tv)](https://natsu.tv) | OK | 01.07.2026 | - |
 | Necro Scans | [![https://necroscans.com](https://img.shields.io/website?url=https://necroscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://necroscans.com)](https://necroscans.com) | OK | 09.01.2025 | Paid chapters are hidden by default |
 | NetTruyen | [![https://nettruyenviet.com](https://img.shields.io/website?url=https://nettruyenviet.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://nettruyenviet.com)](https://nettruyenviet.com) | - | - | - |
