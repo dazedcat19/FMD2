@@ -33,6 +33,7 @@ end
 
 local Template = require 'templates.Iken'
 API_URL = 'https://api.vortexscans.org'
+UseApiChapters = true
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
