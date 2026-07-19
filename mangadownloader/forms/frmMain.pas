@@ -26,7 +26,7 @@ uses
   frmAccountSet, frmWebsiteOptionCustom, frmCustomColor, frmLogger, frmTransferFavorites,
   frmLuaModulesUpdater, CheckUpdate, DBDataProcess, uDarkStyleParams, uWin32WidgetSetDark,
   SimpleTranslator, httpsendthread, DateUtils, SimpleException, uCustomControls,
-  uCustomControlsMultiLog, ImageMagickManager, frmCheckModules;
+  uCustomControlsMultiLog, ImageMagickManager, frmCheckModules, frmTaskMonitor;
 
 type
 
@@ -36,6 +36,7 @@ type
     appPropertiesMain: TApplicationProperties;
     btnDownloadFilterCustomDateApply: TBitBtn;
     btOpenLog: TBitBtn;
+    btOpenTaskMonitor: TBitBtn;
     btClearLogFile: TBitBtn;
     btAddToFavorites: TBitBtn;
     btCancelFavoritesCheck: TSpeedButton;
@@ -85,7 +86,6 @@ type
     cbWebPSaveAs: TComboBox;
     cbPNGCompressionLevel: TComboBox;
     cbImageMagickSaveAs: TComboBox;
-    cbImageMagickCompression: TComboBox;
     deDownloadFilterCustomDateFrom: TDateEdit;
     deDownloadFilterCustomDateTo: TDateEdit;
     edCustomGenres: TCustomEdit;
@@ -123,7 +123,6 @@ type
     lbDarkmodeHint: TLabel;
     lbDownloadFilterCustomDateFrom: TLabel;
     lbDownloadFilterCustomDateTo: TLabel;
-    lbImageMagickCompression: TLabel;
     lbImageMagickQuality: TLabel;
     lbImageMagickHint: TLabel;
     lbOptionMaxFavoriteThreads: TLabel;
@@ -206,6 +205,8 @@ type
     btDownloadSplit: TSpeedButton;
     sbGeneralSettings: TScrollBox;
     seImageMagickQuality: TSpinEdit;
+    seImageMagickParallel: TSpinEdit;
+    lbImageMagickParallel: TLabel;
     seOptionMaxFavoriteThreads: TSpinEdit;
     seOptionMaxUpdateListThreads: TSpinEdit;
     seOptionMaxBackgroundLoadThreads: TSpinEdit;
@@ -481,6 +482,7 @@ type
     procedure btFavoritesImportClick(Sender: TObject);
     procedure btnDownloadFilterCustomDateApplyClick(Sender: TObject);
     procedure btOpenLogClick(Sender: TObject);
+    procedure btOpenTaskMonitorClick(Sender: TObject);
     procedure btReadOnlineClick(Sender: TObject);
     procedure btMangaListSearchClearClick(Sender: TObject);
     procedure btUpdateListClick(Sender: TObject);
@@ -1361,6 +1363,7 @@ begin
 
   // logger
   FormLogger := TFormLogger.Create(Self);
+  FormTaskMonitor := TFormTaskMonitor.Create(Self);
 
   // initialize ImageMagick check
   TImageMagickManager.Initialize;
@@ -2514,8 +2517,8 @@ begin
     AddToAboutStatus('OpenSSL Version', s);
   end;
 
-  if WebPLibHandle = 0 then InitWebPModule;
-  if WebPLibHandle <> 0 then try AddToAboutStatus('WebP Version', WebPGetVersion); except end;
+  if not IsWebPModuleLoaded then InitWebPModule;
+  if IsWebPModuleLoaded then try AddToAboutStatus('WebP Version', WebPGetVersion); except end;
   if BrotliLibHandle = 0 then InitBrotliModule;
   if BrotliLibHandle <> 0 then try AddToAboutStatus('Brotli Version', BrotliGetVersion); except end;
   if ZstdLibHandle = 0 then InitZstdModule;
@@ -3141,6 +3144,12 @@ end;
 procedure TMainForm.btOpenLogClick(Sender: TObject);
 begin
   FormLogger.Show;
+end;
+
+procedure TMainForm.btOpenTaskMonitorClick(Sender: TObject);
+begin
+  FormTaskMonitor.StartMonitoring(DLManager);
+  FormTaskMonitor.Show;
 end;
 
 procedure TMainForm.btChecksClick(Sender: TObject);
@@ -5925,7 +5934,12 @@ begin
     // imagemagick
     if TImageMagickManager.Instance.PathFound then
     begin
+      gbImageMagick.Enabled := True;
       ckImageMagick.Checked := ReadBool('imagemagick', 'ImageMagickEnabled', False);
+    end
+    else
+    begin
+      gbImageMagick.Enabled := False;
     end;
 
     cbImageMagickSaveAs.ItemIndex := cbImageMagickSaveAs.Items.IndexOf(ReadString('imagemagick', 'ImageMagickSaveAs', 'JPEG'));
@@ -5934,13 +5948,8 @@ begin
       cbImageMagickSaveAs.ItemIndex := 0;
     end;
 
-    cbImageMagickCompression.ItemIndex := cbImageMagickCompression.Items.IndexOf(ReadString('imagemagick', 'ImageMagickCompression', 'None'));
-    if cbImageMagickCompression.ItemIndex = -1 then
-    begin
-      cbImageMagickCompression.ItemIndex := 0;
-    end;
-
     seImageMagickQuality.Value := ReadInteger('imagemagick', 'ImageMagickQuality', 75);
+    seImageMagickParallel.Value := ReadInteger('imagemagick', 'ImageMagickParallel', 1);
 
     // update
     cbOptionAutoCheckLatestVersion.Checked := ReadBool('update', 'AutoCheckLatestVersion', True);
@@ -6123,11 +6132,8 @@ begin
         WriteString('imagemagick', 'ImageMagickSaveAs', cbImageMagickSaveAs.Items.ValueFromIndex[cbImageMagickSaveAs.ItemIndex]);
       end;
 
-      if cbImageMagickCompression.ItemIndex > -1 then
-      begin
-        WriteString('imagemagick', 'ImageMagickCompression', cbImageMagickCompression.Items.ValueFromIndex[cbImageMagickCompression.ItemIndex]);
-      end;
       WriteInteger('imagemagick', 'ImageMagickQuality', seImageMagickQuality.Value);
+      WriteInteger('imagemagick', 'ImageMagickParallel', seImageMagickParallel.Value);
 
       // update
       WriteBool('update', 'AutoCheckLatestVersion', cbOptionAutoCheckLatestVersion.Checked);
@@ -6319,8 +6325,8 @@ begin
     // imagemagick
     TImageMagickManager.Instance.Enabled := ckImageMagick.Checked;
     TImageMagickManager.Instance.SaveAs := cbImageMagickSaveAs.Items.ValueFromIndex[cbImageMagickSaveAs.ItemIndex];
-    TImageMagickManager.Instance.Compression := cbImageMagickCompression.Items.ValueFromIndex[cbImageMagickCompression.ItemIndex];
     TImageMagickManager.Instance.Quality := seImageMagickQuality.Value;
+    TImageMagickManager.Instance.ParallelConversions := seImageMagickParallel.Value;
 
     // update
     OptionAutoCheckLatestVersion := cbOptionAutoCheckLatestVersion.Checked;

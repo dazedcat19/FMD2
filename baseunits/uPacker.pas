@@ -12,7 +12,7 @@ interface
 
 uses
   Classes, Zipper, zstream, SysUtils, uBaseUnit, Img2Pdf, FileUtil,
-  LazFileUtils, SimpleException, uEpub, FMDOptions, process, MultiLog;
+  LazFileUtils, SimpleException, uEpub, FMDOptions, process, MultiLog, ImageMagickManager;
 
 type
   TPackerFormat = (pfZIP, pfCBZ, pfPDF, pfEPUB);
@@ -273,7 +273,14 @@ begin
     with TFileSearcher.Create do
       try
         OnFileFound := FileFound;
-        Search(Self.Path, '*.jpg;*.png;*.gif;*.webp', False, False);
+        if TImageMagickManager.Instance.Enabled then
+        begin
+          Search(Self.Path, '*.jpg;*.png;*.gif;*.webp;*.bmp;*.tif;*.' + TImageMagickManager.Instance.SaveAs, False, False);
+        end
+        else
+        begin
+          Search(Self.Path, '*.jpg;*.png;*.gif;*.webp', False, False);
+        end;
       finally
         Free;
       end;

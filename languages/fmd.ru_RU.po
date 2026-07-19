@@ -2917,8 +2917,3 @@ msgstr ""
 msgid "Updating list"
 msgstr ""
 
-#: webp.serrloadfailed
-#, object-pascal-format
-msgid "Can not load WebP codec library \"%s\". Check your installation."
-msgstr ""
-

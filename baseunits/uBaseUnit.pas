@@ -591,8 +591,10 @@ function WebPToJPEGStream(const AStream: TMemoryStream; const AQuality: Integer 
 function PNGToJPEGStream(const AStream: TMemoryStream; const AQuality: Integer = 80): Boolean;
 
 // try to save tmemorystream to file, return the saved filename if success, otherwise return empty string
-function SaveImageStreamToFile(Stream: TMemoryStream; Path, FileName: String; Age: LongInt = 0): String; overload;
+function SaveImageStreamToFile(Stream: TMemoryStream; Path, FileName: String; Age: LongInt = 0; const ContentType: String = ''): String; overload;
 function SaveImageStreamToFile(AHTTP: THTTPSend; Path, FileName: String): String; overload;
+// AIsConverting: optional pointer to a Boolean flag set True during ImageMagick ConvertStream
+function SaveImageStreamToFile(AHTTP: THTTPSend; Path, FileName: String; AIsConverting: PBoolean): String; overload;
 
 // check file exist with known extensions. AFilename is a filename without extensions
 function ImageFileExists(const AFileName: String): Boolean;
@@ -2390,10 +2392,36 @@ begin
   end;
 end;
 
-function SaveImageStreamToFile(Stream: TMemoryStream; Path, FileName: String; Age: LongInt): String;
+function ExtFromContentType(const ContentType: String): String;
 var
-  FilePath, PathDirectory, FileExt: String;
+  ct: String;
+begin
+  Result := '';
+  ct := LowerCase(Trim(ContentType));
+  if ct = '' then Exit;
+  if Pos('image/avif', ct) > 0 then Exit('avif');
+  if Pos('image/jxl', ct) > 0 then Exit('jxl');
+  if Pos('image/heic', ct) > 0 then Exit('heic');
+  if Pos('image/heif', ct) > 0 then Exit('heif');
+  if Pos('image/webp', ct) > 0 then Exit('webp');
+  if Pos('image/png', ct) > 0 then Exit('png');
+  if Pos('image/jpeg', ct) > 0 then Exit('jpg');
+  if Pos('image/gif', ct) > 0 then Exit('gif');
+  if Pos('image/bmp', ct) > 0 then Exit('bmp');
+  if Pos('image/tiff', ct) > 0 then Exit('tif');
+  if Pos('image/svg', ct) > 0 then Exit('svg');
+  if Pos('image/x-tga', ct) > 0 then Exit('tga');
+  if Pos('image/x-icon', ct) > 0 then Exit('ico');
+  if Pos('image/', ct) = 1 then
+    Result := Copy(ct, 7, Length(ct) - 6);
+end;
+
+function SaveImageStreamToFile(Stream: TMemoryStream; Path, FileName: String; Age: LongInt; const ContentType: String = ''): String;
+var
+  FilePath, PathDirectory, FileExt, ConvertedExt: String;
   FileStream: TFileStream;
+  ConvertedStream: TMemoryStream;
+  imgMagick: TImageMagickManager;
 begin
   Result := '';
 
@@ -2412,7 +2440,20 @@ begin
   begin
     FileExt := GetImageStreamExt(Stream);
 
-    if not TImageMagickManager.Instance.Enabled then
+    if FileExt = '' then
+    begin
+      FileExt := ExtFromContentType(ContentType);
+    end;
+
+    ConvertedExt := '';
+    if TImageMagickManager.Instance.Enabled then
+    begin
+      ConvertedExt := LowerCase(TImageMagickManager.Instance.SaveAs);
+      if (FileExt <> '') and (LowerCase(FileExt) = ConvertedExt) then
+        ConvertedExt := '';
+    end;
+
+    if ConvertedExt = '' then
     begin
       if FileExt = 'png' then
       begin
@@ -2435,6 +2476,22 @@ begin
              begin
                FileExt := 'jpg';
              end;
+        end;
+      end;
+    end
+    else
+    begin
+      imgMagick := TImageMagickManager.Instance;
+      if imgMagick.PathFound then
+      begin
+        ConvertedStream := imgMagick.ConvertStream(Stream, ConvertedExt, False, FileExt);
+        if Assigned(ConvertedStream) then
+        begin
+          Stream.Clear;
+          Stream.CopyFrom(ConvertedStream, ConvertedStream.Size);
+          Stream.Position := 0;
+          FileExt := ConvertedExt;
+          ConvertedStream.Free;
         end;
       end;
     end;
@@ -2483,7 +2540,7 @@ end;
 
 function SaveImageStreamToFile(AHTTP: THTTPSend; Path, FileName: String): String;
 var
-  s: String;
+  s, contentType: String;
   lastmodified: LongInt;
 begin
   Result := '';
@@ -2492,7 +2549,94 @@ begin
   lastmodified := 0;
   if s <> '' then
     lastmodified := DateTimeToFileDate(DecodeRfcDateTime(s));
-  Result := SaveImageStreamToFile(AHTTP.Document, Path, FileName, lastmodified);
+  contentType := Trim(AHTTP.Headers.Values['content-type']);
+  Result := SaveImageStreamToFile(AHTTP.Document, Path, FileName, lastmodified, contentType);
+end;
+
+// Overload that accepts a PBoolean so the caller can track when ImageMagick is active.
+// AIsConverting is set True just before ConvertStream and cleared after.
+function SaveImageStreamToFile(AHTTP: THTTPSend; Path, FileName: String; AIsConverting: PBoolean): String;
+var
+  s, contentType: String;
+  lastmodified: LongInt;
+  FilePath, PathDirectory, FileExt, ConvertedExt: String;
+  FileStream: TFileStream;
+  ConvertedStream: TMemoryStream;
+  imgMagick: TImageMagickManager;
+begin
+  Result := '';
+  if AHTTP = nil then Exit;
+  s := Trim(AHTTP.Headers.Values['last-modified']);
+  lastmodified := 0;
+  if s <> '' then
+    lastmodified := DateTimeToFileDate(DecodeRfcDateTime(s));
+  contentType := Trim(AHTTP.Headers.Values['content-type']);
+
+  // --- inline of SaveImageStreamToFile(Stream,...) with IsConverting hook ---
+  if AHTTP.Document = nil then Exit;
+  if AHTTP.Document.Size = 0 then Exit;
+
+  PathDirectory := CorrectPathSys(Path);
+  if not ForceDirectories(PathDirectory) then Exit;
+
+  FileExt := GetImageStreamExt(AHTTP.Document);
+  if FileExt = '' then
+    FileExt := ExtFromContentType(contentType);
+
+  ConvertedExt := '';
+  if TImageMagickManager.Instance.Enabled then
+  begin
+    ConvertedExt := LowerCase(TImageMagickManager.Instance.SaveAs);
+    if (FileExt <> '') and (LowerCase(FileExt) = ConvertedExt) then
+      ConvertedExt := '';
+  end;
+
+  if ConvertedExt = '' then
+  begin
+    // No ImageMagick conversion needed — fall through to normal save
+    Result := SaveImageStreamToFile(AHTTP.Document, Path, FileName, lastmodified, contentType);
+    Exit;
+  end;
+
+  // ImageMagick conversion path — set the flag around ConvertStream
+  imgMagick := TImageMagickManager.Instance;
+  if imgMagick.PathFound then
+  begin
+    if Assigned(AIsConverting) then AIsConverting^ := True;
+    try
+      ConvertedStream := imgMagick.ConvertStream(AHTTP.Document, ConvertedExt, False, FileExt);
+    finally
+      if Assigned(AIsConverting) then AIsConverting^ := False;
+    end;
+    if Assigned(ConvertedStream) then
+    begin
+      AHTTP.Document.Clear;
+      AHTTP.Document.CopyFrom(ConvertedStream, ConvertedStream.Size);
+      AHTTP.Document.Position := 0;
+      FileExt := ConvertedExt;
+      ConvertedStream.Free;
+    end;
+  end;
+
+  // Save (whether conversion succeeded or fell back)
+  FilePath := PathDirectory + FileName + '.' + FileExt;
+  FilePath := MainForm.CheckLongNamePaths(FilePath);
+  if FileExists(FilePath) then
+    DeleteFile(FilePath);
+  try
+    FileStream := TFileStream.Create(FilePath, fmCreate);
+    try
+      AHTTP.Document.Position := 0;
+      FileStream.CopyFrom(AHTTP.Document, AHTTP.Document.Size);
+    finally
+      FileStream.Free;
+    end;
+    if lastmodified <> 0 then
+      FileSetDate(FilePath, lastmodified);
+    Result := FilePath;
+  except
+    Result := '';
+  end;
 end;
 
 function ImageFileExists(const AFileName: String): Boolean;
@@ -2522,6 +2666,24 @@ begin
   for i in ImageHandlerMgr.List do
   begin
     s := AFileName + '.' + i.Ext;
+    if FileExists(s) then
+    begin
+      Exit(s);
+    end;
+  end;
+
+  if TImageMagickManager.Instance.Enabled then
+  begin
+    s := AFileName + '.jxl'; if FileExists(s) then Exit(s);
+    s := AFileName + '.avif'; if FileExists(s) then Exit(s);
+    s := AFileName + '.webp'; if FileExists(s) then Exit(s);
+    s := AFileName + '.tiff'; if FileExists(s) then Exit(s);
+    s := AFileName + '.tif'; if FileExists(s) then Exit(s);
+  end;
+
+  if TImageMagickManager.Instance.Enabled then
+  begin
+    s := AFileName + '.' + TImageMagickManager.Instance.SaveAs;
     if FileExists(s) then
     begin
       Exit(s);
@@ -2639,14 +2801,27 @@ begin
 end;
 
 function GetMimeType(const imgFileName: String): String;
+var
+  ext: String;
 begin
-  case ExtractFileExt(imgFileName) of
+  ext := LowerCase(ExtractFileExt(imgFileName));
+  case ext of
     '.jpeg', '.jpg': Result := 'image/jpeg';
     '.png': Result := 'image/png';
     '.gif': Result := 'image/gif';
     '.bmp': Result := 'image/bmp';
     '.webp': Result := 'image/webp';
-    else Result := '';
+    '.tif', '.tiff': Result := 'image/tiff';
+    '.avif': Result := 'image/avif';
+    '.jxl': Result := 'image/jxl';
+    '.heic', '.heif': Result := 'image/heic';
+    '.j2k', '.jp2': Result := 'image/jp2';
+    '.svg': Result := 'image/svg+xml';
+    '.ico': Result := 'image/x-icon';
+    '.tga': Result := 'image/x-tga';
+    '.pcx': Result := 'image/x-pcx';
+    '.psd': Result := 'image/vnd.adobe.photoshop';
+    else Result := 'image/' + Copy(ext, 2, Length(ext) - 1);
   end;
 end;
 
