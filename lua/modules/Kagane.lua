@@ -37,7 +37,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local API_URL = 'https://yuzuki.kagane.to/api/v2'
+local API_URL = '/api/v2'
 
 ----------------------------------------------------------------------------------------------------
 -- Helper Functions
@@ -94,7 +94,7 @@ function GetNameAndLink()
 							order = 'desc'
 						end
 
-						local u = API_URL .. '/search/series?page=' .. (page - 1) .. '&size=' .. limit .. '&sort=created_at%2C' .. order
+						local u = MODULE.RootURL .. API_URL .. '/search/series?page=' .. (page - 1) .. '&size=' .. limit .. '&sort=created_at%2C' .. order
 						local s = '{"content_rating":["' .. cr .. '"],"upload_status":["' .. ms .. '"],"format":["' .. fr .. '"],"genres":{"values":["' .. dg .. '"],"match_all":true}}'
 						HTTP.Reset()
 						HTTP.MimeType = 'application/json'
@@ -130,7 +130,7 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local u = API_URL .. URL
+	local u = MODULE.RootURL .. API_URL .. URL
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -138,7 +138,7 @@ function GetInfo()
 	local info = x.XPath('parse-json(.)')
 	MANGAINFO.Title     = x.XPathString('title', info)
 	MANGAINFO.AltTitles = x.XPathString('string-join(series_alternate_titles?*?title, ", ")', info)
-	MANGAINFO.CoverLink = API_URL .. '/image/' .. x.XPathString('series_covers?1?image_id', info) .. '/compressed'
+	MANGAINFO.CoverLink = MODULE.RootURL .. API_URL .. '/image/' .. x.XPathString('series_covers?1?image_id', info) .. '/compressed'
 	MANGAINFO.Authors   = x.XPathString('string-join(series_staff?*[role=("Author","Story")]?name, ", ")', info)
 	MANGAINFO.Artists   = x.XPathString('string-join(series_staff?*[role=("Artist","Art")]?name, ", ")', info)
 	MANGAINFO.Genres    = x.XPathString('string-join((genres?*?genre_name, format), ", ")', info)
@@ -194,7 +194,7 @@ function GetPageNumber()
 	HTTP.Reset()
 	HTTP.Headers.Values['X-Integrity-Token'] = MODULE.Storage['token']
 
-	local u = API_URL .. '/books' .. URL
+	local u = MODULE.RootURL .. API_URL .. '/books' .. URL
 
 	if not HTTP.POST(u) then return false end
 
