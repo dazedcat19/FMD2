@@ -163,7 +163,7 @@
 | JapitComics | [![https://j-comics.ru](https://img.shields.io/website?url=https://j-comics.ru%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://j-comics.ru)](https://j-comics.ru) | - | - | - |
 | Japscan | [![http://www.japscan.co](https://img.shields.io/website?url=http://www.japscan.co%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://www.japscan.co)](http://www.japscan.co) | - | - | - |
 | JManga | [![https://jmanga.mx](https://img.shields.io/website?url=https://jmanga.mx%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://jmanga.mx)](https://jmanga.mx) | OK | 21.01.2025 | - |
-| Kagane | [![https://kagane.to](https://img.shields.io/website?url=https://kagane.to%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kagane.to)](https://kagane.to) | OK | 05.06.2026 | - |
+| Kagane | [![https://kagane.to](https://img.shields.io/website?url=https://kagane.to%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kagane.to)](https://kagane.to) | OK | 19.07.2026 | - |
 | KaliScanCom | [![https://kaliscan.com](https://img.shields.io/website?url=https://kaliscan.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kaliscan.com)](https://kaliscan.com) | OK | 27.04.2026 | - |
 | KaliScanIo | [![https://kaliscan.io](https://img.shields.io/website?url=https://kaliscan.io%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kaliscan.io)](https://kaliscan.io) | OK | 27.04.2026 | - |
 | KaliScanMe | [![https://kaliscan.me](https://img.shields.io/website?url=https://kaliscan.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://kaliscan.me)](https://kaliscan.me) | OK | 27.04.2026 | - |
