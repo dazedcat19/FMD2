@@ -76,6 +76,11 @@ function _M.GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('seriesStatus', info), 'COMING_SOON|MASS_RELEASED|ONGOING', 'COMPLETED', 'HIATUS', 'CANCELLED|DROPPED')
 	MANGAINFO.Summary   = x.XPathString('postContent', info)
 
+	if UseApiChapters then
+		if not HTTP.GET(API_URL .. '/api/chapters?postId=' .. mid) then return net_problem end
+		info = CreateTXQuery(HTTP.Document).XPath('parse-json(.)?post')
+	end
+
 	local slug = x.XPathString('slug', info)
 	local show_paid_chapters = MODULE.GetOption('showpaidchapters')
 
