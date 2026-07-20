@@ -12,6 +12,8 @@ function Init()
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
 	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
+	m.TotalDirectory           = #DirectoryPages
+	m.SortedList               = true
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -21,8 +23,9 @@ end
 -- The site is a Next.js SPA; all data comes from a public JSON API on the api. subdomain.
 local API_URL = 'https://api.nexusscanlation.com/api/v1'
 
--- The catalog is segmented by content type; iterate all of them to list the whole site.
-local TYPES = { 'manga', 'manhwa', 'manhua', 'novel', 'doujin' }
+-- The catalog is segmented by content type. Each becomes one directory that FMD2
+-- iterates via MODULE.CurrentDirectoryIndex (0-based), same pattern as MangaGo's genres.
+DirectoryPages = { 'manga', 'manhwa', 'manhua', 'novel', 'doujin' }
 local PAGE_LIMIT = 24
 
 ----------------------------------------------------------------------------------------------------
@@ -31,31 +34,26 @@ local PAGE_LIMIT = 24
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	-- Walk every content type, and within each, advance pages until one comes back empty.
-	-- UPDATELIST.CurrentDirectoryPageNumber is bumped so FMD2 keeps calling us until we stop adding.
-	for _, tipo in ipairs(TYPES) do
-		local page = 1
-		while true do
-			local u = API_URL .. '/catalog?tipo=' .. tipo .. '&orden=popular&page=' .. page .. '&limit=' .. PAGE_LIMIT
-			if not HTTP.GET(u) then return net_problem end
+	-- FMD2 drives the loop: it calls this once per directory (content type) and,
+	-- within each, once per page. URL holds the current 0-based page number.
+	local tipo = DirectoryPages[MODULE.CurrentDirectoryIndex + 1]
+	local page = tonumber(URL) + 1
+	local u = API_URL .. '/catalog?tipo=' .. tipo .. '&orden=popular&page=' .. page .. '&limit=' .. PAGE_LIMIT
 
-			local x = CreateTXQuery(HTTP.Document)
-			local count = 0
-			-- NOTE: field names below (data(), slug, titulo) assumed from the series/chapter API;
-			-- confirm against a real /catalog response and adjust if needed.
-			for v in x.XPath('json(*).data()').Get() do
-				local slug = v.GetProperty('slug').ToString()
-				if slug ~= '' then
-					LINKS.Add('series/' .. slug)
-					NAMES.Add(v.GetProperty('titulo').ToString())
-					count = count + 1
-				end
-			end
+	if not HTTP.GET(u) then return net_problem end
 
-			if count == 0 then break end
-			page = page + 1
+	local x = CreateTXQuery(HTTP.Document)
+	for v in x.XPath('json(*).data()').Get() do
+		local slug = v.GetProperty('slug').ToString()
+		if slug ~= '' then
+			LINKS.Add('series/' .. slug)
+			NAMES.Add(v.GetProperty('titulo').ToString())
 		end
 	end
+
+	-- Tell FMD2 how many pages this content type has, so it re-calls us for each.
+	local total = tonumber(x.XPathString('json(*).meta.total')) or 0
+	UPDATELIST.CurrentDirectoryPageNumber = math.ceil(total / PAGE_LIMIT)
 
 	return no_error
 end
