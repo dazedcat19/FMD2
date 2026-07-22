@@ -131,6 +131,18 @@ type
     InformationAvailable: Boolean;
     FavoriteAvailable: Boolean;
     DynamicPageLink: Boolean;
+    // When True (default), any ZIP/CBZ/RAR file returned by the site as a
+    // page download is automatically extracted after downloading. The images
+    // inside are renamed to FMD's sequential numbering (001.jpg, 002.jpg …)
+    // and the normal compress/pack step runs on them afterward.
+    //
+    // When False, the archive is saved as-is (e.g. 001.zip) in the chapter
+    // working directory and no extraction or repacking is performed.
+    //
+    // Set this in the Lua module Init() function:
+    //   m.ExtractArchiveAfterDownloading = true   -- extract (default)
+    //   m.ExtractArchiveAfterDownloading = false  -- keep the archive
+    ExtractArchiveAfterDownloading: Boolean;
     TotalDirectoryPage: array of Integer;
     CurrentDirectoryIndex: Integer;
     MaxTaskLimit: Integer;
@@ -302,6 +314,7 @@ begin
   InformationAvailable := True;
   FavoriteAvailable := True;
   DynamicPageLink := False;
+  ExtractArchiveAfterDownloading := True;
   TotalDirectory := 1;
   CurrentDirectoryIndex := 0;
   FWebsiteBypass := TWebsiteBypass.Create(self);
