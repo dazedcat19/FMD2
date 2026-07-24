@@ -140,27 +140,6 @@ local function GenerateVRF(input)
 	return EncodeBase64(bytes):gsub('%+', '-'):gsub('/', '_'):gsub('=+$', '')
 end
 
-function GetLangList()
-	local t = {}
-	for k, v in pairs(Langs) do table.insert(t, v) end
-	table.sort(t)
-	return t
-end
-
-local function FindLanguage(lang)
-	local t = GetLangList()
-	for i, v in ipairs(t) do
-		if i == lang then
-			lang = v
-			break
-		end
-	end
-	for k, v in pairs(Langs) do
-		if v == lang then return k end
-	end
-	return nil
-end
-
 -- Return language names in defined order
 function GetLangList()
 	local t = {}
