@@ -1,4 +1,12 @@
 ----------------------------------------------------------------------------------------------------
+-- Local Constants
+----------------------------------------------------------------------------------------------------
+
+local API_URL = 'https://api.nexusscanlation.com/api/v1'
+local DirectoryPages = { 'manga', 'manhwa', 'manhua' }
+local PAGE_LIMIT = 50
+
+----------------------------------------------------------------------------------------------------
 -- Module Initialization
 ----------------------------------------------------------------------------------------------------
 
@@ -11,18 +19,49 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnDownloadImage          = 'DownloadImage'
 	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 	m.TotalDirectory           = #DirectoryPages
 	m.SortedList               = true
 end
 
 ----------------------------------------------------------------------------------------------------
--- Local Constants
+-- Helper Functions
 ----------------------------------------------------------------------------------------------------
 
-local API_URL = 'https://api.nexusscanlation.com/api/v1'
-local DirectoryPages = { 'manga', 'manhwa', 'manhua' }
-local PAGE_LIMIT = 50
+-- Mulberry32 PRNG
+local function Mulberry32(seed)
+	local state = math.floor(seed) & 0xFFFFFFFF
+	return function()
+		state = (state + 0x6D2B79F5) & 0xFFFFFFFF
+		local t = state
+
+		t = ((t ~ (t >> 15)) * (1 | t)) & 0xFFFFFFFF
+
+		t = t ~ (t + ((((t ~ (t >> 7)) * (61 | t)) & 0xFFFFFFFF))) & 0xFFFFFFFF
+
+		return ((t ~ (t >> 14)) & 0xFFFFFFFF) / 4294967296.0
+	end
+end
+
+-- Shuffles indices based on the PRNG seed
+local function ShuffledIndices(count, seed)
+	local result = {}
+	for i = 0, count - 1 do
+		result[i] = i
+	end
+
+	local rng = Mulberry32(seed)
+
+	for i = count - 1, 1, -1 do
+		local j = math.floor(rng() * (i + 1))
+		local tmp = result[i]
+		result[i] = result[j]
+		result[j] = tmp
+	end
+
+	return result
+end
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -77,7 +116,45 @@ function GetPageNumber()
 
 	if not HTTP.GET(u) then return false end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).data.paginas().url', TASK.PageLinks)
+	for v in CreateTXQuery(HTTP.Document).XPath('json(*).data.paginas()').Get() do
+		local img_url = v.GetProperty('url').ToString()
+		local sc = v.GetProperty('sc')
+		if sc ~= '' then
+			local c = sc.GetProperty('c').ToString()
+			local r = sc.GetProperty('r').ToString()
+			local s = sc.GetProperty('s').ToString()
+			img_url = img_url .. '#seed=' .. s .. '&cols=' .. c .. '&rows=' .. r
+		end
+		TASK.PageLinks.Add(img_url)
+	end
+
+	return true
+end
+
+-- Download and decrypt and/or descramble image given the image URL.
+function DownloadImage()
+	if not HTTP.GET(URL) then return false end
+
+	local fragment = URL:match('[^#]+(#.+)')
+
+	if fragment then
+		local seed = tonumber(fragment:match('seed=([^&]+)'))
+		local cols = tonumber(fragment:match('cols=([^&]+)'))
+		local rows = tonumber(fragment:match('rows=([^&]+)'))
+
+		if seed and cols and rows then
+			local count = cols * rows
+			local permutation = ShuffledIndices(count, seed)
+
+			local puzzle = require 'fmd.imagepuzzle'.Create(cols, rows)
+
+			for i = 0, count - 1 do
+				puzzle.Matrix[i] = permutation[i]
+			end
+
+			puzzle.DeScramble(HTTP.Document, HTTP.Document)
+		end
+	end
 
 	return true
 end
