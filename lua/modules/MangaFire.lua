@@ -18,49 +18,6 @@ local Langs = {
 }
 
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = '23eb3a472201427e8824ecdd5223bad7'
-	m.Name                     = 'MangaFire'
-	m.RootURL                  = RootURL
-	m.Category                 = 'English'
-	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-	m.SortedList               = true
-
-	local slang = require 'fmd.env'.SelectedLanguage
-	local translations = {
-		['en'] = {
-			['lang'] = 'Language:',
-			['listtype'] = 'List type:',
-			['ltype'] = 'Chapter\nVolume',
-			['chaptertype'] = 'Chapter type:',
-			['ctype'] = 'All\nOfficial\nUnofficial',
-			['deduplicatechapters'] = 'Deduplicate chapters (prefer official)'
-		},
-		['id_ID'] = {
-			['lang'] = 'Bahasa:',
-			['listtype'] = 'Tipe daftar:',
-			['ltype'] = 'Bab\nJilid',
-			['chaptertype'] = 'Tipe bab:',
-			['ctype'] = 'Semua\nResmi\nTidak resmi',
-			['deduplicatechapters'] = 'Hapus bab ganda (utamakan bab resmi)'
-		}
-	}
-	local lang = translations[slang] or translations.en
-	local items = table.concat(GetLangList(), '\r\n')
-	m.AddOptionComboBox('lang', lang.lang, items, 1)
-	m.AddOptionComboBox('listtype', lang.listtype, lang.ltype, 0)
-	m.AddOptionComboBox('chaptertype', lang.chaptertype, lang.ctype, 0)
-	m.AddOptionCheckBox('deduplicatechapters', lang.deduplicatechapters, false)
-end
-
-----------------------------------------------------------------------------------------------------
 -- Helper Functions
 ----------------------------------------------------------------------------------------------------
 
@@ -140,8 +97,31 @@ local function GenerateVRF(input)
 	return EncodeBase64(bytes):gsub('%+', '-'):gsub('/', '_'):gsub('=+$', '')
 end
 
+local function BuildChapterQuery(hid, listtype, sel_listtype, optlangid, page)
+	local params = {}
+
+	if optlangid and sel_listtype == 1 then
+		table.insert(params, 'language=' .. optlangid)
+	end
+
+	if sel_listtype == 1 then
+		table.insert(params, 'limit=200')
+		table.insert(params, 'order=desc')
+		table.insert(params, 'page=' .. page)
+		table.insert(params, 'sort=number')
+	end
+
+	local path = '/titles/' .. hid .. '/' .. listtype[sel_listtype]
+
+	if #params > 0 then
+		path = path .. '?' .. table.concat(params, '&')
+	end
+
+	return path
+end
+
 -- Return language names in defined order
-function GetLangList()
+local function GetLangList()
 	local t = {}
 	for _, v in ipairs(Langs) do
 		table.insert(t, v[2])
@@ -217,7 +197,6 @@ function GetInfo()
 	local sel_listtype    = (MODULE.GetOption('listtype') or 0) + 1
 	local optlang         = MODULE.GetOption('lang')
 	local optlangid       = FindLanguage(optlang)
-	local langparam       = optlangid and (sel_listtype == 1) and '?language=' .. optlangid or ''
 
 	local deduplicate  = MODULE.GetOption('deduplicatechapters')
 	local chapter_map  = {}
@@ -228,10 +207,9 @@ function GetInfo()
 	local page = 1
 	local pages = nil
 	while true do
-		local urlparam = (sel_listtype == 1) and '&limit=200&order=desc&page=' .. page .. '&sort=number' or ''
-		local path = '/titles/' .. hid .. '/' .. listtype[sel_listtype] .. langparam .. urlparam
+		local path = BuildChapterQuery(hid, listtype, sel_listtype, optlangid, page)
 		local vrf = GenerateVRF(path)
-		if not HTTP.GET(API_URL .. path .. (sel_listtype == 1 and '&vrf=' or '?vrf=') .. vrf) then return net_problem end
+		if not HTTP.GET(API_URL .. path .. (path:find('?', 1, true) and '&vrf=' or '?vrf=') .. vrf) then return net_problem end
 
 		local x = CreateTXQuery(HTTP.Document)
 		for v in x.XPath('json(*).items()').Get() do
@@ -241,30 +219,36 @@ function GetInfo()
 			local ctype  = v.GetProperty('type').ToString()
 			local lang   = v.GetProperty('language').ToString()
 
-			if not optlangid or optlangid == lang then
-				if not chaptertype[sel_chaptertype] or chaptertype[sel_chaptertype] == ctype then
-					if not deduplicate then
-						local chapter_name = (sel_listtype == 1) and 'Ch. ' .. number or 'Vol. ' .. number
-						if name ~= '' then
-							chapter_name = chapter_name .. ' - ' .. name
-						end
-
-						if not chaptertype[sel_chaptertype] and ctype == 'official' then
-							chapter_name = chapter_name .. ' (Official)'
-						end
-
-						lang = not optlangid and ' [' .. lang .. ']' or ''
-
-						MANGAINFO.ChapterLinks.Add(hid .. '/' .. slug .. '/' .. cid)
-						MANGAINFO.ChapterNames.Add(chapter_name .. lang)
-					else
-						table.insert(raw_chapters, {
-							cid = cid, number = number, name = name,
-							ctype = ctype, lang = lang
-						})
-					end
-				end
+			if optlangid and optlangid ~= lang then
+				goto continue
 			end
+
+			if chaptertype[sel_chaptertype] and chaptertype[sel_chaptertype] ~= ctype then
+				goto continue
+			end
+
+			if not deduplicate then
+				local chapter_name = (sel_listtype == 1) and 'Ch. ' .. number or 'Vol. ' .. number
+				if name ~= '' then
+					chapter_name = chapter_name .. ' - ' .. name
+				end
+
+				if ctype == 'official' then
+					chapter_name = chapter_name .. ' (Official)'
+				end
+
+				lang = not optlangid and ' [' .. lang .. ']' or ''
+
+				MANGAINFO.ChapterLinks.Add(hid .. '/' .. slug .. '/' .. cid)
+				MANGAINFO.ChapterNames.Add(chapter_name .. lang)
+			else
+				table.insert(raw_chapters, {
+					cid = cid, number = number, name = name,
+					ctype = ctype, lang = lang
+				})
+			end
+
+			::continue::
 		end
 
 		if not pages then
@@ -332,4 +316,47 @@ function GetPageNumber()
 	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).data.pages().url', TASK.PageLinks)
 
 	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = '23eb3a472201427e8824ecdd5223bad7'
+	m.Name                     = 'MangaFire'
+	m.RootURL                  = RootURL
+	m.Category                 = 'English'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.SortedList               = true
+
+	local slang = require 'fmd.env'.SelectedLanguage
+	local translations = {
+		['en'] = {
+			['lang'] = 'Language:',
+			['listtype'] = 'List type:',
+			['ltype'] = 'Chapter\nVolume',
+			['chaptertype'] = 'Chapter type:',
+			['ctype'] = 'All\nOfficial\nUnofficial',
+			['deduplicatechapters'] = 'Deduplicate chapters (prefer official)'
+		},
+		['id_ID'] = {
+			['lang'] = 'Bahasa:',
+			['listtype'] = 'Tipe daftar:',
+			['ltype'] = 'Bab\nJilid',
+			['chaptertype'] = 'Tipe bab:',
+			['ctype'] = 'Semua\nResmi\nTidak resmi',
+			['deduplicatechapters'] = 'Hapus bab ganda (utamakan bab resmi)'
+		}
+	}
+	local lang = translations[slang] or translations.en
+	local items = table.concat(GetLangList(), '\r\n')
+	m.AddOptionComboBox('lang', lang.lang, items, 1)
+	m.AddOptionComboBox('listtype', lang.listtype, lang.ltype, 0)
+	m.AddOptionComboBox('chaptertype', lang.chaptertype, lang.ctype, 0)
+	m.AddOptionCheckBox('deduplicatechapters', lang.deduplicatechapters, false)
 end
