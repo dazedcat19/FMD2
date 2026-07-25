@@ -1,21 +1,4 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = 'cc9b87e0e2fe4da5b6e8eb7500c3f8c2'
-	m.Name                     = 'NicoManga'
-	m.RootURL                  = 'https://nicomanga.com'
-	m.Category                 = 'Raw'
-	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-	m.SortedList               = true
-end
-
-----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
@@ -49,18 +32,30 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
+	local crypto = require 'fmd.crypto'
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
 
 	local x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//h1')
-	MANGAINFO.AltTitles = x.XPathString('//div[./div="Other names"]/div[2]')
+	MANGAINFO.Title     = crypto.DecodeBase64(x.XPathString('//h1/@data-enc'))
+	MANGAINFO.AltTitles = x.XPathString('//div[div="Other names"]/div[2]')
 	MANGAINFO.CoverLink = x.XPathString('//img[contains(@class, "manga-cover-image")]/@src')
-	MANGAINFO.Authors   = x.XPathStringAll('//div[./div="Author(s)"]//a')
-	MANGAINFO.Genres    = x.XPathStringAll('//div[./div="Genre(s)"]//a')
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[./div="Status"]//a'), 'On going', 'Completed')
 	MANGAINFO.Summary   = x.XPathString('//div[@class="description-text-content"]')
+
+	local authors = {}
+	local genres = {}
+
+	for v in x.XPath('//div[div="Author(s)"]//a').Get() do
+		authors[#authors + 1] = crypto.DecodeBase64(v.ToString())
+	end
+	MANGAINFO.Authors = table.concat(authors, ', ')
+
+	for v in x.XPath('//div[div="Genre(s)"]//a').Get() do
+		genres[#genres + 1] = crypto.DecodeBase64(v.ToString())
+	end
+	MANGAINFO.Genres = table.concat(genres, ', ')
 
 	for v in x.XPath('//div[@id="chapter-grid"]/a').Get() do
 		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'):gsub('.html', ''))
@@ -82,4 +77,21 @@ function GetPageNumber()
 	x.XPathStringAll('json(*)()', TASK.PageLinks)
 
 	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = 'cc9b87e0e2fe4da5b6e8eb7500c3f8c2'
+	m.Name                     = 'NicoManga'
+	m.RootURL                  = 'https://nicomanga.com'
+	m.Category                 = 'Raw'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.SortedList               = true
 end
