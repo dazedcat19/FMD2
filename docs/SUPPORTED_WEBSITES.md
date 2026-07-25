@@ -4,7 +4,7 @@
 | 18Kami | [![https://18kami.com](https://img.shields.io/website?url=https://18kami.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://18kami.com)](https://18kami.com) | - | - | - |
 | 1MangaCo | [![https://1manga.co](https://img.shields.io/website?url=https://1manga.co%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://1manga.co)](https://1manga.co) | - | - | - |
 | 1stKissManhua | [![https://1stkissmanhua.net](https://img.shields.io/website?url=https://1stkissmanhua.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://1stkissmanhua.net)](https://1stkissmanhua.net) | OK | 30.03.2025 | - |
-| 3asq | [![https://3asq.org](https://img.shields.io/website?url=https://3asq.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://3asq.org)](https://3asq.org) | - | - | - |
+| 3asq | [![https://3asq.online](https://img.shields.io/website?url=https://3asq.online%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://3asq.online)](https://3asq.online) | OK | 25.07.2026 | - |
 | 4U Scans | [![https://4uscans.com](https://img.shields.io/website?url=https://4uscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://4uscans.com)](https://4uscans.com) | OK | 09.01.2025 | Paid chapters are hidden by default |
 | 8Muses | [![https://comics.8muses.com](https://img.shields.io/website?url=https://comics.8muses.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comics.8muses.com)](https://comics.8muses.com) | - | - | - |
 | 9ekor | [![https://9ekor.com](https://img.shields.io/website?url=https://9ekor.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://9ekor.com)](https://9ekor.com) | - | - | - |
