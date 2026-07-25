@@ -264,7 +264,8 @@ local function run_html_with_js(url, js_code)
                         '--disable-extensions', // Prevent browser extensions
                         '--disable-webgl', // Disable WebGL
                         '--disable-webrtc', // Disable WebRTC
-                        '--disable-background-networking' // Prevents background requests
+                        '--disable-background-networking', // Prevents background requests
+						'--disable-blink-features=AutomationControlled' // Prevents detection of automation
                     ]
                 });
                 const page = await browser.newPage();
