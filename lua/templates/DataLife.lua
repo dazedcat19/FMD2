@@ -70,7 +70,10 @@ function _M.GetInfo()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	local x = CreateTXQuery(HTTP.Document)
+	if HTTP.ResultCode ~= 200 then MANGAINFO.Title = 'Manual cookies workaround is required' return no_error end
+
+	local s = HTTP.Document.ToString()
+	local x = CreateTXQuery(s)
 	MANGAINFO.Title     = x.XPathString('//header[@class="page__header"]/div/h1')
 	MANGAINFO.AltTitles = x.XPathString('//header[@class="page__header"]/h2')
 	MANGAINFO.CoverLink = MaybeFillHost(MODULE.RootURL, x.XPathString('//div[@class="page__poster img-wide"]/img/@src'))
@@ -80,11 +83,11 @@ function _M.GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//ul[@class="page__list"]/li[div=("Release type:", "Статус:")]/text()'), 'Ongoing|Продолжается|Завершен, перевод продолжается', 'Completed|Завершён', 'Заморожен', 'Приостановлен')
 	MANGAINFO.Summary   = x.XPathString('//div[@class="page__text full-text clearfix"]')
 
-	x.ParseHTML(x.XPathString('//script[contains(., "__DATA__")]/substring-before(substring-after(., "__DATA__ = "), ";")'))
-	local id = x.XPathString('json(*).news_id')
-	for v in x.XPath('json(*).chapters()').Get() do
-		MANGAINFO.ChapterLinks.Add('reader/' .. id .. '/' .. v.GetProperty('id').ToString())
-		MANGAINFO.ChapterNames.Add(v.GetProperty('title').ToString())
+	local data = require 'utils.json'.decode('{' .. s:match('__DATA__%s=%s{(.-)};') .. '}')
+	local id = data.news_id
+	for _, chapter in ipairs(data.chapters) do
+		MANGAINFO.ChapterLinks.Add('reader/' .. id .. '/' .. chapter.id)
+		MANGAINFO.ChapterNames.Add(chapter.title)
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
