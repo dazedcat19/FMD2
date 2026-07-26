@@ -5,9 +5,10 @@
 function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'd575cb2aedb34492a1e7e8f72400b9a3'
-	m.Name                     = 'ToonilyMe'
-	m.RootURL                  = 'https://toonily.me'
+	m.Name                     = 'ToonTop'
+	m.RootURL                  = 'https://toontop.io'
 	m.Category                 = 'H-Sites'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
@@ -19,12 +20,19 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.MadTheme'
-UseSlugSearch = true
+local Template = require 'templates.MangaK'
+API_URL = 'https://api.toontop.io'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
+
+-- Get the page count of the manga list of the current website.
+function GetDirectoryPageNumber()
+	Template.GetDirectoryPageNumber()
+
+	return no_error
+end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
