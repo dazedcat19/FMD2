@@ -1,23 +1,9 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = '70c8aa5554e84aa9addd7378599e1003'
-	m.Name                     = 'Raven Scans'
-	m.RootURL                  = 'https://ravenscans.org'
-	m.Category                 = 'English-Scanlation'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-end
-
-----------------------------------------------------------------------------------------------------
--- Local Constants
+-- Template Configuration
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.MangaThemesia'
+DirectoryPagination = '/series/list-mode/'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -42,4 +28,19 @@ function GetPageNumber()
 	Template.GetPageNumber()
 
 	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = '70c8aa5554e84aa9addd7378599e1003'
+	m.Name                     = 'Raven Scans'
+	m.RootURL                  = 'https://ravenscans.net'
+	m.Category                 = 'English-Scanlation'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
 end
