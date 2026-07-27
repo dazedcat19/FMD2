@@ -101,8 +101,10 @@ function GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('estado', serie), 'en_emision', 'finalizado', 'pausado')
 
 	for v in x.XPath('json(*).capitulos()').Get() do
-		MANGAINFO.ChapterLinks.Add(slug .. '/' .. v.GetProperty('slug').ToString())
-		MANGAINFO.ChapterNames.Add('Capítulo ' .. v.GetProperty('numero').ToString())
+		if x.XPathString('es_premium', v) ~= 'true' then
+			MANGAINFO.ChapterLinks.Add(slug .. '/' .. v.GetProperty('slug').ToString())
+			MANGAINFO.ChapterNames.Add('Capítulo ' .. v.GetProperty('numero').ToString())
+		 end
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
