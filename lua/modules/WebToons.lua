@@ -1,36 +1,4 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = '18f636ec7fdf47fabe95d940ad0b548f'
-	m.Category                 = 'English'
-	m.Name                     = 'WebToons'
-	m.RootURL                  = 'https://www.webtoons.com/'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
-
-	local slang = require 'fmd.env'.SelectedLanguage
-	local translations = {
-		['en'] = {
-			['includechallengetitles'] = 'Include manga titles from WebToons Challenge (takes very very long to create manga list!)',
-			['lang'] = 'Language:'
-		},
-		['id_ID'] = {
-			['includechallengetitles'] = 'Sertakan judul komik dari WebToons Challenge (perlu waktu yang sangat lama untuk membuat daftar komik!)',
-			['lang'] = 'Bahasa:'
-		}
-	}
-	local lang = translations[slang] or translations.en
-	local items = table.concat(GetLangList(), '\r\n')
-	m.AddOptionComboBox('lualang', lang.lang, items, 3)
-	m.AddOptionCheckBox('luaincludechallengetitles', lang.includechallengetitles, false)
-end
-
-----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
@@ -48,7 +16,7 @@ local Langs = {
 ----------------------------------------------------------------------------------------------------
 
 -- Return language names in defined order
-function GetLangList()
+local function GetLangList()
 	local t = {}
 	for _, v in ipairs(Langs) do
 		table.insert(t, v[2])
@@ -128,13 +96,14 @@ function GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//p[@class="day_info"]'), 'UP')
 	MANGAINFO.Summary   = x.XPathString('//p[contains(@class, "summary")]')
 
-	local lang = x.XPathString('//script[contains(., "contentLang")]'):match("contentLang: '(.-)'")
+	local s = 'webtoon'
+	if URL:find('/canvas/') then
+		s = 'canvas'
+	end
 
-	if URL:find('/canvas/') then s = 'canvas' else s = 'webtoon' end
+	if not HTTP.GET('https://m.webtoons.com/api/v1/' .. s .. '/' .. URL:match('title_no=(%d+)') .. '/episodes?pageSize=99999') then return net_problem end
 
-	if not HTTP.GET('https://m.webtoons.com/api/v1/' .. s .. '/' .. URL:match('title_no=(%d+)') .. '/episodes?pageSize=99999' .. '&readingLanguageCode=' .. lang) then return net_problem end
-
-	for v in CreateTXQuery(HTTP.Document).XPath('json(*).result.episodeList()').Get() do
+	for v in CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString())).XPath('json(*).result.episodeList()').Get() do
 		MANGAINFO.ChapterLinks.Add(v.GetProperty('viewerLink').ToString())
 		MANGAINFO.ChapterNames.Add(v.GetProperty('episodeTitle').ToString())
 	end
@@ -159,4 +128,36 @@ function BeforeDownloadImage()
 	HTTP.Headers.Values['Referer'] = MODULE.RootURL
 
 	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = '18f636ec7fdf47fabe95d940ad0b548f'
+	m.Category                 = 'English'
+	m.Name                     = 'WebToons'
+	m.RootURL                  = 'https://www.webtoons.com/'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
+
+	local slang = require 'fmd.env'.SelectedLanguage
+	local translations = {
+		['en'] = {
+			['includechallengetitles'] = 'Include manga titles from WebToons Challenge (takes very very long to create manga list!)',
+			['lang'] = 'Language:'
+		},
+		['id_ID'] = {
+			['includechallengetitles'] = 'Sertakan judul komik dari WebToons Challenge (perlu waktu yang sangat lama untuk membuat daftar komik!)',
+			['lang'] = 'Bahasa:'
+		}
+	}
+	local lang = translations[slang] or translations.en
+	local items = table.concat(GetLangList(), '\r\n')
+	m.AddOptionComboBox('lualang', lang.lang, items, 3)
+	m.AddOptionCheckBox('luaincludechallengetitles', lang.includechallengetitles, false)
 end
