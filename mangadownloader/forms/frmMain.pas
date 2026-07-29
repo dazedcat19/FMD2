@@ -2762,7 +2762,6 @@ begin
               Status := STATUS_WAIT;
             end;
             DownloadInfo.ModuleID := mangaInfo.ModuleID;
-            DownloadInfo.MangaPtr := mangaInfo;
             DownloadInfo.Link := mangaInfo.Link;
             DownloadInfo.Title := mangaInfo.Title;
             DownloadInfo.DateAdded := Now;
