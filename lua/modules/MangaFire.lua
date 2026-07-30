@@ -97,21 +97,21 @@ local function GenerateVRF(input)
 	return EncodeBase64(bytes):gsub('%+', '-'):gsub('/', '_'):gsub('=+$', '')
 end
 
-local function BuildChapterQuery(hid, listtype, sel_listtype, optlangid, page)
+local function BuildChapterQuery(hid, listtype, optlangid, page)
 	local params = {}
 
-	if optlangid and sel_listtype == 1 then
+	if optlangid and listtype == 'chapters' then
 		table.insert(params, 'language=' .. optlangid)
 	end
 
-	if sel_listtype == 1 then
+	if listtype == 'chapters' then
 		table.insert(params, 'limit=200')
 		table.insert(params, 'order=desc')
 		table.insert(params, 'page=' .. page)
 		table.insert(params, 'sort=number')
 	end
 
-	local path = '/titles/' .. hid .. '/' .. listtype[sel_listtype]
+	local path = '/titles/' .. hid .. '/' .. listtype
 
 	if #params > 0 then
 		path = path .. '?' .. table.concat(params, '&')
@@ -191,12 +191,12 @@ function GetInfo()
 	end
 	local slug = x.XPathString('slug', info)
 
-	local chaptertype     = {nil, 'official', 'unofficial'}
-	local listtype        = {'chapters', 'volumes'}
-	local sel_chaptertype = (MODULE.GetOption('chaptertype') or 0) + 1
-	local sel_listtype    = (MODULE.GetOption('listtype') or 0) + 1
-	local optlang         = MODULE.GetOption('lang')
-	local optlangid       = FindLanguage(optlang)
+	MODULE.Storage['chaptertype'] = ({nil, 'official', 'unofficial'})[(MODULE.GetOption('chaptertype') or 0) + 1]
+	MODULE.Storage['listtype']    = ({'chapters', 'volumes'})[(MODULE.GetOption('listtype') or 0) + 1]
+	local optlang                 = MODULE.GetOption('lang')
+	local optlangid               = FindLanguage(optlang)
+
+	::fetch_start::
 
 	local deduplicate  = MODULE.GetOption('deduplicatechapters')
 	local chapter_map  = {}
@@ -207,7 +207,7 @@ function GetInfo()
 	local page = 1
 	local pages = nil
 	while true do
-		local path = BuildChapterQuery(hid, listtype, sel_listtype, optlangid, page)
+		local path = BuildChapterQuery(hid, MODULE.Storage['listtype'], optlangid, page)
 		local vrf = GenerateVRF(path)
 		if not HTTP.GET(API_URL .. path .. (path:find('?', 1, true) and '&vrf=' or '?vrf=') .. vrf) then return net_problem end
 
@@ -223,12 +223,12 @@ function GetInfo()
 				goto continue
 			end
 
-			if chaptertype[sel_chaptertype] and chaptertype[sel_chaptertype] ~= ctype then
+			if MODULE.Storage['chaptertype'] ~= '' and MODULE.Storage['chaptertype'] ~= ctype then
 				goto continue
 			end
 
 			if not deduplicate then
-				local chapter_name = (sel_listtype == 1) and 'Ch. ' .. number or 'Vol. ' .. number
+				local chapter_name = (MODULE.Storage['listtype'] == 'chapters') and 'Ch. ' .. number or 'Vol. ' .. number
 				if name ~= '' then
 					chapter_name = chapter_name .. ' - ' .. name
 				end
@@ -281,7 +281,7 @@ function GetInfo()
 		for _, key in ipairs(chapter_list) do
 			local ch = chapter_map[key]
 
-			local chapter_name = (sel_listtype == 1) and 'Ch. ' .. ch.number or 'Vol. ' .. ch.number
+			local chapter_name = (MODULE.Storage['listtype'] == 'chapters') and 'Ch. ' .. ch.number or 'Vol. ' .. ch.number
 			if ch.name ~= '' then
 				chapter_name = chapter_name .. ' - ' .. ch.name
 			end
@@ -296,7 +296,10 @@ function GetInfo()
 			MANGAINFO.ChapterNames.Add(chapter_name .. lang_suffix)
 		end
 	end
-
+	if MANGAINFO.ChapterLinks.Count == 0 and MODULE.Storage['listtype'] == 'volumes' then
+		MODULE.Storage['listtype'] = 'chapters'
+		goto fetch_start
+	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
@@ -305,9 +308,7 @@ end
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	local cid = URL:match('/(%d+)$')
-	local listtype = {'chapters', 'volumes'}
-	local sel_listtype = (MODULE.GetOption('listtype') or 0) + 1
-	local path = '/' .. listtype[sel_listtype] .. '/' .. cid
+	local path = '/' .. MODULE.Storage['listtype'] .. '/' .. cid
 	local vrf = GenerateVRF(path)
 	local u = API_URL .. path .. '?vrf=' .. vrf
 
