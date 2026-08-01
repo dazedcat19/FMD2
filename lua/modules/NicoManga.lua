@@ -72,9 +72,39 @@ function GetPageNumber()
 
 	if not HTTP.GET(u) then return false end
 
-	local x = CreateTXQuery(HTTP.Document)
-	x.ParseHTML(x.XPathString('//script[contains(., "const images")]/substring-before(substring-after(., "const images = "), ";")'):gsub('\\"', '"'):gsub('\\/', '/'))
-	x.XPathStringAll('json(*)()', TASK.PageLinks)
+	local html = HTTP.Document.ToString()
+	local ref = html:match('chaotic_payload\\":\\"%$(%d+)\\"')
+	local payload = html:match(ref .. ':T%x+,%"%]%)</script><script>self%.__next_f%.push%(%[1,%"([^"]+)')
+	if not payload then
+		return false
+	end
+
+	local js = [[
+		function decode(payload){
+			key = "NicoMangaX2";
+
+			var bytes = new Uint8Array(payload.length);
+
+			for(var i = 0; i < payload.length; i++){
+				var c = payload.codePointAt(i) - 19968;
+				var k = key.charCodeAt(i % key.length);
+				bytes[i] = c ^ k;
+			}
+
+			var json = new TextDecoder("utf-8").decode(bytes);
+			var obj = JSON.parse(json);
+
+			return JSON.stringify(obj.images || []);
+		}
+
+		decode(]] .. string.format('%q', payload) .. [[);
+	]]
+
+	local json = require 'fmd.duktape'.ExecJS(js)
+
+	for v in json:gmatch('"(https?://[^"]+)"') do
+		TASK.PageLinks.Add(v)
+	end
 
 	return true
 end
