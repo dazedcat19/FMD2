@@ -1,37 +1,4 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = '64b2532a580f4ebd89850bdb2a567478'
-	m.Name                     = 'MangaDotNet'
-	m.RootURL                  = 'https://mangadot.net'
-	m.Category                 = 'English'
-	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-
-	local slang = require 'fmd.env'.SelectedLanguage
-	local translations = {
-		['en'] = {
-			['showscangroup'] = 'Show scanlation group',
-			['listtype'] = 'List type:',
-			['type'] = 'Chapter\nVolume'
-		},
-		['id_ID'] = {
-			['showscangroup'] = 'Tampilkan grup scanlation',
-			['listtype'] = 'Tipe daftar:',
-			['type'] = 'Bab\nJilid'
-		}
-	}
-	local lang = translations[slang] or translations.en
-	m.AddOptionComboBox('listtype', lang.listtype, lang.type, 0)
-	m.AddOptionCheckBox('showscangroup', lang.showscangroup, false)
-end
-
-----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
@@ -130,9 +97,9 @@ function GetInfo()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	local s = HTTP.Document.ToString()
-	if s:sub(1, 1) == '<' then MANGAINFO.Title = 'Cloudflare workaround is required' return no_error end
-	local decoded = DecodeRSC(json.decode(s))
+	local rc = HTTP.ResultCode
+	if (rc == 403) or (rc == 429) or (rc == 503) then MANGAINFO.Title = 'Cloudflare workaround is required' return no_error end
+	local decoded = DecodeRSC(json.decode(HTTP.Document.ToString()))
 	local manga = decoded['pages/MangaDetailPage'].data.mangaData.manga
 	MANGAINFO.Title     = manga.title
 	MANGAINFO.AltTitles = table.concat(manga.alt_titles or {}, ', ')
@@ -161,7 +128,7 @@ function GetInfo()
 		local path
 
 		if volume then
-			vol = 'Vol. ' .. volume
+			vol = 'Vol. ' .. volume .. ' '
 		end
 
 		if number then
@@ -208,4 +175,37 @@ function GetPageNumber()
 	end
 
 	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = '64b2532a580f4ebd89850bdb2a567478'
+	m.Name                     = 'MangaDotNet'
+	m.RootURL                  = 'https://mangadot.net'
+	m.Category                 = 'English'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+
+	local slang = require 'fmd.env'.SelectedLanguage
+	local translations = {
+		['en'] = {
+			['showscangroup'] = 'Show scanlation group',
+			['listtype'] = 'List type:',
+			['type'] = 'Chapter\nVolume'
+		},
+		['id_ID'] = {
+			['showscangroup'] = 'Tampilkan grup scanlation',
+			['listtype'] = 'Tipe daftar:',
+			['type'] = 'Bab\nJilid'
+		}
+	}
+	local lang = translations[slang] or translations.en
+	m.AddOptionComboBox('listtype', lang.listtype, lang.type, 0)
+	m.AddOptionCheckBox('showscangroup', lang.showscangroup, false)
 end
