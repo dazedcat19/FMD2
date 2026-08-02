@@ -1,39 +1,4 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = '01528d6f798b4a07ac3f074a5441ec7f'
-	m.Name                     = 'Kagane'
-	m.RootURL                  = 'https://kagane.to'
-	m.Category                 = 'English'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-
-	local slang = require 'fmd.env'.SelectedLanguage
-	local translations = {
-		['en'] = {
-			['showscangroup'] = 'Show group name',
-			['chaptertitle'] = 'Chapter title format',
-			['titlemode'] = "Title only (e.g. 'Title' / 'Ch. 26')\nChapter and title (e.g. 'Ch. 26 - Title')\nVolume, chapter, and title (e.g. 'Vol. 3 Ch. 26 - Title')",
-			['datasaver'] = 'Data saver'
-		},
-		['id_ID'] = {
-			['showscangroup'] = 'Tampilkan nama grup',
-			['chaptertitle'] = 'Format judul bab',
-			['titlemode'] = "Hanya judul (Contoh 'Judul' / 'Ch. 26')\nBab dan judul (Contoh 'Ch. 26 - Judul')\nJilid, bab, dan judul (Contoh 'Vol. 3 Ch. 26 - Judul')",
-			['datasaver'] = 'Penghemat data'
-		}
-	}
-	local lang = translations[slang] or translations.en
-	m.AddOptionCheckBox('showscangroup', lang.showscangroup, false)
-	m.AddOptionCheckBox('datasaver', lang.datasaver, false)
-	m.AddOptionComboBox('chaptertitle', lang.chaptertitle, lang.titlemode, 0)
-end
-
-----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
@@ -209,4 +174,47 @@ function GetPageNumber()
     end
 
     return true
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	HTTP.Headers.Values['Origin'] = MODULE.RootURL
+
+	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = '01528d6f798b4a07ac3f074a5441ec7f'
+	m.Name                     = 'Kagane'
+	m.RootURL                  = 'https://kagane.to'
+	m.Category                 = 'English'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
+
+	local slang = require 'fmd.env'.SelectedLanguage
+	local translations = {
+		['en'] = {
+			['showscangroup'] = 'Show group name',
+			['chaptertitle'] = 'Chapter title format',
+			['titlemode'] = "Title only (e.g. 'Title' / 'Ch. 26')\nChapter and title (e.g. 'Ch. 26 - Title')\nVolume, chapter, and title (e.g. 'Vol. 3 Ch. 26 - Title')",
+			['datasaver'] = 'Data saver'
+		},
+		['id_ID'] = {
+			['showscangroup'] = 'Tampilkan nama grup',
+			['chaptertitle'] = 'Format judul bab',
+			['titlemode'] = "Hanya judul (Contoh 'Judul' / 'Ch. 26')\nBab dan judul (Contoh 'Ch. 26 - Judul')\nJilid, bab, dan judul (Contoh 'Vol. 3 Ch. 26 - Judul')",
+			['datasaver'] = 'Penghemat data'
+		}
+	}
+	local lang = translations[slang] or translations.en
+	m.AddOptionCheckBox('showscangroup', lang.showscangroup, false)
+	m.AddOptionCheckBox('datasaver', lang.datasaver, false)
+	m.AddOptionComboBox('chaptertitle', lang.chaptertitle, lang.titlemode, 0)
 end
