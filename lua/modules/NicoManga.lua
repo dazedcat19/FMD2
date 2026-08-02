@@ -5,6 +5,26 @@
 local DirectoryPagination = '/manga-list.html?pr=new&s=post&st=DESC&p='
 
 ----------------------------------------------------------------------------------------------------
+-- Helper Functions
+----------------------------------------------------------------------------------------------------
+
+local function DecodeChaoticPayload(payload)
+	local key = 'NicoMangaX2'
+	local keylen = #key
+	local out = {}
+
+	local i = 0
+	for p = 1, #payload, 3 do
+		local b1, b2, b3 = payload:byte(p, p + 2)
+		local cp = ((b1 & 0x0F) << 12) | ((b2 & 0x3F) << 6) | (b3 & 0x3F)
+		out[#out + 1] = string.char((cp - 19968) ~ key:byte((i % keylen) + 1))
+		i = i + 1
+	end
+
+	return require 'utils.json'.decode(table.concat(out))
+end
+
+----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
@@ -79,30 +99,9 @@ function GetPageNumber()
 		return false
 	end
 
-	local js = [[
-		function decode(payload){
-			key = "NicoMangaX2";
+	local images = DecodeChaoticPayload(payload).images
 
-			var bytes = new Uint8Array(payload.length);
-
-			for(var i = 0; i < payload.length; i++){
-				var c = payload.codePointAt(i) - 19968;
-				var k = key.charCodeAt(i % key.length);
-				bytes[i] = c ^ k;
-			}
-
-			var json = new TextDecoder("utf-8").decode(bytes);
-			var obj = JSON.parse(json);
-
-			return JSON.stringify(obj.images || []);
-		}
-
-		decode(]] .. string.format('%q', payload) .. [[);
-	]]
-
-	local json = require 'fmd.duktape'.ExecJS(js)
-
-	for v in json:gmatch('"(https?://[^"]+)"') do
+	for _, v in ipairs(images) do
 		TASK.PageLinks.Add(v)
 	end
 
