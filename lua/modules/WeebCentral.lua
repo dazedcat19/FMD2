@@ -1,39 +1,4 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = 'abbde9b6468f45939e5603416d73ac47'
-	m.Name                     = 'Weeb Central'
-	m.RootURL                  = 'https://weebcentral.com'
-	m.Category                 = 'English'
-	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
-	m.MaxTaskLimit             = 2
-	m.MaxConnectionLimit       = 4
-	m.SortedList               = true
-
-	local slang = require 'fmd.env'.SelectedLanguage
-	local translations = {
-		['en'] = {
-			['delay'] = 'Delay (s) between requests',
-			['detect_official'] = 'Separately mark the official chapter so it will be detected when new ones are available'
-		},
-		['id_ID'] = {
-			['delay'] = 'Tunda (d) antara permintaan',
-			['detect_official'] = 'Tandai bab resmi secara terpisah supaya bisa terdeteksi saat yang baru tersedia'
-		}
-	}
-	local lang = translations[slang] or translations.en
-	m.AddOptionSpinEdit('delay', lang.delay, 1)
-	m.AddOptionCheckBox('detect_official', lang.detect_official, false)
-end
-
-----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
@@ -119,7 +84,7 @@ function GetInfo()
 
 	local x = CreateTXQuery(HTTP.Document)
 	for v in x.XPath('//div[@class="flex items-center"]/a').Get() do
-		local is_official = MODULE.GetOption('detect_official') and x.XPathString('span[1]/svg/@stroke', v) == '#d8b4fe'
+		local is_official = MODULE.GetOption('detect_official') and x.XPathString('span[1]/img/@src', v):find('official', 1, true)
 		local ofc_link = is_official and '/official' or ''
 		local ofc_name = is_official and ' [Official]' or ''
 
@@ -148,4 +113,39 @@ function BeforeDownloadImage()
 	HTTP.Headers.Values['Referer'] = MODULE.RootURL
 
 	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = 'abbde9b6468f45939e5603416d73ac47'
+	m.Name                     = 'Weeb Central'
+	m.RootURL                  = 'https://weebcentral.com'
+	m.Category                 = 'English'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
+	m.MaxTaskLimit             = 2
+	m.MaxConnectionLimit       = 4
+	m.SortedList               = true
+
+	local slang = require 'fmd.env'.SelectedLanguage
+	local translations = {
+		['en'] = {
+			['delay'] = 'Delay (s) between requests',
+			['detect_official'] = 'Separately mark the official chapter so it will be detected when new ones are available'
+		},
+		['id_ID'] = {
+			['delay'] = 'Tunda (d) antara permintaan',
+			['detect_official'] = 'Tandai bab resmi secara terpisah agar dapat terdeteksi saat yang baru tersedia'
+		}
+	}
+	local lang = translations[slang] or translations.en
+	m.AddOptionSpinEdit('delay', lang.delay, 1)
+	m.AddOptionCheckBox('detect_official', lang.detect_official, false)
 end
