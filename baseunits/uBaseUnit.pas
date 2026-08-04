@@ -57,7 +57,10 @@ const
     'Yuri',          'Webtoons');
 
   Symbols: set of Char =
-    ['\', '/', ':', '*', '?', '"', '<', '>', '|', #9, ';'];
+    ['\', '/', ':', '*', '?', '"', '<', '>', '|', ';', #0..#31];
+
+  PathSymbols: set of Char =
+    ['\', '/'];
 
   StringFilterChar: array [0..35] of array [0..1] of String = (
     (#10, '\n'),
@@ -501,7 +504,8 @@ function MergeCaseInsensitive(Strs: array of TStrings): String; overload;
 function URLDecode(const s: String): String;
 function HTMLDecode(const AStr: String): String;
 
-function RemoveSymbols(const input: String): String;
+function RemoveSymbols(const input: String; KeepPathDelim: Boolean = False): String;
+function SanitizeFilePath(const InputPath: String): String;
 function CorrectPathSys(const Path: String): String;
 function RemovePathDelim(const Path: string): string;
 
@@ -1355,18 +1359,43 @@ begin
   SetLength(Result, Rp - PChar(Result));
 end;
 
-function RemoveSymbols(const input: String): String;
+function RemoveSymbols(const input: String; KeepPathDelim: Boolean = False): String;
 var
-  i: Integer;
+  i, j: Integer;
 begin
   Result := input;
-  if Result = '' then Exit;
-  i := 1;
-  while i <= Length(Result) do
-    if CharInSet(Result[i], Symbols) then
-      Delete(Result, i, 1)
-    else
-      Inc(i);
+  if Result = '' then
+  begin
+    Exit;
+  end;
+
+  SetLength(Result, Length(input));
+
+  j := 1;
+  for i := 1 to Length(input) do
+  begin
+    if not CharInSet(input[i], Symbols) OR (KeepPathDelim AND CharInSet(input[i], PathSymbols))then
+    begin
+      Result[j] := input[i];
+      Inc(j);
+    end;
+  end;
+
+  SetLength(Result, j - 1);
+end;
+
+function SanitizeFilePath(const InputPath: String): String;
+begin
+  Result := InputPath;
+
+  if Result = '' then
+  begin
+    Exit;
+  end;
+
+  Result := SetDirSeparators(Result);
+  Result := ResolveDots(Result);
+  Result := RemoveSymbols(Result, True);
 end;
 
 procedure TrimStrings(TheStrings: TStrings);

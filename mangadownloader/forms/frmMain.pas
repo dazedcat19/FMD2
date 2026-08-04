@@ -804,9 +804,6 @@ type
     function SafeReadEdSaveTo(AppendPathDelim: Boolean = False): String;
     function OverrideSaveTo(const AModule: Pointer): String;
 
-    // Sanitize File Path
-    function SanitizeFilePath(const InputPath: String): String;
-
     // View manga information
     procedure ViewMangaInfo(const AModule: Pointer; const ALink, ATitle, ASaveTo: String;
       const ASender: TObject; const AMangaListNode: PVirtualNode = nil);
@@ -6135,36 +6132,6 @@ begin
   end;
 
   edSaveTo.Text := saveToPath;
-end;
-
-function TMainForm.SanitizeFilePath(const InputPath: String): String;
-var    
-  i, j: Integer;
-  SpecialChars: Set of Char = ['<', '>', ':', '"', '|', '?', '*', #0..#31];
-begin
-  Result := InputPath;
-
-  if Result = '' then
-  begin
-    Exit;
-  end; 
-
-  Result := SetDirSeparators(Result);
-  Result := ResolveDots(Result);
-
-  SetLength(Result, Length(InputPath));
-
-  j := 1;
-  for i := 1 to Length(InputPath) do
-  begin
-    if not (InputPath[i] in SpecialChars) then
-    begin
-      Result[j] := InputPath[i];
-      Inc(j);
-    end;
-  end;
-
-  SetLength(Result, j - 1);
 end;
 
 function TMainForm.SafeReadEdSaveTo(AppendPathDelim: Boolean = False): String;
