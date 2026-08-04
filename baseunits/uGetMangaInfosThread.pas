@@ -204,7 +204,7 @@ procedure TGetMangaInfosThread.Execute;
 
       if FFillSaveTo and OptionGenerateMangaFolder then
       begin
-        MainForm.edSaveTo.Text := AppendPathDelim(MainForm.edSaveTo.Text) +
+        MainForm.edSaveTo.Text := MainForm.SafeReadEdSaveTo(True) +
           CustomRename(
             OptionMangaCustomRename,
             FInfo.MangaInfo.Website,

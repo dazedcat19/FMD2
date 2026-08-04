@@ -399,7 +399,7 @@ begin
         if FSaveTo = '' then
         begin
           FillSaveTo(d.DownloadInfo.Module);
-          FSaveTo := TrimPath(edSaveTo.Text);
+          FSaveTo := SafeReadEdSaveTo;
           // save to
           if OptionGenerateMangaFolder then
           begin
@@ -456,7 +456,7 @@ begin
       if s = '' then
       begin
         FillSaveTo(FModule);
-        s := TrimPath(edSaveTo.Text); 
+        s := SafeReadEdSaveTo;
 
         if OptionGenerateMangaFolder then
         begin
@@ -501,7 +501,7 @@ begin
       if FSaveTo = '' then
       begin
         FillSaveTo(FModule);
-        FSaveTo := TrimPath(edSaveTo.Text);
+        FSaveTo := SafeReadEdSaveTo;
       end;
 
       FavoriteManager.Add(

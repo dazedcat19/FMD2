@@ -801,7 +801,11 @@ type
 
     // fill edSaveTo with default path
     procedure FillSaveTo(const AModule: Pointer);
+    function SafeReadEdSaveTo(AppendPathDelim: Boolean = False): String;
     function OverrideSaveTo(const AModule: Pointer): String;
+
+    // Sanitize File Path
+    function SanitizeFilePath(const InputPath: String): String;
 
     // View manga information
     procedure ViewMangaInfo(const AModule: Pointer; const ALink, ATitle, ASaveTo: String;
@@ -2951,10 +2955,10 @@ begin
     if links.Count <> 0 then
     begin
       // save to
-      if edSaveTo.Text = '' then
+      if SafeReadEdSaveTo = '' then
       begin
         FillSaveTo(Modules.LocateModule(mangaInfo.ModuleID));
-        s := TrimPath(edSaveTo.Text);
+        s := SafeReadEdSaveTo;
 
         if OptionGenerateMangaFolder then
         begin
@@ -2974,7 +2978,7 @@ begin
       end
       else
       begin
-        s := TrimPath(edSaveTo.Text);
+        s := SafeReadEdSaveTo;
       end;
 
       s := ReplaceRegExpr('\.*$', s, '', False);
@@ -3073,10 +3077,10 @@ begin
   end;
 
   // save to
-  if edSaveTo.Text = '' then
+  if SafeReadEdSaveTo = '' then
   begin
     FillSaveTo(Modules.LocateModule(mangaInfo.ModuleID));
-    s := TrimPath(edSaveTo.Text);
+    s := SafeReadEdSaveTo;
 
     if OptionGenerateMangaFolder then
     begin
@@ -3096,7 +3100,7 @@ begin
   end
   else
   begin
-    s := TrimPath(edSaveTo.Text);
+    s := SafeReadEdSaveTo;
   end;
 
   FavoriteManager.Add(
@@ -6133,6 +6137,52 @@ begin
   edSaveTo.Text := saveToPath;
 end;
 
+function TMainForm.SanitizeFilePath(const InputPath: String): String;
+var    
+  i, j: Integer;
+  SpecialChars: Set of Char = ['<', '>', ':', '"', '|', '?', '*', #0..#31];
+begin
+  Result := InputPath;
+
+  if Result = '' then
+  begin
+    Exit;
+  end; 
+
+  Result := SetDirSeparators(Result);
+  Result := ResolveDots(Result);
+
+  SetLength(Result, Length(InputPath));
+
+  j := 1;
+  for i := 1 to Length(InputPath) do
+  begin
+    if not (InputPath[i] in SpecialChars) then
+    begin
+      Result[j] := InputPath[i];
+      Inc(j);
+    end;
+  end;
+
+  SetLength(Result, j - 1);
+end;
+
+function TMainForm.SafeReadEdSaveTo(AppendPathDelim: Boolean = False): String;
+var
+  saveToPath: String;
+begin
+  saveToPath := edSaveTo.Text;
+  saveToPath := SanitizeFilePath(saveToPath);
+
+  if not AppendPathDelim then
+  begin
+    saveToPath := TrimPath(saveToPath);
+  end;
+            
+  edSaveTo.Text := saveToPath;
+  Result := saveToPath;
+end;
+
 function TMainForm.OverrideSaveTo(const AModule: Pointer): String;
 begin
   Result := '';
@@ -6214,7 +6264,7 @@ begin
 
   // set saveto
   edSaveTo.Text := ASaveTo;
-  if edSaveTo.Text = '' then
+  if SafeReadEdSaveTo = '' then
   begin
     FillSaveTo(AModule);
     GetInfosThread.FillSaveTo := True;
@@ -7074,7 +7124,7 @@ begin
   with TSelectDirectoryDialog.Create(nil) do
   begin
     try
-      InitialDir := TrimPath(edSaveTo.Text);
+      InitialDir := SafeReadEdSaveTo;
 
       if Execute then
       begin
