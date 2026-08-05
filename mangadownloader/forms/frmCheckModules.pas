@@ -9,7 +9,8 @@ uses
   ComCtrls, Buttons, uCustomControls, WebsiteModules, LuaMangaInfo,
   LuaMangaCheck, LuaHTTPSend, LuaWebsiteModuleHandler, LuaWebsiteModules, uData,
   LuaUtils, uBaseUnit, uDownloadsManager, LuaDownloadTask, httpsendthread,
-  StrUtils, frmCustomMessageDlg, StatusBarDownload,
+  StrUtils, frmCustomMessageDlg, frmCustomColor, StatusBarDownload, FMDOptions,
+  VirtualTrees,
   {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 type
@@ -21,8 +22,19 @@ type
     ChapterTitle: string;
   end;
 
+  // Per-node data stored in vtModules. Status/Details are mutable and get
+  // updated live while a check is running (unlike the other MangaCheck
+  // fields, which are static once the module is scanned).
+  TModuleNodeData = record
+    MangaCheck: TMangaInformation;
+    Status: String;
+    Details: String;
+  end;
+  PModuleNodeData = ^TModuleNodeData;
+
   TModuleScanThread = class;
   TModuleCheckThread = class;
+  TModuleCheckWorkerThread = class;
 
   { TFormCheckModules }
   TFormCheckModules = class(TForm)
@@ -31,7 +43,7 @@ type
     btnStopCheck: TToolButton;
     edtFilter: TCustomEditButton;
     imlCheckModules: TImageList;
-    lvModules: TListView;
+    vtModules: TVirtualStringTree;
     pnlTop: TPanel;
     pnlFilter: TPanel; // Add this line
     pnlBottom: TPanel;
@@ -49,18 +61,19 @@ type
     procedure FormShow(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-    procedure lvModulesColumnClick(Sender: TObject; Column: TListColumn);
-    procedure lvModulesCompare(Sender: TObject; Item1, Item2: TListItem;
-      Data: Integer; var Compare: Integer);
-    procedure lvModulesCustomDrawItem(Sender: TCustomListView; Item: TListItem;
-      State: TCustomDrawState; var DefaultDraw: Boolean);
+    procedure vtModulesCompareNodes(Sender: TBaseVirtualTree; Node1,
+      Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
+    procedure vtModulesFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure vtModulesGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
+      Column: TColumnIndex; TextType: TVSTTextType; var CellText: String);
+    procedure vtModulesHeaderClick(Sender: TVTHeader; HitInfo: TVTHeaderHitInfo);
     procedure tbWebsitesSelectAllClick(Sender: TObject);
     procedure tbWebsitesSelectInverseClick(Sender: TObject);
     procedure tbWebsitesSelectNoneClick(Sender: TObject);
     procedure UpdateProgress;
     procedure edtFilterChange(Sender: TObject); // Add this line
     procedure edtFilterButtonClick(Sender: TObject);
-    procedure SortlvModules(AColumnIndex: Integer;
+    procedure SortvtModules(AColumnIndex: Integer;
       ASortDirection: TSortDirection = sdAscending);
   private
     FIsScanning: Boolean;
@@ -73,7 +86,7 @@ type
     FCheckThread: TModuleCheckThread;
     FFilterText: string;
     procedure FilterModules;
-    procedure InitializeListView;
+    procedure InitializeModulesTree;
     procedure ScanLuaModules;
     procedure CheckModuleIntegrity;
     function CalcTotalToCheck: Integer;
@@ -86,14 +99,14 @@ type
     procedure LogMessage(const AMsg: string);
     procedure EnableStopCheck(const AEnable: Boolean);
     procedure ClearModulesList;
-    procedure UpdateItemStatus(AItem: TListItem;
+    procedure UpdateItemStatus(ANode: PVirtualNode;
       const AStatus, ADetails: string);
     // Thread callbacks
     procedure OnScanComplete(Sender: TObject);
     procedure OnScanProgress(const AMsg: string;
       AModule: TMangaInformation);
     procedure OnCheckComplete(Sender: TObject);
-    procedure OnCheckProgress(AIndex: Integer; const AStatus, ADetails,
+    procedure OnCheckProgress(ANode: PVirtualNode; const AStatus, ADetails,
       AMsg: string);
   public
   end;
@@ -113,26 +126,64 @@ type
     constructor Create(AForm: TFormCheckModules);
   end;
 
+  { TModuleCheckQueueItem }
+  TModuleCheckQueueItem = record
+    Node: PVirtualNode;
+    MangaCheck: TMangaInformation;
+  end;
+  TModuleCheckQueueItems = array of TModuleCheckQueueItem;
+
   { TModuleCheckThread }
+  // Coordinator thread: builds the work queue (one entry per checked module),
+  // then spawns up to OptionMaxBackgroundLoadThreads TModuleCheckWorkerThread
+  // instances that pull items from the queue and check them in parallel.
   TModuleCheckThread = class(TStatusBarDownload)
   private
     FForm: TFormCheckModules;
-    FProgressIndex: Integer;
-    PCheckedCount: PInteger; // Pointer to the integer
+    FQueueItems: TModuleCheckQueueItems;
+    FQueuePos: LongInt; // next queue slot to hand out, advanced via InterLockedIncrement
+    FProgressNode: PVirtualNode;
     FProgressStatus: string;
     FProgressDetails: string;
     FProgressMsg: string;
+    PCheckedCount: PInteger; // Pointer to the integer
     PSuccessCount: PInteger; // Pointer to the integer
     PFailCount: PInteger; // Pointer to the integer
     procedure SyncProgress;
     procedure SyncComplete;
+    procedure BuildQueue;
+    function GetNextQueueItem(out AItem: TModuleCheckQueueItem): Boolean;
+    procedure UpdateOverallProgress;
   protected
     procedure Execute; override;
-    procedure CallUpdateProgress; // Wrapper for Synchronize
   public
     constructor Create(AForm: TFormCheckModules);
     procedure LinkVariable(ACheckedCountPtr, ASuccessCountPtr,
       AFailCountPtr: PInteger);
+  end;
+
+  { TModuleCheckWorkerThread }
+  // Worker thread: repeatedly claims the next queued module from its owner
+  // (TModuleCheckThread) and runs the integrity tests for it. Multiple
+  // workers run concurrently, one per "max number of background load
+  // threads" option, each with its own Lua state (threadvar-based) and
+  // its own HTTP connection, so they don't interfere with one another.
+  TModuleCheckWorkerThread = class(TThread)
+  private
+    FOwner: TModuleCheckThread;
+    FForm: TFormCheckModules;
+    FProgressNode: PVirtualNode;
+    FProgressStatus: string;
+    FProgressDetails: string;
+    FProgressMsg: string;
+    procedure SyncProgress;
+    procedure CallUpdateProgress;
+    procedure CheckOneModule(ANode: PVirtualNode;
+      const AMangaCheck: TMangaInformation);
+  protected
+    procedure Execute; override;
+  public
+    constructor Create(AOwner: TModuleCheckThread; AForm: TFormCheckModules);
   end;
 
 var
@@ -290,7 +341,7 @@ begin
     end;
   finally
     Synchronize(@SyncComplete);
-    FForm.SortlvModules(0);
+    FForm.SortvtModules(1);
   end;
 end;
 
@@ -300,33 +351,15 @@ constructor TModuleCheckThread.Create(AForm: TFormCheckModules);
 begin
   inherited Create(False, frmMain.MainForm, AForm.imlCheckModules, 16);
   FForm := AForm;
+  FQueuePos := 0;
   FreeOnTerminate := True;
 end;
 
 procedure TModuleCheckThread.SyncProgress;
-var
-  i, TotalToCheck: Integer;
-  Item: TListItem;
-  AMangaCheck: TMangaInformation;
 begin
-  TotalToCheck := 0;
-  for i := 0 to FForm.lvModules.Items.Count - 1 do
-  begin
-      Item := FForm.lvModules.Items[i];
-      if not Item.Checked then
-      begin
-        Continue;
-      end;
-
-      AMangaCheck := TMangaInformation(Item.Data);
-      TotalToCheck := TotalToCheck + AMangaCheck.MangaCheck.TestToCheck;
-  end;
-
-  FForm.OnCheckProgress(FProgressIndex, FProgressStatus, FProgressDetails,
-  FProgressMsg);
-  UpdateProgressBar(PCheckedCount^ ,TotalToCheck);
-  UpdateStatusText(Format('Checking: %d/%d (Success: %d, Failed: %d)',
-  [PCheckedCount^ ,TotalToCheck, PSuccessCount^, PFailCount^]));
+  FForm.OnCheckProgress(FProgressNode, FProgressStatus, FProgressDetails,
+    FProgressMsg);
+  UpdateOverallProgress;
 end;
 
 procedure TModuleCheckThread.SyncComplete;
@@ -343,268 +376,136 @@ begin
   PFailCount := AFailCountPtr;
 end;
 
-procedure TModuleCheckThread.CallUpdateProgress;
+// Builds the snapshot of checked modules to test. Runs once, synchronously,
+// at the very start of Execute (i.e. before any worker thread exists), so
+// it's the only place this thread touches vtModules directly -
+// exactly like the previous single-threaded implementation did.
+procedure TModuleCheckThread.BuildQueue;
+var
+  n: Integer;
+  Node: PVirtualNode;
+  Data: PModuleNodeData;
 begin
-  FForm.UpdateProgress;
+  n := 0;
+  SetLength(FQueueItems, Integer(FForm.vtModules.TotalCount));
+  Node := FForm.vtModules.GetFirst();
+  while Assigned(Node) do
+  begin
+    if Node^.CheckState = csCheckedNormal then
+    begin
+      Data := FForm.vtModules.GetNodeData(Node);
+      FQueueItems[n].Node := Node;
+      FQueueItems[n].MangaCheck := Data^.MangaCheck;
+      Inc(n);
+    end;
+    Node := FForm.vtModules.GetNext(Node);
+  end;
+  SetLength(FQueueItems, n);
+end;
+
+// Thread-safe, lock-free queue claim: each worker calls this to grab the
+// next module to check. Safe to call from any number of worker threads at
+// once since FQueuePos is only ever advanced via InterLockedIncrement.
+function TModuleCheckThread.GetNextQueueItem(out AItem: TModuleCheckQueueItem
+  ): Boolean;
+var
+  Slot: LongInt;
+begin
+  Slot := InterLockedIncrement(FQueuePos) - 1;
+  if (Slot >= 0) and (Slot < Length(FQueueItems)) then
+  begin
+    AItem := FQueueItems[Slot];
+    Result := True;
+  end
+  else
+  begin
+    Result := False;
+  end;
+end;
+
+// Recomputes the running totals and repaints the floating progress bar /
+// status text owned by this thread (inherited from TStatusBarDownload).
+// Always called from the main thread (either directly from this thread's
+// own Synchronize, or from a worker thread's Synchronize), so it's safe
+// for it to touch vtModules.
+procedure TModuleCheckThread.UpdateOverallProgress;
+var
+  TotalToCheck: Integer;
+  Node: PVirtualNode;
+  Data: PModuleNodeData;
+begin
+  TotalToCheck := 0;
+  Node := FForm.vtModules.GetFirst();
+  while Assigned(Node) do
+  begin
+    if Node^.CheckState = csCheckedNormal then
+    begin
+      Data := FForm.vtModules.GetNodeData(Node);
+      TotalToCheck := TotalToCheck + Data^.MangaCheck.MangaCheck.TestToCheck;
+    end;
+    Node := FForm.vtModules.GetNext(Node);
+  end;
+
+  UpdateProgressBar(PCheckedCount^, TotalToCheck);
+  UpdateStatusText(Format('Checking: %d/%d (Success: %d, Failed: %d)',
+  [PCheckedCount^, TotalToCheck, PSuccessCount^, PFailCount^]));
 end;
 
 procedure TModuleCheckThread.Execute;
 var
-  i: Integer;
-  Item: TListItem;
-  AMangaCheck: TMangaInformation;
-  GetInfoResult, GetPageResult: TTestResult;
-  Details, ExtraDetails: string;
-  AllTestsPassed: Boolean;
+  i, MaxThreads, NumToSpawn: Integer;
+  Workers: array of TModuleCheckWorkerThread;
 begin
   try
+    BuildQueue;
+    FQueuePos := 0;
+
     FProgressMsg := '=== Starting Integrity Check ===';
     PCheckedCount^ := 0;
-    FProgressIndex := -1;
+    FProgressNode := nil;
     PSuccessCount^ := 0;
     PFailCount^ := 0;
     Synchronize(@SyncProgress);
 
-    for i := 0 to FForm.lvModules.Items.Count - 1 do
+    if Length(FQueueItems) = 0 then
     begin
-      if Terminated then
-      begin
-        Break;
-      end;
+      Exit;
+    end;
 
-      Item := FForm.lvModules.Items[i];
-      if not Item.Checked then
-      begin
-        Continue;
-      end;
+    // "max number of background load threads" (Options > Connections >
+    // Miscellaneous) decides how many modules get checked in parallel.
+    MaxThreads := OptionMaxBackgroundLoadThreads;
+    if MaxThreads < 1 then
+    begin
+      MaxThreads := 1;
+    end;
 
-      AMangaCheck := TMangaInformation(Item.Data);
-      if AMangaCheck = nil then
-      begin
-        Continue;
-      end;
+    NumToSpawn := MaxThreads;
+    if NumToSpawn > Length(FQueueItems) then
+    begin
+      NumToSpawn := Length(FQueueItems);
+    end;
 
-      Details := '';
-      ExtraDetails := '';
-      AllTestsPassed := True;
-      FProgressIndex := i;
+    SetLength(Workers, NumToSpawn);
+    for i := 0 to NumToSpawn - 1 do
+    begin
+      Workers[i] := TModuleCheckWorkerThread.Create(Self, FForm);
+    end;
 
-      // Update status to "Checking..."
-      FProgressStatus := 'Checking...';
-      FProgressDetails := '';
-      FProgressMsg := 'Checking module: ' + AMangaCheck.MangaCheck.ModuleName;
-      Synchronize(@SyncProgress);
-
-      try
-        // Test GetInfo if MangaURL exists
-        if AMangaCheck.MangaCheck.MangaURL <> '' then
-        begin
-          FProgressMsg := '  Testing GetInfo with: '
-          + AMangaCheck.MangaCheck.MangaURL;
-          FProgressIndex := -1;
-          Synchronize(@SyncProgress);
-          FProgressIndex := i;
-
-          GetInfoResult := FForm.TestGetInfo(AMangaCheck);
-
-          if GetInfoResult.Success then
-          begin
-            Details := 'OnGetInfo: PASS';
-            Inc(PSuccessCount^);
-            Inc(PCheckedCount^);
-            Queue(@CallUpdateProgress);
-            FProgressMsg := '  OnGetInfo: PASS - ' + GetInfoResult.Message;
-            FProgressIndex := -1;
-            Synchronize(@SyncProgress);
-            FProgressIndex := i;
-
-            // Validate manga title if provided
-            if AMangaCheck.MangaCheck.MangaTitle <> '' then
-            begin
-              FProgressMsg := '  Testing Manga Title with: ' +
-                AMangaCheck.MangaCheck.MangaTitle;
-              FProgressIndex := -1;
-              Synchronize(@SyncProgress);
-              FProgressIndex := i;
-
-              if AMangaCheck.MangaCheck.MangaTitle
-              = GetInfoResult.MangaTitle then
-              begin
-                Inc(PSuccessCount^);
-                Inc(PCheckedCount^);
-                Queue(@CallUpdateProgress);
-                ExtraDetails := ' | Extra Test Check Manga Title: PASS';
-                FProgressMsg := '  Check Manga Title: PASS';
-              end
-              else
-              begin
-                Inc(PFailCount^);
-                Inc(PCheckedCount^);
-                Queue(@CallUpdateProgress);
-                ExtraDetails := ' | Extra Test Check Manga Title: FAIL';
-                FProgressMsg := Format('  Check Manga Title: FAIL -'
-                + ' Returned "%s" vs Expected "%s"',
-                  [GetInfoResult.MangaTitle,
-                  AMangaCheck.MangaCheck.MangaTitle]);
-              end;
-              FProgressIndex := -1;
-              Synchronize(@SyncProgress);
-              FProgressIndex := i;
-            end;
-
-            // Validate chapter title if provided
-            if (AMangaCheck.MangaCheck.ChapterURL <> '') and
-               (AMangaCheck.MangaCheck.ChapterTitle <> '') then
-            begin
-              FProgressMsg := '  Testing Chapter Title with: ' +
-                AMangaCheck.MangaCheck.ChapterTitle;
-              FProgressIndex := -1;
-              Synchronize(@SyncProgress);
-              FProgressIndex := i;
-
-              if not ContainsStr(GetInfoResult.ChapterTitle,
-              'Don''t Match Any Chapter URL') then
-              begin
-                if AMangaCheck.MangaCheck.ChapterTitle
-                = GetInfoResult.ChapterTitle then
-                begin
-                  Inc(PSuccessCount^);
-                  Inc(PCheckedCount^);
-                  Queue(@CallUpdateProgress);
-                  ExtraDetails := ExtraDetails
-                  + ' | Extra Test Check Chapter Title: PASS';
-                  FProgressMsg := '  Check Chapter Title: PASS';
-                end
-                else
-                begin
-                  Inc(PFailCount^);
-                  Inc(PCheckedCount^);
-                  Queue(@CallUpdateProgress);
-                  ExtraDetails := ExtraDetails +
-                  ' | Extra Test Check Chapter Title: FAIL';
-                  FProgressMsg := Format('  Check Chapter Title: FAIL -'
-                  + ' Returned "%s" vs Expected "%s"',
-                    [GetInfoResult.ChapterTitle,
-                    AMangaCheck.MangaCheck.ChapterTitle]);
-                end;
-              end
-              else
-              begin
-                Inc(PFailCount^);
-                Inc(PCheckedCount^);
-                Queue(@CallUpdateProgress);
-                ExtraDetails := ExtraDetails
-                + ' | Extra Test Check Chapter Title: FAIL';
-                FProgressMsg := '  Check Chapter Title: FAIL - '
-                + GetInfoResult.ChapterTitle;
-              end;
-              FProgressIndex := -1;
-              Synchronize(@SyncProgress);
-              FProgressIndex := i;
-            end
-            else if AMangaCheck.MangaCheck.ChapterURL = '' then
-            begin
-              FProgressMsg := '  No chapter link provided,'
-              + ' using first chapter link';
-              AMangaCheck.MangaCheck.ChapterURL := GetInfoResult.Data;
-              FProgressIndex := -1;
-              Inc(AMangaCheck.MangaCheck.TestToCheck);
-              Synchronize(@SyncProgress);
-              FProgressIndex := i;
-            end;
-          end
-          else
-          begin
-            Details := 'OnGetInfo: FAIL (' + GetInfoResult.Message + ')';
-            Inc(PFailCount^);
-            Inc(PCheckedCount^);
-            Queue(@CallUpdateProgress);
-            AllTestsPassed := False;
-            FProgressMsg := '  OnGetInfo: FAIL - ' + GetInfoResult.Message;
-            FProgressIndex := -1;
-            Synchronize(@SyncProgress);
-            FProgressIndex := i;
-          end;
-        end;
-
-        // Test GetPageNumber if ChapterURL exists
-        if AMangaCheck.MangaCheck.ChapterURL <> '' then
-        begin
-          if Details <> '' then
-            Details := Details + ' | ';
-
-          FProgressMsg := '  Testing GetPageNumber with: ' +
-            AMangaCheck.MangaCheck.ChapterURL;
-          FProgressIndex := -1;
-          Synchronize(@SyncProgress);
-          FProgressIndex := i;
-
-          GetPageResult := FForm.TestGetPageNumber(AMangaCheck);
-
-          if GetPageResult.Success then
-          begin
-            Details := Details + 'OnGetPageNumber: PASS';
-            Inc(PSuccessCount^);
-            Inc(PCheckedCount^);
-            Queue(@CallUpdateProgress);
-            FProgressMsg := '  OnGetPageNumber: PASS - '
-            + GetPageResult.Message;
-          end
-          else
-          begin
-            Details := Details + 'OnGetPageNumber: FAIL ('
-            + GetPageResult.Message + ')';
-            Inc(PFailCount^);
-            Inc(PCheckedCount^);
-            Queue(@CallUpdateProgress);
-            AllTestsPassed := False;
-            FProgressMsg := '  OnGetPageNumber: FAIL - '
-            + GetPageResult.Message;
-          end;
-          FProgressIndex := -1;
-          Synchronize(@SyncProgress);
-          FProgressIndex := i;
-        end;
-
-        // Update final status
-        FProgressMsg := ''; //clear FProgressMsg befoer Update final status
-        if AllTestsPassed then
-        begin
-          if (ExtraDetails = '') or not ContainsStr(ExtraDetails, 'FAIL') then
-          begin
-            FProgressStatus := 'PASSED'
-          end
-          else
-          begin
-            FProgressStatus := 'PASSED (FAILED Extra Tests)';
-          end;
-        end
-        else
-        begin
-          FProgressStatus := 'FAILED';
-        end;
-
-        FProgressDetails := Details + ExtraDetails;
-        Synchronize(@SyncProgress);
-
-      except
-        on E: Exception do
-        begin
-          FProgressStatus := 'ERROR';
-          FProgressDetails := 'Exception: ' + E.Message;
-          FProgressMsg := '  ERROR: ' + E.Message;
-          Inc(PFailCount^);
-          Inc(PCheckedCount^);
-          Queue(@CallUpdateProgress);
-          Synchronize(@SyncProgress);
-        end;
-      end;
+    // Wait for every worker to drain the queue (or to notice that this
+    // thread was terminated and stop early). WaitFor pumps this thread's
+    // Synchronize queue while it waits, so it won't deadlock against the
+    // workers' own Synchronize calls.
+    for i := 0 to NumToSpawn - 1 do
+    begin
+      Workers[i].WaitFor;
+      Workers[i].Free;
     end;
 
     if not Terminated then
     begin
       FProgressMsg := '=== Check Complete ===';
-      FProgressIndex := -1;
+      FProgressNode := nil;
       Synchronize(@SyncProgress);
 
       FProgressMsg := Format('Total tests passed: %d', [PSuccessCount^]);
@@ -617,6 +518,273 @@ begin
     Synchronize(@SyncComplete);
   end;
 end;
+
+{ TModuleCheckWorkerThread }
+
+constructor TModuleCheckWorkerThread.Create(AOwner: TModuleCheckThread;
+  AForm: TFormCheckModules);
+begin
+  FOwner := AOwner;
+  FForm := AForm;
+  inherited Create(False);
+end;
+
+procedure TModuleCheckWorkerThread.SyncProgress;
+begin
+  FForm.OnCheckProgress(FProgressNode, FProgressStatus, FProgressDetails,
+    FProgressMsg);
+  FOwner.UpdateOverallProgress;
+end;
+
+procedure TModuleCheckWorkerThread.CallUpdateProgress;
+begin
+  FForm.UpdateProgress;
+end;
+
+procedure TModuleCheckWorkerThread.CheckOneModule(ANode: PVirtualNode;
+  const AMangaCheck: TMangaInformation);
+var
+  GetInfoResult, GetPageResult: TTestResult;
+  Details, ExtraDetails: string;
+  AllTestsPassed: Boolean;
+begin
+  if AMangaCheck = nil then
+  begin
+    Exit;
+  end;
+
+  Details := '';
+  ExtraDetails := '';
+  AllTestsPassed := True;
+  FProgressNode := ANode;
+
+  // Update status to "Checking..."
+  FProgressStatus := 'Checking...';
+  FProgressDetails := '';
+  FProgressMsg := 'Checking module: ' + AMangaCheck.MangaCheck.ModuleName;
+  Synchronize(@SyncProgress);
+
+  try
+    // Test GetInfo if MangaURL exists
+    if AMangaCheck.MangaCheck.MangaURL <> '' then
+    begin
+      FProgressMsg := '  Testing GetInfo with: '
+      + AMangaCheck.MangaCheck.MangaURL;
+      FProgressNode := nil;
+      Synchronize(@SyncProgress);
+      FProgressNode := ANode;
+
+      GetInfoResult := FForm.TestGetInfo(AMangaCheck);
+
+      if GetInfoResult.Success then
+      begin
+        Details := 'OnGetInfo: PASS';
+        InterLockedIncrement(FOwner.PSuccessCount^);
+        InterLockedIncrement(FOwner.PCheckedCount^);
+        Queue(@CallUpdateProgress);
+        FProgressMsg := '  OnGetInfo: PASS - ' + GetInfoResult.Message;
+        FProgressNode := nil;
+        Synchronize(@SyncProgress);
+        FProgressNode := ANode;
+
+        // Validate manga title if provided
+        if AMangaCheck.MangaCheck.MangaTitle <> '' then
+        begin
+          FProgressMsg := '  Testing Manga Title with: ' +
+            AMangaCheck.MangaCheck.MangaTitle;
+          FProgressNode := nil;
+          Synchronize(@SyncProgress);
+          FProgressNode := ANode;
+
+          if AMangaCheck.MangaCheck.MangaTitle
+          = GetInfoResult.MangaTitle then
+          begin
+            InterLockedIncrement(FOwner.PSuccessCount^);
+            InterLockedIncrement(FOwner.PCheckedCount^);
+            Queue(@CallUpdateProgress);
+            ExtraDetails := ' | Extra Test Check Manga Title: PASS';
+            FProgressMsg := '  Check Manga Title: PASS';
+          end
+          else
+          begin
+            InterLockedIncrement(FOwner.PFailCount^);
+            InterLockedIncrement(FOwner.PCheckedCount^);
+            Queue(@CallUpdateProgress);
+            ExtraDetails := ' | Extra Test Check Manga Title: FAIL';
+            FProgressMsg := Format('  Check Manga Title: FAIL -'
+            + ' Returned "%s" vs Expected "%s"',
+              [GetInfoResult.MangaTitle,
+              AMangaCheck.MangaCheck.MangaTitle]);
+          end;
+          FProgressNode := nil;
+          Synchronize(@SyncProgress);
+          FProgressNode := ANode;
+        end;
+
+        // Validate chapter title if provided
+        if (AMangaCheck.MangaCheck.ChapterURL <> '') and
+           (AMangaCheck.MangaCheck.ChapterTitle <> '') then
+        begin
+          FProgressMsg := '  Testing Chapter Title with: ' +
+            AMangaCheck.MangaCheck.ChapterTitle;
+          FProgressNode := nil;
+          Synchronize(@SyncProgress);
+          FProgressNode := ANode;
+
+          if not ContainsStr(GetInfoResult.ChapterTitle,
+          'Don''t Match Any Chapter URL') then
+          begin
+            if AMangaCheck.MangaCheck.ChapterTitle
+            = GetInfoResult.ChapterTitle then
+            begin
+              InterLockedIncrement(FOwner.PSuccessCount^);
+              InterLockedIncrement(FOwner.PCheckedCount^);
+              Queue(@CallUpdateProgress);
+              ExtraDetails := ExtraDetails
+              + ' | Extra Test Check Chapter Title: PASS';
+              FProgressMsg := '  Check Chapter Title: PASS';
+            end
+            else
+            begin
+              InterLockedIncrement(FOwner.PFailCount^);
+              InterLockedIncrement(FOwner.PCheckedCount^);
+              Queue(@CallUpdateProgress);
+              ExtraDetails := ExtraDetails +
+              ' | Extra Test Check Chapter Title: FAIL';
+              FProgressMsg := Format('  Check Chapter Title: FAIL -'
+              + ' Returned "%s" vs Expected "%s"',
+                [GetInfoResult.ChapterTitle,
+                AMangaCheck.MangaCheck.ChapterTitle]);
+            end;
+          end
+          else
+          begin
+            InterLockedIncrement(FOwner.PFailCount^);
+            InterLockedIncrement(FOwner.PCheckedCount^);
+            Queue(@CallUpdateProgress);
+            ExtraDetails := ExtraDetails
+            + ' | Extra Test Check Chapter Title: FAIL';
+            FProgressMsg := '  Check Chapter Title: FAIL - '
+            + GetInfoResult.ChapterTitle;
+          end;
+          FProgressNode := nil;
+          Synchronize(@SyncProgress);
+          FProgressNode := ANode;
+        end
+        else if AMangaCheck.MangaCheck.ChapterURL = '' then
+        begin
+          FProgressMsg := '  No chapter link provided,'
+          + ' using first chapter link';
+          AMangaCheck.MangaCheck.ChapterURL := GetInfoResult.Data;
+          FProgressNode := nil;
+          Inc(AMangaCheck.MangaCheck.TestToCheck);
+          Synchronize(@SyncProgress);
+          FProgressNode := ANode;
+        end;
+      end
+      else
+      begin
+        Details := 'OnGetInfo: FAIL (' + GetInfoResult.Message + ')';
+        InterLockedIncrement(FOwner.PFailCount^);
+        InterLockedIncrement(FOwner.PCheckedCount^);
+        Queue(@CallUpdateProgress);
+        AllTestsPassed := False;
+        FProgressMsg := '  OnGetInfo: FAIL - ' + GetInfoResult.Message;
+        FProgressNode := nil;
+        Synchronize(@SyncProgress);
+        FProgressNode := ANode;
+      end;
+    end;
+
+    // Test GetPageNumber if ChapterURL exists
+    if AMangaCheck.MangaCheck.ChapterURL <> '' then
+    begin
+      if Details <> '' then
+        Details := Details + ' | ';
+
+      FProgressMsg := '  Testing GetPageNumber with: ' +
+        AMangaCheck.MangaCheck.ChapterURL;
+      FProgressNode := nil;
+      Synchronize(@SyncProgress);
+      FProgressNode := ANode;
+
+      GetPageResult := FForm.TestGetPageNumber(AMangaCheck);
+
+      if GetPageResult.Success then
+      begin
+        Details := Details + 'OnGetPageNumber: PASS';
+        InterLockedIncrement(FOwner.PSuccessCount^);
+        InterLockedIncrement(FOwner.PCheckedCount^);
+        Queue(@CallUpdateProgress);
+        FProgressMsg := '  OnGetPageNumber: PASS - '
+        + GetPageResult.Message;
+      end
+      else
+      begin
+        Details := Details + 'OnGetPageNumber: FAIL ('
+        + GetPageResult.Message + ')';
+        InterLockedIncrement(FOwner.PFailCount^);
+        InterLockedIncrement(FOwner.PCheckedCount^);
+        Queue(@CallUpdateProgress);
+        AllTestsPassed := False;
+        FProgressMsg := '  OnGetPageNumber: FAIL - '
+        + GetPageResult.Message;
+      end;
+      FProgressNode := nil;
+      Synchronize(@SyncProgress);
+      FProgressNode := ANode;
+    end;
+
+    // Update final status
+    FProgressMsg := ''; //clear FProgressMsg befoer Update final status
+    if AllTestsPassed then
+    begin
+      if (ExtraDetails = '') or not ContainsStr(ExtraDetails, 'FAIL') then
+      begin
+        FProgressStatus := 'PASSED'
+      end
+      else
+      begin
+        FProgressStatus := 'PASSED (FAILED Extra Tests)';
+      end;
+    end
+    else
+    begin
+      FProgressStatus := 'FAILED';
+    end;
+
+    FProgressDetails := Details + ExtraDetails;
+    Synchronize(@SyncProgress);
+
+  except
+    on E: Exception do
+    begin
+      FProgressStatus := 'ERROR';
+      FProgressDetails := 'Exception: ' + E.Message;
+      FProgressMsg := '  ERROR: ' + E.Message;
+      InterLockedIncrement(FOwner.PFailCount^);
+      InterLockedIncrement(FOwner.PCheckedCount^);
+      Queue(@CallUpdateProgress);
+      Synchronize(@SyncProgress);
+    end;
+  end;
+end;
+
+procedure TModuleCheckWorkerThread.Execute;
+var
+  QItem: TModuleCheckQueueItem;
+begin
+  while (not Terminated) and (not FOwner.Terminated) do
+  begin
+    if not FOwner.GetNextQueueItem(QItem) then
+    begin
+      Break;
+    end;
+
+    CheckOneModule(QItem.Node, QItem.MangaCheck);
+  end;
+end;
+
 
 { TFormCheckModules }
 
@@ -631,56 +799,16 @@ begin
   FModulesList := TList.Create;
   FScanThread := nil;
   FCheckThread := nil;
-  InitializeListView;
+  AddVT(vtModules);
+  InitializeModulesTree;
   memCheckModules.Clear;
   memCheckModules.ScrollBars := ssVertical;
   memCheckModules.ReadOnly := True;
 end;
 
-procedure TFormCheckModules.InitializeListView;
+procedure TFormCheckModules.InitializeModulesTree;
 begin
-  lvModules.ViewStyle := vsReport;
-  lvModules.RowSelect := True;
-  lvModules.GridLines := True;
-  lvModules.Columns.Clear;
-
-  with lvModules.Columns.Add do
-  begin
-    Caption := 'Module Name';
-    Width := 180;
-    AutoSize := True;
-  end;
-
-  with lvModules.Columns.Add do
-  begin
-    Caption := 'Filename';
-    Width := 180;
-    AutoSize := True;
-  end;
-
-  with lvModules.Columns.Add do
-  begin
-    Caption := 'CheckSite';
-    Width := 80;
-  end;
-
-  with lvModules.Columns.Add do
-  begin
-    Caption := 'CheckChapter';
-    Width := 90;
-  end;
-
-  with lvModules.Columns.Add do
-  begin
-    Caption := 'Status';
-    Width := 250;
-  end;
-
-  with lvModules.Columns.Add do
-  begin
-    Caption := 'Details';
-    Width := 250;
-  end;
+  vtModules.NodeDataSize := SizeOf(TModuleNodeData);
 end;
 
 procedure TFormCheckModules.FormShow(Sender: TObject);
@@ -704,6 +832,7 @@ begin
 
   ClearModulesList;
   FModulesList.Free;
+  RemoveVT(vtModules);
 end;
 
 procedure TFormCheckModules.FormCloseQuery(Sender: TObject;
@@ -729,67 +858,80 @@ begin
   end;
 end;
 
-procedure TFormCheckModules.lvModulesColumnClick(Sender: TObject;
-  Column: TListColumn);
-var
-  i: Integer;
+procedure TFormCheckModules.vtModulesHeaderClick(Sender: TVTHeader;
+  HitInfo: TVTHeaderHitInfo);
 begin
-  for i := 0 to lvModules.Columns.Count - 1 do
-    if lvModules.Columns[i] <> Column then
-    begin
-      lvModules.Columns[i].SortIndicator := siNone;
-    end;
-
-  if Column.Index in [0, 1, 4] then
+  if not (HitInfo.Column in [1, 2, 5]) then
   begin
-    if lvModules.SortColumn = Column.Index then
-    begin
-      if lvModules.SortDirection = sdAscending then
-      begin
-        Column.SortIndicator := siDescending;
-        lvModules.SortDirection := sdDescending;
-      end
-      else
-      begin
-        Column.SortIndicator := siAscending;
-        lvModules.SortDirection := sdAscending;
-      end;
-    end
-    else
-    begin
-      lvModules.SortColumn := Column.Index;
-      Column.SortIndicator := siAscending;
-      lvModules.SortDirection := sdAscending;
-    end;
-    lvModules.CustomSort(nil, 0);
+    Exit;
   end;
-end;
 
-procedure TFormCheckModules.lvModulesCompare(Sender: TObject; Item1,
-  Item2: TListItem; Data: Integer; var Compare: Integer);
-begin
-  case lvModules.SortColumn of
-    0: Compare := CompareText(Item1.Caption, Item2.Caption);
-    1: Compare := CompareText(Item1.SubItems[0], Item2.SubItems[0]);
-    4: Compare := CompareText(Item1.SubItems[3], Item2.SubItems[3]);
-    else Compare := 0;
-  end;
-  if lvModules.SortDirection = sdDescending then
+  if Sender.SortColumn <> HitInfo.Column then
   begin
-    Compare := -Compare;
-  end;
-end;
-
-procedure TFormCheckModules.lvModulesCustomDrawItem(Sender: TCustomListView;
-  Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
-begin
-  if Odd(Item.Index) then
-  begin
-    lvModules.Canvas.Brush.Color := clWindow
+    Sender.SortColumn := HitInfo.Column;
+    Sender.SortDirection := sdAscending;
   end
   else
   begin
-    lvModules.Canvas.Brush.Color := clForm;
+    if Sender.SortDirection = sdAscending then
+    begin
+      Sender.SortDirection := sdDescending;
+    end
+    else
+    begin
+      Sender.SortDirection := sdAscending;
+    end;
+  end;
+  vtModules.Sort(nil, Sender.SortColumn, Sender.SortDirection, False);
+end;
+
+procedure TFormCheckModules.vtModulesCompareNodes(Sender: TBaseVirtualTree;
+  Node1, Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
+var
+  Data1, Data2: PModuleNodeData;
+begin
+  Data1 := Sender.GetNodeData(Node1);
+  Data2 := Sender.GetNodeData(Node2);
+  case Column of
+    1: Result := CompareText(Data1^.MangaCheck.MangaCheck.ModuleName,
+      Data2^.MangaCheck.MangaCheck.ModuleName);
+    2: Result := CompareText(Data1^.MangaCheck.MangaCheck.ModuleFilename,
+      Data2^.MangaCheck.MangaCheck.ModuleFilename);
+    5: Result := CompareText(Data1^.Status, Data2^.Status);
+    else Result := 0;
+  end;
+end;
+
+procedure TFormCheckModules.vtModulesFreeNode(Sender: TBaseVirtualTree;
+  Node: PVirtualNode);
+var
+  Data: PModuleNodeData;
+begin
+  Data := Sender.GetNodeData(Node);
+  if Assigned(Data) then
+  begin
+    Finalize(Data^);
+  end;
+end;
+
+procedure TFormCheckModules.vtModulesGetText(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
+  var CellText: String);
+var
+  Data: PModuleNodeData;
+begin
+  Data := Sender.GetNodeData(Node);
+  case Column of
+    1: CellText := Data^.MangaCheck.MangaCheck.ModuleName;
+    2: CellText := Data^.MangaCheck.MangaCheck.ModuleFilename;
+    3: CellText := IfThen(Data^.MangaCheck.MangaCheck.MangaURL <> '',
+      'Yes' + IfThen(Data^.MangaCheck.MangaCheck.MangaTitle <> '',
+      ' with Title', ' without Title'), 'No');
+    4: CellText := IfThen(Data^.MangaCheck.MangaCheck.ChapterURL <> '',
+      'Yes' + IfThen(Data^.MangaCheck.MangaCheck.ChapterTitle <> '',
+      ' with Title', ' without Title'), 'No');
+    5: CellText := Data^.Status;
+    6: CellText := Data^.Details;
   end;
 end;
 
@@ -857,12 +999,12 @@ begin
   EnableStopCheck(True);
   memCheckModules.Clear;
 
-  lvModules.Items.BeginUpdate;
+  vtModules.BeginUpdate;
   try
-    lvModules.Clear;
+    vtModules.Clear;
     ClearModulesList;
   finally
-    lvModules.Items.EndUpdate;
+    vtModules.EndUpdate;
   end;
 
   LogMessage('Scanning loaded modules...');
@@ -887,27 +1029,22 @@ begin
   FScanThread := nil;
   EnableStopCheck(False);
   StatusBar.SimpleText := Format('Scan complete: %d modules found',
-    [lvModules.Items.Count]);
+    [vtModules.TotalCount]);
 end;
 
 procedure TFormCheckModules.AddModuleToList(const AMangaCheck:
   TMangaInformation);
 var
-  Item: TListItem;
+  Node: PVirtualNode;
+  Data: PModuleNodeData;
 begin
-  Item := lvModules.Items.Add;
-  Item.Caption := AMangaCheck.MangaCheck.ModuleName;
-  Item.SubItems.Add(AMangaCheck.MangaCheck.ModuleFilename);
-  Item.SubItems.Add(IfThen(AMangaCheck.MangaCheck.MangaURL <> '',
-    'Yes' + IfThen(AMangaCheck.MangaCheck.MangaTitle <> '', ' with Title',
-    ' without Title'), 'No'));
-  Item.SubItems.Add(IfThen(AMangaCheck.MangaCheck.ChapterURL <> '',
-    'Yes' + IfThen(AMangaCheck.MangaCheck.ChapterTitle <> '', ' with Title',
-    ' without Title'), 'No'));
-  Item.SubItems.Add('Not Checked');
-  Item.SubItems.Add('');
-  Item.Checked := True;
-  Item.Data := AMangaCheck;
+  Node := vtModules.AddChild(nil);
+  Node^.CheckType := ctCheckBox;
+  Node^.CheckState := csCheckedNormal;
+  Data := vtModules.GetNodeData(Node);
+  Data^.MangaCheck := AMangaCheck;
+  Data^.Status := 'Not Checked';
+  Data^.Details := '';
   FModulesList.Add(AMangaCheck);
   FilterModules; // Refilter to show the new module if it matches
 end;
@@ -945,33 +1082,52 @@ end;
 procedure TFormCheckModules.SetModuleSelection(AChecked: Boolean;
   AInverse: Boolean = False);
 var
-  i: Integer;
+  Node: PVirtualNode;
 begin
-  for i := 0 to lvModules.Items.Count - 1 do
+  Node := vtModules.GetFirst();
+  while Assigned(Node) do
   begin
     if AInverse then
     begin
-      lvModules.Items[i].Checked := not lvModules.Items[i].Checked
+      if Node^.CheckState = csCheckedNormal then
+      begin
+        Node^.CheckState := csUncheckedNormal
+      end
+      else
+      begin
+        Node^.CheckState := csCheckedNormal;
+      end;
     end
     else
     begin
-      lvModules.Items[i].Checked := AChecked;
+      if AChecked then
+      begin
+        Node^.CheckState := csCheckedNormal
+      end
+      else
+      begin
+        Node^.CheckState := csUncheckedNormal;
+      end;
     end;
+    Node := vtModules.GetNext(Node);
   end;
+  vtModules.Invalidate;
 end;
 
-procedure TFormCheckModules.UpdateItemStatus(AItem: TListItem; const AStatus,
-  ADetails: string);
+procedure TFormCheckModules.UpdateItemStatus(ANode: PVirtualNode;
+  const AStatus, ADetails: string);
+var
+  Data: PModuleNodeData;
 begin
-  AItem.SubItems[3] := AStatus;
-  AItem.SubItems[4] := ADetails;
+  Data := vtModules.GetNodeData(ANode);
+  Data^.Status := AStatus;
+  Data^.Details := ADetails;
+  vtModules.InvalidateNode(ANode);
 end;
 
 procedure TFormCheckModules.CheckModuleIntegrity;
-var
-  i: Integer;
 begin
-  if lvModules.Items.Count = 0 then
+  if vtModules.TotalCount = 0 then
   begin
     CenteredMessageDlg(frmMain.MainForm, 'No modules to check.'
     + ' Please refresh the module list first.',
@@ -1003,7 +1159,7 @@ begin
   FCheckThread.Start;
 end;
 
-procedure TFormCheckModules.OnCheckProgress(AIndex: Integer;
+procedure TFormCheckModules.OnCheckProgress(ANode: PVirtualNode;
   const AStatus, ADetails, AMsg: string);
 begin
   if AMsg <> '' then
@@ -1011,9 +1167,9 @@ begin
     LogMessage(AMsg);
   end;
 
-  if AIndex >= 0 then
+  if Assigned(ANode) then
   begin
-    UpdateItemStatus(lvModules.Items[AIndex], AStatus, ADetails);
+    UpdateItemStatus(ANode, AStatus, ADetails);
   end;
 end;
 
@@ -1042,21 +1198,19 @@ end;
 
 function TFormCheckModules.CalcTotalToCheck: Integer;
 var
-  i: Integer;
-  Item: TListItem;
-  AMangaCheck: TMangaInformation;
+  Node: PVirtualNode;
+  Data: PModuleNodeData;
 begin
   Result := 0;
-  for i := 0 to lvModules.Items.Count - 1 do
+  Node := vtModules.GetFirst();
+  while Assigned(Node) do
   begin
-      Item := lvModules.Items[i];
-      if not Item.Checked then
-      begin
-        Continue;
-      end;
-
-      AMangaCheck := TMangaInformation(Item.Data);
-      Result := Result + AMangaCheck.MangaCheck.TestToCheck;
+    if Node^.CheckState = csCheckedNormal then
+    begin
+      Data := vtModules.GetNodeData(Node);
+      Result := Result + Data^.MangaCheck.MangaCheck.TestToCheck;
+    end;
+    Node := vtModules.GetNext(Node);
   end;
 end;
 
@@ -1263,53 +1417,16 @@ begin
 end;
 
 procedure TFormCheckModules.FilterModules;
-var
-  i: Integer;
-  Item: TListItem;
-  AMangaCheck: TMangaInformation;
-  FilterLower: string;
-  ModuleName: string;
 begin
   if FModulesList.Count = 0 then
   begin
     Exit;
   end;
 
-  FilterLower := LowerCase(Trim(FFilterText));
-
-  lvModules.Items.BeginUpdate;
-  try
-    lvModules.Clear;
-
-    for i := 0 to FModulesList.Count - 1 do
-    begin
-      AMangaCheck := TMangaInformation(FModulesList[i]);
-      ModuleName := LowerCase(AMangaCheck.MangaCheck.ModuleName);
-
-      // If filter is empty or module name contains filter text
-      if (FilterLower = '') or (Pos(FilterLower, ModuleName) > 0) then
-      begin
-        Item := lvModules.Items.Add;
-        Item.Caption := AMangaCheck.MangaCheck.ModuleName;
-        Item.SubItems.Add(AMangaCheck.MangaCheck.ModuleFilename);
-        Item.SubItems.Add(IfThen(AMangaCheck.MangaCheck.MangaURL <> '',
-          'Yes' + IfThen(AMangaCheck.MangaCheck.MangaTitle <> '', ' with Title',
-          ' without Title'), 'No'));
-        Item.SubItems.Add(IfThen(AMangaCheck.MangaCheck.ChapterURL <> '',
-          'Yes' + IfThen(AMangaCheck.MangaCheck.ChapterTitle <> '', ' with Title',
-          ' without Title'), 'No'));
-        Item.SubItems.Add('Not Checked');
-        Item.SubItems.Add('');
-        Item.Checked := True;
-        Item.Data := AMangaCheck;
-      end;
-    end;
-  finally
-    lvModules.Items.EndUpdate;
-  end;
+  FilterVST(vtModules, FFilterText, 1);
 
   StatusBar.SimpleText := Format('Showing %d of %d modules',
-    [lvModules.Items.Count, FModulesList.Count]);
+    [vtModules.VisibleCount, FModulesList.Count]);
 end;
 
 // Add event handler for the filter edit box:
@@ -1324,22 +1441,14 @@ begin
   edtFilter.Clear;
 end;
 
-procedure TFormCheckModules.SortlvModules(AColumnIndex: Integer;
+procedure TFormCheckModules.SortvtModules(AColumnIndex: Integer;
   ASortDirection: TSortDirection);
 begin
-  if AColumnIndex in [0, 1, 4] then
+  if AColumnIndex in [1, 2, 5] then
   begin
-    lvModules.SortColumn := AColumnIndex;
-    lvModules.SortDirection := ASortDirection;
-    if ASortDirection = sdAscending then
-    begin
-      lvModules.Column[AColumnIndex].SortIndicator := siAscending
-    end
-    else
-    begin
-      lvModules.Column[AColumnIndex].SortIndicator := siDescending;
-    end;
-    lvModules.CustomSort(nil, 0);
+    vtModules.Header.SortColumn := AColumnIndex;
+    vtModules.Header.SortDirection := ASortDirection;
+    vtModules.Sort(nil, AColumnIndex, ASortDirection, False);
   end;
 end;
 end.
