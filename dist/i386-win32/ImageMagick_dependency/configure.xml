@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuremap [
+  <!ELEMENT configuremap (configure)+>
+  <!ATTLIST configuremap xmlns CDATA #FIXED ''>
+  <!ELEMENT configure EMPTY>
+  <!ATTLIST configure xmlns CDATA #FIXED '' name NMTOKEN #REQUIRED
+    value CDATA #REQUIRED>
+]>
+<!--
+  ImageMagick build configuration.
+-->
+<configuremap>
+  <configure name="CC" value="VS2022"/>
+  <configure name="CHANNEL_MASK_DEPTH" value="32"/>
+  <configure name="COPYRIGHT" value="Copyright (C) 1999 ImageMagick Studio LLC"/>
+  <configure name="CXX" value="VS2022"/>
+  <configure name="DOCUMENTATION_PATH" value="unavailable"/>
+  <configure name="GIT_REVISION" value="6a10c82:20260517" />
+  <configure name="LIB_VERSION_NUMBER" value="7,1,2,23"/>
+  <configure name="LIB_VERSION" value="0x712"/>
+  <configure name="NAME" value="ImageMagick"/>
+  <configure name="QuantumDepth" value="16"/>
+  <configure name="RELEASE_DATE" value="2026-05-17"/>
+  <configure name="TARGET_CPU" value="x86"/>
+  <configure name="TARGET_OS" value="Windows"/>
+  <configure name="VERSION" value="7.1.2"/>
+  <configure name="WEBSITE" value="https://imagemagick.org"/>
+</configuremap>

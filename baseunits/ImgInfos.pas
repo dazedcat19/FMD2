@@ -629,6 +629,103 @@ begin
   end;
 end;
 
+function AVIFCheckImageStream(const Stream: TStream): Boolean;
+var
+  Hdr: array[0..3] of Char = (#0, #0, #0, #0);
+begin
+  // Skip box size (bytes 0-3), read 'ftyp' box type at bytes 4-7
+  Result := (Stream.Seek(4, soFromBeginning) = 4) and
+    (Stream.Read(Hdr, 4) = 4) and (Hdr = 'ftyp');
+  if not Result then Exit;
+  // Read major brand at bytes 8-11
+  Result := (Stream.Read(Hdr, 4) = 4) and
+    ((Hdr = 'avif') or (Hdr = 'avis') or (Hdr = 'avio') or (Hdr = 'mif1') or (Hdr = 'msf1'));
+end;
+
+procedure AVIFGetImageSize(const Stream: TStream; out Width, Height: Integer);
+begin
+  Width := 0;
+  Height := 0;
+end;
+
+function JXLCheckImageStream(const Stream: TStream): Boolean;
+var
+  Hdr: array[0..11] of Byte;
+begin
+  Result := Stream.Read(Hdr[0], 12) = 12;
+  if not Result then Exit;
+  // Check for JPEG XL magic: FF 0A (codestream) or 00 00 00 0C 4A 58 4C 20 0D 0A 87 0A (box format)
+  if (Hdr[0] = $FF) and (Hdr[1] = $0A) then
+    Exit(True);
+  if (Hdr[0] = $00) and (Hdr[1] = $00) and (Hdr[2] = $00) and (Hdr[3] = $0C) and
+     (Hdr[4] = $4A) and (Hdr[5] = $58) and (Hdr[6] = $4C) and (Hdr[7] = $20) and
+     (Hdr[8] = $0D) and (Hdr[9] = $0A) and (Hdr[10] = $87) and (Hdr[11] = $0A) then
+    Exit(True);
+  Result := False;
+end;
+
+procedure JXLGetImageSize(const Stream: TStream; out Width, Height: Integer);
+begin
+  Width := 0;
+  Height := 0;
+end;
+
+function HEICCheckImageStream(const Stream: TStream): Boolean;
+var
+  Hdr: array[0..3] of Char = (#0, #0, #0, #0);
+begin
+  Result := (Stream.Read(Hdr, 4) = 4) and (Hdr = 'ftyp');
+  if not Result then Exit;
+  Result := (Stream.Seek(4, soFromCurrent) = 8) and
+    (Stream.Read(Hdr, 4) = 4) and ((Hdr = 'heic') or (Hdr = 'heix') or (Hdr = 'mif1'));
+end;
+
+procedure HEICGetImageSize(const Stream: TStream; out Width, Height: Integer);
+begin
+  Width := 0;
+  Height := 0;
+end;
+
+function TGACheckImageStream(const Stream: TStream): Boolean;
+var
+  Hdr: array[0..1] of Byte;
+  imgType: Byte;
+begin
+  Stream.Read(Hdr[0], 2);
+  imgType := Hdr[1];
+  Result := ((imgType >= 1) and (imgType <= 3)) or ((imgType >= 9) and (imgType <= 11)) or
+            (imgType = 32) or (imgType = 33);
+end;
+
+procedure TGAGetImageSize(const Stream: TStream; out Width, Height: Integer);
+var
+  w, h: Word;
+begin
+  Width := 0;
+  Height := 0;
+  if Stream.Seek(12, soFromBeginning) <> 12 then Exit;
+  if Stream.Read(w, 2) <> 2 then Exit;
+  if Stream.Read(h, 2) <> 2 then Exit;
+  Width := LEtoN(w);
+  Height := LEtoN(h);
+end;
+
+function JP2CheckImageStream(const Stream: TStream): Boolean;
+var
+  Hdr: array[0..11] of Byte = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+begin
+  Result := (Stream.Read(Hdr, 12) = 12) and
+    (Hdr[0] = $00) and (Hdr[1] = $00) and (Hdr[2] = $00) and (Hdr[3] = $0C) and
+    (Hdr[4] = $6A) and (Hdr[5] = $50) and (Hdr[6] = $20) and (Hdr[7] = $20) and
+    (Hdr[8] = $0D) and (Hdr[9] = $0A) and (Hdr[10] = $87) and (Hdr[11] = $0A);
+end;
+
+procedure JP2GetImageSize(const Stream: TStream; out Width, Height: Integer);
+begin
+  Width := 0;
+  Height := 0;
+end;
+
 initialization
   ImageHandlerMgr := TimageHandlerMgr.Create;
   ImageHandlerMgr.Add(TFPReaderJPEG, TFPWriterJPEG, @JPEGCheckImageStream, @JPEGGetImageSize, 'jpg');
@@ -637,6 +734,11 @@ initialization
   ImageHandlerMgr.Add(TFPReaderGif, TFPWriterPNG, @GIFCheckImageStream, @GIFGetImageSize, 'gif', 'png');
   ImageHandlerMgr.Add(TFPReaderBMP, TFPWriterBMP, @BMPCheckImageStream, @BMPGetImageSize, 'bmp');
   ImageHandlerMgr.Add(TFPReaderTiff, TFPWriterTiff, @TIFFCheckImageStream, @TIFFGetImageSize, 'tif');
+  ImageHandlerMgr.Add(nil, nil, @AVIFCheckImageStream, @AVIFGetImageSize, 'avif');
+  ImageHandlerMgr.Add(nil, nil, @JXLCheckImageStream, @JXLGetImageSize, 'jxl');
+  ImageHandlerMgr.Add(nil, nil, @HEICCheckImageStream, @HEICGetImageSize, 'heic');
+  ImageHandlerMgr.Add(nil, nil, @TGACheckImageStream, @TGAGetImageSize, 'tga');
+  ImageHandlerMgr.Add(nil, nil, @JP2CheckImageStream, @JP2GetImageSize, 'jp2');
 
 finalization
   ImageHandlerMgr.Free;
