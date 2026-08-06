@@ -43,6 +43,7 @@ uses
   LuaDuktape,
   LuaCrypto,
   LuaFileUtil,
+  LuaGZip,
   LuaStrings,
   LuaImagePuzzle,
   LuaMangaFox,
