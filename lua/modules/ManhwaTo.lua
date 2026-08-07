@@ -7,13 +7,12 @@ function Init()
 	m.ID                       = 'b61006af40ac480b9c1957ddae55c051'
 	m.Name                     = 'ManhwaTo'
 	m.RootURL                  = 'https://manhwato.com'
-	m.Category                 = 'Webcomics'
+	m.Category                 = 'H-Sites'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
 	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
-	m.SortedList               = true
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -70,11 +69,11 @@ end
 function GetPageNumber()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
-	if not HTTP.GET(u) then return net_problem end
+	if not HTTP.GET(u) then return false end
 
 	CreateTXQuery(HTTP.Document).XPathStringAll('//div[@class="page-chapter"]/img/@src', TASK.PageLinks)
 
-	return no_error
+	return true
 end
 
 -- Prepare the URL, http header and/or http cookies before downloading an image.
