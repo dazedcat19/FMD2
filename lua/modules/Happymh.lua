@@ -2,7 +2,7 @@
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local secret = 'PRO_SCAN_secret_20260712_watching_you_DEBUG'
+local secret = 'PRO_SCAN_SECRET_20260712_watching_you_DEBUG'
 local domain = 'happymh.com'
 
 ----------------------------------------------------------------------------------------------------
