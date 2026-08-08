@@ -2,7 +2,7 @@
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local DirectoryPagination = '/manga-list.html?pr=new&s=post&st=DESC&p='
+local DirectoryPagination = '/manga-list.html?pr=new&l=60p='
 
 ----------------------------------------------------------------------------------------------------
 -- Helper Functions
@@ -57,29 +57,41 @@ function GetInfo()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	local x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = crypto.DecodeBase64(x.XPathString('//h1/@data-enc'))
-	MANGAINFO.AltTitles = x.XPathString('//div[div="Other names"]/div[2]')
-	MANGAINFO.CoverLink = x.XPathString('//img[contains(@class, "manga-cover-image")]/@src')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[./div="Status"]//a'), 'On going', 'Completed')
-	MANGAINFO.Summary   = x.XPathString('//div[@class="description-text-content"]')
+	local html = HTTP.Document.ToString()
+	local ref = html:match('chaotic_payload\\":\\"%$(.-)\\"')
+	local payload = html:match(ref .. ':T%x+,%"%]%)</script><script>self%.__next_f%.push%(%[1,%"([^"]+)')
+	if not payload then return net_problem end
+
+	local info = DecodeChaoticPayload(payload)
+
+	local manga = info.manga
+	MANGAINFO.Title     = manga.n
+	MANGAINFO.AltTitles = manga.other_name
+	MANGAINFO.CoverLink = manga.c
+	MANGAINFO.Status    = MangaInfoStatusIfPos(manga.status_text, 'On going', 'Completed')
 
 	local authors = {}
 	local genres = {}
 
-	for v in x.XPath('//div[div="Author(s)"]//a').Get() do
-		authors[#authors + 1] = crypto.DecodeBase64(v.ToString())
+	for _, author in ipairs(manga.authors_list or {}) do
+		table.insert(authors, author.n)
 	end
 	MANGAINFO.Authors = table.concat(authors, ', ')
 
-	for v in x.XPath('//div[div="Genre(s)"]//a').Get() do
-		genres[#genres + 1] = crypto.DecodeBase64(v.ToString())
+	for _, genre in ipairs(manga.genres_list or {}) do
+		table.insert(genres, genre.n)
 	end
 	MANGAINFO.Genres = table.concat(genres, ', ')
 
-	for v in x.XPath('//div[@id="chapter-grid"]/a').Get() do
-		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'):gsub('.html', ''))
-		MANGAINFO.ChapterNames.Add(x.XPathString('.//div[@class="chapter-name-grid"]', v))
+	local summary = manga.description
+	if summary ~= '' then
+		MANGAINFO.Summary = CreateTXQuery(summary).XPathString('string-join(//text(), "\r\n")')
+	end
+
+	local chapters = info.chapters_list
+	for _, v in ipairs(chapters or {}) do
+		MANGAINFO.ChapterLinks.Add(v.ur:gsub('.html', ''))
+		MANGAINFO.ChapterNames.Add(v.n)
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
@@ -93,11 +105,9 @@ function GetPageNumber()
 	if not HTTP.GET(u) then return false end
 
 	local html = HTTP.Document.ToString()
-	local ref = html:match('chaotic_payload\\":\\"%$(%d+)\\"')
+	local ref = html:match('chaotic_payload\\":\\"%$(.-)\\"')
 	local payload = html:match(ref .. ':T%x+,%"%]%)</script><script>self%.__next_f%.push%(%[1,%"([^"]+)')
-	if not payload then
-		return false
-	end
+	if not payload then return false end
 
 	local images = DecodeChaoticPayload(payload).images
 
