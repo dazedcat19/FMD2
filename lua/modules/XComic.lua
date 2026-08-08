@@ -159,7 +159,8 @@ function GetInfo()
 	local page = 1
 	local pages = nil
 	while true do
-	local s = '{"query":"query get_comic_chapterList_fullList($select: Select_Comic_ChapterList) { get_comic_chapterList_fullList(select: $select) { paging { pages } items { data { id dname title } } } }","variables":{"select":{"comic_id":"' .. mid .. '","page":' .. page .. ',"size":100,"sortby":"chapter_asc"}}}'
+		local s = '{"query":"query get_comic_chapterList_fullList($select: Select_Comic_ChapterList) { get_comic_chapterList_fullList(select: $select) { paging { pages } items { data { id dname title } } } }","variables":{"select":{"comic_id":"' .. mid .. '","page":' .. page .. ',"size":100,"sortby":"chapter_asc"}}}'
+
 		HTTP.Reset()
 		HTTP.MimeType = 'application/json'
 
@@ -188,6 +189,7 @@ end
 function GetPageNumber()
 	local u = MODULE.RootURL .. API_URL
 	local s = '{"query":"query get_chapterNode($id: ID!) { get_chapterNode(id: $id) { data { imageUrls } } }","variables":{"id":"' .. URL:match('[^/]+') .. '"}}'
+
 	HTTP.Reset()
 	HTTP.MimeType = 'application/json'
 
