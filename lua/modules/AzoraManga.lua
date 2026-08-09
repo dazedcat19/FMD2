@@ -1,38 +1,8 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
+-- Template Configuration
 ----------------------------------------------------------------------------------------------------
 
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = '27c2c6db9ce24942a89a28aa6c6ed35d'
-	m.Name                     = 'Azora Manga'
-	m.RootURL                  = 'https://azoramoon.com'
-	m.Category                 = 'Arabic-Scanlation'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnLogin                  = 'Login'
-	m.AccountSupport           = true
-
-	local slang = require 'fmd.env'.SelectedLanguage
-	local translations = {
-		['en'] = {
-			['showpaidchapters'] = 'Show paid chapters'
-		},
-		['id_ID'] = {
-			['showpaidchapters'] = 'Tampilkan bab berbayar'
-		}
-	}
-	local lang = translations[slang] or translations.en
-	m.AddOptionCheckBox('showpaidchapters', lang.showpaidchapters, false)
-end
-
-----------------------------------------------------------------------------------------------------
--- Local Constants
-----------------------------------------------------------------------------------------------------
-
-local Template = require 'templates.Iken'
-API_URL = 'https://api.azoramoon.com'
+local Template = require 'templates.VTheme'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -64,4 +34,33 @@ function GetPageNumber()
 	Template.GetPageNumber()
 
 	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = '27c2c6db9ce24942a89a28aa6c6ed35d'
+	m.Name                     = 'Azora Manga'
+	m.RootURL                  = 'https://azorafly.com'
+	m.Category                 = 'Arabic-Scanlation'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnLogin                  = 'Login'
+	m.AccountSupport           = true
+
+	local slang = require 'fmd.env'.SelectedLanguage
+	local translations = {
+		['en'] = {
+			['showpaidchapters'] = 'Show paid chapters'
+		},
+		['id_ID'] = {
+			['showpaidchapters'] = 'Tampilkan bab berbayar'
+		}
+	}
+	local lang = translations[slang] or translations.en
+	m.AddOptionCheckBox('showpaidchapters', lang.showpaidchapters, false)
 end
