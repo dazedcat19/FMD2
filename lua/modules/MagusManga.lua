@@ -1,38 +1,8 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
+-- Template Configuration
 ----------------------------------------------------------------------------------------------------
 
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = 'd81d220334924982b4bf32f0fa92164c'
-	m.Name                     = 'Magus Manga'
-	m.RootURL                  = 'https://magustoon.org'
-	m.Category                 = 'English-Scanlation'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnLogin                  = 'Login'
-	m.AccountSupport           = true
-
-	local slang = require 'fmd.env'.SelectedLanguage
-	local translations = {
-		['en'] = {
-			['showpaidchapters'] = 'Show paid chapters'
-		},
-		['id_ID'] = {
-			['showpaidchapters'] = 'Tampilkan bab berbayar'
-		}
-	}
-	local lang = translations[slang] or translations.en
-	m.AddOptionCheckBox('showpaidchapters', lang.showpaidchapters, false)
-end
-
-----------------------------------------------------------------------------------------------------
--- Local Constants
-----------------------------------------------------------------------------------------------------
-
-local Template = require 'templates.Iken'
-API_URL = 'https://api.magustoon.org'
+local Template = require 'templates.VTheme'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -64,4 +34,33 @@ function GetPageNumber()
 	Template.GetPageNumber()
 
 	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = 'd81d220334924982b4bf32f0fa92164c'
+	m.Name                     = 'Magus Manga'
+	m.RootURL                  = 'https://magustoon.org'
+	m.Category                 = 'English-Scanlation'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnLogin                  = 'Login'
+	m.AccountSupport           = true
+
+	local slang = require 'fmd.env'.SelectedLanguage
+	local translations = {
+		['en'] = {
+			['showpaidchapters'] = 'Show paid chapters'
+		},
+		['id_ID'] = {
+			['showpaidchapters'] = 'Tampilkan bab berbayar'
+		}
+	}
+	local lang = translations[slang] or translations.en
+	m.AddOptionCheckBox('showpaidchapters', lang.showpaidchapters, false)
 end

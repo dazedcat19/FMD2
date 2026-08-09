@@ -2,10 +2,7 @@
 -- Template Configuration
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.Iken'
-local domain = 'kaynscan.org'
-API_URL = 'https://api.' .. domain
-UseApiChapters = true
+local Template = require 'templates.VTheme'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -47,7 +44,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'a631c777b09a4e5095dfe28819743d48'
 	m.Name                     = 'Kayn Scans'
-	m.RootURL                  = 'https://' .. domain
+	m.RootURL                  = 'https://kaynscan.org'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
