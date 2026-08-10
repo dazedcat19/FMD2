@@ -46,7 +46,7 @@ function _M.GetInfo()
 	MANGAINFO.AltTitles = x.XPathString('//div[contains(@class, "text-sm text-text")]')
 	MANGAINFO.Summary   = x.XPathString('string-join(//div[@data-show="false" and @itemprop="description"]//text(), "\r\n")')
 
-	local mid = x.XPathString('//div[@id="chapter-list"]/@hx-get/substring-before(substring-after(., "manga_id="), "&")')
+	local mid = x.XPathString('//div[@id="gallery-list"]/@hx-get/substring-before(substring-after(., "manga_id="), "&")')
 
 	if not HTTP.GET(MODULE.RootURL .. '/wp-json/wp/v2/manga/' .. mid .. '?_embed') then return net_problem end
 
@@ -105,7 +105,7 @@ function _M.GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function _M.GetPageNumber()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 

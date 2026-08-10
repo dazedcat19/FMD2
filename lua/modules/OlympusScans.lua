@@ -1,24 +1,8 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = '760d177b1f6d4763a08971c0c1b5572b'
-	m.Name                     = 'Olympus Scanlation'
-	m.RootURL                  = 'https://olympusbiblioteca.com'
-	m.Category                 = 'Spanish-Scanlation'
-	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-end
-
-----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local API_URL = 'https://dashboard.olympusbiblioteca.com/api'
+local API_URL = 'https://panel.olympusxyz.com/api'
 local DirectoryPagination = '/api/series?type=comic&direction=asc&page='
 
 ----------------------------------------------------------------------------------------------------
@@ -73,10 +57,8 @@ function GetInfo()
 			MANGAINFO.ChapterLinks.Add(slug .. '/chapters/' .. v.GetProperty('id').ToString())
 			MANGAINFO.ChapterNames.Add('Capítulo ' .. v.GetProperty('name').ToString())
 		end
+		if page >= pages then break end
 		page = page + 1
-		if page > pages then
-			break
-		end
 	end
 
 	return no_error
@@ -92,4 +74,20 @@ function GetPageNumber()
 	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).chapter.pages()', TASK.PageLinks)
 
 	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = '760d177b1f6d4763a08971c0c1b5572b'
+	m.Name                     = 'Olympus Scanlation'
+	m.RootURL                  = 'https://olympusxyz.com'
+	m.Category                 = 'Spanish-Scanlation'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
 end

@@ -40,7 +40,6 @@ end
 
 -- Get the page count of the manga list of the current website.
 function _M.GetDirectoryPageNumber()
-	local json = require 'utils.json'
 	local s = '{"query":"{search(x:' .. Variables .. ',q:\\"\\",genre:\\"all\\",mod:ALPHABET,count:true,offset:0){count}}"}'
 	SetRequestHeaders()
 
@@ -53,8 +52,8 @@ end
 
 -- Get links and names from the manga list of the current website.
 function _M.GetNameAndLink()
-	local offset = MangaPerPage * tonumber(URL)
-	local s = '{"query":"{search(x:' .. Variables .. ',q:\\"\\",genre:\\"all\\",mod:ALPHABET,count:true,offset:' .. tostring(offset) .. '){rows{title,slug}}}"}'
+	local offset = MangaPerPage * URL
+	local s = '{"query":"{search(x:' .. Variables .. ',q:\\"\\",genre:\\"all\\",mod:ALPHABET,count:true,offset:' .. offset .. '){rows{title,slug}}}"}'
 	SetRequestHeaders()
 
 	if not HTTP.POST(API_URL, s) then return net_problem end
@@ -102,8 +101,7 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function _M.GetPageNumber()
-	local chapter = URL:match('(%d+)$')
-	local slug = URL:match('^/(.-)/')
+	local slug, chapter = URL:match('/([^/]+)/chapter%-([%d.]+)$')
 	local s = '{"query":"{chapter(x:' .. Variables .. ',slug:\\"' .. slug ..'\\",number:' .. chapter .. '){pages}}"}'
 	HTTP.Reset()
 	SetRequestHeaders()

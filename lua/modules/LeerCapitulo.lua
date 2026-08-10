@@ -18,19 +18,19 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-AlphaList = '#abcdefghijklmnopqrstuvwxyz'
+AlphaList = '0123456789abcdefghijklmnopqrstuvwxyz'
 local DirectoryPagination = '/initial/'
 
 ----------------------------------------------------------------------------------------------------
 -- Helper Functions
 ----------------------------------------------------------------------------------------------------
 
-local function trim(s) 
+local function Trim(s) 
 	if not s then return '' end
 	return (s:gsub('^%s*(.-)%s*$', '%1')) 
 end
 
-local function split(str, sep)
+local function Split(str, sep)
 	local t = {}
 	if str == nil or str == '' then return t end
 	sep = sep or ','
@@ -48,16 +48,16 @@ local function split(str, sep)
 end
 
 -- Main image-URL decryption
-local function extractImages(encodedText, metaContent)
-	if encodedText == '' then return {} end
+local function ExtractImages(encoded, meta_content)
+	if encoded == '' then return {} end
 
-	local sourceAlphabet = 'xXHbvV7snRpMFkrUPqlS4BzG3jg1aYC5WJ0wcZiLtoAyedQ8D2fTNOI9Eu6mhK'
-	local targetAlphabet = 'EzCIUe3plcrfxuv9hKOsVtkTA6ZjaXRQJ0wWqb5D8gm1nG7LoH2dFyNYB4PiMS'
+	local source_alphabet = 'xXHbvV7snRpMFkrUPqlS4BzG3jg1aYC5WJ0wcZiLtoAyedQ8D2fTNOI9Eu6mhK'
+	local target_alphabet = 'EzCIUe3plcrfxuv9hKOsVtkTA6ZjaXRQJ0wWqb5D8gm1nG7LoH2dFyNYB4PiMS'
 
-	local substituted = encodedText:gsub('[A-Za-z0-9]', function(ch)
-		local idx = sourceAlphabet:find(ch, 1, true)
+	local substituted = encoded:gsub('[A-Za-z0-9]', function(ch)
+		local idx = source_alphabet:find(ch, 1, true)
 		if idx then
-			return targetAlphabet:sub(idx, idx)
+			return target_alphabet:sub(idx, idx)
 		end
 		return ch
 	end)
@@ -68,75 +68,71 @@ local function extractImages(encodedText, metaContent)
 	local decoded = require 'fmd.crypto'.DecodeBase64(substituted)
 	if not decoded then return {} end
 
-	local urlList = split(decoded, ',')
-	for i = 1, #urlList do urlList[i] = trim(urlList[i]) end
+	local url_list = Split(decoded, ',')
+	for i = 1, #url_list do url_list[i] = Trim(url_list[i]) end
 
-	if metaContent and metaContent ~= '' then
-		local onlyDigits = metaContent:gsub('[^0-9]+', '-')
-		local rawOrderList = split(onlyDigits, '-')
+	if meta_content and meta_content ~= '' then
+		local only_digits = meta_content:gsub('[^0-9]+', '-')
+		local raw_order_list = Split(only_digits, '-')
 
-		local orderList = {}
-		for _, v in ipairs(rawOrderList) do
+		local order_list = {}
+		for _, v in ipairs(raw_order_list) do
 			if v ~= '' then
-				table.insert(orderList, v)
+				table.insert(order_list, v)
 			end
 		end
 
-		if #orderList > 0 then
-			local useReversedString = false
-			for _, v in ipairs(orderList) do
+		if #order_list > 0 then
+			local use_reversed_string = false
+			for _, v in ipairs(order_list) do
 				if v == '01' then
-					useReversedString = true
+					use_reversed_string = true
 					break
 				end
 			end
 
-			local sortedUrls = {}
-			for _, indexStr in ipairs(orderList) do
+			local sorted_urls = {}
+			for _, index_str in ipairs(order_list) do
 				local idx
-				if useReversedString then
-					idx = tonumber(indexStr:reverse())
+				if use_reversed_string then
+					idx = tonumber(index_str:reverse())
 				else
-					idx = tonumber(indexStr)
+					idx = tonumber(index_str)
 				end
-				if idx and urlList[idx + 1] then
-					table.insert(sortedUrls, urlList[idx + 1])
+				if idx and url_list[idx + 1] then
+					table.insert(sorted_urls, url_list[idx + 1])
 				end
 			end
 
-			local reversedUrls = {}
-			for i = #sortedUrls, 1, -1 do
-				table.insert(reversedUrls, sortedUrls[i])
+			local reversed_urls = {}
+			for i = #sorted_urls, 1, -1 do
+				table.insert(reversed_urls, sorted_urls[i])
 			end
 
-			if #reversedUrls > 0 then
-				return reversedUrls
+			if #reversed_urls > 0 then
+				return reversed_urls
 			end
 		end
 	end
 
-	return urlList
+	return url_list
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
-
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local s, i, x
-	if MODULE.CurrentDirectoryIndex == 0 then
-		s = '9'
-	else
-		i = MODULE.CurrentDirectoryIndex + 1
-		s = AlphaList:sub(i, i)
-	end
-	if not HTTP.GET(MODULE.RootURL .. DirectoryPagination .. s .. '/?page=' .. (URL + 1)) then return net_problem end
-	
-	x = CreateTXQuery(HTTP.Document)
-	x.XPathHREFTitleAll('//div[contains(@class, "cate-manga")]//div[contains(@class, "media-body")]/a', LINKS, NAMES)
-	UPDATELIST.CurrentDirectoryPageNumber = tonumber(x.XPathString('//ul[contains(@class, "pagination")]/li[last()-1]/a')) or 1
+	local i = MODULE.CurrentDirectoryIndex + 1
+	local s = AlphaList:sub(i, i)
+	local u = MODULE.RootURL .. DirectoryPagination .. s .. '/?page=' .. (URL + 1)
+
+	if not HTTP.GET(u) then return net_problem end
+
+	local x = CreateTXQuery(HTTP.Document)
+	x.XPathHREFTitleAll('//div[@class="cate-manga"]//div[@class="media-body"]/a', LINKS, NAMES)
+	UPDATELIST.CurrentDirectoryPageNumber = tonumber(x.XPathString('//ul[@class="pagination"]/li[last()]/a')) or 1
 
 	return no_error
 end
@@ -148,7 +144,7 @@ function GetInfo()
 	if not HTTP.GET(u) then return net_problem end
 
 	local x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//h1[@class="title-manga"]'):gsub(' Manga$', '')
+	MANGAINFO.Title     = x.XPathString('//h1[@class="title-manga"]')
 	MANGAINFO.AltTitles = x.XPathString('//p[contains(@class, "description-update")]/span[contains(., "Títulos Alternativos")]/following-sibling::text()[1]')
 	MANGAINFO.CoverLink = MaybeFillHost(MODULE.RootURL, x.XPathString('//div[contains(@class, "cover-detail")]/img/@src'))
 	MANGAINFO.Authors   = x.XPathString('//p[contains(@class, "description-update")]/span[contains(., "Author")]/following-sibling::text()[1]')
@@ -175,9 +171,9 @@ function GetPageNumber()
 	local x = CreateTXQuery(HTTP.Document)
 
 	local encoded = x.XPathString('//p[@id="array_data"]')
-	local metaContent = x.XPathString('//meta[@property="ad:check"]/@content')
+	local meta_content = x.XPathString('//meta[@property="ad:check"]/@content')
 
-	local images = extractImages(encoded, metaContent)
+	local images = ExtractImages(encoded, meta_content)
 	for _, img in ipairs(images) do
 		if img:sub(1, 2) == '//' then
 			img = 'https:' .. img

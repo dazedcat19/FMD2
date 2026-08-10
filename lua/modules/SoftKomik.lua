@@ -24,7 +24,7 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local API_URL = 'https://v2.softdevices.my.id'
-local CDN_URL = 'https://cdn1.softkomik.org/softkomik/'
+local CDN_URL = 'https://image.komik.im/softkomik/'
 local DirectoryPagination = '?limit=24&sortBy=newKomik&page='
 
 ----------------------------------------------------------------------------------------------------
@@ -37,7 +37,7 @@ local function SetRequestHeaders(mode)
 	local now = os.time() * 1000
 
 	local prefix   = (mode == 'chapter') and 'ch_' or ''
-	local endpoint = (mode == 'chapter') and ('/api/session/chapter/iuisxs') or ('/api/session/amsnuy')
+	local endpoint = (mode == 'chapter') and ('/api/session/chapter/oaisos') or ('/api/session/aksjkas')
 
 	local sign   = MODULE.Storage[prefix .. 'sign']
 	local token  = MODULE.Storage[prefix .. 'token']
@@ -174,7 +174,7 @@ function GetInfo()
 	local json = x.XPath('parse-json(//script[@id="__NEXT_DATA__"])?props?pageProps?data')
 	MANGAINFO.Title     = x.XPathString('title', json)
 	MANGAINFO.AltTitles = x.XPathString('title_alt', json)
-	MANGAINFO.CoverLink = 'https://softkomik.com/_next/image?url=https://cover.softdevices.my.id/softkomik-cover/' .. x.XPathString('gambar', json) .. '&w=256&q=100'
+	MANGAINFO.CoverLink = 'https://cover.softdevices.my.id/softkomik-cover/' .. x.XPathString('gambar', json)
 	MANGAINFO.Authors   = x.XPathString('author', json)
 	MANGAINFO.Genres    = x.XPathString('string-join((Genre?*, concat(upper-case(substring(type, 1, 1)), lower-case(substring(type, 2)))), ", ")', json)
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status', json), 'ongoing', 'tamat')
@@ -208,7 +208,7 @@ function GetPageNumber()
 	if not HTTP.GET(API_URL .. '/komik' .. URL .. '/imgs/' .. id) then return false end
 
 	for v in CreateTXQuery(HTTP.Document).XPath('json(*).imageSrc()').Get() do
-		TASK.PageLinks.Add(CDN_URL .. v.ToString())
+		TASK.PageLinks.Add(CDN_URL .. v.ToString() .. '?id=T4Kmwztku')
 	end
 
 	return true
@@ -216,7 +216,7 @@ end
 
 -- Prepare the URL, http header and/or http cookies before downloading an image.
 function BeforeDownloadImage()
-	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
 
 	return true
 end

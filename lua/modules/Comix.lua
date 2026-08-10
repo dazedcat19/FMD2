@@ -244,7 +244,8 @@ function GetInfo()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	if HTTP.ResultCode ~= 200 then MANGAINFO.Title = 'Cloudflare workaround is required' return no_error end
+	local rc = HTTP.ResultCode
+	if (rc == 403) or (rc == 429) or (rc == 503) then MANGAINFO.Title = 'Cloudflare workaround is required' return no_error end
 	local x = CreateTXQuery(HTTP.Document)
 	local info = require 'utils.json'.decode(x.XPathString('//script[@id="initial-data"]')).queries['["manga","detail","' .. mid .. '"]']
 
@@ -269,7 +270,7 @@ function GetInfo()
 		table.insert(genres, theme.title)
 	end
 	if info.type then
-		local capitalized = info.type:sub(1,1):upper() .. info.type:sub(2):lower()
+		local capitalized = info.type:sub(1, 1):upper() .. info.type:sub(2):lower()
 		table.insert(genres, capitalized)
 	end
 
@@ -286,14 +287,22 @@ function GetInfo()
 		const items = window._capturedChapters || [];
 		window._capturedChapters = items;
 
-		if (parsed && parsed.result && Array.isArray(parsed.result.items) && parsed.result.items.length > 0) {
-			if (parsed.result.items[0].mangaId) {
+		if (parsed && parsed.result && Array.isArray(parsed.result.items)) {
+			const resItems = parsed.result.items;
+
+			if (resItems.length === 0) {
+				submit({ items: [] });
+			} else if (resItems[0].mangaId) {
 				const meta = parsed.result.meta || parsed.result.pagination;
-				for (const it of parsed.result.items) items.push(it);
+				for (const it of resItems) items.push(it);
 
 				if (meta && meta.hasNext) {
 					setTimeout(() => {
-						const btn = document.querySelector('.mchap-foot button[aria-label*=Next]');
+						let btn = null;
+						const active = document.querySelector('.mchap-foot .npager__num.is-active');
+						if (active && active.nextElementSibling && active.nextElementSibling.classList.contains('npager__num')) {
+							btn = active.nextElementSibling;
+						}
 						if (btn && !btn.disabled) btn.click();
 					}, 200);
 				} else {
@@ -489,8 +498,17 @@ function DownloadImage()
 
 	local seed = tonumber(HTTP.Headers.Values['X-Scramble-Seed'])
 	local scramble_algo = tonumber(HTTP.Headers.Values['X-Scramble-Algo'])
+	local raw_scramble_hash = tonumber(HTTP.Headers.Values['X-Scramble-Hash'])
 
 	if seed and seed ~= 0 then
+		local scramble_hash = 0
+		if raw_scramble_hash == 03632 then
+			scramble_hash = 58414
+		elseif raw_scramble_hash == 02900 then
+			scramble_hash = 117532
+		end
+		seed = seed ~ scramble_hash
+
 		local grid_header = HTTP.Headers.Values['X-Scramble-Grid']
 		local cols, rows = ParseGrid(grid_header)
 		local grid_size = cols * rows

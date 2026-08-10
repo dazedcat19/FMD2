@@ -52,12 +52,25 @@ function _M.GetInfo()
 	MANGAINFO.Summary   = x.XPathStringAll('//div[@id="contentBox"]/substring-after(., "your bookmark.")')
 
 	local slug = URL:match('/([^/]+)$')
-
-	if not HTTP.GET(MODULE.RootURL .. '/api/manga/' .. slug .. '/chapters?limit=10000&offset=0') then return net_problem end
-
-	for v in CreateTXQuery(HTTP.Document).XPath('json(*).data.chapters()').Get() do
-		MANGAINFO.ChapterLinks.Add('manga/' .. slug .. '/' .. v.GetProperty('chapter_slug').ToString())
-		MANGAINFO.ChapterNames.Add(v.GetProperty('chapter_name').ToString())
+	local limit = 999
+	local offset = 0
+	local page = 1
+	local pages = nil
+	while true do
+		if not HTTP.GET(MODULE.RootURL .. '/api/manga/' .. slug .. '/chapters?limit=' .. limit .. '&offset=' .. offset) then return net_problem end
+		local x = CreateTXQuery(HTTP.Document)
+		for v in x.XPath('json(*).data.chapters()').Get() do
+			MANGAINFO.ChapterLinks.Add('manga/' .. slug .. '/' .. v.GetProperty('chapter_slug').ToString())
+			MANGAINFO.ChapterNames.Add(v.GetProperty('chapter_name').ToString())
+		end
+		offset = offset + limit
+		if not pages then
+			pages = tonumber(math.ceil(x.XPathString('json(*).data.pagination.total') / limit)) or 1
+		end
+		page = page + 1
+		if page > pages then
+			break
+		end
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 

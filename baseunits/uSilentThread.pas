@@ -323,7 +323,6 @@ begin
       try
         d := DLManager.AddTask;
         d.DownloadInfo.Module := FModule;
-        d.DownloadInfo.MangaPtr := FInfo.MangaInfo;
 
         if Trim(FTitle) = '' then
           FTitle := FInfo.MangaInfo.Title;

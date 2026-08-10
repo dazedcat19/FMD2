@@ -1,0 +1,96 @@
+// Based on: https://mangaplus.shueisha.co.jp/js/app.dbd26428.js
+
+syntax = "proto3";
+
+message Response {
+  optional SuccessResult success = 1;
+}
+
+message SuccessResult {
+  optional TitleDetailView titleDetailView = 8;
+  optional MangaViewer mangaViewer = 10;
+  optional AllTitlesViewV2 allTitlesViewV2 = 25;
+}
+
+message AllTitlesViewV2 {
+  repeated AllTitlesGroup AllTitlesGroup = 1;
+}
+
+message AllTitlesGroup {
+  repeated Title titles = 2;
+}
+
+message Title {
+  optional uint32 titleId = 1;
+  optional string name = 2;
+  optional string author = 3;
+  optional Language language = 7;
+}
+
+enum Language {
+  ENGLISH = 0;
+  SPANISH = 1;
+  FRENCH = 2;
+  INDONESIAN = 3;
+  PORTUGUESE_BR = 4;
+  RUSSIAN = 5;
+  THAI = 6;
+  GERMAN = 7;
+  ITALIAN = 8;
+  VIETNAMESE = 9;
+}
+
+message TitleDetailView {
+  message TitleLabels {
+    optional ReleaseSchedule releaseSchedule = 1;
+  }
+  
+  enum ReleaseSchedule {
+    DISABLED = 0;
+    EVERYDAY = 1;
+    WEEKLY = 2;
+    BIWEEKLY = 3;
+    MONTHLY = 4;
+    BIMONTHLY = 5;
+    TRIMONTHLY = 6;
+    OTHER = 7;
+    COMPLETED = 8;
+    ONE_SHOT = 9;
+    HIATUS = 10;
+  }
+  
+  message ChapterGroup {
+    repeated Chapter firstChapterList = 2;
+    repeated Chapter lastChapterList = 4;
+  }
+
+  optional Title title = 1;
+  optional string titleImageUrl = 2;
+  optional string overview = 3;
+  repeated TitleDetailView.ChapterGroup chapterListGroup = 28;
+  repeated Tag tags = 31;
+  optional TitleDetailView.TitleLabels titleLabels = 32;
+}
+
+message Tag {
+  optional string tag = 1;
+}
+
+message Chapter {
+  optional uint32 chapterId = 2;
+  optional string name = 3;
+  optional string subTitle = 4;
+}
+
+message MangaViewer {
+  repeated Page pages = 1;
+}
+
+message Page {
+  message MangaPage {
+    optional string imageUrl = 1;
+    optional string encryptionKey = 5;
+  }
+
+  optional Page.MangaPage mangaPage = 1;
+}

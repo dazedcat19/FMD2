@@ -33,6 +33,79 @@ local function SetRequestHeaders()
     HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
 end
 
+local B64_ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
+local CUSTOM_ALPHA = '_-9876543210abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+local PREFIX = 'J7r'
+local SUFFIX = 'nQ'
+local MARKER1 = 'kD'
+local MARKER2 = 'W4s'
+local CHUNK_SIZE = 7
+
+local CUSTOM_ALPHA_MAP = {}
+for i = 1, #CUSTOM_ALPHA do
+	CUSTOM_ALPHA_MAP[CUSTOM_ALPHA:sub(i, i)] = i
+end
+
+local function ChunkShuffle(s)
+	local result = {}
+	local chunk_idx = 0
+	local i = 1
+	while i <= #s do
+		local chunk = s:sub(i, math.min(i + CHUNK_SIZE - 1, #s))
+		if chunk_idx % 2 == 1 then
+			chunk = chunk:reverse()
+		end
+		result[#result + 1] = chunk
+		chunk_idx = chunk_idx + 1
+		i = i + CHUNK_SIZE
+	end
+	return table.concat(result)
+end
+
+local function CustomAlphaDecode(s)
+	local result = {}
+	for i = 1, #s do
+		local ch = s:sub(i, i)
+		local idx = CUSTOM_ALPHA_MAP[ch]
+		if not idx then print('Invalid character: ' .. ch) end
+		result[#result + 1] = B64_ALPHA:sub(idx, idx)
+	end
+	return table.concat(result)
+end
+
+local function DecodeImageList(encoded)
+	if encoded:sub(1, #PREFIX) ~= PREFIX then print('invalid prefix')	end
+	if encoded:sub(-#SUFFIX) ~= SUFFIX then print('invalid suffix') end
+
+	local stripped = encoded:sub(#PREFIX + 1, #encoded - #SUFFIX)
+
+	local remaining = #stripped - #MARKER1 - #MARKER2
+	if remaining <= 0 then print('Invalid data length') end
+
+	local num_groups = math.floor(remaining / 3)
+	local first_group_len = math.floor((remaining - num_groups) / 2)
+	local second_group_len = remaining - num_groups - first_group_len
+
+	local seg1 = stripped:sub(1, first_group_len)
+	local seg2 = stripped:sub(first_group_len + 1, first_group_len + #MARKER1)
+	local seg3 = stripped:sub(first_group_len + #MARKER1 + 1, first_group_len + #MARKER1 + second_group_len)
+	local seg4 = stripped:sub(first_group_len + #MARKER1 + second_group_len + 1, first_group_len + #MARKER1 + second_group_len + #MARKER2)
+	local seg5 = stripped:sub(first_group_len + #MARKER1 + second_group_len + #MARKER2 + 1)
+
+	if seg2 ~= MARKER1 then print('Marker1 mismatch') end
+	if seg4 ~= MARKER2 then print('Marker2 mismatch') end
+	if #seg5 ~= num_groups then print('Payload length mismatch') end
+
+	local combined = seg5 .. seg1 .. seg3
+	local shuffled = ChunkShuffle(combined)
+	local alpha_decoded = CustomAlphaDecode(shuffled)
+
+	local pad = #alpha_decoded % 4
+	if pad ~= 0 then alpha_decoded = alpha_decoded .. ('='):rep(4 - pad) end
+
+	return require 'fmd.crypto'.DecodeBase64(alpha_decoded)
+end
+
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
@@ -71,7 +144,7 @@ function _M.GetInfo()
 
 	local x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Title     = x.XPathString('//h1/text()')
-	MANGAINFO.CoverLink = x.XPathString('//img[contains(@class, "object-cover")]/@src')
+	MANGAINFO.CoverLink = x.XPathString('(//img[contains(@class, "object-cover")])[1]/@src')
 	MANGAINFO.Authors   = x.XPathStringAll('//div[./span="作者：" or ./span="Author:"]/a/span'):gsub(' ,,', ',')
 	MANGAINFO.Genres    = x.XPathStringAll('(//div[@class="block text-left mx-auto"]/div[@class="py-1"]/a, //div[./span="類型：" or ./span="Genres:"]/a/span)'):gsub('#', '')
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//h1/span'), '連載中|Ongoing', '完結', '休刊', '停止更新')
@@ -102,9 +175,9 @@ function _M.GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function _M.GetPageNumber()
-	local base = USE_API and API_URL .. '/chapter/getinfo' or MODULE.RootURL .. '/chapter/getcontent'
+	local base = USE_API and API_URL .. '/v2/chapter/getinfo' or MODULE.RootURL .. '/chapter/getcontent'
 	local mid, cid = URL:match('^/([^/]+)/([^/]+)$')
 	local u = base .. '?m=' .. mid .. '&c=' .. cid
 	SetRequestHeaders()
@@ -113,7 +186,8 @@ function _M.GetPageNumber()
 
 	local x = CreateTXQuery(HTTP.Document)
 	if USE_API then
-		for v in x.XPath('json(*).data.info.images.images()').Get() do
+		x.ParseHTML(DecodeImageList(x.XPathString('json(*).data.info.images.images')))
+		for v in x.XPath('json(*)()').Get() do
 			TASK.PageLinks.Add(GetRandomCDN(CDN_URLs) .. v.GetProperty('url').ToString())
 		end
 	else

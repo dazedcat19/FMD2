@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'e39b96c82f8b4b949a729446884a7b37'
 	m.Name                     = 'Ikiru'
-	m.RootURL                  = 'https://02.ikiru.wtf'
+	m.RootURL                  = 'https://06.ikiru.wtf'
 	m.Category                 = 'Indonesian'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -17,7 +17,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.NatsuId'
+local Template = require 'templates.KiruBase'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions

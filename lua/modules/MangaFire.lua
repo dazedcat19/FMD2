@@ -1,167 +1,69 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = '23eb3a472201427e8824ecdd5223bad7'
-	m.Name                     = 'MangaFire'
-	m.RootURL                  = 'https://mangafire.to'
-	m.Category                 = 'English'
-	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
-
-	local fmd = require 'fmd.env'
-	local slang = fmd.SelectedLanguage
-	local lang = {
-		['en'] = {
-			['lang'] = 'Language:',
-			['listtype'] = 'List type:',
-			['type'] = 'Chapter\nVolume'
-		},
-		['id_ID'] = {
-			['lang'] = 'Bahasa:',
-			['listtype'] = 'Tipe daftar:',
-			['type'] = 'Bab\nJilid'
-		},
-		get =
-			function(self, key)
-				local sel = self[slang]
-				if sel == nil then sel = self['en'] end
-				return sel[key]
-			end
-	}
-
-	local items = 'None'
-	local t = GetLangList()
-	for k, v in ipairs(t) do items = items .. '\r\n' .. v end
-	m.AddOptionComboBox('lang', lang:get('lang'), items, 1)
-	m.AddOptionComboBox('listtype', lang:get('listtype'), lang:get('type'), 0)
-end
-
-----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local DirectoryPagination = '/newest?page='
+local RootURL = 'https://mangafire.to'
+local API_URL = RootURL .. '/api'
+local DirectoryPagination = '/titles?limit=100&order[created_at]=desc&page='
 
 local Langs = {
-	["en"] = "English",
-	["fr"] = "French",
-	["ja"] = "Japanese",
-	["pt-br"] = "Portuguese (Br)",
-	["pt"] = "Portuguese (Pt)",
-	["es-la"] = "Spanish (LATAM)",
-	["es"] = "Spanish (Es)"
+	{   nil, 'All' },
+	{  'en', 'English' },
+	{  'fr', 'French' },
+	{  'ja', 'Japanese' },
+	{ 'pt-br', 'Portuguese (Br)' },
+	{  'pt', 'Portuguese (Pt)' },
+	{ 'es-la', 'Spanish (LATAM)' },
+	{  'es', 'Spanish (Es)' }
 }
 
 ----------------------------------------------------------------------------------------------------
 -- Helper Functions
 ----------------------------------------------------------------------------------------------------
 
-local function ToBytes(s)
-	local t = {}
-	for i = 1, #s do
-		t[#t + 1] = string.byte(s, i) & 255
-	end
-	return t
-end
+local stages = {
+	{
+		table_b64 = 'yINlmUNho8VYJT+ibTIP+9ESiULpVEtMOoD6U6lRE0R/xwXo/Xp9NrUgC4cw/'
+		         .. 'Lmo33vUyjUE40kUoEWIr/fxfNNcq2s79ShQ5NhNrFnJ4hXPwOu/SuXzIbuTQKG'
+		         .. 'Fvfm08E9jvCfqAtoDqvQq3dVWPQFmJjgvkISBeXY3BgANR+yVnjGbcxZ47d6k'
+		         .. 'LNfZPIayTq3/YGySb1KuVZodWp/WGNAO5pfMcpaK53Hhs0allBszaMaxuouOwd'
+		         .. 'xbwgxIw6YunSsXjI05Yi0j9j4eHKfSXR8Ifo/Od+8iamRfCXTyvm7NGRGYdcQ'
+		         .. '0ywcK/u6RXhrbcCm4t2eCtrDgQVecJGkQ+A==',
+		key_b64   = '0Ec58JOY3uBzJK9m3zqIOpdlF7UFiax9DmA=',
+		iv        = 0x5A
+	},
+	{
+		table_b64 = 'IUFltCxD3Oc2cwCgkJffthaOg9cgPUb0LgW6H/VtfcF0kc5F25t+aWj6JH9V'
+		         .. 'OhOaY0rAFdUxlDnl5BLNvwEJvQtP5qcw7vdb/K+chnbwnspSHT8mz5lqwz41T'
+		         .. 'ezG0hkO06FTjJZhsyNuFLDpD2ZZxQj/QIRcF90zpmQ7Byu483WsQqUE0C342H'
+		         .. 'L+JXngRB6fRzxRyVTaKu83h7UYTJ0QMt6ixFh6S3F8gqkKwrGTL3jHNBsD45U'
+		         .. 'nifK8+RGtishQV2K3rujLKEkiZxpr2dYcudFW4oFsDKhad3CLBvuyTqsCo4B7m'
+		         .. 'L5IKQ1vXo/MOOvq1I1d8ar9X6Ttu5KF4fZgiA==',
+		key_b64   = 'AAdjb1iPY8CiDmq9H34tKTBF8a3oDQ==',
+		iv        = 0x35
+	},
+	{
+		table_b64 = 'NQHlu1/wVO5EmkwQymF810qqY2xG1k2obcas4Z9mCsPEIFl9pRIjFxbJ7ybM'
+		         .. 'HbBckT5Ton85E0FOeHezbh/mjlEYpmpnlXOS8dgrqeq2KfxImTh1YK9y0PeMN'
+		         .. 'hzA1OQzSY9brYOJq/l2QnE/hwOeZIhPixVSKIUlDb5vLcH6RWKxkIEMuP0bDw'
+		         .. 'IqQ71AJJaEaMJL7A6YtyIwoRT+L5v4aZzodN/0+3nOGsfblFjgxSfPzVDjNFe'
+		         .. 'Nl5P26+kEC/8AHgdrpAbt3hHz3HrRN1Y6e+JHgF7ncFWnoF0y3THL1S71WgWG'
+		         .. 'Ca6KtSzTCCG58n68nTyj2T3Sshk7utqCtMi/ZQ==',
+		key_b64   = 'DELOJgPsVaCcblDtTGMdHzM=',
+		iv        = 0xBA
+	}
+}
 
-local function FromBytes(t)
-	return string.char(table.unpack(t))
-end
-
-local function Rc4(key, input)
-	local s = {}
-	for i = 0, 255 do
-		s[i] = i
-	end
-	local j = 0
-	for i = 0, 255 do
-		j = (j + s[i] + key[(i % #key) + 1]) & 255
-		s[i], s[j] = s[j], s[i]
-	end
+local function EncryptStage(data, tbl, key, iv)
 	local out = {}
-	local i = 0
-	j = 0
-	for y = 1, #input do
-		i = (i + 1) & 255
-		j = (j + s[i]) & 255
-		s[i], s[j] = s[j], s[i]
-		local k = s[(s[i] + s[j]) & 255]
-		out[y] = (input[y] ~ k) & 255
+	local previous = iv
+	local keylen = #key
+	for i = 1, #data do
+		previous = tbl:byte((data:byte(i) ~ key:byte(((i - 1) % keylen) + 1) ~ previous) + 1)
+		out[i] = string.char(previous)
 	end
-	return out
+	return table.concat(out)
 end
-
-local function Transform(input, init_seed_bytes, prefix_key, prefix_len, schedule)
-	local out = {}
-	for i = 1, #input do
-		if (i - 1) < prefix_len then
-			out[#out + 1] = prefix_key[i] or 0
-		end
-		out[#out + 1] = schedule[((i - 1) % 10) + 1]((input[i] ~ init_seed_bytes[((i - 1) % 32) + 1]) & 255) & 255
-	end
-	return out
-end
-
-local function Add8(n) return function(c) return (c + n) & 255 end end
-local function Sub8(n) return function(c) return (c - n + 256) & 255 end end
-local function Xor8(n) return function(c) return (c ~ n) & 255 end end
-local function Rotl8(n) return function(c) return ((c << n) | (c >> (8 - n))) & 255 end end
-local function Rotr8(n) return function(c) return ((c >> n) | (c << (8 - n))) & 255 end end
-
-local schedule_c = {
-	Sub8(223), Rotr8(4), Rotr8(4), Add8(234), Rotr8(7),
-	Rotr8(2), Rotr8(7), Sub8(223), Rotr8(7), Rotr8(6),
-}
-
-local schedule_y = {
-	Add8(19), Rotr8(7), Add8(19), Rotr8(6), Add8(19),
-	Rotr8(1), Add8(19), Rotr8(6), Rotr8(7), Rotr8(4),
-}
-
-local schedule_b = {
-	Sub8(223), Rotr8(1), Add8(19), Sub8(223), Rotl8(2),
-	Sub8(223), Add8(19), Rotl8(1), Rotl8(2), Rotl8(1),
-}
-
-local schedule_j = {
-	Add8(19), Rotl8(1), Rotl8(1), Rotr8(1), Add8(234),
-	Rotl8(1), Sub8(223), Rotl8(6), Rotl8(4), Rotl8(1),
-}
-
-local schedule_e = {
-	Rotr8(1), Rotl8(1), Rotl8(6), Rotr8(1), Rotl8(2),
-	Rotr8(4), Rotl8(1), Rotl8(1), Sub8(223), Rotl8(2),
-}
-
-local rc4_keys = {
-	l = "FgxyJUQDPUGSzwbAq/ToWn4/e8jYzvabE+dLMb1XU1o=",
-	g = "CQx3CLwswJAnM1VxOqX+y+f3eUns03ulxv8Z+0gUyik=",
-	B = "fAS+otFLkKsKAJzu3yU+rGOlbbFVq+u+LaS6+s1eCJs=",
-	m = "Oy45fQVK9kq9019+VysXVlz1F9S1YwYKgXyzGlZrijo=",
-	F = "aoDIdXezm2l3HrcnQdkPJTDT8+W6mcl2/02ewBHfPzg=",
-}
-
-local seeds_32 = {
-	A = "yH6MXnMEcDVWO/9a6P9W92BAh1eRLVFxFlWTHUqQ474=",
-	V = "RK7y4dZ0azs9Uqz+bbFB46Bx2K9EHg74ndxknY9uknA=",
-	N = "rqr9HeTQOg8TlFiIGZpJaxcvAaKHwMwrkqojJCpcvoc=",
-	P = "/4GPpmZXYpn5RpkP7FC/dt8SXz7W30nUZTe8wb+3xmU=",
-	k = "wsSGSBXKWA9q1oDJpjtJddVxH+evCfL5SO9HZnUDFU8=",
-}
-
-local prefix_keys = {
-	O = "l9PavRg=",
-	v = "Ml2v7ag1Jg==",
-	L = "i/Va0UxrbMo=",
-	p = "WFjKAHGEkQM=",
-	W = "5Rr27rWd",
-}
 
 local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
@@ -176,60 +78,60 @@ local function EncodeBase64(data)
 		if (#x < 6) then return '' end
 		local c = 0
 		for i = 1, 6 do
-			c = c + (x:sub(i ,i) == '1' and 2 ^ (6 - i) or 0)
+			c = c + (x:sub(i, i) == '1' and 2 ^ (6 - i) or 0)
 		end
-		return b:sub(c + 1, c +1)
+		return b:sub(c + 1, c + 1)
 	end) .. ({ '', '==', '=' })[#data % 3 + 1])
 end
 
 local function GenerateVRF(input)
 	local crypto = require 'fmd.crypto'
-	local bytes = ToBytes(crypto.EncodeURLElement(input))
-
-	local stages = {
-		{ rc4_keys.l, seeds_32.A, prefix_keys.O, schedule_c },
-		{ rc4_keys.g, seeds_32.V, prefix_keys.v, schedule_y },
-		{ rc4_keys.B, seeds_32.N, prefix_keys.L, schedule_b },
-		{ rc4_keys.m, seeds_32.P, prefix_keys.p, schedule_j },
-		{ rc4_keys.F, seeds_32.k, prefix_keys.W, schedule_e },
-	}
+	local bytes = input
 
 	for _, st in ipairs(stages) do
-		local key_b64, seed_b64, prefix_b64, sched = st[1], st[2], st[3], st[4]
-
-		local rc4_key = ToBytes(crypto.DecodeBase64(key_b64))
-		bytes = Rc4(rc4_key, bytes)
-
-		local seed_bytes = ToBytes(crypto.DecodeBase64(seed_b64))
-		local prefix_bytes_str = crypto.DecodeBase64(prefix_b64)
-		local prefix_bytes = ToBytes(prefix_bytes_str)
-		local prefix_len = #prefix_bytes_str
-
-		bytes = Transform(bytes, seed_bytes, prefix_bytes, prefix_len, sched)
+		local tbl = crypto.DecodeBase64(st.table_b64)
+		local key = crypto.DecodeBase64(st.key_b64)
+		bytes = EncryptStage(bytes, tbl, key, st.iv)
 	end
 
-	return EncodeBase64(FromBytes(bytes)):gsub("%+", "-"):gsub("/", "_"):gsub("=+$", "")
+	return EncodeBase64(bytes):gsub('%+', '-'):gsub('/', '_'):gsub('=+$', '')
 end
 
-function GetLangList()
+local function BuildChapterQuery(hid, listtype, optlangid, page)
+	local params = {}
+
+	if optlangid and listtype == 'chapters' then
+		table.insert(params, 'language=' .. optlangid)
+	end
+
+	if listtype == 'chapters' then
+		table.insert(params, 'limit=200')
+		table.insert(params, 'order=desc')
+		table.insert(params, 'page=' .. page)
+		table.insert(params, 'sort=number')
+	end
+
+	local path = '/titles/' .. hid .. '/' .. listtype
+
+	if #params > 0 then
+		path = path .. '?' .. table.concat(params, '&')
+	end
+
+	return path
+end
+
+-- Return language names in defined order
+local function GetLangList()
 	local t = {}
-	for k, v in pairs(Langs) do table.insert(t, v) end
-	table.sort(t)
+	for _, v in ipairs(Langs) do
+		table.insert(t, v[2])
+	end
 	return t
 end
 
+-- Return language key by index
 local function FindLanguage(lang)
-	local t = GetLangList()
-	for i, v in ipairs(t) do
-		if i == lang then
-			lang = v
-			break
-		end
-	end
-	for k, v in pairs(Langs) do
-		if v == lang then return k end
-	end
-	return nil
+	return Langs[lang + 1][1]
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -238,81 +140,232 @@ end
 
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
-	local u = MODULE.RootURL .. DirectoryPagination .. 1
+	local path = DirectoryPagination .. 1
+	local vrf = GenerateVRF(path)
+	local u = API_URL .. path .. '&vrf=' .. vrf
 
 	if not HTTP.GET(u) then return net_problem end
 
-	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//ul[@class="pagination"]/li[last()]/a/@href/substring-after(., "=")')) or 1
+	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('json(*).meta.lastPage')) or 1
 
 	return no_error
 end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1)
+	local path = DirectoryPagination .. (URL + 1)
+	local vrf = GenerateVRF(path)
+	local u = API_URL .. path .. '&vrf=' .. vrf
 
 	if not HTTP.GET(u) then return net_problem end
 
-	CreateTXQuery(HTTP.Document).XPathHREFAll('//div[@class="info"]/a', LINKS, NAMES)
+	for v in CreateTXQuery(HTTP.Document).XPath('json(*).items()').Get() do
+		LINKS.Add(v.GetProperty('url').ToString())
+		NAMES.Add(v.GetProperty('title').ToString())
+	end
 
 	return no_error
 end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local u = MaybeFillHost(MODULE.RootURL, URL)
+	local hid = URL:match('%.(%w+)$') or URL:match('/(%w+)%-')
+	local vrf = GenerateVRF('/titles/' .. hid)
+	local u = API_URL .. '/titles/' .. hid .. '?vrf=' .. vrf
 
-	if not HTTP.GET(u) then return net_problem end
+	if not HTTP.GET(u) then	return net_problem end
 
-	local x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//h1')
-	MANGAINFO.AltTitles = x.XPathString('//div[@class="manga-detail"]//h6')
-	MANGAINFO.CoverLink = x.XPathString('(//div[@class="poster"])[1]//img/@src')
-	MANGAINFO.Authors   = x.XPathStringAll('//div[@class="meta"]/div[./span="Author:"]/span/a')
-	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="meta"]/div[./span="Genres:"]/span/a')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@class="info"]/p'), 'Releasing', 'Completed', 'On_hiatus', 'Discontinued')
-	MANGAINFO.Summary   = x.XPathString('string-join(//div[@class="modal-content p-4"]/text(), "\r\n")')
+	local x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
+	local info = x.XPath('json(*).data')
+	MANGAINFO.Title     = x.XPathString('title', info)
+	MANGAINFO.AltTitles = x.XPathString('string-join(altTitles?*, ", ")', info)
+	MANGAINFO.CoverLink = x.XPathString('poster?large', info)
+	MANGAINFO.Authors   = x.XPathString('string-join(authors?*?title, ", ")', info)
+	MANGAINFO.Artists   = x.XPathString('string-join(artists?*?title, ", ")', info)
+	MANGAINFO.Genres    = x.XPathString('string-join((genres?*?title, themes?*?title, demographics?*?title), ", ")', info)
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status', info), 'releasing', 'finished', 'on_hiatus', 'discontinued')
 
-	local listtype     = {'chapter', 'volume'}
-	local sel_listtype = (MODULE.GetOption('listtype') or 0) + 1
-	local optlang      = MODULE.GetOption('lang')
-	local optlangid    = FindLanguage(optlang)
+	local synopsis = x.XPathString('synopsisHtml', info)
+	if synopsis ~= '' then
+		MANGAINFO.Summary = CreateTXQuery(synopsis).XPathString('string-join(//text(), "\r\n")')
+	end
+	local slug = x.XPathString('slug', info)
 
-	if optlangid == nil then langparam = '' else langparam = optlangid end
-	local vrf = GenerateVRF(URL:match('%.(.-)$') .. '@' .. listtype[sel_listtype] .. '@' .. langparam)
+	MODULE.Storage['chaptertype'] = ({nil, 'official', 'unofficial'})[(MODULE.GetOption('chaptertype') or 0) + 1]
+	MODULE.Storage['listtype']    = ({'chapters', 'volumes'})[(MODULE.GetOption('listtype') or 0) + 1]
+	local optlang                 = MODULE.GetOption('lang')
+	local optlangid               = FindLanguage(optlang)
 
-	if not HTTP.GET(MODULE.RootURL .. '/ajax/read/' .. URL:match('%.(.-)$') .. '/' .. listtype[sel_listtype] .. '/' .. langparam .. '?vrf=' .. vrf) then return net_problem end
+	::fetch_start::
 
-	local s = HTTP.Document.ToString()
-	if s:sub(1, 1) == '<' then print('VRF value mismatch') return no_error end
-	x.ParseHTML(require 'utils.json'.decode(s).result.html)
-	for v in x.XPath('//a').Get() do
-		MANGAINFO.ChapterLinks.Add(v.GetAttribute('data-id'))
-		MANGAINFO.ChapterNames.Add(x.XPathString('text()', v))
+	local deduplicate  = MODULE.GetOption('deduplicatechapters')
+	local chapter_map  = {}
+	local chapter_list = {}
+	local has_integer  = {}
+	local raw_chapters = {}
+
+	local page = 1
+	local pages = nil
+	while true do
+		local path = BuildChapterQuery(hid, MODULE.Storage['listtype'], optlangid, page)
+		local vrf = GenerateVRF(path)
+		if not HTTP.GET(API_URL .. path .. (path:find('?', 1, true) and '&vrf=' or '?vrf=') .. vrf) then return net_problem end
+
+		local x = CreateTXQuery(HTTP.Document)
+		for v in x.XPath('json(*).items()').Get() do
+			local cid    = v.GetProperty('id').ToString()
+			local number = v.GetProperty('number').ToString()
+			local name   = v.GetProperty('name').ToString()
+			local ctype  = v.GetProperty('type').ToString()
+			local lang   = v.GetProperty('language').ToString()
+
+			if optlangid and optlangid ~= lang then
+				goto continue
+			end
+
+			if MODULE.Storage['chaptertype'] ~= '' and MODULE.Storage['chaptertype'] ~= ctype then
+				goto continue
+			end
+
+			if not deduplicate then
+				local chapter_name = (MODULE.Storage['listtype'] == 'chapters') and 'Ch. ' .. number or 'Vol. ' .. number
+				if name ~= '' then
+					chapter_name = chapter_name .. ' - ' .. name
+				end
+
+				if ctype == 'official' then
+					chapter_name = chapter_name .. ' (Official)'
+				end
+
+				lang = not optlangid and ' [' .. lang .. ']' or ''
+
+				MANGAINFO.ChapterLinks.Add(hid .. '/' .. slug .. '/' .. cid)
+				MANGAINFO.ChapterNames.Add(chapter_name .. lang)
+			else
+				table.insert(raw_chapters, {
+					cid = cid, number = number, name = name,
+					ctype = ctype, lang = lang
+				})
+			end
+
+			::continue::
+		end
+
+		if not pages then
+			pages = tonumber(x.XPathString('json(*).meta.lastPage')) or 1
+		end
+		if page >= pages then break end
+		page = page + 1
+	end
+
+	if deduplicate then
+		for _, ch in ipairs(raw_chapters) do
+			if not ch.number:find('%.') then
+				has_integer[ch.number] = true
+			end
+		end
+
+		for _, ch in ipairs(raw_chapters) do
+			local base = ch.number:match('^(%d+)')
+			local key = (ch.ctype ~= 'official' and base and has_integer[base]) and base or ch.number
+			local current = chapter_map[key]
+
+			if not current then
+				chapter_map[key] = ch
+				table.insert(chapter_list, key)
+			elseif ch.ctype == 'official' and current.ctype ~= 'official' then
+				chapter_map[key] = ch
+			end
+		end
+
+		for _, key in ipairs(chapter_list) do
+			local ch = chapter_map[key]
+
+			local chapter_name = (MODULE.Storage['listtype'] == 'chapters') and 'Ch. ' .. ch.number or 'Vol. ' .. ch.number
+			if ch.name ~= '' then
+				chapter_name = chapter_name .. ' - ' .. ch.name
+			end
+
+			if ch.ctype == 'official' then
+				chapter_name = chapter_name .. ' (Official)'
+			end
+
+			local lang_suffix = not optlangid and ' [' .. ch.lang .. ']' or ''
+
+			MANGAINFO.ChapterLinks.Add(hid .. '/' .. slug .. '/' .. ch.cid)
+			MANGAINFO.ChapterNames.Add(chapter_name .. lang_suffix)
+		end
+	end
+	if MANGAINFO.ChapterLinks.Count == 0 and MODULE.Storage['listtype'] == 'volumes' then
+		MODULE.Storage['listtype'] = 'chapters'
+		goto fetch_start
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local listtype     = {'chapter', 'volume'}
-	local sel_listtype = (MODULE.GetOption('listtype') or 0) + 1
-	local vrf = GenerateVRF(listtype[sel_listtype] .. '@' .. URL:match('/(.-)$'))
-
-	local u = MODULE.RootURL .. '/ajax/read/' .. listtype[sel_listtype] .. URL .. '?vrf=' .. vrf
+	local cid = URL:match('/(%d+)$')
+	local path = '/' .. MODULE.Storage['listtype'] .. '/' .. cid
+	local vrf = GenerateVRF(path)
+	local u = API_URL .. path .. '?vrf=' .. vrf
 
 	if not HTTP.GET(u) then return false end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).result.images()(1)', TASK.PageLinks)
+	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).data.pages().url', TASK.PageLinks)
 
 	return true
 end
 
 -- Prepare the URL, http header and/or http cookies before downloading an image.
 function BeforeDownloadImage()
-	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+	HTTP.Headers.Values['Referer'] = MaybeFillHost(MODULE.RootURL, TASK.ChapterLinks[TASK.CurrentDownloadChapterPtr])
 
 	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = '23eb3a472201427e8824ecdd5223bad7'
+	m.Name                     = 'MangaFire'
+	m.RootURL                  = RootURL
+	m.Category                 = 'English'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
+	m.SortedList               = true
+
+	local slang = require 'fmd.env'.SelectedLanguage
+	local translations = {
+		['en'] = {
+			['lang'] = 'Language:',
+			['listtype'] = 'List type:',
+			['ltype'] = 'Chapter\nVolume',
+			['chaptertype'] = 'Chapter type:',
+			['ctype'] = 'All\nOfficial\nUnofficial',
+			['deduplicatechapters'] = 'Deduplicate chapters (prefer official)'
+		},
+		['id_ID'] = {
+			['lang'] = 'Bahasa:',
+			['listtype'] = 'Tipe daftar:',
+			['ltype'] = 'Bab\nJilid',
+			['chaptertype'] = 'Tipe bab:',
+			['ctype'] = 'Semua\nResmi\nTidak resmi',
+			['deduplicatechapters'] = 'Hapus bab ganda (utamakan bab resmi)'
+		}
+	}
+	local lang = translations[slang] or translations.en
+	local items = table.concat(GetLangList(), '\r\n')
+	m.AddOptionComboBox('lang', lang.lang, items, 1)
+	m.AddOptionComboBox('listtype', lang.listtype, lang.ltype, 0)
+	m.AddOptionComboBox('chaptertype', lang.chaptertype, lang.ctype, 0)
+	m.AddOptionCheckBox('deduplicatechapters', lang.deduplicatechapters, false)
 end

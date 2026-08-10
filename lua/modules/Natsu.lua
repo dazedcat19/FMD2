@@ -17,7 +17,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.NatsuId'
+local Template = require 'templates.KiruBase'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions

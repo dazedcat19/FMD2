@@ -31,7 +31,6 @@ type
   public
     Path,
     FileName: String;
-    MetaData: String;
     Format: TPackerFormat;
     CompressionQuality: Cardinal;
     function Execute: Boolean;
@@ -87,24 +86,6 @@ begin
   end;
 
   Result := FileExists(FSavedFileName);
-  if Result then
-  begin
-    with TUnZipper.Create do
-    begin
-      try
-         FileName := FSavedFileName;
-         Examine;
-         Result := FileList.Count = Entries.Count;
-
-         if not Result then
-         begin
-           Logger.SendWarning('Some files failed to be compressed!');
-         end;
-      finally
-        Free;
-      end;
-    end;
-  end;
 end;
 
 Function MaybeQuoteIfNotQuoted(Const S : TProcessString) : TProcessString;
@@ -245,8 +226,6 @@ begin
     try
       epub.Title := GetLastDir(Path);
 
-      if (Metadata <> '') then epub.AddMetadata(Metadata);
-
       for i := 0 to FFileList.Count - 1 do
       begin
         try
@@ -334,7 +313,7 @@ begin
 
   packResult:=True;
   case Format of
-    pfZIP, pfCBZ: packResult:=Do7Zip;
+    pfZIP, pfCBZ: packResult:=DoZipCbz;
     pfPDF: DoPdf;
     pfEPUB: DoEpub;
   end;
@@ -347,12 +326,9 @@ begin
   Result := FileExists(FSavedFileName);
   if Result then
   begin
-    if not (Format in [pfZIP, pfCBZ]) then // let 7za delete the files
+    for i := 0 to FFileList.Count - 1 do
     begin
-      for i := 0 to FFileList.Count - 1 do
-      begin
-        DeleteFile(FFileList[i]);
-      end;
+      DeleteFile(FFileList[i]);
     end;
 
     if IsDirectoryEmpty(Path) then

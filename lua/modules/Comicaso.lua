@@ -12,7 +12,10 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 	m.SortedList               = true
+
+	m.AddOptionEdit('session', 'Session ID:')
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -55,6 +58,7 @@ end
 function GetInfo()
 	local source, slug = URL:match('source=([^&]+).*slug=([^&]+)')
 	local u = MODULE.RootURL .. '/api/manga.php?source=' .. source .. '&slug=' .. slug
+	HTTP.Cookies.Values['comicaso_session'] = MODULE.GetOption('session')
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -72,6 +76,7 @@ function GetInfo()
 	local chapters = {}
 	for v in x.XPath('chapters?*', info).Get() do
 		table.insert(chapters, {
+			token = v.GetProperty('chapter_token').ToString(),
 			slug = v.GetProperty('slug').ToString(),
 			title = v.GetProperty('title').ToString()
 		})
@@ -80,21 +85,35 @@ function GetInfo()
 	table.sort(chapters, function(a, b) return (tonumber(a.slug:match('(%d+)')) or 0) < (tonumber(b.slug:match('(%d+)')) or 0) end)
 
 	for _, chapter in ipairs(chapters) do
-		MANGAINFO.ChapterLinks.Add(source .. '/' .. slug .. '/' .. chapter.slug)
+		local link = source .. '/' .. slug .. '/' .. chapter.slug
+		MODULE.Storage['/' .. link] = chapter.token
+		MANGAINFO.ChapterLinks.Add(link)
 		MANGAINFO.ChapterNames.Add(chapter.title)
 	end
+
+	HTTP.Reset()
+	HTTP.Headers.Values['Referer'] = MANGAINFO.URL
 
 	return no_error
 end
 
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
+	HTTP.Reset()
+	HTTP.Cookies.Values['comicaso_session'] = MODULE.GetOption('session')
 	local source, slug, cid = URL:match('^/([^/]+)/([^/]+)/([^/]+)$')
-	local u = MODULE.RootURL .. '/api/chapter.php?source=' .. source .. '&manga=' .. slug .. '&chapter=' .. cid
+	local u = MODULE.RootURL .. '/api/chapter.php?source=' .. source .. '&manga=' .. slug .. '&chapter=' .. cid .. '&token=' .. MODULE.Storage[URL]
 
 	if not HTTP.GET(u) then return false end
 
 	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).data.images()', TASK.PageLinks)
+
+	return true
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
 
 	return true
 end

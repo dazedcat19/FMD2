@@ -238,6 +238,7 @@ type
     TransferRateToolset: TChartToolset;
     miFavoritesStopCheckNewChapter: TMenuItem;
     miFavoritesCheckNewChapter: TMenuItem;
+    miFavoritesCheckMissingChapters: TMenuItem;
     pnDownloadToolbarLeft: TPanel;
     pnDownloadToolbar: TPanel;
     TransferRateGraphArea: TAreaSeries;
@@ -581,6 +582,7 @@ type
     procedure miDownloadDeleteTaskClick(Sender: TObject);
     procedure miDownloadMergeCompletedClick(Sender: TObject);
     procedure miFavoritesCheckNewChapterClick(Sender: TObject);
+    procedure miFavoritesCheckMissingChaptersClick(Sender: TObject);
     procedure miFavoritesDownloadAllClick(Sender: TObject);
     procedure miFavoritesStopCheckNewChapterClick(Sender: TObject);
     procedure miFavoritesViewInfosClick(Sender: TObject);
@@ -958,6 +960,8 @@ resourcestring
   RS_DlgRemoveItem = 'Are you sure you want to delete this item(s)?';
   RS_DlgRemoveTask = 'Are you sure you want to delete the task(s)?';
   RS_DlgRemoveFavorite = 'Are you sure you want to delete the favorite(s)?';
+  RS_DlgMoveSaveToFiles = 'Files exist in the current save location.'#13#10'Do you want to move them to the new location?';
+  RS_DlgMoveSaveToFilesMulti = 'Some favorites have files in their current save locations.'#13#10'Do you want to move them to the new locations?';
   RS_DlgURLNotSupport = 'URL not supported!';
   RS_DlgUpdaterIsRunning = 'Updater is running!';
   RS_DlgTypeInNewChapter = 'Type in new chapter:';
@@ -2396,6 +2400,24 @@ begin
   end;
 end;
 
+procedure TMainForm.miFavoritesCheckMissingChaptersClick(Sender: TObject);
+var
+  xNode: PVirtualNode;
+begin
+  if vtFavorites.SelectedCount > 0 then
+  begin
+    xNode := vtFavorites.GetFirstSelected;
+    repeat
+      if Assigned(xNode) then
+      begin
+        FavoriteManager.CheckForMissingChapters(xNode^.Index);
+        xNode := vtFavorites.GetNextSelected(xNode);
+      end;
+    until xNode = nil;
+    vtFavorites.Repaint;
+  end;
+end;
+
 procedure TMainForm.miFavoritesDownloadAllClick(Sender: TObject);
 var
   i: Integer;
@@ -2740,7 +2762,6 @@ begin
               Status := STATUS_WAIT;
             end;
             DownloadInfo.ModuleID := mangaInfo.ModuleID;
-            DownloadInfo.MangaPtr := mangaInfo;
             DownloadInfo.Link := mangaInfo.Link;
             DownloadInfo.Title := mangaInfo.Title;
             DownloadInfo.DateAdded := Now;
@@ -3526,11 +3547,46 @@ begin
   vtFavoritesFilterCountChange;
 end;
 
+function DirHasContent(const Dir: String): Boolean;
+var
+  SR: TSearchRec;
+begin
+  Result := False;
+  if FindFirstUTF8(IncludeTrailingPathDelimiter(Dir) + '*', faAnyFile, SR) = 0 then
+  try
+    repeat
+      if (SR.Name <> '.') and (SR.Name <> '..') then
+      begin
+        Result := True;
+        Break;
+      end;
+    until FindNextUTF8(SR) <> 0;
+  finally
+    FindCloseUTF8(SR);
+  end;
+end;
+
+procedure MoveSaveDir(const OldDir, NewDir: String);
+var
+  Src, Dst: String;
+begin
+  Src := ChompPathDelim(OldDir);
+  Dst := ChompPathDelim(NewDir);
+  if Src = Dst then Exit;
+  if not DirectoryExistsUTF8(Dst) then
+    if RenameFileUTF8(Src, Dst) then Exit;
+  if CopyDirTree(Src, Dst, [cffOverwriteFile, cffPreserveTime]) then
+    DeleteDirectory(Src, False);
+end;
+
 procedure TMainForm.miFavoritesChangeSaveToClick(Sender: TObject);
 var
   s: String;
   s1: String;
   s2: String;
+  oldSaveTo: String;
+  bAnyFiles: Boolean;
+  bMoveFiles: Boolean;
   Node: PVirtualNode;
   F: TFavoriteContainer;
 begin
@@ -3554,6 +3610,7 @@ begin
     
     if s <> '' then
     begin
+      oldSaveTo := FavoriteManager.Items[vtFavorites.FocusedNode^.Index].FavoriteInfo.SaveTo;
       FavoriteManager.Lock;
       try
         F:=FavoriteManager.Items[vtFavorites.FocusedNode^.Index];
@@ -3561,6 +3618,16 @@ begin
         F.DBUpdateSaveTo;
       finally
         FavoriteManager.UnLock;
+      end;
+      if (s <> oldSaveTo) and DirectoryExistsUTF8(oldSaveTo) then
+      begin
+        if DirHasContent(oldSaveTo) then
+        begin
+          if CenteredMessageDlg(Self, RS_DlgMoveSaveToFiles, mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+            MoveSaveDir(oldSaveTo, s);
+        end
+        else
+          RemoveDirUTF8(oldSaveTo);
       end;
       UpdateVtFavorites;
       FavoriteManager.Backup;
@@ -3578,12 +3645,32 @@ begin
     
     if s <> '' then
     begin
+      bAnyFiles := False;
+      FavoriteManager.Lock;
+      try
+        Node := vtFavorites.GetFirstSelected();
+        while Assigned(Node) do
+        begin
+          F := FavoriteManager.Items[Node^.Index];
+          if DirectoryExistsUTF8(F.FavoriteInfo.SaveTo) and DirHasContent(F.FavoriteInfo.SaveTo) then
+          begin
+            bAnyFiles := True;
+            Break;
+          end;
+          Node := vtFavorites.GetNextSelected(Node);
+        end;
+      finally
+        FavoriteManager.UnLock;
+      end;
+      bMoveFiles := bAnyFiles and
+        (CenteredMessageDlg(Self, RS_DlgMoveSaveToFilesMulti, mtConfirmation, [mbYes, mbNo], 0) = mrYes);
       FavoriteManager.Lock;
       try
         Node := vtFavorites.GetFirstSelected();
         while Assigned(Node) do
         begin
           F:=FavoriteManager.Items[Node^.Index];
+          oldSaveTo := F.FavoriteInfo.SaveTo;
           s1 := '';
           s2 := '';
           if (length(s) = 2) and (pos(':', s) > 0) then
@@ -3604,6 +3691,16 @@ begin
               F.FavoriteInfo.SaveTo := s + s2
             else
               F.FavoriteInfo.SaveTo := s + '\' + s2;
+          end;
+          if (oldSaveTo <> F.FavoriteInfo.SaveTo) and DirectoryExistsUTF8(oldSaveTo) then
+          begin
+            if DirHasContent(oldSaveTo) then
+            begin
+              if bMoveFiles then
+                MoveSaveDir(oldSaveTo, F.FavoriteInfo.SaveTo);
+            end
+            else
+              RemoveDirUTF8(oldSaveTo);
           end;
           F.DBUpdateSaveTo;
           Node := vtFavorites.GetNextSelected(Node);

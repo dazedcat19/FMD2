@@ -45,9 +45,9 @@ function GetInfo()
 	if not HTTP.GET(u) then return net_problem end
 
 	local x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//div[@class="md:col-span-2 space-y-4"]/h1')
-	MANGAINFO.AltTitles	= x.XPathString('//div[@class="md:col-span-2 space-y-4"]/h2')
-	MANGAINFO.CoverLink = x.XPathString('//meta[@property="og:image"]/@content')
+	MANGAINFO.Title     = x.XPathString('//div[@class="md:col-span-3 space-y-4"]/h1')
+	MANGAINFO.AltTitles	= x.XPathString('//div[@class="md:col-span-3 space-y-4"]/h2')
+	MANGAINFO.CoverLink = x.XPathString('//div[contains(@class,"md:col-span-2")]/img/@src')
 	MANGAINFO.Authors   = x.XPathString('//div[./span="Autor:"]/span[2]')
 	MANGAINFO.Genres    = x.XPathStringAll('(//div[./span="Géneros:"]/div/span, //div[./span="Tipo:"]/span[2])')
 	MANGAINFO.Summary   = x.XPathString('//p[contains(@class, "text-zinc-900")]')
@@ -64,13 +64,15 @@ function GetPageNumber()
 
 	if not HTTP.GET(u) then return false end
 
-    local body = HTTP.Document.ToString():gsub('\\"', '"')
+	local x = CreateTXQuery(HTTP.Document)
+	local script = x.XPathString('//script[contains(text(),"pages")]/text()'):gsub('\\"', '"'):gsub('\\\\', '\\')
+	local pages = script:match('"pages"%s*:%s*%[(.-)%]')
 
-    for url in body:gmatch('"src":"(http.-)"') do
-		if not url:match('/blob%.') then
+	if pages then
+		for url in pages:gmatch('"([^"]+)"') do
 			TASK.PageLinks.Add(url)
 		end
-    end
+	end
 
     return true
 end
