@@ -504,7 +504,7 @@ function MergeCaseInsensitive(Strs: array of TStrings): String; overload;
 function URLDecode(const s: String): String;
 function HTMLDecode(const AStr: String): String;
 
-function RemoveSymbols(const input: String; KeepPathDelim: Boolean = False): String;
+function RemoveSymbols(const input: String): String;
 function SanitizeFilePath(const InputPath: String): String;
 function CorrectPathSys(const Path: String): String;
 function RemovePathDelim(const Path: string): string;
@@ -1359,7 +1359,7 @@ begin
   SetLength(Result, Rp - PChar(Result));
 end;
 
-function RemoveSymbols(const input: String; KeepPathDelim: Boolean = False): String;
+function RemoveSymbols(const input: String): String;
 var
   i, j: Integer;
 begin
@@ -1374,7 +1374,7 @@ begin
   j := 1;
   for i := 1 to Length(input) do
   begin
-    if not CharInSet(input[i], Symbols) OR (KeepPathDelim AND CharInSet(input[i], PathSymbols))then
+    if not CharInSet(input[i], Symbols) then
     begin
       Result[j] := input[i];
       Inc(j);
@@ -1385,6 +1385,11 @@ begin
 end;
 
 function SanitizeFilePath(const InputPath: String): String;
+var
+  sanitizedPath,
+  pathDrive: String;
+  pathParts: TStringArray;
+  i: Integer;
 begin
   Result := InputPath;
 
@@ -1393,9 +1398,21 @@ begin
     Exit;
   end;
 
-  Result := SetDirSeparators(Result);
-  Result := ResolveDots(Result);
-  Result := RemoveSymbols(Result, True);
+  sanitizedPath := SetDirSeparators(InputPath);
+  sanitizedPath := ResolveDots(sanitizedPath);
+  pathDrive := ExtractFileDrive(sanitizedPath);
+  pathParts := sanitizedPath.Split(PathDelim);
+
+  for i := 0 to Length(pathParts) - 1 do
+  begin
+    if pathParts[i] <> pathDrive then
+    begin
+      pathParts[i] := RemoveSymbols(pathParts[i]);
+    end;
+  end;
+
+  sanitizedPath := String.Join(PathDelim, pathParts);
+  Result := sanitizedPath;
 end;
 
 procedure TrimStrings(TheStrings: TStrings);
