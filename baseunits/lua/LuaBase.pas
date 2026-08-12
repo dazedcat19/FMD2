@@ -48,6 +48,7 @@ uses
   LuaImagePuzzle,
   LuaMangaFox,
   LuaLogger,
+  LuaQuickJS,
   LuaSubprocess;
 
 function luabase_print(L: Plua_State): Integer; cdecl;
