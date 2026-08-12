@@ -118,18 +118,18 @@ end
 function GetInfo()
 	local mid = URL:match('^/[^/]+/([^-]+)')
 	local u = MODULE.RootURL .. API_URL
-	local s = '{"query":"query get_comicNode($id: ID!) { get_comicNode(id: $id) { data { name translatedLanguage altNames urlCover authors artists genres originalStatus uploadStatus summary extraInfo } } }","variables":{"id":"' .. mid .. '"}}'
+	local s = '{"query":"query get_comicNode($id: ID!) { get_comicNode(id: $id) { data { name translatedLanguage altNames urlCover authorNodes { data { name } } artistNodes { data { name } } genres originalStatus uploadStatus summary { text } extraInfo { text } } } }","variables":{"id":"' .. mid .. '"}}'
 	HTTP.MimeType = 'application/json'
 
 	if not HTTP.POST(u, s) then return net_problem end
-
+HTTP.Document.SaveToFile('info.html')
 	local x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
 	local info = x.XPath('parse-json(.)?data?get_comicNode?data')
 	MANGAINFO.Title     = x.XPathString('name', info) .. GetLanguageCodeSuffix(x.XPathString('translatedLanguage', info))
 	MANGAINFO.AltTitles = x.XPathString('string-join(altNames?*, ", ")', info)
 	MANGAINFO.CoverLink = MaybeFillHost(MODULE.RootURL, x.XPathString('urlCover', info))
-	MANGAINFO.Authors   = x.XPathString('string-join(authors?*, ", ")', info)
-	MANGAINFO.Artists   = x.XPathString('string-join(artists?*, ", ")', info)
+	MANGAINFO.Authors   = x.XPathString('string-join(authorNodes?*?data?name, ", ")', info)
+	MANGAINFO.Artists   = x.XPathString('string-join(artistNodes?*?data?name, ", ")', info)
 
 	local genres = {}
 	local seen = {}
@@ -146,12 +146,12 @@ function GetInfo()
 	if status == '' then status = x.XPathString('originalStatus', info) end
 	MANGAINFO.Status = MangaInfoStatusIfPos(status)
 
-	local summary = x.XPathString('summary', info)
+	local summary = x.XPathString('summary?text', info)
 	if summary ~= '' then
 		MANGAINFO.Summary = CreateTXQuery(summary).XPathString('string-join(//text(), "\r\n")')
 	end
 
-	local extra_info = x.XPathString('extraInfo', info)
+	local extra_info = x.XPathString('extraInfo?text', info)
 	if extra_info ~= '' then
 		MANGAINFO.Summary = MANGAINFO.Summary .. '\r\n \r\nExtra Info:\r\n' .. extra_info
 	end
