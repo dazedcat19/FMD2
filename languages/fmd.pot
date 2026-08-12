@@ -1080,6 +1080,11 @@ msgstr ""
 msgid "Enable live search (slow on long list)"
 msgstr ""
 
+#: tmainform.cboptionmangaloadaddtolist.caption
+msgctxt "tmainform.cboptionmangaloadaddtolist.caption"
+msgid "Enable add manga to manga list after info load"
+msgstr ""
+
 #: tmainform.cboptionminimizeonstart.caption
 msgid "Minimize on start"
 msgstr ""

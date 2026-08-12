@@ -1150,6 +1150,11 @@ msgstr "Auto Generar Carpeta Basado en Nombre del Manga"
 msgid "Enable live search (slow on long list)"
 msgstr "Habilitar Búsqueda en Directo (Lento en Lista Larga)"
 
+#: tmainform.cboptionmangaloadaddtolist.caption
+msgctxt "tmainform.cboptionmangaloadaddtolist.caption"
+msgid "Enable add manga to manga list after info load"
+msgstr ""
+
 #: tmainform.cboptionminimizeonstart.caption
 msgid "Minimize on start"
 msgstr "Minimizar al Iniciar"

@@ -1155,6 +1155,11 @@ msgstr "Auto generate folder based on manga's name"
 msgid "Enable live search (slow on long list)"
 msgstr "Enable live search (slow on long list)"
 
+#: tmainform.cboptionmangaloadaddtolist.caption
+msgctxt "tmainform.cboptionmangaloadaddtolist.caption"
+msgid "Enable add manga to manga list after info load"
+msgstr ""
+
 #: tmainform.cboptionminimizeonstart.caption
 msgid "Minimize on start"
 msgstr "Minimize on start"

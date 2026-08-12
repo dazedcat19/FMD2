@@ -37,7 +37,7 @@ type
     FFillSaveTo: Boolean;
   protected
     procedure Execute; override;
-    procedure MainThreadSyncAddInfos;
+    procedure MainThreadAddInfos;
     procedure MainThreadShowInfos;
     procedure MainThreadShowCover;
     procedure MainThreadShowCannotGetInfo;
@@ -54,7 +54,7 @@ implementation
 uses
   frmMain, frmCustomMessageDlg, uVars;
 
-procedure TGetMangaInfosThread.MainThreadSyncAddInfos;
+procedure TGetMangaInfosThread.MainThreadAddInfos;
 var
   tempDataProcess: TDBDataProcess;
   data: PMangaInfoData;
@@ -261,7 +261,10 @@ begin
         Synchronize(MainThreadShowCover);
       end;
 
-      MainThreadSyncAddInfos;
+      if FMDOptions.General.MangaLoadAddToList then
+      begin
+        MainThreadAddInfos;
+      end;
     end;
   except
     on E: Exception do

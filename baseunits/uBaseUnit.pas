@@ -641,7 +641,7 @@ procedure SendLogException(const AText: String; AException: Exception); inline;
 implementation
 
 uses
-  frmMain, WebsiteModules, webp, DCPrijndael, DCPsha512, FPWriteJPEG;
+  frmMain, uVars, WebsiteModules, webp, DCPrijndael, DCPsha512, FPWriteJPEG;
 
 {$IFDEF WINDOWS}
 // thanks Leledumbo for the code
@@ -1509,10 +1509,12 @@ begin
   if Length(s) > MAX_PATHDIR then
   begin
     s := MainForm.CheckLongNamePaths(s);
-    if not OptionLongNamePaths then
+
+    if not FMDOptions.General.LongNamePaths then
     begin
       SetLength(s, MAX_PATHDIR);
     end;
+
     Result := UTF8Encode(s);
   end;
   {$ELSE}

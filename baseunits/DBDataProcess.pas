@@ -203,7 +203,7 @@ procedure OverwriteDBDataProcess(const AWebsite, NWebsite: String);
 implementation
 
 uses
-  uBaseUnit, WebsiteModules, frmMain;
+  uBaseUnit, uVars, WebsiteModules, frmMain;
 
 function NaturalCompareCallback({%H-}user: pointer; len1: longint;
   data1: pointer; len2: longint; data2: pointer): longint; cdecl;
@@ -1260,7 +1260,7 @@ begin
     FConn.Close;
     FConn.DatabaseName := '';
 
-    if FSorted and MainForm.cbOptionVacuumDatabasesOnExit.Checked then
+    if FSorted and FMDOptions.General.DBVacuumExit then
     begin
       TDBVacuumThread.Create(databaseName, FWebsite);
     end;

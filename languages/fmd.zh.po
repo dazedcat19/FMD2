@@ -1151,6 +1151,11 @@ msgstr "根据漫画名称自动生成文件夹"
 msgid "Enable live search (slow on long list)"
 msgstr "启用实时搜索（长列表时速度较慢）"
 
+#: tmainform.cboptionmangaloadaddtolist.caption
+msgctxt "tmainform.cboptionmangaloadaddtolist.caption"
+msgid "Enable add manga to manga list after info load"
+msgstr ""
+
 #: tmainform.cboptionminimizeonstart.caption
 msgid "Minimize on start"
 msgstr "启动时最小化"

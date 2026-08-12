@@ -1151,6 +1151,11 @@ msgstr "Klasörü manga adına göre otomatik oluştur"
 msgid "Enable live search (slow on long list)"
 msgstr "Canlı taramayı etkinleştir (kalabalık listelerde yavaş)"
 
+#: tmainform.cboptionmangaloadaddtolist.caption
+msgctxt "tmainform.cboptionmangaloadaddtolist.caption"
+msgid "Enable add manga to manga list after info load"
+msgstr ""
+
 #: tmainform.cboptionminimizeonstart.caption
 msgid "Minimize on start"
 msgstr "Başlangıça küçült"

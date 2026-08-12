@@ -55,6 +55,7 @@ type
     cbOptionAutoCheckFavRemoveCompletedManga: TCheckBox;
     cbOptionAutoOpenFavStartup: TCheckBox;
     cbOptionDeleteCompletedTasksOnClose: TCheckBox;
+    cbOptionMangaLoadAddToList: TCheckBox;
     cbOptionSortDownloadsOnNewTasks: TCheckBox;
     cbOptionShowFavoritesTabOnNewManga: TCheckBox;
     cbOptionShowDownloadsTabOnNewTasks: TCheckBox;
@@ -1254,7 +1255,6 @@ begin
   isUpdating := False;
   isPendingExitCounter := False;
   isNormalExit := False;
-  DoAfterFMD := DO_NOTHING;
   Application.HintHidePause := 10000;
 
   ForceDirectoriesUTF8(USERDATA_FOLDER);
@@ -1397,6 +1397,9 @@ begin
     Application.ShowMainForm := False;
   end;
 
+  // options
+  FMDOptions := TOptions.Create;
+
   LoadFormInformation;
   CollectLanguagesFromFiles;
   ApplyLanguage;
@@ -1452,8 +1455,8 @@ end;
 
 procedure TMainForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
-  if (END_SESSION = False) and
-    (cbOptionShowQuitDialog.Checked and (DoAfterFMD = DO_NOTHING) and (not OptionRestartFMD)) then
+  if (END_SESSION = False) and (cbOptionShowQuitDialog.Checked and
+     (FMDOptions.General.CheckAfterFMDDo(DO_NOTHING)) and (not OptionRestartFMD)) then
   begin
     if CenteredMessageDlg(Self, RS_DlgQuit, mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
     begin
@@ -1471,7 +1474,7 @@ end;
 
 procedure TMainForm.CloseNow;
 begin
-  if OptionDeleteCompletedTasksOnClose then
+  if FMDOptions.General.DelCompltdDLOnClose then
   begin
     miDownloadDeleteCompletedClick(nil);
   end;
@@ -1602,6 +1605,8 @@ begin
   FavoriteManager.Free;
   dataProcess.Free;
 
+  FMDOptions.Destroy;
+
   SetLength(ChapterList, 0);
   mangaInfo.Free;
   gifWaiting.Free;
@@ -1625,7 +1630,7 @@ procedure TMainForm.FormWindowStateChange(Sender: TObject);
 begin
   if (WindowState = wsMinimized) then
   begin
-    if cbOptionMinimizeToTray.Checked then
+    if FMDOptions.General.MinToTray then
     begin
       ShowInTaskBar := stNever;
       Hide;
@@ -1644,10 +1649,19 @@ var
   Node, FNode: PVirtualNode;
   c: array of TCheckState;
 begin
-  if not (Sender is TMenuItem) then Exit;
-  if TMenuItem(Sender).Checked then Exit;
+  if not (Sender is TMenuItem) then
+  begin
+    Exit;
+  end;
+
+  if TMenuItem(Sender).Checked then
+  begin
+    Exit;
+  end;
+
+  FMDOptions.General.SortChptrListAsc := miChapterListAscending.Checked;
+
   TMenuItem(Sender).Checked := True;
-  settingsfile.WriteBool('general', 'SortChapterListAscending', miChapterListAscending.Checked);
   if Length(ChapterList) <> 0 then
   begin
     // invert chapterlist
@@ -2047,7 +2061,7 @@ begin
   with TShutdownCounterForm.Create(nil) do
   begin
     try
-      case DoAfterFMD of
+      case FMDOptions.General.AfterFMDDo of
         DO_POWEROFF:
           begin
             WaitTimeout := 60;
@@ -2065,6 +2079,7 @@ begin
           end;
         else;
       end;
+
       Result := (ShowModal = mrOK);
     finally
       Free;
@@ -2173,33 +2188,36 @@ procedure TMainForm.tmExitCommandTimer(Sender: TObject);
 begin
   tmExitCommand.Enabled := False;
 
-  if DoAfterFMD <> DO_NOTHING then
+  if FMDOptions.General.CheckAfterFMDDo(DO_NOTHING)  then
   begin
-    if DoAfterFMD in [DO_POWEROFF, DO_HIBERNATE, DO_EXIT] then
-    begin
-      if ShowExitCounter then
-      begin
-        Self.CloseNow;
-        if DoAfterFMD = DO_POWEROFF then
-        begin
-          fmdPowerOff;
-        end
-        else if DoAfterFMD = DO_HIBERNATE then
-        begin
-          fmdHibernate;
-        end;
+    Exit;
+  end;
 
-        Self.Close;
-      end;
-    end
-    else if DoAfterFMD = DO_UPDATE then
+  if FMDOptions.General.CheckAfterFMDDo([DO_POWEROFF, DO_HIBERNATE, DO_EXIT])  then
+  begin
+    if ShowExitCounter then
     begin
       Self.CloseNow;
+
+      if FMDOptions.General.CheckAfterFMDDo(DO_POWEROFF) then
+      begin
+        fmdPowerOff;
+      end
+      else if FMDOptions.General.CheckAfterFMDDo(DO_HIBERNATE) then
+      begin
+        fmdHibernate;
+      end;
+
       Self.Close;
     end;
-
-    DoAfterFMD := DO_NOTHING;
+  end
+  else if FMDOptions.General.CheckAfterFMDDo(DO_UPDATE) then
+  begin
+    Self.CloseNow;
+    Self.Close;
   end;
+
+  FMDOptions.General.AfterFMDDo := DO_NOTHING;
 end;
 
 procedure TMainForm.tmRefreshDownloadsInfoStartTimer(Sender: TObject);
@@ -2382,10 +2400,10 @@ begin
   if Sender = miChapterListHideDownloaded then
   begin
     miChapterListHideDownloaded.Checked := not miChapterListHideDownloaded.Checked;
-    settingsfile.WriteBool('general', 'ChapterListHideDownloaded', miChapterListHideDownloaded.Checked);
+    FMDOptions.General.ChptrListHideDwnlded := miChapterListHideDownloaded.Checked;
   end;
 
-  FilterChapterList(edFilterMangaInfoChapters.Text, miChapterListHideDownloaded.Checked);
+  FilterChapterList(edFilterMangaInfoChapters.Text, FMDOptions.General.ChptrListHideDwnlded);
 end;
 
 procedure TMainForm.miDownloadEnableClick(Sender: TObject);
@@ -2428,7 +2446,7 @@ begin
   if Sender = miChapterListHighlight then
   begin
     miChapterListHighlight.Checked := not miChapterListHighlight.Checked;
-    settingsfile.WriteBool('general', 'HighlightDownloadedChapters', miChapterListHighlight.Checked);
+    FMDOptions.General.HghlghtDwnldedChptrs := miChapterListHighlight.Checked;
   end;
 
   if Length(ChapterList) = 0 then
@@ -2436,7 +2454,7 @@ begin
     Exit;
   end;
 
-  if miChapterListHighlight.Checked then
+  if FMDOptions.General.HghlghtDwnldedChptrs then
   begin
     DLManager.GetDownloadedChaptersState(mangaInfo.ModuleID, mangaInfo.Link, ChapterList);
   end
@@ -2702,7 +2720,7 @@ end;
 procedure TMainForm.miHighlightNewMangaClick(Sender: TObject);
 begin
   miHighlightNewManga.Checked := not miHighlightNewManga.Checked;
-  settingsfile.WriteBool('general', 'HighLightNewManga', miHighlightNewManga.Checked);
+  FMDOptions.General.HghlghtNewManga := miHighlightNewManga.Checked;
   vtMangaList.Repaint;
 end;
 
@@ -3020,7 +3038,8 @@ begin
               ChapterNames.Add(names[k]);
               Inc(k);
             end;
-            if cbAddAsStopped.Checked then
+
+            if FMDOptions.General.AddNewDLAsStopped then
             begin
               DownloadInfo.Status := Format('[%d/%d] %s', [0, ChapterLinks.Count, RS_Stopped]);
               Status := STATUS_STOP;
@@ -3030,6 +3049,7 @@ begin
               DownloadInfo.Status := Format('[%d/%d] %s', [0, ChapterLinks.Count, RS_Waiting]);
               Status := STATUS_WAIT;
             end;
+
             DownloadInfo.ModuleID := mangaInfo.ModuleID;
             DownloadInfo.Link := mangaInfo.Link;
             DownloadInfo.Title := mangaInfo.Title;
@@ -3042,7 +3062,8 @@ begin
         finally
           DLManager.UnLock;
         end;
-        if OptionSortDownloadsOnNewTasks then
+
+        if FMDOptions.General.SortDLAddNew then
         begin
           DLManager.Sort(DLManager.SortColumn);
         end;
@@ -3234,7 +3255,7 @@ end;
 
 procedure TMainForm.cbAddAsStoppedChange(Sender: TObject);
 begin
-  settingsfile.WriteBool('general', 'AddAsStopped', cbAddAsStopped.Checked);
+  FMDOptions.General.AddNewDLAsStopped := cbAddAsStopped.Checked;
 end;
 
 procedure TMainForm.cbOptionAutoCheckFavIntervalChange(Sender: TObject);
@@ -3575,7 +3596,7 @@ end;
 
 procedure TMainForm.edFilterMangaInfoChaptersChange(Sender: TObject);
 begin
-  FilterChapterList(edFilterMangaInfoChapters.Text, miChapterListHideDownloaded.Checked);
+  FilterChapterList(edFilterMangaInfoChapters.Text, FMDOptions.General.ChptrListHideDwnlded);
 end;
 
 procedure TMainForm.edLogFileNameButtonClick(Sender: TObject);
@@ -3616,7 +3637,7 @@ procedure TMainForm.HandleApplicationEndSession(Sender: TObject);
 begin
   try
     END_SESSION := True;
-    DoAfterFMD := DO_NOTHING;
+    FMDOptions.General.AfterFMDDo := DO_NOTHING;
     OptionRestartFMD := False;
     Close;
   finally
@@ -3713,7 +3734,7 @@ begin
       edFilterArtists.Text,
       IntToStr(cbFilterStatus.ItemIndex),
       edFilterSummary.Text,
-      OptionNewMangaTime,
+      FMDOptions.General.MangaDaysNew,
       rbAll.Checked,
       cbOnlyNew.Checked) then
     begin
@@ -3735,7 +3756,7 @@ begin
         edFilterArtists.Text,
         IntToStr(cbFilterStatus.ItemIndex),
         edFilterSummary.Text,
-        OptionNewMangaTime,
+        FMDOptions.General.MangaDaysNew,
         rbAll.Checked,
         cbOnlyNew.Checked,
         cbUseRegExpr.Checked);
@@ -4465,8 +4486,7 @@ begin
     Exit;
   end;
 
-  OptionLetFMDDo := TFMDDo(TMenuItem(Sender).Tag);
-  settingsfile.WriteInteger('general', 'LetFMDDo', Integer(OptionLetFMDDo));
+  FMDOptions.General.LetFMDDoAfterFinish := TFMDDo(TMenuItem(Sender).Tag);
 end;
 
 procedure TMainForm.miTrayShowDropBoxClick(Sender: TObject);
@@ -4747,7 +4767,7 @@ begin
   begin
     for i := 0 to Count - 1 do
     begin
-      if Items[i].Tag = Integer(OptionLetFMDDo) then
+      if Items[i].Tag = FMDOptions.General.LetFMDDoAfterFinishInt then
       begin
         Items[i].Checked := True;
         Break;
@@ -5557,9 +5577,9 @@ procedure TMainForm.btOptionApplyClick(Sender: TObject);
 var
   oldOptionMaxParallel: Integer;
 begin
-  SaveOptions(True);
   oldOptionMaxParallel := OptionMaxParallel;
   ApplyOptions;
+  SaveOptions(True);
 
   if OptionMaxParallel > oldOptionMaxParallel then
   begin
@@ -5594,7 +5614,7 @@ begin
     Brush.Color := clNone;
     data := Sender.GetNodeData(Node);
 
-    if miHighlightNewManga.Checked and (data^.JDN > OptionJDNNewMangaTime) then
+    if FMDOptions.General.HghlghtNewManga and (data^.JDN > OptionJDNNewMangaTime) then
     begin
       Brush.Color := CL_MNNewManga;
     end;
@@ -5984,7 +6004,7 @@ end;
 
 function TMainForm.CheckLongNamePaths(APath: String): String;
 begin
-  if OptionLongNamePaths then
+  if FMDOptions.General.LongNamePaths then
   begin
     if Pos('\\?\', APath) = 0 then
     begin
@@ -6279,7 +6299,7 @@ begin
   SetLength(ChapterList, mangaInfo.ChapterNames.Count);
   if Length(ChapterList) <> 0 then
   begin
-    if miChapterListAscending.Checked then
+    if FMDOptions.General.SortChptrListAsc then
     begin
       j := 0;
     end
@@ -6295,7 +6315,7 @@ begin
       ChapterList[i].Link := mangaInfo.ChapterLinks[j];
       ChapterList[i].Downloaded := False;
 
-      if miChapterListAscending.Checked then
+      if FMDOptions.General.SortChptrListAsc then
       begin
         Inc(j);
       end
@@ -6310,7 +6330,7 @@ begin
   UpdateVtChapter;
   miChapterListHideDownloadedClick(nil);
   edFilterMangaInfoChaptersChange(nil);
-  if (clbChapterList.RootNodeCount <> 0) and miChapterListAscending.Checked then
+  if (clbChapterList.RootNodeCount <> 0) and FMDOptions.General.SortChptrListAsc then
   begin
     clbChapterList.FocusedNode := clbChapterList.GetLast();
   end;
@@ -6321,28 +6341,36 @@ begin
 end;
 
 procedure TMainForm.LoadOptions;
+var
+  General: TGeneral;
 begin
   with settingsfile do
   begin
+
     // general
-    cbDarkmode.ItemIndex := ReadInteger('darkmode', 'mode', 0);
-    cbOptionOneInstanceOnly.Checked := ReadBool('general', 'OneInstanceOnly', True);
-    cbOptionLiveSearch.Checked := ReadBool('general', 'LiveSearch', True);
-    cbOptionMinimizeOnStart.Checked := ReadBool('general', 'MinimizeOnStart', False);
-    cbOptionMinimizeToTray.Checked := ReadBool('general', 'MinimizeToTray', False);
-    cbOptionDeleteCompletedTasksOnClose.Checked := ReadBool('general', 'DeleteCompletedTasksOnClose', OptionDeleteCompletedTasksOnClose);
-    cbOptionSortDownloadsOnNewTasks.Checked := ReadBool('general', 'SortDownloadsOnNewTasks', OptionSortDownloadsOnNewTasks);
-    cbOptionLetFMDDo.ItemIndex := ReadInteger('general', 'LetFMDDo', 0);
-    edOptionExternalPath.Text := ReadString('general', 'ExternalProgramPath', '');
-    edOptionExternalParams.Text := ReadString('general', 'ExternalProgramParams', DEFAULT_EXPARAM);
-    miChapterListHideDownloaded.Checked := ReadBool('general', 'ChapterListHideDownloaded', False);
-    cbAddAsStopped.Checked := ReadBool('general', 'AddAsStopped', False);
-    miHighLightNewManga.Checked := ReadBool('general', 'HighlightNewManga', True);
-    miChapterListHighlight.Checked := ReadBool('general', 'HighlightDownloadedChapters', True);
-    miChapterListAscending.Checked := ReadBool('general', 'SortChapterListAscending', True);
+    General := FMDOptions.General;
+    edOptionExternalPath.Text := ReadString('general', 'ExternalProgramPath', General.ExtProgramPath);
+    edOptionExternalParams.Text := ReadString('general', 'ExternalProgramParams', General.ExtProgramParam);
+
+    cbOptionLetFMDDo.ItemIndex := ReadInteger('general', 'LetFMDDo', General.LetFMDDoAfterFinishInt);
+    cbDarkmode.ItemIndex := ReadInteger('darkmode', 'mode', General.Theme);
+    seOptionNewMangaTime.Value := ReadInteger('update', 'NewMangaTime', General.MangaDaysNew);
+
+    cbOptionMinimizeOnStart.Checked := ReadBool('general', 'MinimizeOnStart', General.MinOnStart);
+    cbOptionMinimizeToTray.Checked := ReadBool('general', 'MinimizeToTray', General.MinToTray);
+    cbOptionOneInstanceOnly.Checked := ReadBool('general', 'OneInstanceOnly', General.OneFMDInstance);
+    cbOptionLiveSearch.Checked := ReadBool('general', 'LiveSearch', General.ListLiveSearch);
+    cbOptionMangaLoadAddToList.Checked := ReadBool('general', 'MangaLoadAddToList', General.MangaLoadAddToList);
+    miHighLightNewManga.Checked := ReadBool('general', 'HighlightNewManga', General.HghlghtNewManga);
+    miChapterListAscending.Checked := ReadBool('general', 'SortChapterListAscending', General.SortChptrListAsc);
     miChapterListDescending.Checked := not miChapterListAscending.Checked;
-    cbOptionVacuumDatabasesOnExit.Checked := ReadBool('general', 'VacuumDatabasesOnExit', False);
-    cbOptionEnableLongNamePaths.Checked := ReadBool('general', 'EnableLongNamePaths', False);
+    miChapterListHideDownloaded.Checked := ReadBool('general', 'ChapterListHideDownloaded', General.ChptrListHideDwnlded);
+    miChapterListHighlight.Checked := ReadBool('general', 'HighlightDownloadedChapters', General.HghlghtDwnldedChptrs);
+    cbOptionDeleteCompletedTasksOnClose.Checked := ReadBool('general', 'DeleteCompletedTasksOnClose', General.DelCompltdDLOnClose);
+    cbAddAsStopped.Checked := ReadBool('general', 'AddAsStopped', General.AddNewDLAsStopped);
+    cbOptionSortDownloadsOnNewTasks.Checked := ReadBool('general', 'SortDownloadsOnNewTasks', General.SortDLAddNew);
+    cbOptionVacuumDatabasesOnExit.Checked := ReadBool('general', 'VacuumDatabasesOnExit', General.DBVacuumExit);
+    cbOptionEnableLongNamePaths.Checked := ReadBool('general', 'EnableLongNamePaths', General.LongNamePaths);
 
     // view
     cbOptionShowDownloadToolbar.Checked := ReadBool('view', 'ShowDownloadsToolbar', True);
@@ -6471,7 +6499,6 @@ begin
     seOptionAutoCheckFavIntervalMinutes.Value := ReadInteger('update', 'AutoCheckFavIntervalMinutes', 60);
     lbOptionAutoCheckFavIntervalMinutes.Caption := Format(RS_LblAutoCheckNewChapterMinute, [seOptionAutoCheckFavIntervalMinutes.Value]);
     cbOptionAutoCheckFavIntervalChange(cbOptionAutoCheckFavInterval);
-    seOptionNewMangaTime.Value := ReadInteger('update', 'NewMangaTime', 1);
     cbOptionAutoCheckFavDownload.Checked := ReadBool('update', 'AutoCheckFavAutoDownload', False);
     cbOptionAutoCheckFavRemoveCompletedManga.Checked := ReadBool('update', 'AutoCheckFavAutoRemoveCompletedManga', False);
     cbOptionUpdateListNoMangaInfo.Checked := ReadBool('update', 'UpdateListNoMangaInfo', False);
@@ -6499,55 +6526,36 @@ end;
 
 procedure TMainForm.SaveOptions(const AShowDialog: Boolean);
 var
-  s: String;
-  i: Integer;
-  m: TModuleContainer;
+  General: TGeneral;
 begin
   with settingsfile do
     try
-      // general
-      if cbSelectManga.Items.Count <> 0 then
-      begin
-        s := '';
 
-        for i := 0 to cbSelectManga.Items.Count-1 do
-        begin
-          m := TModuleContainer(cbSelectManga.Items.Objects[i]);
-          if m <> nil then
-          begin
-            s += m.ID + ',';
-          end;
-        end;
-
-        s := s.TrimRight([',']);
-        WriteString('general', 'MangaListSelect', s);
-      end;
-
-      if cbDarkmode.ItemIndex > -1 then
-      begin
-        WriteInteger('darkmode', 'mode', cbDarkmode.ItemIndex);
-      end;
-
-      WriteBool('general', 'LiveSearch', cbOptionLiveSearch.Checked);
-      WriteBool('general', 'OneInstanceOnly', cbOptionOneInstanceOnly.Checked);
-      if cbLanguages.ItemIndex > -1 then
-      begin
-        WriteString('languages', 'Selected', AvailableLanguages.Names[cbLanguages.ItemIndex]);
-      end;
-
-      WriteBool('general', 'MinimizeOnStart', cbOptionMinimizeOnStart.Checked);
-      WriteBool('general', 'MinimizeToTray', cbOptionMinimizeToTray.Checked);
-      WriteBool('general', 'DeleteCompletedTasksOnClose', cbOptionDeleteCompletedTasksOnClose.Checked);
-      WriteBool('general', 'SortDownloadsOnNewTasks', cbOptionSortDownloadsOnNewTasks.Checked);
-      WriteInteger('general', 'LetFMDDo', cbOptionLetFMDDo.ItemIndex);
-      WriteString('general', 'ExternalProgramPath', edOptionExternalPath.Text);
-      WriteString('general', 'ExternalProgramParams', edOptionExternalParams.Text);
-      WriteBool('general', 'ChapterListHideDownloaded', miChapterListHideDownloaded.Checked);
-      WriteBool('general', 'AddAsStopped', cbAddAsStopped.Checked);
-      WriteBool('general', 'HighlightNewManga', miHighlightNewManga.Checked);
-      WriteBool('general', 'HighlightDownloadedChapters', miChapterListHighlight.Checked);
-      WriteBool('general', 'VacuumDatabasesOnExit', cbOptionVacuumDatabasesOnExit.Checked);
-      WriteBool('general', 'EnableLongNamePaths', cbOptionEnableLongNamePaths.Checked);
+      General := FMDOptions.General;
+      // general  
+      WriteString('languages', 'Selected', General.Language);
+      WriteString('general', 'MangaListSelect', General.SelectedMangaLists);
+      WriteString('general', 'ExternalProgramPath', General.ExtProgramPath);
+      WriteString('general', 'ExternalProgramParams', General.ExtProgramParam);
+                                                    
+      WriteInteger('general', 'LetFMDDo', General.LetFMDDoAfterFinishInt);
+      WriteInteger('darkmode', 'mode', General.Theme);
+      WriteInteger('update', 'NewMangaTime', General.MangaDaysNew);
+                                                                    
+      WriteBool('general', 'MinimizeOnStart', General.MinOnStart);
+      WriteBool('general', 'MinimizeToTray', General.MinToTray);
+      WriteBool('general', 'OneInstanceOnly', General.OneFMDInstance);
+      WriteBool('general', 'LiveSearch', General.ListLiveSearch);
+      WriteBool('general', 'MangaLoadAddToList', General.MangaLoadAddToList);
+      WriteBool('general', 'HighlightNewManga', General.HghlghtNewManga);
+      WriteBool('general', 'SortChapterListAscending', General.SortChptrListAsc);
+      WriteBool('general', 'ChapterListHideDownloaded', General.ChptrListHideDwnlded);
+      WriteBool('general', 'HighlightDownloadedChapters', General.HghlghtDwnldedChptrs);
+      WriteBool('general', 'DeleteCompletedTasksOnClose', General.DelCompltdDLOnClose);
+      WriteBool('general', 'AddAsStopped', General.AddNewDLAsStopped);
+      WriteBool('general', 'SortDownloadsOnNewTasks', General.SortDLAddNew);
+      WriteBool('general', 'VacuumDatabasesOnExit', General.DBVacuumExit);
+      WriteBool('general', 'EnableLongNamePaths', General.LongNamePaths);
 
       // view
       WriteBool('view', 'ShowDownloadsToolbar', cbOptionShowDownloadToolbar.Checked);
@@ -6654,7 +6662,6 @@ begin
       WriteBool('update', 'AutoOpenFavStartup', cbOptionAutoOpenFavStartup.Checked);
       WriteBool('update', 'AutoCheckFavInterval', cbOptionAutoCheckFavInterval.Checked);
       WriteInteger('update', 'AutoCheckFavIntervalMinutes', seOptionAutoCheckFavIntervalMinutes.Value);
-      WriteInteger('update', 'NewMangaTime', seOptionNewMangaTime.Value);
       WriteBool('update', 'AutoCheckFavAutoDownload', cbOptionAutoCheckFavDownload.Checked);
       WriteBool('update', 'AutoCheckFavAutoRemoveCompletedManga', cbOptionAutoCheckFavRemoveCompletedManga.Checked);
       WriteBool('update', 'UpdateListNoMangaInfo', cbOptionUpdateListNoMangaInfo.Checked);
@@ -6739,34 +6746,51 @@ begin
       end;
     end;
 
-    //FMDInstace
-    if cbOptionOneInstanceOnly.Checked then
-    begin
-      if FMDInstance = nil then
-      begin
-        FMDInstance := TSimpleIPCServer.Create(Self);
-        FMDInstance.ServerID := FMD_INSTANCE;
-        FMDInstance.Global := True;
-        FMDInstance.OnMessage := @FMDInstanceReceiveMsg;
-        FMDInstance.StartServer;
-      end;
-    end
-    else
-    begin
-      if FMDInstance <> nil then
-      begin
-        FMDInstance.StopServer;
-        FreeAndNil(FMDInstance);
-      end;
+    // general
+    with FMDOptions.General do
+    begin   
+      SetLanguage;
+      SetSelectedMangaLists;
+      ExtProgramPath := edOptionExternalPath.Text;
+      ExtProgramParam := edOptionExternalParams.Text;
+
+      LetFMDDoAfterFinishInt := cbOptionLetFMDDo.ItemIndex;
+      Theme := cbDarkmode.ItemIndex;
+      MangaDaysNew := seOptionNewMangaTime.Value;
+
+      MinOnStart := cbOptionMinimizeOnStart.Checked;
+      MinToTray := cbOptionMinimizeToTray.Checked;
+      OneFMDInstance := cbOptionOneInstanceOnly.Checked;
+      ListLiveSearch := cbOptionLiveSearch.Checked;
+      MangaLoadAddToList := cbOptionMangaLoadAddToList.Checked;
+      HghlghtNewManga := miHighlightNewManga.Checked;
+      SortChptrListAsc := miChapterListAscending.Checked;
+      ChptrListHideDwnlded := miChapterListHideDownloaded.Checked;
+      HghlghtDwnldedChptrs := miChapterListHighlight.Checked;
+      DelCompltdDLOnClose := cbOptionDeleteCompletedTasksOnClose.Checked;
+      AddNewDLAsStopped := cbAddAsStopped.Checked;
+      SortDLAddNew := cbOptionSortDownloadsOnNewTasks.Checked;
+      DBVacuumExit := cbOptionVacuumDatabasesOnExit.Checked;
+      LongNamePaths := cbOptionEnableLongNamePaths.Checked;
+
+      DLManager.DB.AutoVacuum := DBVacuumExit;
+      FavoriteManager.DB.AutoVacuum := DBVacuumExit;
     end;
 
-    OptionLetFMDDo := TFMDDo(cbOptionLetFMDDo.ItemIndex);
-    OptionEnableLoadCover := cbOptionEnableLoadCover.Checked;
-    OptionDeleteCompletedTasksOnClose := cbOptionDeleteCompletedTasksOnClose.Checked;
-    OptionSortDownloadsOnNewTasks := cbOptionSortDownloadsOnNewTasks.Checked;
-    OptionLongNamePaths := cbOptionEnableLongNamePaths.Checked;
-    DLManager.DB.AutoVacuum := cbOptionVacuumDatabasesOnExit.Checked;
-    FavoriteManager.DB.AutoVacuum := cbOptionVacuumDatabasesOnExit.Checked;
+    //FMDInstace 
+    if (FMDInstance <> nil) and (not FMDOptions.General.OneFMDInstance) then
+    begin
+      FMDInstance.StopServer;
+      FreeAndNil(FMDInstance);
+    end
+    else if (FMDInstance = nil) and FMDOptions.General.OneFMDInstance then
+    begin
+      FMDInstance := TSimpleIPCServer.Create(Self);
+      FMDInstance.ServerID := FMD_INSTANCE;
+      FMDInstance.Global := True;
+      FMDInstance.OnMessage := @FMDInstanceReceiveMsg;
+      FMDInstance.StartServer;
+    end;
 
     // view
     ToolBarDownload.Visible := cbOptionShowDownloadToolbar.Checked;
@@ -6775,6 +6799,7 @@ begin
     tbSeparator1.Visible := tbDownloadDeleteCompleted.Visible;
     ShowDropTarget(ckDropTarget.Checked);
     OptionShowBalloonHint := cbOptionShowBalloonHint.Checked;
+    OptionEnableLoadCover := cbOptionEnableLoadCover.Checked;
     OptionShowFavoritesTabOnNewManga := cbOptionShowFavoritesTabOnNewManga.Checked;
     OptionShowDownloadsTabOnNewTasks := cbOptionShowDownloadsTabOnNewTasks.Checked;
 
@@ -6846,8 +6871,7 @@ begin
     OptionAutoCheckFavStartup := cbOptionAutoCheckFavStartup.Checked;
     OptionAutoCheckFavInterval := cbOptionAutoCheckFavInterval.Checked;
     OptionAutoCheckFavIntervalMinutes := seOptionAutoCheckFavIntervalMinutes.Value;
-    OptionNewMangaTime := seOptionNewMangaTime.Value;
-    OptionJDNNewMangaTime := currentJDN - OptionNewMangaTime;
+    OptionJDNNewMangaTime := currentJDN - FMDOptions.General.MangaDaysNew;
     OptionAutoCheckFavDownload := cbOptionAutoCheckFavDownload.Checked;
     OptionAutoCheckFavRemoveCompletedManga := cbOptionAutoCheckFavRemoveCompletedManga.Checked;
     OptionUpdateListNoMangaInfo := cbOptionUpdateListNoMangaInfo.Checked;
@@ -6973,7 +6997,7 @@ begin
 
   // load selected websites
   cbSelectManga.Clear;
-  s := settingsfile.ReadString('general', 'MangaListSelect', DEFAULT_SELECTED_WEBSITES);
+  s := settingsfile.ReadString('general', 'MangaListSelect', FMDOptions.General.SelectedMangaLists);
   for s in s.Split([',']) do
   begin
     module := Modules.LocateModule(s);
@@ -7011,7 +7035,7 @@ begin
     Exit;
   end;
 
-  if (not cbOptionLiveSearch.Checked) and (edMangaListSearch.Tag = 0) then
+  if (not FMDOptions.General.ListLiveSearch) and (edMangaListSearch.Tag = 0) then
   begin
     Exit;
   end;

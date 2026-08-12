@@ -11,6 +11,112 @@ uses
 type
 
   TFMDDo = (DO_NOTHING, DO_EXIT, DO_POWEROFF, DO_HIBERNATE, DO_UPDATE);
+  TFMDDoSet = Set of TFMDDo;
+
+  { TGeneral }
+
+  TGeneral = class(TObject)
+  private
+    FLanguage,
+    FSelectedMangaLists,
+    FExtProgramPath,
+    FExtProgramParam: String;
+
+    FAfterFMDDo,
+    FLetFMDDoAfterFinish: TFMDDo;
+
+    FLetFMDDoAfterFinishInt,
+    FTheme,
+    FMangaDaysNew: Integer;
+
+    FMinOnStart,
+    FMinToTray,
+    FOneFMDInstance,
+    FListLiveSearch,
+    FMangaLoadAddToList,
+    FHghlghtNewManga,
+    FSortChptrListAsc,
+    FChptrListHideDwnlded,
+    FHghlghtDwnldedChptrs,
+    FDelCompltdDLOnClose,
+    FAddNewDLAsStopped,
+    FSortDLAddNew,
+    FDBVacuumExit,
+    FLongNamePaths: Boolean;
+
+    procedure SetExtProgramPath(Const AValue: String);
+    procedure SetExtProgramParam(Const AValue: String);
+
+    procedure SetAfterFMDDo(Const AValue: TFMDDO);
+    procedure SetLetFMDDoAfterFinish(Const AValue: TFMDDO);
+
+    procedure SetLetFMDDoAfterFinishInt(Const AValue: Integer);
+    procedure SetTheme(Const AValue: Integer);
+    procedure SetMangaDaysNew(Const AValue: Integer);
+  public
+    property Language: String read FLanguage;
+    property SelectedMangaLists: String read FSelectedMangaLists; 
+    property ExtProgramPath: String read FExtProgramPath write SetExtProgramPath;
+    property ExtProgramParam: String read FExtProgramParam write SetExtProgramParam;
+
+    property AfterFMDDo: TFMDDO read FAfterFMDDo write SetAfterFMDDo;
+    property LetFMDDoAfterFinish: TFMDDO read FLetFMDDoAfterFinish write SetLetFMDDoAfterFinish;
+
+    property LetFMDDoAfterFinishInt: Integer read FLetFMDDoAfterFinishInt write SetLetFMDDoAfterFinishInt;
+    property Theme: Integer read FTheme write SetTheme;
+    property MangaDaysNew: Integer read FMangaDaysNew write FMangaDaysNew;
+
+    property MinOnStart: Boolean read FMinOnStart write FMinOnStart;
+    property MinToTray: Boolean read FMinToTray write FMinToTray;
+    property OneFMDInstance: Boolean read FOneFMDInstance write FOneFMDInstance;
+    property ListLiveSearch: Boolean read FListLiveSearch write FListLiveSearch;
+    property MangaLoadAddToList: Boolean read FMangaLoadAddToList write FMangaLoadAddToList;
+    property HghlghtNewManga: Boolean read FHghlghtNewManga write FHghlghtNewManga;
+    property SortChptrListAsc: Boolean read FSortChptrListAsc write FSortChptrListAsc;
+    property ChptrListHideDwnlded: Boolean read FChptrListHideDwnlded write FChptrListHideDwnlded;
+    property HghlghtDwnldedChptrs: Boolean read FHghlghtDwnldedChptrs write FHghlghtDwnldedChptrs;
+    property DelCompltdDLOnClose: Boolean read FDelCompltdDLOnClose write FDelCompltdDLOnClose;
+    property AddNewDLAsStopped: Boolean read FAddNewDLAsStopped write FAddNewDLAsStopped;
+    property SortDLAddNew: Boolean read FSortDLAddNew write FSortDLAddNew;
+    property DBVacuumExit: Boolean read FDBVacuumExit write FDBVacuumExit;
+    property LongNamePaths: Boolean read FLongNamePaths write FLongNamePaths;
+
+    constructor Create;
+                             
+    procedure SetLanguage;
+    procedure SetSelectedMangaLists;
+    function CheckAfterFMDDo(Const AValue: TFMDDo): Boolean; overload;
+    function CheckAfterFMDDo(Const AValue: TFMDDoSet): Boolean; overload;
+    function CheckLetFMDDoAfterFinish(Const AValue: TFMDDo): Boolean; overload;
+    function CheckLetFMDDoAfterFinish(Const AValue: TFMDDoSet): Boolean; overload;
+  end;
+
+  { TOptions }
+
+  TOptions = class(TObject)
+  private
+    FGeneral: TGeneral;
+    FView: TObject;
+    FConnections: TObject;
+    FSaveTo: TObject;
+    FUpdates: TObject;
+    FDialogs: TObject;
+    FWebsites: TObject;
+    FMisc: TObject;
+  public
+    property General: TGeneral read FGeneral;
+    property View: TObject read FView;
+    property Connections: TObject read FConnections;
+    property SaveTo: TObject read FSaveTo;
+    property Updates: TObject read FUpdates;
+    property Dialogs: TObject read FDialogs;
+    property Websites: TObject read FWebsites;
+    property Misc: TObject read FMisc;
+
+    constructor Create;
+    destructor Destroy; override;
+  end;
+
 
 const
   FMD_INSTANCE = '_FreeMangaDownloaderInstance_';
@@ -98,13 +204,6 @@ var
 
   currentWebsite: Pointer;
 
-  // general
-  DoAfterFMD: TFMDDo;
-  OptionLetFMDDo: TFMDDo = DO_NOTHING;
-  OptionDeleteCompletedTasksOnClose: Boolean = False;
-  OptionSortDownloadsOnNewTasks: Boolean = False;
-  OptionLongNamePaths: Boolean = False;
-
   // saveto
   OptionChangeUnicodeCharacter: Boolean = False;
   OptionChangeUnicodeCharacterStr: String = '_';
@@ -156,7 +255,6 @@ var
   OptionAutoCheckFavStartup: Boolean = True;
   OptionAutoCheckFavInterval: Boolean = True;
   OptionAutoCheckFavIntervalMinutes: Cardinal = 60;
-  OptionNewMangaTime: Integer = 1;
   OptionJDNNewMangaTime: Integer = MaxInt;
   OptionAutoCheckFavDownload: Boolean = False;
   OptionAutoCheckFavRemoveCompletedManga: Boolean = False;
@@ -228,10 +326,195 @@ procedure SetAppDataDirectory(const ADir: String);
 
 implementation
 
+uses
+  frmMain, WebsiteModules, SimpleTranslator;
+
+{ TGeneral }
+
+constructor TGeneral.Create;
+begin
+  inherited Create;
+
+  FLanguage := 'en';
+  FSelectedMangaLists := DEFAULT_SELECTED_WEBSITES; 
+  FExtProgramPath := '';
+  FExtProgramParam := DEFAULT_EXPARAM;
+
+  FAfterFMDDo := DO_NOTHING;
+  FLetFMDDoAfterFinish := DO_NOTHING;
+
+  FLetFMDDoAfterFinishInt := 0;
+  FTheme := 0;
+  FMangaDaysNew := 1;
+
+  FMinOnStart := False;
+  FMinToTray := False;
+  FOneFMDInstance := True;  
+  FListLiveSearch := True;
+  FMangaLoadAddToList := False;
+  FHghlghtNewManga := True;
+  FSortChptrListAsc := True;
+  FChptrListHideDwnlded := False;
+  FHghlghtDwnldedChptrs := True;
+  FDelCompltdDLOnClose := False;
+  FAddNewDLAsStopped := False;
+  FSortDLAddNew := False;
+  FDBVacuumExit := False;  
+  FLongNamePaths := False;
+end;
+
+procedure TGeneral.SetLanguage;
+var
+  languagesItemIndex: Integer;
+begin
+  languagesItemIndex := MainForm.cbLanguages.ItemIndex;
+
+  if languagesItemIndex < 0 then
+  begin
+    FLanguage := 'en';
+    Exit;
+  end;
+
+  FLanguage := AvailableLanguages.Names[languagesItemIndex];
+end;
+
+procedure TGeneral.SetSelectedMangaLists;
+var
+  lists: String;
+  mangaItems: TStrings;
+  i: Integer;
+  m: TModuleContainer;
+begin
+  mangaItems := MainForm.cbSelectManga.Items;
+
+  if mangaItems.Count = 0 then
+  begin
+    Exit;
+  end;
+
+  lists := '';
+  for i := 0 to mangaItems.Count - 1 do
+  begin
+    m := TModuleContainer(mangaItems.Objects[i]);
+    if m <> nil then
+    begin
+      lists += m.ID + ',';
+    end;
+  end;
+
+  FSelectedMangaLists := lists.TrimRight([',']);
+end;
+
+procedure TGeneral.SetExtProgramPath(Const AValue: String);
+begin
+  FExtProgramPath := '';
+
+  if FileExists(AValue) then
+  begin
+    FExtProgramPath := Trim(AValue);
+  end;
+end; 
+
+procedure TGeneral.SetExtProgramParam(Const AValue: String);
+begin
+  FExtProgramParam := Trim(AValue);
+end; 
+
+procedure TGeneral.SetAfterFMDDo(Const AValue: TFMDDo);
+begin
+  if not (AValue in [Low(TFMDDo)..High(TFMDDo)]) then
+  begin
+    Exit;
+  end;
+
+  FAfterFMDDo := AValue;
+end;
+
+procedure TGeneral.SetLetFMDDoAfterFinish(Const AValue: TFMDDo);
+begin
+  if not (AValue in [Low(TFMDDo)..High(TFMDDo)]) then
+  begin
+    Exit;
+  end;
+
+  FLetFMDDoAfterFinish := AValue;
+  FLetFMDDoAfterFinishInt := Ord(AValue);
+end;
+
+procedure TGeneral.SetLetFMDDoAfterFinishInt(Const AValue: Integer);
+begin 
+  if (AValue <= Ord(Low(TFMDDo))) or (AValue >= Ord(High(TFMDDo))) then
+  begin
+    Exit;
+  end;
+
+  FLetFMDDoAfterFinishInt := AValue;
+  FLetFMDDoAfterFinish := TFMDDo(AValue);
+end;
+
+function TGeneral.CheckAfterFMDDo(Const AValue: TFMDDo): Boolean;
+begin
+  Result := FAfterFMDDo = AValue;
+end;
+
+function TGeneral.CheckAfterFMDDo(Const AValue: TFMDDoSet): Boolean;
+begin
+  Result := FAfterFMDDo in AValue;
+end;
+
+function TGeneral.CheckLetFMDDoAfterFinish(Const AValue: TFMDDo): Boolean;
+begin
+  Result := FLetFMDDoAfterFinish = AValue;
+end;
+
+function TGeneral.CheckLetFMDDoAfterFinish(Const AValue: TFMDDoSet): Boolean;
+begin
+  Result := FLetFMDDoAfterFinish in AValue;
+end; 
+
+procedure TGeneral.SetTheme(Const AValue: Integer);
+begin
+  if (AValue < 0) or (AValue > 2) then
+  begin
+    Exit;
+  end;
+
+  FTheme := AValue;
+end;
+
+procedure TGeneral.SetMangaDaysNew(Const AValue: Integer);
+begin
+  if AValue < 1 then
+  begin
+    Exit;
+  end;
+
+  FMangaDaysNew := AValue;
+end;
+     
+{ TOptions }
+
+constructor TOptions.Create;
+begin
+  inherited Create;
+
+  FGeneral := TGeneral.Create;
+end;
+
+destructor TOptions.Destroy;
+begin
+  FGeneral.Free;
+
+  inherited Destroy;
+end;
+
 procedure FreeNil(var Obj);
 begin
   if Pointer(Obj) <> nil then
+  begin
     TObject(Obj).Free;
+  end;
+
   Pointer(Obj) := nil;
 end;
 
@@ -248,16 +531,22 @@ end;
 
 procedure ReadConfigFile;
 begin
-  if not FileExists(CONFIG_FILE) then Exit;
+  if not FileExists(CONFIG_FILE) then
+  begin
+    Exit;
+  end;
+
   with TJSONIniFile.Create(CONFIG_FILE) do
+  begin
     try
-      DEFAULT_SELECTED_WEBSITES:=ReadString('config','default_selected_websites',DEFAULT_SELECTED_WEBSITES);
-      DB_URL:=ReadString('config','db_url',DB_URL);
-      UPDATE_URL:=ReadString('config','update_url',UPDATE_URL);
-      UPDATE_PACKAGE_NAME:=ReadString('config','update_package_name',UPDATE_PACKAGE_NAME);
+      DEFAULT_SELECTED_WEBSITES := ReadString('config', 'default_selected_websites', DEFAULT_SELECTED_WEBSITES);
+      DB_URL := ReadString('config', 'db_url', DB_URL);
+      UPDATE_URL := ReadString('config', 'update_url', UPDATE_URL);
+      UPDATE_PACKAGE_NAME := ReadString('config', 'update_package_name', UPDATE_PACKAGE_NAME);
     finally
       Free;
     end;
+  end;
 end;
 
 procedure SetFMDdirectory(const ADir: String);

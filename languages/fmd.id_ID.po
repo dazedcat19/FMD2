@@ -1159,6 +1159,11 @@ msgstr "Buat direktori bab otomatis berdasarkan nama komik"
 msgid "Enable live search (slow on long list)"
 msgstr "Aktifkan pencarian langsung (lambat dengan daftar yang panjang)"
 
+#: tmainform.cboptionmangaloadaddtolist.caption
+msgctxt "tmainform.cboptionmangaloadaddtolist.caption"
+msgid "Enable add manga to manga list after info load"
+msgstr ""
+
 #: tmainform.cboptionminimizeonstart.caption
 msgid "Minimize on start"
 msgstr "Kecilkan ke penampan saat dimulai"

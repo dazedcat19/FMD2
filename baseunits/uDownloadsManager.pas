@@ -291,7 +291,7 @@ resourcestring
 implementation
 
 uses
-  frmMain, WebsiteModules, SimpleException;
+  frmMain, uVars, WebsiteModules, SimpleException;
 
 function IntToStr(Value: Cardinal): String;
 begin
@@ -772,7 +772,7 @@ begin
   {$IFDEF Windows}
   s := UTF8Decode(FCurrentWorkingDir);
 
-  if OptionLongNamePaths then
+  if FMDOptions.General.LongNamePaths then
   begin
     FCurrentMaxFileNameLength := FMDMaxImageFilePath + Length(s);
   end
@@ -1844,8 +1844,9 @@ begin
       FDownloadsDB.Commit(False);
       MainForm.tmRefreshDownloadsInfo.Enabled := False;
       MainForm.UpdateVtDownload;
-      if isCheckForFMDDo and (OptionLetFMDDo <> DO_NOTHING) then begin
-        DoAfterFMD := OptionLetFMDDo;
+
+      if isCheckForFMDDo and (not FMDOptions.General.CheckLetFMDDoAfterFinish(DO_NOTHING)) then begin
+        FMDOptions.General.AfterFMDDo := FMDOptions.General.LetFMDDoAfterFinish;
         MainForm.DoExitWaitCounter;
       end;
     end;

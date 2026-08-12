@@ -379,7 +379,7 @@ begin
           d.chapterLinks.Add(FInfo.MangaInfo.ChapterLinks.Strings[i]);
         end;
 
-        if cbAddAsStopped.Checked then
+        if FMDOptions.General.AddNewDLAsStopped then
         begin
           d.downloadInfo.Status := Format('[%d/%d] %s',[0,d.ChapterLinks.Count,RS_Stopped]);
           d.Status := STATUS_STOP;
@@ -564,7 +564,7 @@ begin
     end;
   end;
 
-  if OptionSortDownloadsOnNewTasks then
+  if FMDOptions.General.SortDLAddNew then
   begin
     DLManager.Sort(DLManager.SortColumn);
   end;

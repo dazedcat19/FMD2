@@ -1089,7 +1089,7 @@ begin
 
           if LNCResult in [ncrDownload, ncrQueue] then
           begin
-            if OptionSortDownloadsOnNewTasks then
+            if FMDOptions.General.SortDLAddNew then
             begin
               DLManager.Sort(DLManager.SortColumn);
             end;

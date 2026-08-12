@@ -55,6 +55,9 @@ var
   // self updater thread
   SelfUpdaterThread: TSelfUpdaterThread;
 
+  // options
+  FMDOptions: TOptions;
+
 implementation
 
 end.

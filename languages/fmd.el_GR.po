@@ -1145,6 +1145,11 @@ msgstr "Αυτόματη δημιουργία φακέλου βάσει του �
 msgid "Enable live search (slow on long list)"
 msgstr "Ενεργοποίηση ζωντανής αναζήτησης (αργή σε μεγάλη λίστα)"
 
+#: tmainform.cboptionmangaloadaddtolist.caption
+msgctxt "tmainform.cboptionmangaloadaddtolist.caption"
+msgid "Enable add manga to manga list after info load"
+msgstr ""
+
 #: tmainform.cboptionminimizeonstart.caption
 msgid "Minimize on start"
 msgstr "Ελαχιστοποίηση στην έναρξη"
