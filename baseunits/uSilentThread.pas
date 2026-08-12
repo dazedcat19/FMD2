@@ -16,7 +16,7 @@ interface
 
 uses
   SysUtils, fgl, uBaseUnit, uData, uDownloadsManager,
-  WebsiteModules, FMDOptions, httpsendthread, BaseThread, LazFileUtils, MultiLog;
+  WebsiteModules, uOptions, httpsendthread, BaseThread, LazFileUtils, MultiLog;
 
 type
 
@@ -107,7 +107,7 @@ resourcestring
 implementation
 
 uses
-  frmMain, FMDVars;
+  frmMain, uVars;
 
 { TSilentThreadManager }
 

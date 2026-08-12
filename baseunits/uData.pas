@@ -13,7 +13,7 @@ unit uData;
 interface
 
 uses
-  Classes, SysUtils, uBaseUnit, DBDataProcess, FMDOptions, httpsendthread,
+  Classes, SysUtils, uBaseUnit, DBDataProcess, uOptions, httpsendthread,
   BaseThread, LazFileUtils, strutils, httpsend;
 
 type

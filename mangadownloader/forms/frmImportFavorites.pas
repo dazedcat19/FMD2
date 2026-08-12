@@ -12,7 +12,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Dialogs, StdCtrls, Buttons, EditBtn,
-  LazFileUtils, uBaseUnit, WebsiteModules, FMDOptions, RegExpr,
+  LazFileUtils, uBaseUnit, WebsiteModules, uOptions, RegExpr,
   frmNewChapter, DBDataProcess, Controls, uCustomControls;
 
 type
@@ -47,7 +47,7 @@ resourcestring
 implementation
 
 uses
-  frmMain, frmCustomMessageDlg, uSilentThread, FMDVars;
+  frmMain, frmCustomMessageDlg, uSilentThread, uVars;
 
 {$R *.lfm}
 

@@ -17,7 +17,7 @@ interface
 
 uses
   SysUtils, LazFileUtils, StrUtils, Graphics, Dialogs, uBaseUnit, uData, Forms,
-  FMDOptions, BaseThread, ImgInfos, webp, MultiLog, MemBitmap, VirtualTrees,
+  uOptions, BaseThread, ImgInfos, webp, MultiLog, MemBitmap, VirtualTrees,
   DBDataProcess, WebsiteModules;
 
 type
@@ -52,7 +52,7 @@ type
 implementation
 
 uses
-  frmMain, frmCustomMessageDlg, FMDVars;
+  frmMain, frmCustomMessageDlg, uVars;
 
 procedure TGetMangaInfosThread.MainThreadSyncAddInfos;
 var

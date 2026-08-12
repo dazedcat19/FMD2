@@ -12,7 +12,7 @@ interface
 
 uses
   LazFileUtils, Classes, SysUtils, ExtCtrls, typinfo, fgl, FileUtil, synautil,
-  blcksock, MultiLog, uBaseUnit, uPacker, uMisc, DownloadedChaptersDB, FMDOptions, ImgInfos,
+  blcksock, MultiLog, uBaseUnit, uPacker, uMisc, DownloadedChaptersDB, uOptions, ImgInfos,
   httpsendthread, DownloadsDB, BaseThread, SQLiteData, dateutils, strutils, ImageMagickManager;
 
 type

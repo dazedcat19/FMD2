@@ -1,4 +1,4 @@
-unit FMDOptions;
+unit uOptions;
 
 {$mode objfpc}{$H+}
 

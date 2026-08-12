@@ -21,7 +21,7 @@ uses
   SysUtils, Classes, Graphics, LazFileUtils, LConvEncoding,
   strutils, dateutils, variants, base64, fpjson, jsonparser, jsonscanner,
   fgl, RegExpr, synautil, httpsend,
-  synacode, MultiLog, FPimage, GZIPUtils, uMisc, httpsendthread, FMDOptions,
+  synacode, MultiLog, FPimage, GZIPUtils, uMisc, httpsendthread, uOptions,
   ImgInfos, NaturalSortUnit,
   MemBitmap, FPWritePNG, zstream, FPReadPNG, VirtualTrees, ImageMagickManager;
 

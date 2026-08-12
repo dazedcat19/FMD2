@@ -10,7 +10,7 @@ unit WebsiteModules;
 interface
 
 uses
-  Classes, SysUtils, fgl, uData, uDownloadsManager, FMDOptions, httpsendthread,
+  Classes, SysUtils, fgl, uData, uDownloadsManager, uOptions, httpsendthread,
   WebsiteModulesSettings, LuaWebsiteBypass, RegExpr, fpjson, jsonparser,
   jsonscanner, fpjsonrtti, uBaseUnit, httpcookiemanager, BaseThread, syncobjs;
 

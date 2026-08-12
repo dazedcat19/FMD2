@@ -10,7 +10,7 @@ unit CheckUpdate;
 interface
 
 uses
-  SysUtils, Forms, Controls, uBaseUnit, FMDOptions, httpsendthread,
+  SysUtils, Forms, Controls, uBaseUnit, uOptions, httpsendthread,
   BaseThread, SelfUpdater, fileinfo;
 
 type
@@ -41,7 +41,7 @@ resourcestring
 implementation
 
 uses
-  frmMain, frmUpdateDialog, FMDVars, jsonini;
+  frmMain, frmUpdateDialog, uVars, jsonini;
 
 { TCheckUpdateThread }
 

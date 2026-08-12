@@ -52,7 +52,7 @@ var
 
 implementation
 
-uses FMDOptions;
+uses uOptions;
 
 {$R *.lfm}
 

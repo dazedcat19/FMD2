@@ -141,10 +141,10 @@ var
 implementation
 
 uses
-  FMDOptions, FileUtil, MultiLog, LuaClass, LuaBase, LuaMangaInfo, LuaHTTPSend,
+  uOptions, FileUtil, MultiLog, LuaClass, LuaBase, LuaMangaInfo, LuaHTTPSend,
   LuaXQuery, LuaUtils, LuaDownloadTask, LuaUpdateListManager, LuaStrings,
   LuaCriticalSection, LuaPackage, uData,
-  uDownloadsManager, xquery, httpsendthread, FMDVars, uBaseUnit, LuaWebsiteBypass,
+  uDownloadsManager, xquery, httpsendthread, uVars, uBaseUnit, LuaWebsiteBypass,
   LuaWebsiteModuleHandler;
 
 threadvar

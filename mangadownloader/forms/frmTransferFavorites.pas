@@ -83,7 +83,7 @@ resourcestring
 implementation
 
 uses
-  FMDVars, FMDOptions, WebsiteModules, db, frmCustomColor;
+  uVars, uOptions, WebsiteModules, db, frmCustomColor;
 
 {$R *.lfm}
 

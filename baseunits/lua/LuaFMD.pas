@@ -10,7 +10,7 @@ uses
 implementation
 
 uses
-  LuaUtils, LuaPackage, FMDOptions, SimpleTranslator;
+  LuaUtils, LuaPackage, uOptions, SimpleTranslator;
 
 function luaopen_fmd(L: Plua_State): Integer; cdecl;
 var

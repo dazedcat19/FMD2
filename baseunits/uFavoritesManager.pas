@@ -12,7 +12,7 @@ interface
 
 uses
   Classes, SysUtils, fgl, Dialogs, ExtCtrls,
-  LazFileUtils, uBaseUnit, uData, uDownloadsManager, WebsiteModules, FMDOptions,
+  LazFileUtils, uBaseUnit, uData, uDownloadsManager, WebsiteModules, uOptions,
   httpsendthread, FavoritesDB, BaseThread, SQLiteData, MultiLog, SimpleException, VirtualTrees;
 
 type
@@ -184,7 +184,7 @@ resourcestring
 implementation
 
 uses
-  frmMain, frmCustomMessageDlg, frmNewChapter, FMDVars, DateUtils;
+  frmMain, frmCustomMessageDlg, frmNewChapter, uVars, DateUtils;
 
 { TFavoriteContainer }
 

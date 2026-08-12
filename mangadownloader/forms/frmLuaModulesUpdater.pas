@@ -186,7 +186,7 @@ resourcestring
 
 implementation
 
-uses frmCustomColor, frmDialogYesNo, frmMain, frmCustomMessageDlg, FMDOptions, LazFileUtils;
+uses frmCustomColor, frmDialogYesNo, frmMain, frmCustomMessageDlg, uOptions, LazFileUtils;
 
 const
   // RFC 3339 - ISO 8601

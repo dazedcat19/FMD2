@@ -5,7 +5,7 @@ unit SelfUpdater;
 interface
 
 uses
-  Classes, SysUtils, httpsendthread, FMDOptions, StatusBarDownload, process,
+  Classes, SysUtils, httpsendthread, uOptions, StatusBarDownload, process,
   Controls, Dialogs, Forms;
 
 type
@@ -46,7 +46,7 @@ resourcestring
 
 implementation
 
-uses FMDVars, frmMain, frmCustomMessageDlg;
+uses uVars, frmMain, frmCustomMessageDlg;
 
 { TSelfUpdaterThread }
 

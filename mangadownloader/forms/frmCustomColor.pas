@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Types, Forms, Graphics, Dialogs, ColorBox, ComCtrls,
-  Buttons, VirtualTrees, FMDOptions, jsonini, uDarkStyleParams;
+  Buttons, VirtualTrees, uOptions, jsonini, uDarkStyleParams;
 
 type
   TColorMapping = record

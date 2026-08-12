@@ -3,7 +3,6 @@ program md;
 {$mode objfpc}{$H+}
 
 uses
-  FMDOptions,
  {$IFDEF UNIX} {$IFDEF UseCThreads}
   cthreads,
  {$ENDIF} {$ENDIF}
@@ -11,8 +10,8 @@ uses
   windows,
  {$endif}
   Interfaces, // this includes the LCL widgetset
-  Forms, LazFileUtils, jsonini, simpleipc, sqlite3dyn, uBaseUnit,
-  FMDVars, webp, CheckUpdate, DBUpdater, SelfUpdater, uDownloadsManager,
+  Forms, LazFileUtils, jsonini, simpleipc, sqlite3dyn, uBaseUnit, uOptions,
+  uVars, webp, CheckUpdate, DBUpdater, SelfUpdater, uDownloadsManager,
   LuaWebsiteModules, LuaBase, SimpleException, Classes, sysutils, frmMain,
   uDarkStyle, uMetaDarkStyle, uDarkStyleSchemes, uDarkStyleParams,
   MultiLog, FileChannel, ssl_openssl3_lib, blcksock, ssl_openssl3, SQLiteData;

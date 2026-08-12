@@ -5,7 +5,7 @@ unit DBUpdater;
 interface
 
 uses
-  Classes, SysUtils, httpsendthread, FMDOptions, StatusBarDownload,
+  Classes, SysUtils, httpsendthread, uOptions, StatusBarDownload,
   WebsiteModules, process, Controls, Dialogs, Buttons;
 
 type
@@ -51,7 +51,7 @@ resourcestring
 
 implementation
 
-uses FMDVars, LazFileUtils, frmMain, frmCustomMessageDlg;
+uses uVars, LazFileUtils, frmMain, frmCustomMessageDlg;
 
 function GetDBURL(const AName: String): String;
 begin

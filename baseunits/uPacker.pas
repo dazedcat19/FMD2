@@ -12,7 +12,7 @@ interface
 
 uses
   Classes, Zipper, zstream, SysUtils, uBaseUnit, Img2Pdf, FileUtil,
-  LazFileUtils, SimpleException, uEpub, FMDOptions, process, MultiLog;
+  LazFileUtils, SimpleException, uEpub, uOptions, process, MultiLog;
 
 type
   TPackerFormat = (pfZIP, pfCBZ, pfPDF, pfEPUB);

@@ -1,4 +1,4 @@
-unit FMDVars;
+unit uVars;
 
 {$mode objfpc}{$H+}
 
@@ -6,7 +6,7 @@ interface
 
 uses
   frmMain, uDownloadsManager, uFavoritesManager, uUpdateThread, DBDataProcess,
-  uSilentThread, uBaseUnit, uGetMangaInfosThread, CheckUpdate,
+  uSilentThread, uBaseUnit, uGetMangaInfosThread, CheckUpdate, uOptions,
   DBUpdater, SelfUpdater, FileChannel, simpleipc;
 
 var

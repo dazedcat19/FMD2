@@ -12,7 +12,7 @@ interface
 
 uses
   Classes, SysUtils, typinfo, fgl, uData, LazFileUtils, uBaseUnit, uMisc,
-  WebsiteModules, DBDataProcess, FMDOptions, httpsendthread, uCustomControls,
+  WebsiteModules, DBDataProcess, uOptions, httpsendthread, uCustomControls,
   BaseThread, MultiLog, ExtCtrls, Forms, Controls, Buttons, Graphics;
 
 type
@@ -138,7 +138,7 @@ resourcestring
 implementation
 
 uses
-  frmMain, frmCustomMessageDlg, FMDVars, LuaWebsiteModuleHandler, Dialogs;
+  frmMain, frmCustomMessageDlg, uVars, LuaWebsiteModuleHandler, Dialogs;
 
 const
   CL_ProgressBarBaseLine = clBtnFace;

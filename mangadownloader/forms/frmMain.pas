@@ -11,13 +11,12 @@ unit frmMain;
 interface
 
 uses
-  FMDOptions,
   {$ifdef windows}
   ActiveX, windows,
   {$else}
   FakeActiveX,
   {$endif}
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, LCLType,
+  uOptions, Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, LCLType,
   ExtCtrls, ComCtrls, Buttons, Spin, Menus, VirtualTrees, RichMemo, simpleipc, process,
   lclproc, types, LCLIntf, EditBtn, GroupedEdit, PairSplitter, MultiLog,
   FileChannel, FileUtil, LazStringUtils, TAGraph, TASources, TASeries, TATools,
@@ -1020,7 +1019,7 @@ uses
   WinAPI,
   {$endif}
   frmImportFavorites, frmShutdownCounter, frmSelectDirectory,
-  frmWebsiteSettings, uUpdateThread, FMDVars, RegExpr, sqlite3dyn, Clipbrd,
+  frmWebsiteSettings, uUpdateThread, uVars, RegExpr, sqlite3dyn, Clipbrd,
   ssl_openssl3_lib, LazFileUtils, LazUTF8, webp, DBUpdater, pcre2, pcre2lib, dynlibs,
   LuaWebsiteModules, LuaBase, uBackupSettings, frmCustomMessageDlg;
 
