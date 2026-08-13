@@ -191,6 +191,11 @@ type
       FSaveUpdate,
       FSaveModulesUpdater,
       FSaveDialogs,
+      FSaveBasicListColors,
+      FSaveMangaListColors,
+      FSaveFavoriteListColors,
+      FSaveChapterListColor,
+      FSaveModuleListColor,
       FSaveLogger,
       FSaveDownloadFilter,
       FSaveVTDownload,
@@ -225,6 +230,11 @@ type
     property SaveUpdate: String read FSaveUpdate;
     property SaveModulesUpdater: String read FSaveModulesUpdater;
     property SaveDialogs: String read FSaveDialogs;
+    property SaveBasicListColors: String read FSaveBasicListColors;
+    property SaveMangaListColors: String read FSaveMangaListColors;
+    property SaveFavoriteListColors: String read FSaveFavoriteListColors;
+    property SaveChapterListColor: String read FSaveChapterListColor;
+    property SaveModuleListColor: String read FSaveModuleListColor;
     property SaveLogger: String read FSaveLogger;
     property SaveDownloadFilter: String read FSaveDownloadFilter;
     property SaveVTDownload: String read FSaveVTDownload;
@@ -855,12 +865,17 @@ begin
   FSaveUpdate := 'Update';
   FSaveModulesUpdater := 'ModulesUpdater';
   FSaveDialogs := 'Dialogs';
+  FSaveBasicListColors := 'BasicListColors';
+  FSaveMangaListColors := 'MangaListColors';
+  FSaveFavoriteListColors := 'FavoriteListColors';
+  FSaveChapterListColor := 'ChapterListColor';
+  FSaveModuleListColor := 'ModuleListColor';
   FSaveLogger := 'Logger';
   FSaveDownloadFilter := 'DownloadFilter';
-  FSaveVTDownload := 'vtDownload';
-  FSaveVTFavorites := 'vtFavorites';
-  FSaveVTLuaModulesRepos := 'vtLuaModulesRepos';
-  FSaveVTAccountList := 'vtAccountList';
+  FSaveVTDownload := 'VTDownload';
+  FSaveVTFavorites := 'VTFavorites';
+  FSaveVTLuaModulesRepos := 'VTLuaModulesRepos';
+  FSaveVTAccountList := 'VTAccountList';
   FSaveModules := 'Modules';
 
   FGeneral := TGeneral.Create;

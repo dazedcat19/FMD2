@@ -1395,7 +1395,7 @@ begin
   TransferRateGraph.Visible := False;
 
   // minimize on start
-  if FMDOptions.SaveReadBool('general', 'MinimizeOnStart', FMDOptions.General.MinOnStart) then
+  if FMDOptions.SaveReadBool(FMDOptions.SaveGeneral, 'MinimizeOnStart', FMDOptions.General.MinOnStart) then
   begin
     Application.ShowMainForm := False;
   end;
@@ -1709,25 +1709,25 @@ end;
 procedure TMainForm.miFavoritesDefaultActionCheckNewChaptersClick(Sender: TObject);
 begin
   OptionDefaultAction := 3;
-  FMDOptions.SaveWriteInt('favorites', 'DefaultAction', 3);
+  FMDOptions.SaveWriteInt(FMDOptions.SaveFavorites, 'DefaultAction', 3);
 end;
 
 procedure TMainForm.miFavoritesDefaultActionOpenFolderClick(Sender: TObject);
 begin
   OptionDefaultAction := 0;
-  FMDOptions.SaveWriteInt('favorites', 'DefaultAction', 0);
+  FMDOptions.SaveWriteInt(FMDOptions.SaveFavorites, 'DefaultAction', 0);
 end;
 
 procedure TMainForm.miFavoritesDefaultActionRenameClick(Sender: TObject);
 begin
   OptionDefaultAction := 2;
-  FMDOptions.SaveWriteInt('favorites', 'DefaultAction', 2);
+  FMDOptions.SaveWriteInt(FMDOptions.SaveFavorites, 'DefaultAction', 2);
 end;
 
 procedure TMainForm.miFavoritesDefaultActionShowInfoClick(Sender: TObject);
 begin
   OptionDefaultAction := 1;
-  FMDOptions.SaveWriteInt('favorites', 'DefaultAction', 1);
+  FMDOptions.SaveWriteInt(FMDOptions.SaveFavorites, 'DefaultAction', 1);
 end;
 
 procedure TMainForm.miFavoritesEnableClick(Sender: TObject);
@@ -3301,7 +3301,7 @@ begin
   if currentWebsite <> Pointer(cbSelectManga.Items.Objects[cbSelectManga.ItemIndex]) then
   begin
     currentWebsite := cbSelectManga.Items.Objects[cbSelectManga.ItemIndex];
-    FMDOptions.SaveWriteStr('form', 'SelectManga', TModuleContainer(currentWebsite).ID);
+    FMDOptions.SaveWriteStr(FMDOptions.SaveForm, 'SelectManga', TModuleContainer(currentWebsite).ID);
     vtMangaList.Clear;
 
     if dataProcess = nil then
@@ -6137,7 +6137,7 @@ procedure TMainForm.FillSaveTo(const AModule: Pointer);
 var
   saveToPath, saveToPathOverride: String;
 begin
-  saveToPath := Trim(FMDOptions.SaveReadStr('saveto', 'SaveTo', DEFAULT_PATH));
+  saveToPath := Trim(FMDOptions.SaveReadStr(FMDOptions.SaveSaveTo, 'SaveTo', DEFAULT_PATH));
 
   saveToPathOverride := OverrideSaveTo(AModule);
   if saveToPathOverride <> '' then
@@ -7005,7 +7005,7 @@ begin
 
   // load selected websites
   cbSelectManga.Clear;
-  s := FMDOptions.SaveReadStr('general', 'MangaListSelect', FMDOptions.General.SelectedMangaLists);
+  s := FMDOptions.SaveReadStr(FMDOptions.SaveGeneral, 'MangaListSelect', FMDOptions.General.SelectedMangaLists);
   for s in s.Split([',']) do
   begin
     module := Modules.LocateModule(s);
@@ -7030,7 +7030,7 @@ begin
   end;
 
   // load last selected webssite
-  currentWebsite := Modules.LocateModule(FMDOptions.SaveReadStr('form', 'SelectManga', ''));
+  currentWebsite := Modules.LocateModule(FMDOptions.SaveReadStr(FMDOptions.SaveForm, 'SelectManga', ''));
 end;
 
 procedure TMainForm.edMangaListSearchChange(Sender: TObject);
@@ -7421,7 +7421,7 @@ end;
 procedure TMainForm.ShowDropTarget(const AShow: Boolean);
 begin
   ckDropTarget.Checked := AShow;
-  FMDOptions.SaveWriteBool('droptarget', 'Show', AShow);
+  FMDOptions.SaveWriteBool(FMDOptions.SaveDropTarget, 'Show', AShow);
 
   if AShow then
   begin
@@ -7474,7 +7474,7 @@ begin
     end;
 
     cbLanguages.ItemIndex := SimpleTranslator.AvailableLanguages.IndexOfName(
-    FMDOptions.SaveReadStr('languages', 'Selected', FMDOptions.General.Language));
+    FMDOptions.SaveReadStr(FMDOptions.SaveLanguages, 'Selected', FMDOptions.General.Language));
   end;
 end;
 

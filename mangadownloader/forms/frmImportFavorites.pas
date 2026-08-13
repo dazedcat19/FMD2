@@ -216,7 +216,7 @@ begin
 
   if urlList.Count > 0 then
   begin
-    path := CleanAndExpandDirectory(FMDOptions.SaveReadStr('saveto', 'SaveTo', ''));
+    path := CleanAndExpandDirectory(FMDOptions.SaveReadStr(FMDOptions.SaveSaveTo, 'SaveTo', ''));
     regx := TRegExpr.Create;
     try
       regx.Expression := REGEX_HOST;

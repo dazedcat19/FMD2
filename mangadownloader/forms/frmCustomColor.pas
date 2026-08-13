@@ -352,35 +352,35 @@ begin
     //basiclist
     for i := 0 to BasicListColors.Count - 1 do
     begin
-      BasicListColors[i] := StringToColor(SaveReadStr('BasicListColors', BasicListColors.N[i],
+      BasicListColors[i] := StringToColor(SaveReadStr(SaveBasicListColors, BasicListColors.N[i],
         ColorToString(BasicListColors[i])));
     end;
 
     //mangalist
     for i := 0 to MangaListColors.Count - 1 do
     begin
-      MangaListColors[i] := StringToColor(SaveReadStr('MangaListColors', MangaListColors.N[i],
+      MangaListColors[i] := StringToColor(SaveReadStr(SaveMangaListColors, MangaListColors.N[i],
         ColorToString(MangaListColors[i])));
     end;
 
     //favoritelist
     for i := 0 to FavoriteListColors.Count - 1 do
     begin
-      FavoriteListColors[i] := StringToColor(SaveReadStr('FavoriteListColors', FavoriteListColors.N[i],
+      FavoriteListColors[i] := StringToColor(SaveReadStr(SaveFavoriteListColors, FavoriteListColors.N[i],
         ColorToString(FavoriteListColors[i])));
     end;
 
     //chapterlist
     for i := 0 to ChapterListColor.Count - 1 do
     begin
-      ChapterListColor[i] := StringToColor(SaveReadStr('ChapterListColor', ChapterListColor.N[i],
+      ChapterListColor[i] := StringToColor(SaveReadStr(SaveChapterListColor, ChapterListColor.N[i],
         ColorToString(ChapterListColor[i])));
     end;
 
     //modulelist
     for i := 0 to ModuleListColor.Count - 1 do
     begin
-      ModuleListColor[i] := StringToColor(SaveReadStr('ModuleListColor', ModuleListColor.N[i],
+      ModuleListColor[i] := StringToColor(SaveReadStr(SaveModuleListColor, ModuleListColor.N[i],
         ColorToString(ModuleListColor[i])));
     end;
 
@@ -397,31 +397,31 @@ begin
     //basiclist
     for i := 0 to BasicListColors.Count - 1 do
     begin
-      SaveWriteStr('BasicListColors', BasicListColors.N[i], ColorToString(BasicListColors[i]));
+      SaveWriteStr(SaveBasicListColors, BasicListColors.N[i], ColorToString(BasicListColors[i]));
     end;
 
     //mangalist
     for i := 0 to MangaListColors.Count - 1 do
     begin
-      SaveWriteStr('MangaListColors', MangaListColors.N[i], ColorToString(MangaListColors[i]));
+      SaveWriteStr(SaveMangaListColors, MangaListColors.N[i], ColorToString(MangaListColors[i]));
     end;
 
     //favoritelist
     for i := 0 to FavoriteListColors.Count - 1 do
     begin
-      SaveWriteStr('FavoriteListColors', FavoriteListColors.N[i], ColorToString(FavoriteListColors[i]));
+      SaveWriteStr(SaveFavoriteListColors, FavoriteListColors.N[i], ColorToString(FavoriteListColors[i]));
     end;
 
     //chapterlist
     for i := 0 to ChapterListColor.Count - 1 do
     begin
-      SaveWriteStr('ChapterListColor', ChapterListColor.N[i], ColorToString(ChapterListColor[i]));
+      SaveWriteStr(SaveChapterListColor, ChapterListColor.N[i], ColorToString(ChapterListColor[i]));
     end;
 
     //modulelist
     for i := 0 to ModuleListColor.Count - 1 do
     begin
-      SaveWriteStr('ModuleListColor', ModuleListColor.N[i], ColorToString(ModuleListColor[i]));
+      SaveWriteStr(SaveModuleListColor, ModuleListColor.N[i], ColorToString(ModuleListColor[i]));
     end;
   end;
 end;
