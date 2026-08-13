@@ -122,7 +122,7 @@ function GetInfo()
 	HTTP.MimeType = 'application/json'
 
 	if not HTTP.POST(u, s) then return net_problem end
-HTTP.Document.SaveToFile('info.html')
+
 	local x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
 	local info = x.XPath('parse-json(.)?data?get_comicNode?data')
 	MANGAINFO.Title     = x.XPathString('name', info) .. GetLanguageCodeSuffix(x.XPathString('translatedLanguage', info))
