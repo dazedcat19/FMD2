@@ -1,20 +1,4 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = '4f4a3f7ae9c24a83a52fdcfd8b1f5c7d'
-	m.Name                     = 'VyManga'
-	m.RootURL                  = 'https://mangavyvy.com'
-	m.Category                 = 'English'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
-end
-
-----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
@@ -96,3 +80,20 @@ function BeforeDownloadImage()
 
 	return true
 end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = '4f4a3f7ae9c24a83a52fdcfd8b1f5c7d'
+	m.Name                     = 'VyManga'
+	m.RootURL                  = 'https://mangavyvy.com'
+	m.Category                 = 'English'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
+end
+
