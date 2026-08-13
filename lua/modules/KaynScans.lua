@@ -42,9 +42,9 @@ end
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                       = 'e1bb1dd018ff498382dba79d28c401d5'
-	m.Name                     = 'Vortex Scans'
-	m.RootURL                  = 'https://vortexscans.org'
+	m.ID                       = 'a631c777b09a4e5095dfe28819743d48'
+	m.Name                     = 'Kayn Scans'
+	m.RootURL                  = 'https://kaynscan.org'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
