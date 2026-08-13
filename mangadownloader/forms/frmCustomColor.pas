@@ -146,13 +146,16 @@ type
 procedure AddVT(const AVT: VirtualTrees.TVirtualStringTree); inline;
 procedure RemoveVT(const AVT: VirtualTrees.TVirtualStringTree); inline;
 procedure Apply;
-procedure LoadFromIniFile(const AIniFile: TJSONIniFile);
-procedure SaveToIniFile(const AIniFile: TJSONIniFile);
+procedure LoadCustomColors;
+procedure SaveCustomColors;
 
 var
   CustomColorForm: TCustomColorForm;
 
 implementation
+
+uses
+  uVars;
 
 const
   TextStyleLeftCenter: TTextStyle = (
@@ -340,44 +343,44 @@ begin
   end;
 end;
 
-procedure LoadFromIniFile(const AIniFile: TJSONIniFile);
+procedure LoadCustomColors;
 var
   i: Integer;
 begin
-  with AIniFile do
+  with FMDOptions do
   begin
     //basiclist
     for i := 0 to BasicListColors.Count - 1 do
     begin
-      BasicListColors[i] := StringToColor(ReadString('BasicListColors', BasicListColors.N[i],
+      BasicListColors[i] := StringToColor(SaveReadStr('BasicListColors', BasicListColors.N[i],
         ColorToString(BasicListColors[i])));
     end;
 
     //mangalist
     for i := 0 to MangaListColors.Count - 1 do
     begin
-      MangaListColors[i] := StringToColor(ReadString('MangaListColors', MangaListColors.N[i],
+      MangaListColors[i] := StringToColor(SaveReadStr('MangaListColors', MangaListColors.N[i],
         ColorToString(MangaListColors[i])));
     end;
 
     //favoritelist
     for i := 0 to FavoriteListColors.Count - 1 do
     begin
-      FavoriteListColors[i] := StringToColor(ReadString('FavoriteListColors', FavoriteListColors.N[i],
+      FavoriteListColors[i] := StringToColor(SaveReadStr('FavoriteListColors', FavoriteListColors.N[i],
         ColorToString(FavoriteListColors[i])));
     end;
 
     //chapterlist
     for i := 0 to ChapterListColor.Count - 1 do
     begin
-      ChapterListColor[i] := StringToColor(ReadString('ChapterListColor', ChapterListColor.N[i],
+      ChapterListColor[i] := StringToColor(SaveReadStr('ChapterListColor', ChapterListColor.N[i],
         ColorToString(ChapterListColor[i])));
     end;
 
     //modulelist
     for i := 0 to ModuleListColor.Count - 1 do
     begin
-      ModuleListColor[i] := StringToColor(ReadString('ModuleListColor', ModuleListColor.N[i],
+      ModuleListColor[i] := StringToColor(SaveReadStr('ModuleListColor', ModuleListColor.N[i],
         ColorToString(ModuleListColor[i])));
     end;
 
@@ -385,40 +388,40 @@ begin
   end;
 end;
 
-procedure SaveToIniFile(const AIniFile: TJSONIniFile);
+procedure SaveCustomColors;
 var
   i: Integer;
 begin
-  with AIniFile do
+  with FMDOptions do
   begin
     //basiclist
     for i := 0 to BasicListColors.Count - 1 do
     begin
-      WriteString('BasicListColors', BasicListColors.N[i], ColorToString(BasicListColors[i]));
+      SaveWriteStr('BasicListColors', BasicListColors.N[i], ColorToString(BasicListColors[i]));
     end;
 
     //mangalist
     for i := 0 to MangaListColors.Count - 1 do
     begin
-      WriteString('MangaListColors', MangaListColors.N[i], ColorToString(MangaListColors[i]));
+      SaveWriteStr('MangaListColors', MangaListColors.N[i], ColorToString(MangaListColors[i]));
     end;
 
     //favoritelist
     for i := 0 to FavoriteListColors.Count - 1 do
     begin
-      WriteString('FavoriteListColors', FavoriteListColors.N[i], ColorToString(FavoriteListColors[i]));
+      SaveWriteStr('FavoriteListColors', FavoriteListColors.N[i], ColorToString(FavoriteListColors[i]));
     end;
 
     //chapterlist
     for i := 0 to ChapterListColor.Count - 1 do
     begin
-      WriteString('ChapterListColor', ChapterListColor.N[i], ColorToString(ChapterListColor[i]));
+      SaveWriteStr('ChapterListColor', ChapterListColor.N[i], ColorToString(ChapterListColor[i]));
     end;
 
     //modulelist
     for i := 0 to ModuleListColor.Count - 1 do
     begin
-      WriteString('ModuleListColor', ModuleListColor.N[i], ColorToString(ModuleListColor[i]));
+      SaveWriteStr('ModuleListColor', ModuleListColor.N[i], ColorToString(ModuleListColor[i]));
     end;
   end;
 end;

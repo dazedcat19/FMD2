@@ -17,50 +17,114 @@ type
 
   TGeneral = class(TObject)
   private
-    FLanguage,
-    FSelectedMangaLists,
-    FExtProgramPath,
-    FExtProgramParam: String;
+    const
+      // Default
+      FLanguageDefault: String = 'en';
+      FExtProgramPathDefault: String = '';
+      FThemeDefault: Integer = 0;
+      FMangaDaysNewDefault: Integer = 1;
 
-    FAfterFMDDo,
-    FLetFMDDoAfterFinish: TFMDDo;
+    var
+      // Save Key
+      FSaveLanguage,
+      FSaveSelectedMangaLists,
+      FSaveExtProgramPath,
+      FSaveExtProgramParam: String;
 
-    FLetFMDDoAfterFinishInt,
-    FTheme,
-    FMangaDaysNew: Integer;
+      FSaveLetFMDDoAfterFinishInt,
+      FSaveTheme,
+      FSaveMangaDaysNew: String;
 
-    FMinOnStart,
-    FMinToTray,
-    FOneFMDInstance,
-    FListLiveSearch,
-    FMangaLoadAddToList,
-    FHghlghtNewManga,
-    FSortChptrListAsc,
-    FChptrListHideDwnlded,
-    FHghlghtDwnldedChptrs,
-    FDelCompltdDLOnClose,
-    FAddNewDLAsStopped,
-    FSortDLAddNew,
-    FDBVacuumExit,
-    FLongNamePaths: Boolean;
+      FSaveMinOnStart,
+      FSaveMinToTray,
+      FSaveOneFMDInstance,
+      FSaveListLiveSearch,
+      FSaveMangaLoadAddToList,
+      FSaveHghlghtNewManga,
+      FSaveSortChptrListAsc,
+      FSaveChptrListHideDwnlded,
+      FSaveHghlghtDwnldedChptrs,
+      FSaveDelCompltdDLOnClose,
+      FSaveAddNewDLAsStopped,
+      FSaveSortDLAddNew,
+      FSaveDBVacuumExit,
+      FSaveLongNamePaths: String;
 
-    procedure SetExtProgramPath(Const AValue: String);
-    procedure SetExtProgramParam(Const AValue: String);
+      // Option
+      FLanguage,
+      FSelectedMangaLists,
+      FExtProgramPath,
+      FExtProgramParam: String;
 
-    procedure SetAfterFMDDo(Const AValue: TFMDDO);
-    procedure SetLetFMDDoAfterFinish(Const AValue: TFMDDO);
+      FAfterFMDDo,
+      FLetFMDDoAfterFinish: TFMDDo;
 
-    procedure SetLetFMDDoAfterFinishInt(Const AValue: Integer);
-    procedure SetTheme(Const AValue: Integer);
-    procedure SetMangaDaysNew(Const AValue: Integer);
-  public
+      FLetFMDDoAfterFinishInt,
+      FTheme,
+      FMangaDaysNew: Integer;
+
+      FMinOnStart,
+      FMinToTray,
+      FOneFMDInstance,
+      FListLiveSearch,
+      FMangaLoadAddToList,
+      FHghlghtNewManga,
+      FSortChptrListAsc,
+      FChptrListHideDwnlded,
+      FHghlghtDwnldedChptrs,
+      FDelCompltdDLOnClose,
+      FAddNewDLAsStopped,
+      FSortDLAddNew,
+      FDBVacuumExit,
+      FLongNamePaths: Boolean;
+
+    // Get/Set Method
+    function GetSelectedMangaListsDefault: String;
+
+    procedure SetExtProgramPath(const AValue: String);
+    procedure SetExtProgramParam(const AValue: String);
+
+    procedure SetAfterFMDDo(const AValue: TFMDDo);
+    procedure SetLetFMDDoAfterFinish(const AValue: TFMDDo);
+
+    procedure SetLetFMDDoAfterFinishInt(const AValue: Integer);
+    procedure SetTheme(const AValue: Integer);
+    procedure SetMangaDaysNew(const AValue: Integer);
+
+  public 
+    // TGeneral Save Key
+    property SaveLanguage: String read FSaveLanguage;
+    property SaveSelectedMangaLists: String read FSaveSelectedMangaLists;
+    property SaveExtProgramPath: String read FSaveExtProgramPath;
+    property SaveExtProgramParam: String read FSaveExtProgramParam;
+
+    property SaveLetFMDDoAfterFinishInt: String read FSaveLetFMDDoAfterFinishInt;
+    property SaveTheme: String read FSaveTheme;
+    property SaveMangaDaysNew: String read FSaveMangaDaysNew;
+
+    property SaveMinOnStart: String read FSaveMinOnStart;
+    property SaveMinToTray: String read FSaveMinToTray;
+    property SaveOneFMDInstance: String read FSaveOneFMDInstance;
+    property SaveListLiveSearch: String read FSaveListLiveSearch;
+    property SaveMangaLoadAddToList: String read FSaveMangaLoadAddToList;
+    property SaveHghlghtNewManga: String read FSaveHghlghtNewManga;
+    property SaveSortChptrListAsc: String read FSaveSortChptrListAsc;
+    property SaveChptrListHideDwnlded: String read FSaveChptrListHideDwnlded;
+    property SaveHghlghtDwnldedChptrs: String read FSaveHghlghtDwnldedChptrs;
+    property SaveDelCompltdDLOnClose: String read FSaveDelCompltdDLOnClose;
+    property SaveAddNewDLAsStopped: String read FSaveAddNewDLAsStopped;
+    property SaveSortDLAddNew: String read FSaveSortDLAddNew;
+    property SaveDBVacuumExit: String read FSaveDBVacuumExit;
+    property SaveLongNamePaths: String read FSaveLongNamePaths;
+
+    // TGeneral Option
     property Language: String read FLanguage;
     property SelectedMangaLists: String read FSelectedMangaLists; 
     property ExtProgramPath: String read FExtProgramPath write SetExtProgramPath;
     property ExtProgramParam: String read FExtProgramParam write SetExtProgramParam;
 
-    property AfterFMDDo: TFMDDO read FAfterFMDDo write SetAfterFMDDo;
-    property LetFMDDoAfterFinish: TFMDDO read FLetFMDDoAfterFinish write SetLetFMDDoAfterFinish;
+    property AfterFMDDo: TFMDDo read FAfterFMDDo write SetAfterFMDDo;
+    property LetFMDDoAfterFinish: TFMDDo read FLetFMDDoAfterFinish write SetLetFMDDoAfterFinish;
 
     property LetFMDDoAfterFinishInt: Integer read FLetFMDDoAfterFinishInt write SetLetFMDDoAfterFinishInt;
     property Theme: Integer read FTheme write SetTheme;
@@ -82,39 +146,123 @@ type
     property LongNamePaths: Boolean read FLongNamePaths write FLongNamePaths;
 
     constructor Create;
-                             
+
+    // TGeneral Get/Set Method
     procedure SetLanguage;
     procedure SetSelectedMangaLists;
-    function CheckAfterFMDDo(Const AValue: TFMDDo): Boolean; overload;
-    function CheckAfterFMDDo(Const AValue: TFMDDoSet): Boolean; overload;
-    function CheckLetFMDDoAfterFinish(Const AValue: TFMDDo): Boolean; overload;
-    function CheckLetFMDDoAfterFinish(Const AValue: TFMDDoSet): Boolean; overload;
+
+    procedure SetSaveHghlghtNewManga(const AValue: Boolean);
+    procedure SetSaveSortChptrListAsc(const AValue: Boolean);
+    procedure SetSaveChptrListHideDwnlded(const AValue: Boolean);
+    procedure SetSaveHghlghtDwnldedChptrs(const AValue: Boolean);
+    procedure SetSaveAddNewDLAsStopped(const AValue: Boolean);
+    
+    // TGeneral Method
+    function CheckAfterFMDDo(const AValue: TFMDDo): Boolean; overload;
+    function CheckAfterFMDDo(const AValue: TFMDDoSet): Boolean; overload;
+    function CheckLetFMDDoAfterFinish(const AValue: TFMDDo): Boolean; overload;
+    function CheckLetFMDDoAfterFinish(const AValue: TFMDDoSet): Boolean; overload;
   end;
 
   { TOptions }
 
   TOptions = class(TObject)
   private
-    FGeneral: TGeneral;
-    FView: TObject;
-    FConnections: TObject;
-    FSaveTo: TObject;
-    FUpdates: TObject;
-    FDialogs: TObject;
-    FWebsites: TObject;
-    FMisc: TObject;
+    class var 
+      // Save Ini
+      FSaveIni: TJSONIniFile;
+                
+      // Save Section
+      FSaveGeneral: String;
+
+    var
+      // Save Section
+      FLegacySaveThemeMode: String;
+
+      FSaveForm,
+      FSaveLanguages,
+      FSaveThemeMode,
+      FSaveView,
+      FSaveDropTarget,
+      FSaveFavorites,
+      FSaveConnections,
+      FSaveSaveTo,
+      FSaveImageMagick,
+      FSaveUpdate,
+      FSaveModulesUpdater,
+      FSaveDialogs,
+      FSaveLogger,
+      FSaveDownloadFilter,
+      FSaveVTDownload,
+      FSaveVTFavorites,
+      FSaveVTLuaModulesRepos,
+      FSaveVTAccountList,
+      FSaveModules: String;
+
+      // Option Class
+      FGeneral: TGeneral;
+      FView: TObject;
+      FConnections: TObject;
+      FSaveTo: TObject;
+      FUpdate: TObject;
+      FDialogs: TObject;
+      FWebsites: TObject;
+      FMisc: TObject;
   public
+    // TOptions Save Section
+    property LegacySaveThemeMode: String read FLegacySaveThemeMode;
+               
+    property SaveForm: String read FSaveForm;
+    class property SaveGeneral: String read FSaveGeneral;
+    property SaveLanguages: String read FSaveLanguages;
+    property SaveThemeMode: String read FSaveThemeMode;
+    property SaveView: String read FSaveView;
+    property SaveDropTarget: String read FSaveDropTarget;
+    property SaveFavorites: String read FSaveFavorites;
+    property SaveConnections: String read FSaveConnections;
+    property SaveSaveTo: String read FSaveSaveTo;
+    property SaveImageMagick: String read FSaveImageMagick;
+    property SaveUpdate: String read FSaveUpdate;
+    property SaveModulesUpdater: String read FSaveModulesUpdater;
+    property SaveDialogs: String read FSaveDialogs;
+    property SaveLogger: String read FSaveLogger;
+    property SaveDownloadFilter: String read FSaveDownloadFilter;
+    property SaveVTDownload: String read FSaveVTDownload;
+    property SaveVTFavorites: String read FSaveVTFavorites;
+    property SaveVTLuaModulesRepos: String read FSaveVTLuaModulesRepos;
+    property SaveVTAccountList: String read FSaveVTAccountList;
+    property SaveModules: String read FSaveModules;
+
+    // TOptions Option Class
     property General: TGeneral read FGeneral;
     property View: TObject read FView;
     property Connections: TObject read FConnections;
     property SaveTo: TObject read FSaveTo;
-    property Updates: TObject read FUpdates;
+    property Update: TObject read FUpdate;
     property Dialogs: TObject read FDialogs;
     property Websites: TObject read FWebsites;
     property Misc: TObject read FMisc;
 
     constructor Create;
     destructor Destroy; override;
+
+    // TOptions Save Ini Read/Write Method
+    class function LegacySaveReadStr(const ALegacySection, ASection, AIdent, ADefaultValue: String): String;
+    class function LegacySaveReadInt(const ALegacySection, ASection, AIdent: String; ADefaultValue: Integer): Integer;
+    class function LegacySaveReadBool(const ALegacySection, ASection, AIdent: String; ADefaultValue: Boolean): Boolean;
+    class function LegacySaveReadDate(const ALegacySection, ASection, AIdent: String; ADefaultValue: TDateTime): TDateTime;
+
+    class function SaveReadStr(const ASection, AIdent, ADefaultValue: String): String;
+    class function SaveReadInt(const ASection, AIdent: String; ADefaultValue: Integer): Integer;
+    class function SaveReadBool(const ASection, AIdent: String; ADefaultValue: Boolean): Boolean;
+    class function SaveReadDate(const ASection, AIdent: String; ADefaultValue: TDateTime): TDateTime;
+
+    class procedure SaveWriteStr(const ASection, AIdent, AValue: String);
+    class procedure SaveWriteInt(const ASection, AIdent: String; AValue: Integer);
+    class procedure SaveWriteBool(const ASection, AIdent: String; AValue: Boolean);
+    class procedure SaveWriteDate(const ASection, AIdent: String; AValue: TDateTime);
+
+    class procedure SaveWriteToDisk;
   end;
 
 
@@ -192,9 +340,6 @@ var
 
   // program params
   AppParams: TStringList;
-
-  // json files
-  settingsfile: TJSONIniFile;
 
   // base url, should be in base.json
   DEFAULT_SELECTED_WEBSITES: String = '';
@@ -327,186 +472,9 @@ procedure SetAppDataDirectory(const ADir: String);
 implementation
 
 uses
-  frmMain, WebsiteModules, SimpleTranslator;
+  frmMain, WebsiteModules, SimpleTranslator, MultiLog;
 
-{ TGeneral }
-
-constructor TGeneral.Create;
-begin
-  inherited Create;
-
-  FLanguage := 'en';
-  FSelectedMangaLists := DEFAULT_SELECTED_WEBSITES; 
-  FExtProgramPath := '';
-  FExtProgramParam := DEFAULT_EXPARAM;
-
-  FAfterFMDDo := DO_NOTHING;
-  FLetFMDDoAfterFinish := DO_NOTHING;
-
-  FLetFMDDoAfterFinishInt := 0;
-  FTheme := 0;
-  FMangaDaysNew := 1;
-
-  FMinOnStart := False;
-  FMinToTray := False;
-  FOneFMDInstance := True;  
-  FListLiveSearch := True;
-  FMangaLoadAddToList := False;
-  FHghlghtNewManga := True;
-  FSortChptrListAsc := True;
-  FChptrListHideDwnlded := False;
-  FHghlghtDwnldedChptrs := True;
-  FDelCompltdDLOnClose := False;
-  FAddNewDLAsStopped := False;
-  FSortDLAddNew := False;
-  FDBVacuumExit := False;  
-  FLongNamePaths := False;
-end;
-
-procedure TGeneral.SetLanguage;
-var
-  languagesItemIndex: Integer;
-begin
-  languagesItemIndex := MainForm.cbLanguages.ItemIndex;
-
-  if languagesItemIndex < 0 then
-  begin
-    FLanguage := 'en';
-    Exit;
-  end;
-
-  FLanguage := AvailableLanguages.Names[languagesItemIndex];
-end;
-
-procedure TGeneral.SetSelectedMangaLists;
-var
-  lists: String;
-  mangaItems: TStrings;
-  i: Integer;
-  m: TModuleContainer;
-begin
-  mangaItems := MainForm.cbSelectManga.Items;
-
-  if mangaItems.Count = 0 then
-  begin
-    Exit;
-  end;
-
-  lists := '';
-  for i := 0 to mangaItems.Count - 1 do
-  begin
-    m := TModuleContainer(mangaItems.Objects[i]);
-    if m <> nil then
-    begin
-      lists += m.ID + ',';
-    end;
-  end;
-
-  FSelectedMangaLists := lists.TrimRight([',']);
-end;
-
-procedure TGeneral.SetExtProgramPath(Const AValue: String);
-begin
-  FExtProgramPath := '';
-
-  if FileExists(AValue) then
-  begin
-    FExtProgramPath := Trim(AValue);
-  end;
-end; 
-
-procedure TGeneral.SetExtProgramParam(Const AValue: String);
-begin
-  FExtProgramParam := Trim(AValue);
-end; 
-
-procedure TGeneral.SetAfterFMDDo(Const AValue: TFMDDo);
-begin
-  if not (AValue in [Low(TFMDDo)..High(TFMDDo)]) then
-  begin
-    Exit;
-  end;
-
-  FAfterFMDDo := AValue;
-end;
-
-procedure TGeneral.SetLetFMDDoAfterFinish(Const AValue: TFMDDo);
-begin
-  if not (AValue in [Low(TFMDDo)..High(TFMDDo)]) then
-  begin
-    Exit;
-  end;
-
-  FLetFMDDoAfterFinish := AValue;
-  FLetFMDDoAfterFinishInt := Ord(AValue);
-end;
-
-procedure TGeneral.SetLetFMDDoAfterFinishInt(Const AValue: Integer);
-begin 
-  if (AValue <= Ord(Low(TFMDDo))) or (AValue >= Ord(High(TFMDDo))) then
-  begin
-    Exit;
-  end;
-
-  FLetFMDDoAfterFinishInt := AValue;
-  FLetFMDDoAfterFinish := TFMDDo(AValue);
-end;
-
-function TGeneral.CheckAfterFMDDo(Const AValue: TFMDDo): Boolean;
-begin
-  Result := FAfterFMDDo = AValue;
-end;
-
-function TGeneral.CheckAfterFMDDo(Const AValue: TFMDDoSet): Boolean;
-begin
-  Result := FAfterFMDDo in AValue;
-end;
-
-function TGeneral.CheckLetFMDDoAfterFinish(Const AValue: TFMDDo): Boolean;
-begin
-  Result := FLetFMDDoAfterFinish = AValue;
-end;
-
-function TGeneral.CheckLetFMDDoAfterFinish(Const AValue: TFMDDoSet): Boolean;
-begin
-  Result := FLetFMDDoAfterFinish in AValue;
-end; 
-
-procedure TGeneral.SetTheme(Const AValue: Integer);
-begin
-  if (AValue < 0) or (AValue > 2) then
-  begin
-    Exit;
-  end;
-
-  FTheme := AValue;
-end;
-
-procedure TGeneral.SetMangaDaysNew(Const AValue: Integer);
-begin
-  if AValue < 1 then
-  begin
-    Exit;
-  end;
-
-  FMangaDaysNew := AValue;
-end;
-     
-{ TOptions }
-
-constructor TOptions.Create;
-begin
-  inherited Create;
-
-  FGeneral := TGeneral.Create;
-end;
-
-destructor TOptions.Destroy;
-begin
-  FGeneral.Free;
-
-  inherited Destroy;
-end;
+{ Global }
 
 procedure FreeNil(var Obj);
 begin
@@ -516,17 +484,6 @@ begin
   end;
 
   Pointer(Obj) := nil;
-end;
-
-procedure FreeIniFiles;
-begin
-  FreeNil(settingsfile);
-end;
-
-procedure SetIniFiles;
-begin
-  FreeIniFiles;
-  settingsfile := TJSONIniFile.Create(SETTINGS_FILE);
 end;
 
 procedure ReadConfigFile;
@@ -591,8 +548,6 @@ begin
   LUA_PACKAGES_FOLDER := LUA_REPO_FOLDER + 'packages' + PathDelim;
   LUA_WEBSITEMODULE_FOLDER := LUA_REPO_FOLDER + 'modules' + PathDelim;
   LUA_WEBSITEBYPASS_FOLDER := LUA_REPO_FOLDER + 'websitebypass' + PathDelim;
-
-  SetIniFiles;
 end;
 
 procedure doInitialization;
@@ -614,8 +569,375 @@ end;
 
 procedure doFinalization;
 begin
-  FreeIniFiles;
   AppParams.Free;
+end;
+
+{ TGeneral }
+
+constructor TGeneral.Create;
+begin
+  inherited Create;
+
+  // Save Key
+  FSaveLanguage := 'Selected';
+  FSaveSelectedMangaLists := 'MangaListSelect';
+  FSaveExtProgramPath := 'ExternalProgramPath';
+  FSaveExtProgramParam := 'ExternalProgramParams';
+
+  FSaveLetFMDDoAfterFinishInt := 'LetFMDDo';
+  FSaveTheme := 'Mode';
+  FSaveMangaDaysNew := 'NewMangaTime';
+
+  FSaveMinOnStart := 'MinimizeOnStart';
+  FSaveMinToTray := 'MinimizeToTray';
+  FSaveOneFMDInstance := 'OneInstanceOnly';
+  FSaveListLiveSearch := 'LiveSearch';
+  FSaveMangaLoadAddToList := 'MangaLoadAddToList';
+  FSaveHghlghtNewManga := 'HighlightNewManga';
+  FSaveSortChptrListAsc := 'SortChapterListAscending';
+  FSaveChptrListHideDwnlded := 'ChapterListHideDownloaded';
+  FSaveHghlghtDwnldedChptrs := 'HighlightDownloadedChapters';
+  FSaveDelCompltdDLOnClose := 'DeleteCompletedTasksOnClose';
+  FSaveAddNewDLAsStopped := 'AddAsStopped';
+  FSaveSortDLAddNew := 'SortDownloadsOnNewTasks';
+  FSaveDBVacuumExit := 'VacuumDatabasesOnExit';
+  FSaveLongNamePaths := 'EnableLongNamePaths';
+
+  // Option
+  FLanguage := FLanguageDefault;
+  FSelectedMangaLists := GetSelectedMangaListsDefault;
+  FExtProgramPath := FExtProgramPathDefault;
+  FExtProgramParam := DEFAULT_EXPARAM;
+
+  FAfterFMDDo := DO_NOTHING;
+  FLetFMDDoAfterFinish := DO_NOTHING;
+
+  FLetFMDDoAfterFinishInt := 0;
+  FTheme := FThemeDefault;
+  FMangaDaysNew := FMangaDaysNewDefault;
+
+  FMinOnStart := False;
+  FMinToTray := False;
+  FOneFMDInstance := True;  
+  FListLiveSearch := True;
+  FMangaLoadAddToList := False;
+  FHghlghtNewManga := True;
+  FSortChptrListAsc := True;
+  FChptrListHideDwnlded := False;
+  FHghlghtDwnldedChptrs := True;
+  FDelCompltdDLOnClose := False;
+  FAddNewDLAsStopped := False;
+  FSortDLAddNew := False;
+  FDBVacuumExit := False;  
+  FLongNamePaths := False;
+end;
+
+function TGeneral.GetSelectedMangaListsDefault: String;
+begin
+  Result := DEFAULT_SELECTED_WEBSITES;
+end;
+
+procedure TGeneral.SetLanguage;
+var
+  languagesItemIndex: Integer;
+begin
+  languagesItemIndex := MainForm.cbLanguages.ItemIndex;
+
+  if languagesItemIndex < 0 then
+  begin
+    Logger.SendWarning(Self.ClassName + '.SetLanguage: Invalid language item index');
+
+    FLanguage := FLanguageDefault;
+    Exit;
+  end;
+
+  FLanguage := AvailableLanguages.Names[languagesItemIndex];
+end;
+
+procedure TGeneral.SetSelectedMangaLists;
+var
+  lists: String;
+  mangaItems: TStrings;
+  i: Integer;
+  m: TModuleContainer;
+begin
+  mangaItems := MainForm.cbSelectManga.Items;
+
+  if mangaItems.Count = 0 then
+  begin 
+    Logger.SendWarning(Self.ClassName + '.SetSelectedMangaLists: No manga list elements remaining');
+
+    FSelectedMangaLists := GetSelectedMangaListsDefault;
+    Exit;
+  end;
+
+  lists := '';
+  for i := 0 to mangaItems.Count - 1 do
+  begin
+    m := TModuleContainer(mangaItems.Objects[i]);
+    if m <> nil then
+    begin
+      lists += m.ID + ',';
+    end;
+  end;
+
+  FSelectedMangaLists := lists.TrimRight([',']);
+end;
+
+procedure TGeneral.SetExtProgramPath(const AValue: String);
+var
+  extProgram: String;
+begin
+  extProgram := Trim(AValue);
+
+  if not FileExists(extProgram) then
+  begin
+    Logger.SendWarning(Self.ClassName + '.SetExtProgramPath: External program path/file invalid or doesn''t exist');
+
+    FExtProgramPath := FExtProgramPathDefault;
+    Exit;
+  end;
+
+  FExtProgramPath := extProgram;
+end; 
+
+procedure TGeneral.SetExtProgramParam(const AValue: String);
+begin
+  FExtProgramParam := Trim(AValue);
+end; 
+
+procedure TGeneral.SetAfterFMDDo(const AValue: TFMDDo);
+begin
+  if not (AValue in [Low(TFMDDo)..High(TFMDDo)]) then
+  begin                                              
+    Logger.SendWarning(Self.ClassName + '.SetAfterFMDDo: Invalid TFMDDo element');
+
+    Exit;
+  end;
+
+  FAfterFMDDo := AValue;
+end;
+
+procedure TGeneral.SetLetFMDDoAfterFinish(const AValue: TFMDDo);
+begin
+  if not (AValue in [Low(TFMDDo)..High(TFMDDo)]) then
+  begin
+    Logger.SendWarning(Self.ClassName + '.SetLetFMDDoAfterFinish: Invalid TFMDDo element');
+
+    Exit;
+  end;
+
+  FLetFMDDoAfterFinish := AValue;
+  FLetFMDDoAfterFinishInt := Ord(AValue);
+end;
+
+procedure TGeneral.SetLetFMDDoAfterFinishInt(const AValue: Integer);
+begin 
+  if (AValue <= Ord(Low(TFMDDo))) or (AValue >= Ord(High(TFMDDo))) then
+  begin                                                                
+    Logger.SendWarning(Self.ClassName + '.SetLetFMDDoAfterFinishInt: Invalid index for TFMDDo');
+
+    Exit;
+  end;
+
+  FLetFMDDoAfterFinishInt := AValue;
+  FLetFMDDoAfterFinish := TFMDDo(AValue);
+end;
+
+function TGeneral.CheckAfterFMDDo(const AValue: TFMDDo): Boolean;
+begin
+  Result := FAfterFMDDo = AValue;
+end;
+
+function TGeneral.CheckAfterFMDDo(const AValue: TFMDDoSet): Boolean;
+begin
+  Result := FAfterFMDDo in AValue;
+end;
+
+function TGeneral.CheckLetFMDDoAfterFinish(const AValue: TFMDDo): Boolean;
+begin
+  Result := FLetFMDDoAfterFinish = AValue;
+end;
+
+function TGeneral.CheckLetFMDDoAfterFinish(const AValue: TFMDDoSet): Boolean;
+begin
+  Result := FLetFMDDoAfterFinish in AValue;
+end; 
+
+procedure TGeneral.SetTheme(const AValue: Integer);
+begin
+  if (AValue < 0) or (AValue > 2) then
+  begin
+    Logger.SendWarning(Self.ClassName + '.SetTheme: Invalid theme item index');
+
+    FTheme := FThemeDefault;
+    Exit;
+  end;
+
+  FTheme := AValue;
+end;
+
+procedure TGeneral.SetMangaDaysNew(const AValue: Integer);
+begin
+  if AValue < 1 then
+  begin    
+    Logger.SendWarning(Self.ClassName + '.SetMangaDaysNew: Invalid days amount value');
+
+    FMangaDaysNew := FMangaDaysNewDefault;
+    Exit;
+  end;
+
+  FMangaDaysNew := AValue;
+end;
+
+procedure TGeneral.SetSaveHghlghtNewManga(const AValue: Boolean);
+begin
+   FHghlghtNewManga := AValue;
+
+   TOptions.SaveWriteBool(TOptions.SaveGeneral, FSaveHghlghtNewManga, FHghlghtNewManga);
+   TOptions.SaveWriteToDisk;
+end;
+
+procedure TGeneral.SetSaveSortChptrListAsc(const AValue: Boolean);
+begin
+   FSortChptrListAsc := AValue;
+
+   TOptions.SaveWriteBool(TOptions.SaveGeneral, FSaveSortChptrListAsc, FSortChptrListAsc);
+   TOptions.SaveWriteToDisk;
+end;
+
+procedure TGeneral.SetSaveChptrListHideDwnlded(const AValue: Boolean);
+begin
+   FChptrListHideDwnlded := AValue;
+
+   TOptions.SaveWriteBool(TOptions.SaveGeneral, FSaveChptrListHideDwnlded, FChptrListHideDwnlded);
+   TOptions.SaveWriteToDisk;
+end;
+
+procedure TGeneral.SetSaveHghlghtDwnldedChptrs(const AValue: Boolean);
+begin
+   FHghlghtDwnldedChptrs := AValue;
+
+   TOptions.SaveWriteBool(TOptions.SaveGeneral, FSaveHghlghtDwnldedChptrs, FHghlghtDwnldedChptrs);
+   TOptions.SaveWriteToDisk;
+end;
+
+procedure TGeneral.SetSaveAddNewDLAsStopped(const AValue: Boolean);
+begin
+   FAddNewDLAsStopped := AValue;
+
+   TOptions.SaveWriteBool(TOptions.SaveGeneral, FSaveAddNewDLAsStopped, FAddNewDLAsStopped);
+   TOptions.SaveWriteToDisk;
+end;
+
+{ TOptions }
+
+constructor TOptions.Create;
+begin
+  inherited Create;
+   
+  FreeNil(FSaveIni);
+  FSaveIni := TJSONIniFile.Create(SETTINGS_FILE);
+
+  // Save Section
+  FLegacySaveThemeMode:= 'DarkMode';
+
+  FSaveForm := 'Form';
+  FSaveGeneral := 'General';
+  FSaveLanguages := 'Languages';
+  FSaveThemeMode := 'Theme';
+  FSaveView := 'View';
+  FSaveDropTarget := 'DropTarget';
+  FSaveFavorites := 'Favorites';
+  FSaveConnections := 'Connections';
+  FSaveSaveTo := 'SaveTo';
+  FSaveImageMagick := 'ImageMagick';
+  FSaveUpdate := 'Update';
+  FSaveModulesUpdater := 'ModulesUpdater';
+  FSaveDialogs := 'Dialogs';
+  FSaveLogger := 'Logger';
+  FSaveDownloadFilter := 'DownloadFilter';
+  FSaveVTDownload := 'vtDownload';
+  FSaveVTFavorites := 'vtFavorites';
+  FSaveVTLuaModulesRepos := 'vtLuaModulesRepos';
+  FSaveVTAccountList := 'vtAccountList';
+  FSaveModules := 'Modules';
+
+  FGeneral := TGeneral.Create;
+end;
+
+destructor TOptions.Destroy;
+begin      
+  FreeNil(FSaveIni);
+
+  FGeneral.Free;
+
+  inherited Destroy;
+end;
+
+class function TOptions.LegacySaveReadStr(const ALegacySection, ASection, AIdent, ADefaultValue: String): String;
+begin
+  Result := FSaveIni.ReadString(ASection, AIdent, FSaveIni.ReadString(ALegacySection, AIdent, ADefaultValue));
+end;
+
+class function TOptions.LegacySaveReadInt(const ALegacySection, ASection, AIdent: String; ADefaultValue: Integer): Integer;
+begin
+  Result := FSaveIni.ReadInteger(ASection, AIdent, FSaveIni.ReadInteger(ALegacySection, AIdent, ADefaultValue));
+end;
+
+class function TOptions.LegacySaveReadBool(const ALegacySection, ASection, AIdent: String; ADefaultValue: Boolean): Boolean;
+begin
+  Result := FSaveIni.ReadBool(ASection, AIdent, FSaveIni.ReadBool(ALegacySection, AIdent, ADefaultValue));
+end;
+
+class function TOptions.LegacySaveReadDate(const ALegacySection, ASection, AIdent: String; ADefaultValue: TDateTime): TDateTime;
+begin
+  Result := FSaveIni.ReadDate(ASection, AIdent, FSaveIni.ReadDate(ALegacySection, AIdent, ADefaultValue));
+end;
+
+class function TOptions.SaveReadStr(const ASection, AIdent, ADefaultValue: String): String;
+begin
+  Result := FSaveIni.ReadString(ASection, AIdent, ADefaultValue);
+end;
+
+class function TOptions.SaveReadInt(const ASection, AIdent: String; ADefaultValue: Integer): Integer;
+begin
+  Result := FSaveIni.ReadInteger(ASection, AIdent, ADefaultValue);
+end;
+
+class function TOptions.SaveReadBool(const ASection, AIdent: String; ADefaultValue: Boolean): Boolean;
+begin
+  Result := FSaveIni.ReadBool(ASection, AIdent, ADefaultValue);
+end;
+
+class function TOptions.SaveReadDate(const ASection, AIdent: String; ADefaultValue: TDateTime): TDateTime;
+begin
+  Result := FSaveIni.ReadDate(ASection, AIdent, ADefaultValue);
+end;
+
+class procedure TOptions.SaveWriteStr(const ASection, AIdent, AValue: String);
+begin
+  FSaveIni.WriteString(ASection, AIdent, AValue);
+end;
+
+class procedure TOptions.SaveWriteInt(const ASection, AIdent: String; AValue: Integer);
+begin
+  FSaveIni.WriteInteger(ASection, AIdent, AValue);
+end;
+
+class procedure TOptions.SaveWriteBool(const ASection, AIdent: String; AValue: Boolean);
+begin
+  FSaveIni.WriteBool(ASection, AIdent, AValue);
+end;
+
+class procedure TOptions.SaveWriteDate(const ASection, AIdent: String; AValue: TDateTime);
+begin
+  FSaveIni.WriteDate(ASection, AIdent, AValue);
+end;
+
+class procedure TOptions.SaveWriteToDisk;
+begin
+  FSaveIni.UpdateFile;
 end;
 
 initialization
