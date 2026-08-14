@@ -116,6 +116,7 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
+	local crypto = require 'fmd.crypto'
 	local mid = URL:match('^/[^/]+/([^-]+)')
 	local u = MODULE.RootURL .. API_URL
 	local s = '{"query":"query get_comicNode($id: ID!) { get_comicNode(id: $id) { data { name translatedLanguage altNames urlCover authorNodes { data { name } } artistNodes { data { name } } genres originalStatus uploadStatus summary { text } extraInfo { text } } } }","variables":{"id":"' .. mid .. '"}}'
@@ -123,7 +124,7 @@ function GetInfo()
 
 	if not HTTP.POST(u, s) then return net_problem end
 
-	local x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
+	local x = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString()))
 	local info = x.XPath('parse-json(.)?data?get_comicNode?data')
 	MANGAINFO.Title     = x.XPathString('name', info) .. GetLanguageCodeSuffix(x.XPathString('translatedLanguage', info))
 	MANGAINFO.AltTitles = x.XPathString('string-join(altNames?*, ", ")', info)
@@ -166,7 +167,7 @@ function GetInfo()
 
 		if not HTTP.POST(u, s) then return net_problem end
 
-		local x = CreateTXQuery(HTTP.Document)
+		local x = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString()))
 		for v in x.XPath('parse-json(.)?data?get_comic_chapterList_fullList?items?*?data').Get() do
 			local chapter = v.GetProperty('dname').ToString()
 			local title = v.GetProperty('title').ToString()
