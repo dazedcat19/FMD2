@@ -208,7 +208,7 @@
 | LectorJPG | [![https://lectorjpg.com](https://img.shields.io/website?url=https://lectorjpg.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lectorjpg.com)](https://lectorjpg.com) | OK | 28.02.2025 | - |
 | LectorManga | [![https://lectormangaa.com](https://img.shields.io/website?url=https://lectormangaa.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lectormangaa.com)](https://lectormangaa.com) | OK | 06.08.2025 | - |
 | LectorXD | [![https://lectorxd.com](https://img.shields.io/website?url=https://lectorxd.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lectorxd.com)](https://lectorxd.com) | OK | 14.06.2026 | - |
-| LeeMiau | [![https://leemiau.com](https://img.shields.io/website?url=https://leemiau.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://leemiau.com)](https://leemiau.com) | OK | 20.08.2025 | - |
+| LeeMiau | [![https://leemiau.com](https://img.shields.io/website?url=https://leemiau.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://leemiau.com)](https://leemiau.com) | OK | 14.08.2026 | - |
 | LeerCapitulo | [![https://www.leercapitulo.co](https://img.shields.io/website?url=https://www.leercapitulo.co%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.leercapitulo.co)](https://www.leercapitulo.co) | OK | 18.06.2026 | - |
 | LeerManga | [![https://leermanga.net](https://img.shields.io/website?url=https://leermanga.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://leermanga.net)](https://leermanga.net) | - | - | - |
 | LeitorNet | [![https://leitor.net](https://img.shields.io/website?url=https://leitor.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://leitor.net)](https://leitor.net) | - | - | - |
