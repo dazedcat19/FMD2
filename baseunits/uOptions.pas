@@ -702,7 +702,10 @@ begin
 
   if not FileExists(extProgram) then
   begin
-    Logger.SendWarning(Self.ClassName + '.SetExtProgramPath: External program path/file invalid or doesn''t exist');
+    if extProgram <> '' then
+    begin
+      Logger.SendWarning(Self.ClassName + '.SetExtProgramPath: External program path/file invalid or doesn''t exist');
+    end;
 
     FExtProgramPath := FExtProgramPathDefault;
     Exit;
@@ -742,8 +745,8 @@ begin
 end;
 
 procedure TGeneral.SetLetFMDDoAfterFinishInt(const AValue: Integer);
-begin 
-  if (AValue <= Ord(Low(TFMDDo))) or (AValue >= Ord(High(TFMDDo))) then
+begin
+  if (AValue < Ord(Low(TFMDDo))) or (AValue > Ord(High(TFMDDo))) then
   begin                                                                
     Logger.SendWarning(Self.ClassName + '.SetLetFMDDoAfterFinishInt: Invalid index for TFMDDo');
 

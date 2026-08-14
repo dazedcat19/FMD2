@@ -70,19 +70,22 @@ end;
 
 procedure TGitHubRepo.ReadWorkFile;
 begin
-  if FileExists(WorkFile) then
+  if not FileExists(WorkFile) then
   begin
-    with TJSONConfig.Create(nil) do
-    begin
-      try
-        Filename := WorkFile;
-        last_commit_sha := GetValue('last_commit_sha', '');
-        last_commit_etag := GetValue('last_commit_etag', '');
-        FDirty := False;
-      except
-      end;
-      Free;
+    Exit;
+  end;
+
+  with TJSONConfig.Create(nil) do
+  begin
+    try
+      Filename := WorkFile;
+      last_commit_sha := GetValue('last_commit_sha', '');
+      last_commit_etag := GetValue('last_commit_etag', '');
+      FDirty := False;
+    except
     end;
+
+    Free;
   end;
 end;
 
@@ -266,6 +269,7 @@ begin
       try
         a := TJSONArray(d.GetPath('tree'));
         Tree.Clear;
+
         for i := 0 to a.Count-1 do
         begin
           with TJSONObject(a.Items[i]) do
@@ -283,8 +287,10 @@ begin
         end;
       except
       end;
+
       d.Free;
     end;
+
     Result := Tree.Count <> 0;
   end
 end;
