@@ -74,6 +74,7 @@ begin
   end;
 
   if Assigned(MangaCheck) then
+  begin
     MangaCheck.Free;
   end;
   

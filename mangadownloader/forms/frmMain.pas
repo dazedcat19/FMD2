@@ -6652,7 +6652,7 @@ begin
     edLogFileName.Text := SaveReadStr(SaveLogger, 'LogFileName', '');
     
     frmLuaModulesUpdater.LuaModulesUpdaterForm.ckEnableModuleDebug.Checked :=
-      ReadBool(SaveModules, 'Debug', False);
+      SaveReadBool(SaveModules, 'Debug', False);
 
     ckEnableLogging.Checked := SaveReadBool(SaveLogger, 'Enabled', False);
       
