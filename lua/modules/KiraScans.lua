@@ -34,12 +34,10 @@ end
 function GetInfo()
 	Template.GetInfo()
 
-	local v, x = nil
-
-	x = CreateTXQuery(HTTP.Document)
+	local x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.AltTitles = x.XPathString('//div[@class="desktop-titles"]')
 
-	for v in x.XPath('//div[@id="chapterlist"]//li/a[not(@data-bs-target="#lockedChapterModal")]').Get() do
+	for v in x.XPath('//div[@id="chapterlist"]//li/a').Get() do
 		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
 		MANGAINFO.ChapterNames.Add(x.XPathString('.//span[@class="chapternum"]/normalize-space(.)', v))
 	end

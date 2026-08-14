@@ -28,6 +28,7 @@ type
   public
     HTTP: THTTPSendThread;
     MangaInfo: TMangaInfo;
+    MangaCheck: TMangaCheck;
     isGetByUpdater: Boolean;
     isGenerateFolderChapterName: Boolean;
     isRemoveUnicode: Boolean;
@@ -60,6 +61,7 @@ begin
   FOwner := AOwnerThread;
   HTTP := THTTPSendThread.Create(AOwnerThread);
   MangaInfo := TMangaInfo.Create;
+  MangaCheck := TMangaCheck.Create;
   isGetByUpdater := False;
   isRemoveHostFromChapterLinks := True;
 end;
@@ -71,6 +73,10 @@ begin
     MangaInfo.Free;
   end;
 
+  if Assigned(MangaCheck) then
+    MangaCheck.Free;
+  end;
+  
   HTTP.Free;
   inherited Destroy;
 end;

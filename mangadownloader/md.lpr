@@ -13,7 +13,7 @@ uses
   Forms, LazFileUtils, jsonini, simpleipc, sqlite3dyn, uBaseUnit, uOptions,
   uVars, webp, CheckUpdate, DBUpdater, SelfUpdater, uDownloadsManager,
   LuaWebsiteModules, LuaBase, SimpleException, Classes, sysutils, frmMain,
-  uDarkStyle, uMetaDarkStyle, uDarkStyleSchemes, uDarkStyleParams,
+  frmCheckModules, uDarkStyle, uMetaDarkStyle, uDarkStyleSchemes, uDarkStyleParams,
   MultiLog, FileChannel, ssl_openssl3_lib, blcksock, ssl_openssl3, SQLiteData;
 
 var
@@ -289,5 +289,6 @@ begin
 
   Application.CreateForm(TMainForm, MainForm);
   MainForm.winBuildNumber := g_buildNumber;
+  Application.CreateForm(TFormCheckModules, FormCheckModules);
   Application.Run;
 end.

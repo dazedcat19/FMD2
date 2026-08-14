@@ -216,10 +216,13 @@ begin
     sizeGZin := inStream.ReadDWord; // ISIZE (Input SIZE)
     inStream.Size := inStream.Size-8; // cut the 4 byte crc32 and 4 byte input size
   end
-  else if (hdr and $00009C78) = $00009C78 then // zlib header
+  else if (hdr and $00000078) = $00000078 then // zlib header
   begin
     streamType := zsZLib; // deflate format (with header)
-    headerSize := 2;
+    if (hdr and $00002000) = $00002000 then // FDICT preset dictionary
+      headerSize := 6
+    else
+      headerSize := 2;
     inStream.Seek(-4, soFromEnd); // first byte is start of deflate header
     adler32in := SwapEndian(inStream.ReadDWord);
     inStream.Size := inStream.Size-4; // cut the 4 byte adler32 code

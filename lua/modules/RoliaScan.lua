@@ -11,13 +11,14 @@ function Init()
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.SortedList               = true
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-DirectoryPagination = '/manga'
+local Template = require 'templates.MangaTaro'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -25,44 +26,21 @@ DirectoryPagination = '/manga'
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local u = MODULE.RootURL .. DirectoryPagination
-
-	if not HTTP.GET(u) then return net_problem end
-
-	CreateTXQuery(HTTP.Document).XPathHREFAll('//h6/a', LINKS, NAMES)
+	Template.GetNameAndLink()
 
 	return no_error
 end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local x = nil
-	local u = MaybeFillHost(MODULE.RootURL, URL)
-
-	if not HTTP.GET(u) then return net_problem end
-
-	x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//h1')
-	MANGAINFO.CoverLink = x.XPathString('(//img[contains(@class, "poster")])[1]/@src')
-	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="d-inline-block"]/a')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//tr[(./th="Status")]/td'), 'currently publishing')
-	MANGAINFO.Summary   = x.XPathString('//div[(./h5="Synopsis")]/p')
-
-	if not HTTP.GET(u .. 'chapterlist/') then return net_problem end
-
-	CreateTXQuery(HTTP.Document).XPathHREFAll('//a[@class="seenchapter"]', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
-	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
+	Template.GetInfo()
 
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local u = MaybeFillHost(MODULE.RootURL, URL)
+	Template.GetPageNumber()
 
-	if not HTTP.GET(u) then return net_problem end
-
-	CreateTXQuery(HTTP.Document).XPathStringAll('//div[@class="manga-child-the-content my-5"]/img/@src', TASK.PageLinks)
-
-	return no_error
+	return true
 end

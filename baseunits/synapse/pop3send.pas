@@ -100,6 +100,7 @@ type
     function Connect: Boolean;
     function AuthLogin: Boolean;
     function AuthApop: Boolean;
+    function AuthOAuth2: Boolean;
   public
     constructor Create;
     destructor Destroy; override;
@@ -278,6 +279,19 @@ begin
   Result := CustomCommand('APOP ' + FUserName + ' ' + s, False);
 end;
 
+function TPOP3Send.AuthOAuth2: Boolean;
+var
+  request, encoded, response: string;
+begin
+  Result := False;
+  request := 'user=' + FUsername + Chr(1) + 'auth=Bearer ' + FOAuth2Token + Chr(1) + Chr(1);
+  encoded := EncodeBase64(request);
+  FSock.SendString('AUTH XOAUTH2' + CRLF);
+  response := FSock.RecvString(FTimeout);
+  if Pos('+', response) = 1 then
+    Result := CustomCommand(encoded, False);
+end;
+
 function TPOP3Send.Connect: Boolean;
 begin
   // Do not call this function! It is calling by LOGIN method!
@@ -329,19 +343,26 @@ begin
         Result := False;
         Exit;
       end;
-  if (FTimeStamp <> '') and not (FAuthType = POP3AuthLogin) then
+  if FOAuth2Token <> '' then
   begin
-    Result := AuthApop;
-    if not Result then
+    Result := AuthOAuth2;
+  end
+  else
+  begin
+    if (FTimeStamp <> '') and not (FAuthType = POP3AuthLogin) then
     begin
-      if not Connect then
-        Exit;
-      if ReadResult(False) <> 1 then
-        Exit;
+      Result := AuthApop;
+      if not Result then
+      begin
+        if not Connect then
+          Exit;
+        if ReadResult(False) <> 1 then
+          Exit;
+      end;
     end;
+    if not Result and not (FAuthType = POP3AuthAPOP) then
+      Result := AuthLogin;
   end;
-  if not Result and not (FAuthType = POP3AuthAPOP) then
-    Result := AuthLogin;
 end;
 
 function TPOP3Send.Logout: Boolean;

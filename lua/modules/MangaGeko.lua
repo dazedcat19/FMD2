@@ -19,7 +19,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-DirectoryPagination = '/browse-comics/?results=%s&filter=New'
+local DirectoryPagination = '/browse-comics/?results=%s&filter=New'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -38,8 +38,7 @@ end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local x = nil
-	local u = MODULE.RootURL .. DirectoryPagination:format((URL + 1))
+	local u = MODULE.RootURL .. DirectoryPagination:format(URL + 1)
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -50,13 +49,13 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local v, x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
+	local x = CreateTXQuery(HTTP.Document)
 	MANGAINFO.Title     = x.XPathString('//h1[contains(@class, "title")]')
+	MANGAINFO.AltTitles = x.XPathString('//h2[contains(@class, "alternative-title")]')
 	MANGAINFO.CoverLink = x.XPathString('//figure[@class="cover"]/img/@data-src')
 	MANGAINFO.Authors   = x.XPathString('//span[@itemprop="author"]')
 	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="categories"]//a')
@@ -65,12 +64,11 @@ function GetInfo()
 
 	if not HTTP.GET(MANGAINFO.URL .. 'all-chapters/') then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
+	local x = CreateTXQuery(HTTP.Document)
 	for v in x.XPath('//ul[@class="chapter-list"]//a').Get() do
 		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
 		MANGAINFO.ChapterNames.Add('Chapter ' .. x.XPathString('strong/replace(., "-eng-li", "")', v))
 	end
-
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
@@ -82,7 +80,7 @@ function GetPageNumber()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('//section[@class="page-in content-wrap"]//center/div/img/@src', TASK.PageLinks)
+	CreateTXQuery(HTTP.Document).XPathStringAll('//section[@class="page-in content-wrap"]//center//img[contains(@id, "image-")]/@src', TASK.PageLinks)
 
 	return no_error
 end

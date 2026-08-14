@@ -1,90 +1,137 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = '23eb3a472201427e8824ecdd5223bad7'
-	m.Name                     = 'MangaFire'
-	m.RootURL                  = 'https://mangafire.to'
-	m.Category                 = 'English'
-	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
-
-	local fmd = require 'fmd.env'
-	local slang = fmd.SelectedLanguage
-	local lang = {
-		['en'] = {
-			['lang'] = 'Language:',
-			['listtype'] = 'List type:',
-			['type'] = 'Chapter\nVolume'
-		},
-		['id_ID'] = {
-			['lang'] = 'Bahasa:',
-			['listtype'] = 'Tipe daftar:',
-			['type'] = 'Bab\nJilid'
-		},
-		get =
-			function(self, key)
-				local sel = self[slang]
-				if sel == nil then sel = self['en'] end
-				return sel[key]
-			end
-	}
-
-	local items = 'None'
-	local t = GetLangList()
-	for k, v in ipairs(t) do items = items .. '\r\n' .. v; end
-	m.AddOptionComboBox('lang', lang:get('lang'), items, 1)
-	m.AddOptionComboBox('listtype', lang:get('listtype'), lang:get('type'), 0)
-end
-
-----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-DirectoryPagination = '/newest?page='
-
-----------------------------------------------------------------------------------------------------
--- Auxiliary Functions
-----------------------------------------------------------------------------------------------------
+local RootURL = 'https://mangafire.to'
+local API_URL = RootURL .. '/api'
+local DirectoryPagination = '/titles?limit=100&order[created_at]=desc&page='
 
 local Langs = {
-	["en"] = "English",
-	["fr"] = "French",
-	["ja"] = "Japanese",
-	["pt-br"] = "Portuguese (Br)",
-	["pt"] = "Portuguese (Pt)",
-	["es-la"] = "Spanish (LATAM)",
-	["es"] = "Spanish (Es)"
+	{   nil, 'All' },
+	{  'en', 'English' },
+	{  'fr', 'French' },
+	{  'ja', 'Japanese' },
+	{ 'pt-br', 'Portuguese (Br)' },
+	{  'pt', 'Portuguese (Pt)' },
+	{ 'es-la', 'Spanish (LATAM)' },
+	{  'es', 'Spanish (Es)' }
 }
 
-function GetLangList()
+----------------------------------------------------------------------------------------------------
+-- Helper Functions
+----------------------------------------------------------------------------------------------------
+
+local stages = {
+	{
+		table_b64 = 'yINlmUNho8VYJT+ibTIP+9ESiULpVEtMOoD6U6lRE0R/xwXo/Xp9NrUgC4cw/'
+		         .. 'Lmo33vUyjUE40kUoEWIr/fxfNNcq2s79ShQ5NhNrFnJ4hXPwOu/SuXzIbuTQKG'
+		         .. 'Fvfm08E9jvCfqAtoDqvQq3dVWPQFmJjgvkISBeXY3BgANR+yVnjGbcxZ47d6k'
+		         .. 'LNfZPIayTq3/YGySb1KuVZodWp/WGNAO5pfMcpaK53Hhs0allBszaMaxuouOwd'
+		         .. 'xbwgxIw6YunSsXjI05Yi0j9j4eHKfSXR8Ifo/Od+8iamRfCXTyvm7NGRGYdcQ'
+		         .. '0ywcK/u6RXhrbcCm4t2eCtrDgQVecJGkQ+A==',
+		key_b64   = '0Ec58JOY3uBzJK9m3zqIOpdlF7UFiax9DmA=',
+		iv        = 0x5A
+	},
+	{
+		table_b64 = 'IUFltCxD3Oc2cwCgkJffthaOg9cgPUb0LgW6H/VtfcF0kc5F25t+aWj6JH9V'
+		         .. 'OhOaY0rAFdUxlDnl5BLNvwEJvQtP5qcw7vdb/K+chnbwnspSHT8mz5lqwz41T'
+		         .. 'ezG0hkO06FTjJZhsyNuFLDpD2ZZxQj/QIRcF90zpmQ7Byu483WsQqUE0C342H'
+		         .. 'L+JXngRB6fRzxRyVTaKu83h7UYTJ0QMt6ixFh6S3F8gqkKwrGTL3jHNBsD45U'
+		         .. 'nifK8+RGtishQV2K3rujLKEkiZxpr2dYcudFW4oFsDKhad3CLBvuyTqsCo4B7m'
+		         .. 'L5IKQ1vXo/MOOvq1I1d8ar9X6Ttu5KF4fZgiA==',
+		key_b64   = 'AAdjb1iPY8CiDmq9H34tKTBF8a3oDQ==',
+		iv        = 0x35
+	},
+	{
+		table_b64 = 'NQHlu1/wVO5EmkwQymF810qqY2xG1k2obcas4Z9mCsPEIFl9pRIjFxbJ7ybM'
+		         .. 'HbBckT5Ton85E0FOeHezbh/mjlEYpmpnlXOS8dgrqeq2KfxImTh1YK9y0PeMN'
+		         .. 'hzA1OQzSY9brYOJq/l2QnE/hwOeZIhPixVSKIUlDb5vLcH6RWKxkIEMuP0bDw'
+		         .. 'IqQ71AJJaEaMJL7A6YtyIwoRT+L5v4aZzodN/0+3nOGsfblFjgxSfPzVDjNFe'
+		         .. 'Nl5P26+kEC/8AHgdrpAbt3hHz3HrRN1Y6e+JHgF7ncFWnoF0y3THL1S71WgWG'
+		         .. 'Ca6KtSzTCCG58n68nTyj2T3Sshk7utqCtMi/ZQ==',
+		key_b64   = 'DELOJgPsVaCcblDtTGMdHzM=',
+		iv        = 0xBA
+	}
+}
+
+local function EncryptStage(data, tbl, key, iv)
+	local out = {}
+	local previous = iv
+	local keylen = #key
+	for i = 1, #data do
+		previous = tbl:byte((data:byte(i) ~ key:byte(((i - 1) % keylen) + 1) ~ previous) + 1)
+		out[i] = string.char(previous)
+	end
+	return table.concat(out)
+end
+
+local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+
+local function EncodeBase64(data)
+	return ((data:gsub('.', function(x)
+		local r, bits = '', x:byte()
+		for i = 8, 1, -1 do
+			r = r .. (bits % 2 ^ i - bits % 2 ^ (i - 1) > 0 and '1' or '0')
+		end
+		return r
+	end) .. '0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
+		if (#x < 6) then return '' end
+		local c = 0
+		for i = 1, 6 do
+			c = c + (x:sub(i, i) == '1' and 2 ^ (6 - i) or 0)
+		end
+		return b:sub(c + 1, c + 1)
+	end) .. ({ '', '==', '=' })[#data % 3 + 1])
+end
+
+local function GenerateVRF(input)
+	local crypto = require 'fmd.crypto'
+	local bytes = input
+
+	for _, st in ipairs(stages) do
+		local tbl = crypto.DecodeBase64(st.table_b64)
+		local key = crypto.DecodeBase64(st.key_b64)
+		bytes = EncryptStage(bytes, tbl, key, st.iv)
+	end
+
+	return EncodeBase64(bytes):gsub('%+', '-'):gsub('/', '_'):gsub('=+$', '')
+end
+
+local function BuildChapterQuery(hid, listtype, optlangid, page)
+	local params = {}
+
+	if optlangid and listtype == 'chapters' then
+		table.insert(params, 'language=' .. optlangid)
+	end
+
+	if listtype == 'chapters' then
+		table.insert(params, 'limit=200')
+		table.insert(params, 'order=desc')
+		table.insert(params, 'page=' .. page)
+		table.insert(params, 'sort=number')
+	end
+
+	local path = '/titles/' .. hid .. '/' .. listtype
+
+	if #params > 0 then
+		path = path .. '?' .. table.concat(params, '&')
+	end
+
+	return path
+end
+
+-- Return language names in defined order
+local function GetLangList()
 	local t = {}
-	for k, v in pairs(Langs) do table.insert(t, v); end
-	table.sort(t)
+	for _, v in ipairs(Langs) do
+		table.insert(t, v[2])
+	end
 	return t
 end
 
-function FindLanguage(lang)
-	local t = GetLangList()
-	for i, v in ipairs(t) do
-		if i == lang then
-			lang = v
-			break
-		end
-	end
-	for k, v in pairs(Langs) do
-		if v == lang then return k; end
-	end
-	return nil
-end
-
-function decode_unicode(str)
-	return str:gsub("\\u(%x%x%x%x)", function(hex) return require("utf8").char(tonumber(hex, 16)) end)
+-- Return language key by index
+local function FindLanguage(lang)
+	return Langs[lang + 1][1]
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -93,81 +140,232 @@ end
 
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
-	local u = MODULE.RootURL .. DirectoryPagination .. 1
+	local path = DirectoryPagination .. 1
+	local vrf = GenerateVRF(path)
+	local u = API_URL .. path .. '&vrf=' .. vrf
 
 	if not HTTP.GET(u) then return net_problem end
 
-	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//ul[@class="pagination"]/li[last()]/a/@href/substring-after(., "=")')) or 1
+	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('json(*).meta.lastPage')) or 1
 
 	return no_error
 end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1)
+	local path = DirectoryPagination .. (URL + 1)
+	local vrf = GenerateVRF(path)
+	local u = API_URL .. path .. '&vrf=' .. vrf
 
 	if not HTTP.GET(u) then return net_problem end
 
-	CreateTXQuery(HTTP.Document).XPathHREFAll('//div[@class="info"]/a', LINKS, NAMES)
+	for v in CreateTXQuery(HTTP.Document).XPath('json(*).items()').Get() do
+		LINKS.Add(v.GetProperty('url').ToString())
+		NAMES.Add(v.GetProperty('title').ToString())
+	end
 
 	return no_error
 end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local langparam, listtype, optlang, optlangid, s, sel_listtype, v, x = nil
-	local u = MaybeFillHost(MODULE.RootURL, URL)
+	local hid = URL:match('%.(%w+)$') or URL:match('/(%w+)%-')
+	local vrf = GenerateVRF('/titles/' .. hid)
+	local u = API_URL .. '/titles/' .. hid .. '?vrf=' .. vrf
 
-	if not HTTP.GET(u) then return net_problem end
+	if not HTTP.GET(u) then	return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//h1')
-	MANGAINFO.AltTitles = x.XPathString('//div[@class="manga-detail"]//h6')
-	MANGAINFO.CoverLink = x.XPathString('(//div[@class="poster"])[1]//img/@src')
-	MANGAINFO.Authors   = x.XPathStringAll('//div[@class="meta"]/div[./span="Author:"]/span/a')
-	MANGAINFO.Genres    = x.XPathStringAll('//div[@class="meta"]/div[./span="Genres:"]/span/a')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[@class="info"]/p'), 'Releasing', 'Completed', 'On_hiatus', 'Discontinued')
-	MANGAINFO.Summary   = x.XPathString('string-join(//div[@class="modal-content p-4"]/text(), "\r\n")')
+	local x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
+	local info = x.XPath('json(*).data')
+	MANGAINFO.Title     = x.XPathString('title', info)
+	MANGAINFO.AltTitles = x.XPathString('string-join(altTitles?*, ", ")', info)
+	MANGAINFO.CoverLink = x.XPathString('poster?large', info)
+	MANGAINFO.Authors   = x.XPathString('string-join(authors?*?title, ", ")', info)
+	MANGAINFO.Artists   = x.XPathString('string-join(artists?*?title, ", ")', info)
+	MANGAINFO.Genres    = x.XPathString('string-join((genres?*?title, themes?*?title, demographics?*?title), ", ")', info)
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status', info), 'releasing', 'finished', 'on_hiatus', 'discontinued')
 
-	listtype     = {'chapter', 'volume'}
-	sel_listtype = (MODULE.GetOption('listtype') or 0) + 1
-	optlang      = MODULE.GetOption('lang')
-	optlangid    = FindLanguage(optlang)
+	local synopsis = x.XPathString('synopsisHtml', info)
+	if synopsis ~= '' then
+		MANGAINFO.Summary = CreateTXQuery(synopsis).XPathString('string-join(//text(), "\r\n")')
+	end
+	local slug = x.XPathString('slug', info)
 
-	if optlangid == nil then langparam = '' else langparam = optlangid end
+	MODULE.Storage['chaptertype'] = ({nil, 'official', 'unofficial'})[(MODULE.GetOption('chaptertype') or 0) + 1]
+	MODULE.Storage['listtype']    = ({'chapters', 'volumes'})[(MODULE.GetOption('listtype') or 0) + 1]
+	local optlang                 = MODULE.GetOption('lang')
+	local optlangid               = FindLanguage(optlang)
 
-	u = MODULE.RootURL .. '/ajax/read/' .. URL:match('%.(.-)$') .. '/' .. listtype[sel_listtype] .. '/' .. langparam
+	::fetch_start::
 
-	if not HTTP.GET(u) then return net_problem end
+	local deduplicate  = MODULE.GetOption('deduplicatechapters')
+	local chapter_map  = {}
+	local chapter_list = {}
+	local has_integer  = {}
+	local raw_chapters = {}
 
-	s = decode_unicode(HTTP.Document.ToString():gsub('\\"', '"'))
-	x = CreateTXQuery(s)
-	x.ParseHTML(x.XPathString('json(*).result'))
-	for v in x.XPath('//a').Get() do
-		MANGAINFO.ChapterLinks.Add(v.GetAttribute('data-id'))
-		MANGAINFO.ChapterNames.Add(x.XPathString('text()', v))
+	local page = 1
+	local pages = nil
+	while true do
+		local path = BuildChapterQuery(hid, MODULE.Storage['listtype'], optlangid, page)
+		local vrf = GenerateVRF(path)
+		if not HTTP.GET(API_URL .. path .. (path:find('?', 1, true) and '&vrf=' or '?vrf=') .. vrf) then return net_problem end
+
+		local x = CreateTXQuery(HTTP.Document)
+		for v in x.XPath('json(*).items()').Get() do
+			local cid    = v.GetProperty('id').ToString()
+			local number = v.GetProperty('number').ToString()
+			local name   = v.GetProperty('name').ToString()
+			local ctype  = v.GetProperty('type').ToString()
+			local lang   = v.GetProperty('language').ToString()
+
+			if optlangid and optlangid ~= lang then
+				goto continue
+			end
+
+			if MODULE.Storage['chaptertype'] ~= '' and MODULE.Storage['chaptertype'] ~= ctype then
+				goto continue
+			end
+
+			if not deduplicate then
+				local chapter_name = (MODULE.Storage['listtype'] == 'chapters') and 'Ch. ' .. number or 'Vol. ' .. number
+				if name ~= '' then
+					chapter_name = chapter_name .. ' - ' .. name
+				end
+
+				if ctype == 'official' then
+					chapter_name = chapter_name .. ' (Official)'
+				end
+
+				lang = not optlangid and ' [' .. lang .. ']' or ''
+
+				MANGAINFO.ChapterLinks.Add(hid .. '/' .. slug .. '/' .. cid)
+				MANGAINFO.ChapterNames.Add(chapter_name .. lang)
+			else
+				table.insert(raw_chapters, {
+					cid = cid, number = number, name = name,
+					ctype = ctype, lang = lang
+				})
+			end
+
+			::continue::
+		end
+
+		if not pages then
+			pages = tonumber(x.XPathString('json(*).meta.lastPage')) or 1
+		end
+		if page >= pages then break end
+		page = page + 1
+	end
+
+	if deduplicate then
+		for _, ch in ipairs(raw_chapters) do
+			if not ch.number:find('%.') then
+				has_integer[ch.number] = true
+			end
+		end
+
+		for _, ch in ipairs(raw_chapters) do
+			local base = ch.number:match('^(%d+)')
+			local key = (ch.ctype ~= 'official' and base and has_integer[base]) and base or ch.number
+			local current = chapter_map[key]
+
+			if not current then
+				chapter_map[key] = ch
+				table.insert(chapter_list, key)
+			elseif ch.ctype == 'official' and current.ctype ~= 'official' then
+				chapter_map[key] = ch
+			end
+		end
+
+		for _, key in ipairs(chapter_list) do
+			local ch = chapter_map[key]
+
+			local chapter_name = (MODULE.Storage['listtype'] == 'chapters') and 'Ch. ' .. ch.number or 'Vol. ' .. ch.number
+			if ch.name ~= '' then
+				chapter_name = chapter_name .. ' - ' .. ch.name
+			end
+
+			if ch.ctype == 'official' then
+				chapter_name = chapter_name .. ' (Official)'
+			end
+
+			local lang_suffix = not optlangid and ' [' .. ch.lang .. ']' or ''
+
+			MANGAINFO.ChapterLinks.Add(hid .. '/' .. slug .. '/' .. ch.cid)
+			MANGAINFO.ChapterNames.Add(chapter_name .. lang_suffix)
+		end
+	end
+	if MANGAINFO.ChapterLinks.Count == 0 and MODULE.Storage['listtype'] == 'volumes' then
+		MODULE.Storage['listtype'] = 'chapters'
+		goto fetch_start
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local listtype     = {'chapter', 'volume'}
-	local sel_listtype = (MODULE.GetOption('listtype') or 0) + 1
-	local u = MODULE.RootURL .. '/ajax/read/' .. listtype[sel_listtype] .. URL
+	local cid = URL:match('/(%d+)$')
+	local path = '/' .. MODULE.Storage['listtype'] .. '/' .. cid
+	local vrf = GenerateVRF(path)
+	local u = API_URL .. path .. '?vrf=' .. vrf
 
 	if not HTTP.GET(u) then return false end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).result.images()(1)', TASK.PageLinks)
+	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).data.pages().url', TASK.PageLinks)
 
 	return true
 end
 
 -- Prepare the URL, http header and/or http cookies before downloading an image.
 function BeforeDownloadImage()
-	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+	HTTP.Headers.Values['Referer'] = MaybeFillHost(MODULE.RootURL, TASK.ChapterLinks[TASK.CurrentDownloadChapterPtr])
 
 	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = '23eb3a472201427e8824ecdd5223bad7'
+	m.Name                     = 'MangaFire'
+	m.RootURL                  = RootURL
+	m.Category                 = 'English'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
+	m.SortedList               = true
+
+	local slang = require 'fmd.env'.SelectedLanguage
+	local translations = {
+		['en'] = {
+			['lang'] = 'Language:',
+			['listtype'] = 'List type:',
+			['ltype'] = 'Chapter\nVolume',
+			['chaptertype'] = 'Chapter type:',
+			['ctype'] = 'All\nOfficial\nUnofficial',
+			['deduplicatechapters'] = 'Deduplicate chapters (prefer official)'
+		},
+		['id_ID'] = {
+			['lang'] = 'Bahasa:',
+			['listtype'] = 'Tipe daftar:',
+			['ltype'] = 'Bab\nJilid',
+			['chaptertype'] = 'Tipe bab:',
+			['ctype'] = 'Semua\nResmi\nTidak resmi',
+			['deduplicatechapters'] = 'Hapus bab ganda (utamakan bab resmi)'
+		}
+	}
+	local lang = translations[slang] or translations.en
+	local items = table.concat(GetLangList(), '\r\n')
+	m.AddOptionComboBox('lang', lang.lang, items, 1)
+	m.AddOptionComboBox('listtype', lang.listtype, lang.ltype, 0)
+	m.AddOptionComboBox('chaptertype', lang.chaptertype, lang.ctype, 0)
+	m.AddOptionCheckBox('deduplicatechapters', lang.deduplicatechapters, false)
 end

@@ -6,18 +6,19 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '7103ae6839ea46ec80cdfc2c4b37c803'
 	m.Name                     = 'Asura Scans'
-	m.RootURL                  = 'https://asuracomic.net'
+	m.RootURL                  = 'https://asurascans.com'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.SortedList               = true
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-DirectoryPagination = '/series?page='
+local API_URL = 'https://api.asurascans.com/api/series'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -25,50 +26,55 @@ DirectoryPagination = '/series?page='
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local v, x = nil
-	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1)
+	local u = MODULE.RootURL .. '/browse?sort=newest'
 
 	if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
-	if x.XPath('//div[contains(@class, "md:grid-cols-5")]/a').Count == 0 then return no_error end
-	for v in x.XPath('//div[contains(@class, "md:grid-cols-5")]/a').Get() do
-		LINKS.Add(v.GetAttribute('href'):gsub('-(%w+)$', '-'))
-		NAMES.Add(x.XPathString('div/div/div[2]/span[1]', v))
+	local x = CreateTXQuery(HTTP.Document)
+	while true do
+		for v in x.XPath('//div[@class="p-3"]/a').Get() do
+			LINKS.Add(v.GetAttribute('href'):gsub('-(%w+)$', ''))
+			NAMES.Add(x.XPathString('h3', v))
+		end
+		local next_url = x.XPathString('//a[@aria-label="Next page"]/@href')
+		if next_url == '' then break end
+		UPDATELIST.UpdateStatusText('Loading page ' .. (next_url:match('(%d+)') or ''))
+		if not HTTP.GET(MaybeFillHost(MODULE.RootURL, next_url)) then break end
+		x.ParseHTML(HTTP.Document)
 	end
-	UPDATELIST.CurrentDirectoryPageNumber = UPDATELIST.CurrentDirectoryPageNumber + 1
 
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
-	local v, x = nil
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//span[@class="text-xl font-bold"]')
-	MANGAINFO.CoverLink = x.XPathString('(//img[@alt="poster"])[1]/@src')
-	MANGAINFO.Authors   = x.XPathString('//h3[contains(., "Author")]/following-sibling::h3')
-	MANGAINFO.Artists   = x.XPathString('//h3[contains(., "Artist")]/following-sibling::h3')
-	MANGAINFO.Genres    = x.XPathStringAll('//h3[contains(., "Genres")]/following-sibling::div/button')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//h3[contains(., "Status")]/following-sibling::h3'))
-	MANGAINFO.Summary   = x.XPathString('//span[@class="font-medium text-sm text-[#A2A2A2]"]')
+	local x = CreateTXQuery(HTTP.Document)
+	MANGAINFO.Title     = x.XPathString('//h1')
+	MANGAINFO.AltTitles = x.XPathString('//p[@id="alt-titles"]')
+	MANGAINFO.CoverLink = x.XPathString('//div[contains(@class, "w-full h-full absolute")]/img/@src')
+	MANGAINFO.Authors   = x.XPathStringAll('//a[contains(@href, "author")]')
+	MANGAINFO.Artists   = x.XPathStringAll('//a[contains(@href, "artist")]')
+	MANGAINFO.Genres    = x.XPathStringAll('(//a[contains(@href, "genres")], concat(upper-case(substring(//span[contains(@class, "bold text-[#913FE2]")], 1, 1)), lower-case(substring(//span[contains(@class, "bold text-[#913FE2]")], 2))))')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//span[contains(@class, "text-[#A78BFA]")]'), 'Ongoing', 'Completed', 'Hiatus', 'Dropped')
+	MANGAINFO.Summary   = x.XPathString('string-join(//div[@id="description-text"]//p, "\r\n")')
 
-	for v in x.XPath('//div[contains(@class, "group")]/a').Get() do
-		-- Check if the chapter has a circle icon (an <svg> element inside a <span> within the <h3>)
-		local hasCircleIcon = x.XPath(string.format(
-			'//a[@href="%s"]//h3[contains(@class, "text-sm text-white font-medium")]/span/svg',
-			v.GetAttribute('href')
-		)).Count > 0
-		-- Only add chapters without a circle icon
-		if not hasCircleIcon then
-			-- Add the chapter link to MANGAINFO.ChapterLinks
-			MANGAINFO.ChapterLinks.Add('series/' .. v.GetAttribute('href'):gsub('-(%w+)/chapter', '-/chapter'))
-			-- Extract and add the chapter name to MANGAINFO.ChapterNames
-			MANGAINFO.ChapterNames.Add(x.XPathString('string-join(h3[contains(@class, "text-sm text-white font-medium")]//text(), " ")', v))
+	local data = require 'utils.json'.decode(x.XPathString('//div[@class="mt-4"]//@props'))
+	local slug = data.seriesSlug[2]
+	for _, v in ipairs(data.chapters[2]) do
+		local c = v[2]
+		local number = c.number[2]
+		local title = c.title and c.title[2]
+		local is_locked = c.is_locked[2]
+
+		title = title and (' - ' .. title) or ''
+
+		if not is_locked then
+			MANGAINFO.ChapterLinks.Add(slug .. '/chapters/' .. number)
+			MANGAINFO.ChapterNames.Add('Chapter ' .. number .. title)
 		end
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
@@ -76,17 +82,13 @@ function GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local i, img = nil
-	local u = MaybeFillHost(MODULE.RootURL, URL)
+	local u = API_URL .. URL
 
-	if not HTTP.GET(u) then return net_problem end
+	if not HTTP.GET(u) then return false end
 
-	img = GetBetween("push(", "])", CreateTXQuery(HTTP.Document).XPathString('(//script[contains(., "published_at")])[last()]'):gsub('\\"', '"')) .. ']'
-	for i in img:gmatch('"url":"(.-)"') do
-		TASK.PageLinks.Add(i)
-	end
+	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).data.chapter.pages().url', TASK.PageLinks)
 
-	return no_error
+	return true
 end

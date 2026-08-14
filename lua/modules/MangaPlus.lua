@@ -13,9 +13,8 @@ function Init()
 	m.OnGetPageNumber          = 'GetPageNumber'
 	m.OnDownloadImage          = 'DownloadImage'
 
-	local fmd = require 'fmd.env'
-	local slang = fmd.SelectedLanguage
-	local lang = {
+	local slang = require 'fmd.env'.SelectedLanguage
+	local translations = {
 		['en'] = {
 			['imageresolution'] = 'Page resolution:',
 			['resolution'] = 'Low\nMedium\nHigh'
@@ -39,33 +38,76 @@ function Init()
 		['ru_RU'] = {
 			['imageresolution'] = 'Разрешение страницы:',
 			['resolution'] = 'Низкое\nСреднее\nВысокое'
-		},
-		get =
-			function(self, key)
-				local sel = self[slang]
-				if sel == nil then sel = self['en'] end
-				return sel[key]
-			end
+		}
 	}
-	m.AddOptionComboBox('imageresolution', lang:get('imageresolution'), lang:get('resolution'), 2)
+	local lang = translations[slang] or translations.en
+	m.AddOptionComboBox('imageresolution', lang.imageresolution, lang.resolution, 2)
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local crypto = require 'fmd.crypto'
 local API_URL = 'https://jumpg-webapi.tokyo-cdn.com/api'
 local separator = '↣' -- Save Encryption key in the URL and separate it using obscure char (U+21A3)
+local protoc = require 'utils.protoc'
+local pb = require 'pb'
+local proto_file = 'MangaPlus.proto'
 
--- Local Functions
-local function splitString(s, delimiter)
+----------------------------------------------------------------------------------------------------
+-- Helper Functions
+----------------------------------------------------------------------------------------------------
+
+-- Seed random number generator once.
+math.randomseed(os.time())
+
+local function GetLang(lang)
+	local langs = {
+		['SPANISH'] = ' [ES]',
+		['FRENCH'] = ' [FR]',
+		['GERMAN'] = ' [DE]',
+		['INDONESIAN'] = ' [ID]',
+		['PORTUGUESE_BR'] = ' [PT-BR]',
+		['RUSSIAN'] = ' [RU]',
+		['THAI'] = ' [TH]',
+		['VIETNAMESE'] = ' [VI]'
+	}
+	if langs[lang] then
+		return langs[lang]
+	else
+		return ' [EN]'
+	end
+end
+
+local function SplitString(s, delimiter)
 	local result = {}
-	for match in (s .. delimiter):gmatch("(.-)" .. delimiter) do
+	for match in (s .. delimiter):gmatch('(.-)' .. delimiter) do
 		table.insert(result, match)
 	end
 	return result
 end
+
+local function GenerateUUID()
+    local template = 'xxxxxxxx-xxxx-1xxx-yxxx-xxxxxxxxxxxx'
+    return string.gsub(template, '[xy]', function (c)
+        local v = (c == 'x') and math.random(0, 15) or math.random(8, 11)
+        return string.format('%x', v)
+    end)
+end
+
+local function ReadFile(file)
+	local f = assert(io.open(file, 'rb'))
+	local content = f:read('*all')
+	f:close()
+	return content
+end
+
+-- Read File and load it to proto
+local curr_path = debug.getinfo(1, 'S').source
+local curr_script = curr_path:match('[^\\/]*.lua$')
+local target_file = curr_path:gsub(curr_script, proto_file):gsub('@', '')
+protoc.proto3_optional = true
+protoc:load(ReadFile(target_file))
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -73,102 +115,106 @@ end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local lang, v = nil
-	local u = API_URL .. '/title_list/allV2?format=json'
+	local u = API_URL .. '/title_list/allV2'
+	HTTP.Headers.Values['Session-Token'] = GenerateUUID()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	for v in CreateTXQuery(HTTP.Document).XPath('json(*).success.allTitlesViewV2.AllTitlesGroup().titles()').Get() do
-		lang = GetLang(v.GetProperty('language').ToString())
-		LINKS.Add('titles/' .. v.GetProperty('titleId').ToString())
-		NAMES.Add(v.GetProperty('name').ToString() .. lang)
+	local manga = pb.decode('Response', HTTP.Document.ToString()).success.allTitlesViewV2.AllTitlesGroup
+	if not manga then return net_problem end
+
+	for _, group in ipairs(manga) do
+		for _, v in ipairs(group.titles) do
+			LINKS.Add('titles/' .. v.titleId)
+			NAMES.Add(v.name .. GetLang(v.language))
+		end
 	end
 
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
-	local name, json, lang, v, x = nil
-	local u = API_URL .. '/title_detailV3?title_id=' .. URL:match('(%d+)') .. '&format=json'
+	local u = API_URL .. '/title_detailV3?title_id=' .. URL:match('(%d+)')
+	HTTP.Headers.Values['Session-Token'] = GenerateUUID()
 	
 	if not HTTP.GET(u) then return net_problem end
 
-	x = CreateTXQuery(HTTP.Document)
-	json = x.XPath('json(*).success.titleDetailView')
-	lang = GetLang(x.XPathString('title/language', json))
-	MANGAINFO.Title     = x.XPathString('title/name', json) .. lang
-	MANGAINFO.CoverLink = x.XPathString('titleImageUrl', json)
-	MANGAINFO.Authors   = x.XPathString('title/author', json)
-	MANGAINFO.Summary   = x.XPathString('overview', json)
-	MANGAINFO.Status = MangaInfoStatusIfPos(x.XPathString('titleLabels/releaseSchedule', json), 'monthly|weekly') -- just 'ly' also works
+	local manga = pb.decode('Response', HTTP.Document.ToString()).success.titleDetailView
+	if not manga then return net_problem end
 
-	local function addChapter(chapterlist)
-		name = chapterlist.GetProperty('subTitle').ToString()
-		if name == '' then name = chapterlist.GetProperty('name').ToString() end
-		MANGAINFO.ChapterNames.Add(name)
-		MANGAINFO.ChapterLinks.Add(chapterlist.GetProperty('chapterId').ToString())
+	MANGAINFO.Title     = manga.title.name .. GetLang(manga.title.language)
+	MANGAINFO.CoverLink = manga.titleImageUrl
+	MANGAINFO.Authors   = manga.title.author
+	MANGAINFO.Status    = MangaInfoStatusIfPos(manga.titleLabels.releaseSchedule, 'day|ly|other', 'completed|one_shot')
+	MANGAINFO.Summary   = manga.overview
+
+	local genres = {}
+	for _, genre in ipairs(manga.tags or {}) do
+		table.insert(genres, genre.tag)
+	end
+	MANGAINFO.Genres = table.concat(genres, ', ')
+
+	local function addChapter(chapter)
+	for _, v in ipairs(chapter) do
+		local chaptername = v.subTitle
+		if chaptername == '' then chaptername = v.name end
+		MANGAINFO.ChapterNames.Add(chaptername)
+		MANGAINFO.ChapterLinks.Add(v.chapterId)
+	end
 	end
 
-	for v in x.XPath('json(*).success.titleDetailView.chapterListGroup().firstChapterList()').Get() do
-		addChapter(v)
-	end
-	for v in x.XPath('json(*).success.titleDetailView.chapterListGroup().lastChapterList()').Get() do
-		addChapter(v)
+	local list_groups = manga.chapterListGroup
+	if list_groups then
+		for _,v in ipairs(list_groups) do
+			local first_list = v.firstChapterList
+			if first_list then addChapter(first_list) end
+			local last_list = v.lastChapterList
+			if last_list then addChapter(last_list) end
+		end
 	end
 
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local encryption_key, image_url, v = nil
+	local crypto = require 'fmd.crypto'
 	local imageresolution = {'low', 'high', 'super_high'}
 	local sel_imageresolution = (MODULE.GetOption('imageresolution') or 2) + 1
-	local u = API_URL .. '/manga_viewer?chapter_id=' .. URL:match('(%d+)') .. '&img_quality=' .. imageresolution[sel_imageresolution] .. '&split=yes&format=json'
+	local u = API_URL .. '/manga_viewer?chapter_id=' .. URL:match('(%d+)') .. '&img_quality=' .. imageresolution[sel_imageresolution] .. '&split=yes'
+	HTTP.Reset()
+	HTTP.Headers.Values['Session-Token'] = GenerateUUID()
 
-	if not HTTP.GET(u) then return net_problem end
+	if not HTTP.GET(u) then return false end
 
-	for v in CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString())).XPath('json(*).success.mangaViewer.pages().mangaPage').Get() do
-		image_url = v.GetProperty('imageUrl').ToString()
-		encryption_key = v.GetProperty('encryptionKey').ToString()
-		TASK.PageLinks.Add(image_url .. separator .. encryption_key)
+	local manga = pb.decode('Response', HTTP.Document.ToString()).success.mangaViewer.pages
+	if not manga then return false end
+
+	for _, v in ipairs(manga) do
+		if v.mangaPage then
+			local image_url = v.mangaPage.imageUrl
+			local encryption_key = v.mangaPage.encryptionKey
+			TASK.PageLinks.Add(image_url .. separator .. encryption_key)
+		end
 	end
-
-	return no_error
+	return true
 end
 
 -- Download and decrypt image given the image URL.
 function DownloadImage()
-	local t = splitString(URL, separator)
+	local t = SplitString(URL, separator)
 	local url = t[1]
-	local key = crypto.HexToStr(t[2])
+	local key = require 'fmd.crypto'.HexToStr(t[2])
 
 	if not HTTP.GET(url) then return false end
 
-	local data = HTTP.Document.ToString()
+	local manga = HTTP.Document.ToString()
 	local parsed = {}
-	for i = 1, data:len() do
-		parsed[i] = string.char(string.byte(data, i) ~ string.byte(key, ((i - 1)%string.len(key)) + 1))
+	for i = 1, manga:len() do
+		parsed[i] = string.char(string.byte(manga, i) ~ string.byte(key, ((i - 1) % string.len(key)) + 1))
 	end
-	HTTP.Document.WriteString(table.concat(parsed, ""))
-	return true
-end
+	HTTP.Document.WriteString(table.concat(parsed, ''))
 
-function GetLang(lang)
-	local langs = {
-		["SPANISH"] = " [ES]",
-		["FRENCH"] = " [FR]",
-		["GERMAN"] = " [DE]",
-		["INDONESIAN"] = " [ID]",
-		["PORTUGUESE_BR"] = " [PT-BR]",
-		["RUSSIAN"] = " [RU]",
-		["THAI"] = " [TH]",
-		["VIETNAMESE"] = " [VI]"
-	}
-	if langs[lang] ~= nil then
-		return langs[lang]
-	else
-		return " [EN]"
-	end
+	return true
 end

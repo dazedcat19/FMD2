@@ -8,7 +8,6 @@ function Init()
 	m.Name                     = 'TooniTube'
 	m.RootURL                  = 'https://toonitube.com'
 	m.Category                 = 'H-Sites'
-	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
@@ -27,13 +26,6 @@ UseSlugSearch = true
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
--- Get the page count of the manga list of the current website.
-function GetDirectoryPageNumber()
-	Template.GetDirectoryPageNumber()
-
-	return no_error
-end
-
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
 	Template.GetNameAndLink()
@@ -48,7 +40,7 @@ function GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	Template.GetPageNumber()
 

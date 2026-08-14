@@ -8,11 +8,11 @@ function Init()
 	m.Name                     = 'MangaGo'
 	m.RootURL                  = 'https://www.mangago.me'
 	m.Category                 = 'English'
-	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
 	m.OnDownloadImage          = 'DownloadImage'
+	m.TotalDirectory           = #DirectoryPages
 	m.SortedList               = true
 end
 
@@ -20,11 +20,14 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local DirectoryPagination = '/genre/All/%s/?sortby=create_date'
-local duktape = require('fmd.duktape')
+DirectoryPages = {'Yaoi', 'Comedy', 'Shounen Ai', 'Shoujo', 'Yuri', 'Josei', 'Fantasy', 'School%20Life',
+	'Romance', 'Doujinshi', 'Smut', 'Adult', 'Mystery', 'One Shot', 'Ecchi', 'Shounen', 'Martial Arts',
+	'Shoujo Ai', 'Supernatural', 'Drama', 'Action', 'Adventure', 'Harem', 'Historical', 'Horror',
+	'Mature', 'Mecha', 'Psychological', 'Sci-fi', 'Seinen', 'Slice Of Life', 'Sports', 'Gender Bender',
+	'Tragedy', 'Bara', 'Webtoons'}
 
 ----------------------------------------------------------------------------------------------------
--- Auxiliary Functions
+-- Helper Functions
 ----------------------------------------------------------------------------------------------------
 
 -- Decode a sojson.v4 obfuscated script.
@@ -114,6 +117,7 @@ end
 
 -- Generate the dynamic image descrambling key.
 local function GetDescramblingKey(deobfuscated_js, image_url)
+	local duktape = require('fmd.duktape')
 	local start_marker = 'var renImg = function(img,width,height,id){'
 	local end_marker = 'key = key.split('
 
@@ -165,24 +169,14 @@ end
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
--- Get the page count of the manga list of the current website.
-function GetDirectoryPageNumber()
-	local u = MODULE.RootURL .. DirectoryPagination:format(1)
-
-	if not HTTP.GET(u) then return net_problem end
-
-	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//div[@class="pagination"]//li[last()-1]//span')) or 1
-
-	return no_error
-end
-
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local u = MODULE.RootURL .. DirectoryPagination:format(URL + 1)
+	local u = MODULE.RootURL .. '/genre/' .. DirectoryPages[MODULE.CurrentDirectoryIndex + 1] .. '/' .. (URL + 1) .. '/?sortby=create_date'
 
 	if not HTTP.GET(u) then return net_problem end
 
 	CreateTXQuery(HTTP.Document).XPathHREFAll('//span[@class="title"]/a', LINKS, NAMES)
+	UPDATELIST.CurrentDirectoryPageNumber = tonumber(CreateTXQuery(HTTP.Document).XPathString('//div[@class="pagination"]//li[last()-1]//span')) or 1
 
 	return no_error
 end
@@ -210,6 +204,7 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
+	local duktape = require('fmd.duktape')
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return false end

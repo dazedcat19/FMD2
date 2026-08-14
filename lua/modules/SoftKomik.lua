@@ -6,44 +6,157 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'df01551e1739407a98669e37318842b0'
 	m.Name                     = 'SoftKomik'
-	m.RootURL                  = 'https://softkomik.com'
+	m.RootURL                  = 'https://softkomik.co'
 	m.Category                 = 'Indonesian'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
+	m.OnLogin                  = 'Login'
+	m.OnAccountState           = 'AccountState'
+	m.AccountSupport           = true
+	m.SortedList               = true
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local API_URL = 'https://v2.softkomik.com/komik'
-local CDN_URL = 'https://image.softkomik.com/softkomik/'
-local DirectoryPagination = '/komik/list?page='
+local API_URL = 'https://v2.softdevices.my.id'
+local CDN_URL = 'https://image.komik.im/softkomik/'
+local DirectoryPagination = '?limit=24&sortBy=newKomik&page='
+
+----------------------------------------------------------------------------------------------------
+-- Helper Functions
+----------------------------------------------------------------------------------------------------
+
+-- Set the required http headers for making a request.
+local function SetRequestHeaders(mode)
+	mode = mode or 'session'
+	local now = os.time() * 1000
+
+	local prefix   = (mode == 'chapter') and 'ch_' or ''
+	local endpoint = (mode == 'chapter') and ('/api/session/chapter/oaisos') or ('/api/session/aksjkas')
+
+	local sign   = MODULE.Storage[prefix .. 'sign']
+	local token  = MODULE.Storage[prefix .. 'token']
+	local expiry = tonumber(MODULE.Storage[prefix .. 'expiry']) or 0
+
+	if sign ~= '' and token ~= '' and now < expiry then
+		HTTP.Reset()
+		HTTP.Headers.Values['X-Sign']  = sign
+		HTTP.Headers.Values['X-Token'] = token
+		return no_error
+	end
+
+	if not HTTP.GET(MODULE.RootURL .. endpoint) then return net_problem end
+
+	local body = HTTP.Document.ToString()
+	local new_sign  = body:match('"sign":"(.-)|.-"')
+	local new_token = body:match('"token":"(.-)"')
+	local new_ex    = body:match('"ex":(%d+)')
+
+	if new_sign and new_token and new_ex then
+		MODULE.Storage[prefix .. 'sign']   = new_sign
+		MODULE.Storage[prefix .. 'token']  = new_token
+		MODULE.Storage[prefix .. 'expiry'] = new_ex
+
+		HTTP.Reset()
+		HTTP.Headers.Values['X-Sign']  = new_sign
+		HTTP.Headers.Values['X-Token'] = new_token
+	end
+
+	return no_error
+end
+
+function CheckAuth()
+    if MODULE.Account.Enabled then
+        if MODULE.Storage['Auth'] == '' then
+	        Login()
+	    end
+	    HTTP.Headers.Values['Authorization'] = MODULE.Storage['Auth']
+    end
+end
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
+-- Sign in to the current website.
+function Login()
+    local json = require 'utils.json'
+	if not MODULE.Account.Enabled then
+		MODULE.Account.Status = asUnknown
+		return false
+	end
+    MODULE.Account.Status = asChecking
+
+	if MODULE.Storage['Auth'] ~= '' then
+		HTTP.Cookies.Values['tokkey'] = MODULE.Storage['Auth']
+		HTTP.GET('https://softkomik.co/api/bookmark')
+		if HTTP.ResultCode == 200 then
+		    print('Already logged in')
+		    MODULE.Account.Status = asValid
+			return true
+		else
+		    HTTP.Reset()
+		end
+	end
+
+    local u = MODULE.RootURL .. '/api/login'
+	local t = {
+	    ['email']    = MODULE.Account.Username,
+		['password'] = MODULE.Account.Password,
+	}
+	local s = json.encode(t, -1)
+	HTTP.MimeType = 'application/json'
+	if not HTTP.POST(u, s) then
+	    MODULE.Account.Status = asUnknown
+		return net_problem
+	end
+	if HTTP.ResultCode == 200 then
+	    MODULE.Account.Status = asValid
+	    MODULE.Storage['Auth'] = 'Bearer ' .. CreateTXQuery(HTTP.Document).XPathString('json(*).token')
+	else
+	    MODULE.Account.Status = asInvalid
+	end
+
+	return true
+end
+
+--
+function AccountState()
+	if MODULE.Account.Enabled then
+	    if MODULE.Storage['Auth'] ~= nil then
+		    MODULE.AddServerCookies('tokkey=' .. MODULE.Storage['Auth'])
+		end
+	else
+		MODULE.RemoveCookies()
+	end
+    return true
+end
+
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
-	local u = MODULE.RootURL .. DirectoryPagination .. 1
+	local u = API_URL .. '/komik' .. DirectoryPagination .. 1
+	SetRequestHeaders()
 
 	if not HTTP.GET(u) then return net_problem end
 	
-	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('json(//script[@id="__NEXT_DATA__"]).props.pageProps.data.maxPage')) or 1
+	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('json(*).maxPage')) or 1
 
 	return no_error
 end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1)
+	local u = API_URL .. '/komik' .. DirectoryPagination .. (URL + 1)
+	SetRequestHeaders()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	for v in CreateTXQuery(HTTP.Document).XPath('json(//script[@id="__NEXT_DATA__"]).props.pageProps.data.data()').Get() do
+	for v in CreateTXQuery(HTTP.Document).XPath('json(*).data()').Get() do
 		LINKS.Add(v.GetProperty('title_slug').ToString())
 		NAMES.Add(v.GetProperty('title').ToString())
 	end
@@ -53,39 +166,57 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local u = API_URL .. URL
+	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	local x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
-	MANGAINFO.Title     = x.XPathString('json(*).title')
-	MANGAINFO.AltTitles = x.XPathString('json(*).title_alt')
-	MANGAINFO.CoverLink = 'https://softkomik.com/_next/image?url=https://cover.softkomik.com/softkomik-cover/' .. x.XPathString('json(*).gambar') .. '&w=256&q=100'
-	MANGAINFO.Authors   = x.XPathString('json(*).author')
-	MANGAINFO.Genres    = x.XPathStringAll('json(*).Genre()') .. ', ' .. x.XPathString('json(*).type'):gsub("^%l", string.upper)
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('json(*).status'))
-	MANGAINFO.Summary   = x.XPathString('json(*).sinopsis')
+	local x = CreateTXQuery(HTTP.Document)
+	local json = x.XPath('parse-json(//script[@id="__NEXT_DATA__"])?props?pageProps?data')
+	MANGAINFO.Title     = x.XPathString('title', json)
+	MANGAINFO.AltTitles = x.XPathString('title_alt', json)
+	MANGAINFO.CoverLink = 'https://cover.softdevices.my.id/softkomik-cover/' .. x.XPathString('gambar', json)
+	MANGAINFO.Authors   = x.XPathString('author', json)
+	MANGAINFO.Genres    = x.XPathString('string-join((Genre?*, concat(upper-case(substring(type, 1, 1)), lower-case(substring(type, 2)))), ", ")', json)
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status', json), 'ongoing', 'tamat')
+	MANGAINFO.Summary   = x.XPathString('sinopsis', json)
 
-	if not HTTP.GET(u .. '/chapter?limit=9999999') then return net_problem end
+	SetRequestHeaders()
 
-	for v in CreateTXQuery(HTTP.Document).XPath('json(*).chapter()').Get() do
-		MANGAINFO.ChapterLinks.Add(URL .. '/chapter/' .. v.GetProperty('chapter').ToString())
-		MANGAINFO.ChapterNames.Add('Chapter ' .. v.GetProperty('chapter').ToString())
+	if not HTTP.GET(API_URL .. '/komik' .. URL .. '/chapter?limit=9999999') then return net_problem end
+
+	for v in CreateTXQuery(HTTP.Document).XPath('json(*).chapter().chapter').Get() do
+		local ch = v.ToString()
+		MANGAINFO.ChapterLinks.Add(URL .. '/chapter/' .. ch)
+		MANGAINFO.ChapterNames.Add('Chapter ' .. tonumber(ch:match('%d+')))
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return false end
 
-	for v in CreateTXQuery(HTTP.Document).XPath('json(//script[@id="__NEXT_DATA__"]).props.pageProps.data.data.imageSrc()').Get() do
-		TASK.PageLinks.Add(CDN_URL .. v.ToString())
+	local x = CreateTXQuery(HTTP.Document)
+	local id = x.XPathString('json(//script[@id="__NEXT_DATA__"]).props.pageProps.data.data._id')
+	SetRequestHeaders('chapter')
+	CheckAuth()
+
+	if not HTTP.GET(API_URL .. '/komik' .. URL .. '/imgs/' .. id) then return false end
+
+	for v in CreateTXQuery(HTTP.Document).XPath('json(*).imageSrc()').Get() do
+		TASK.PageLinks.Add(CDN_URL .. v.ToString() .. '?id=T4Kmwztku')
 	end
+
+	return true
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
 
 	return true
 end

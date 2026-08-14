@@ -6,7 +6,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'b8206e754d4541689c1d367f7e19fd64'
 	m.Name                     = 'KomikCast'
-	m.RootURL                  = 'https://komikcast.li'
+	m.RootURL                  = 'https://v2.komikcast.fit'
 	m.Category                 = 'Indonesian'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -18,7 +18,18 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local DirectoryPagination = '/daftar-komik/?list'
+local API_URL = 'https://be.komikcast.cc'
+local DirectoryPagination = '/series?take=100000'
+
+----------------------------------------------------------------------------------------------------
+-- Helper Functions
+----------------------------------------------------------------------------------------------------
+
+-- Set the required http header for making a request.
+local function SetRequestHeaders()
+	HTTP.Headers.Values['Origin']  = MODULE.RootURL
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
+end
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -26,14 +37,14 @@ local DirectoryPagination = '/daftar-komik/?list'
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local u = MODULE.RootURL .. DirectoryPagination
+	local u = API_URL .. DirectoryPagination
+	SetRequestHeaders()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	local x = CreateTXQuery(HTTP.Document)
-	for v in x.XPath('//div[@class="list-update"]//ul//a').Get() do
-		LINKS.Add(v.GetAttribute('href'))
-		NAMES.Add(x.XPathString('normalize-space(.)', v):gsub('Bahasa Indonesia$', ''))
+	for v in CreateTXQuery(HTTP.Document).XPath('parse-json(.)?data?*?data').Get() do
+		LINKS.Add('series/' .. v.GetProperty('slug').ToString())
+		NAMES.Add(v.GetProperty('title').ToString())
 	end
 
 	return no_error
@@ -41,42 +52,56 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local u = MaybeFillHost(MODULE.RootURL, URL)
+	local slug = URL:match('/([^/]+)$')
+	local u = API_URL .. '/series/' .. slug
+	SetRequestHeaders()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	local x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//h1[@class="komik_info-content-body-title"]'):gsub('Bahasa Indonesia$', '')
-	MANGAINFO.AltTitles = x.XPathString('//span[@class="komik_info-content-native"]')
-	MANGAINFO.CoverLink = x.XPathString('//div[@itemprop="image"]//img/@src')
-	MANGAINFO.Authors   = x.XPathString('//span[@class="komik_info-content-info" and contains(b, "Author")]/text()')
-	MANGAINFO.Genres    = x.XPathStringAll('//span[@class="komik_info-content-genre"]/a')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//span[@class="komik_info-content-info" and contains(b, "Status")]/text()'))
-	MANGAINFO.Summary   = x.XPathString('//div[@class="komik_info-description-sinopsis"]/p')
+	local x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
+	local info = x.XPath('parse-json(.)?data?data')
+	MANGAINFO.Title     = x.XPathString('?title', info)
+	MANGAINFO.AltTitles = x.XPathString('?nativeTitle', info)
+	MANGAINFO.CoverLink = x.XPathString('?coverImage', info)
+	MANGAINFO.Authors   = x.XPathString('?author', info)
+	MANGAINFO.Genres    = x.XPathString('string-join((?genres?*?data?name, concat(upper-case(substring(?format, 1, 1)), lower-case(substring(?format, 2)))), ", ")', info)
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('?status', info))
+	MANGAINFO.Summary   = x.XPathString('?synopsis', info)
 
-	for v in x.XPath('//div[@class="komik_info-chapters"]//a').Get() do
-		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
-		MANGAINFO.ChapterNames.Add(x.XPathString('normalize-space(.)', v))
+	HTTP.Reset()
+	SetRequestHeaders()
+
+	if not HTTP.GET(u .. '/chapters') then return net_problem end
+
+	for v in CreateTXQuery(HTTP.Document).XPath('parse-json(.)?data?*?data').Get() do
+		local idx = v.GetProperty('index').ToString()
+		local title = v.GetProperty('title').ToString()
+		title = (title ~= '') and (' - ' .. title) or ''
+
+		MANGAINFO.ChapterLinks.Add('series/' .. slug .. '/chapters/' .. idx)
+		MANGAINFO.ChapterNames.Add('Chapter ' .. idx .. title)
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local u = MaybeFillHost(MODULE.RootURL, URL)
+	local u = API_URL .. URL
+	HTTP.Reset()
+	SetRequestHeaders()
 
 	if not HTTP.GET(u) then return false end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('//div[@class="main-reading-area"]/img/@src', TASK.PageLinks)
+	CreateTXQuery(HTTP.Document).XPathStringAll('parse-json(.)?data?data?images?*', TASK.PageLinks)
 
 	return true
 end
 
 -- Prepare the URL, http header and/or http cookies before downloading an image.
 function BeforeDownloadImage()
-	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
+	SetRequestHeaders()
 
 	return true
 end

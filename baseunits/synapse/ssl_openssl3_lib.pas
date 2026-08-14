@@ -1,5 +1,5 @@
 {==============================================================================|
-| Project : Ararat Synapse                                       | 001.000.002 |
+| Project : Ararat Synapse                                       | 001.000.003 |
 |==============================================================================|
 | Content: SSL support by OpenSSL 3.0                                          |
 |==============================================================================|
@@ -221,6 +221,8 @@ const
   X509_V_ERR_UNHANDLED_CRITICAL_EXTENSION = 34;
   //The application is not happy
   X509_V_ERR_APPLICATION_VERIFICATION = 50;
+  //Host, email and IP check errors
+  X509_V_ERR_HOSTNAME_MISMATCH = 62;
 
   SSL_FILETYPE_ASN1	= 2;
   SSL_FILETYPE_PEM = 1;
@@ -264,6 +266,7 @@ var
   procedure SslCtxSetDefaultPasswdCbUserdata(ctx: PSSL_CTX; u: SslPtr);
 //  function SslCtxLoadVerifyLocations(ctx: PSSL_CTX; const CAfile: PChar; const CApath: PChar):Integer;
   function SslCtxLoadVerifyLocations(ctx: PSSL_CTX; const CAfile: AnsiString; const CApath: AnsiString):Integer;
+  function SslCtxSetDefaultVerifyPaths(ctx: PSSL_CTX): Integer;
   function SslCtxCtrl(ctx: PSSL_CTX; cmd: integer; larg: integer; parg: SslPtr): integer;
   function SslNew(ctx: PSSL_CTX):PSSL;
   procedure SslFree(ssl: PSSL);
@@ -380,6 +383,7 @@ type
   TSslCtxSetDefaultPasswdCb = procedure(ctx: PSSL_CTX; cb: SslPtr); cdecl;
   TSslCtxSetDefaultPasswdCbUserdata = procedure(ctx: PSSL_CTX; u: SslPtr); cdecl;
   TSslCtxLoadVerifyLocations = function(ctx: PSSL_CTX; const CAfile: PAnsiChar; const CApath: PAnsiChar):Integer; cdecl;
+  TSslCtxSetDefaultVerifyPaths = function (ctx: PSSL_CTX): Integer; cdecl;
   TSslCtxCtrl = function(ctx: PSSL_CTX; cmd: integer; larg: integer; parg: SslPtr): integer; cdecl;
   TSslNew = function(ctx: PSSL_CTX):PSSL; cdecl;
   TSslFree = procedure(ssl: PSSL); cdecl;
@@ -482,6 +486,7 @@ var
   _SslCtxSetDefaultPasswdCb: TSslCtxSetDefaultPasswdCb = nil;
   _SslCtxSetDefaultPasswdCbUserdata: TSslCtxSetDefaultPasswdCbUserdata = nil;
   _SslCtxLoadVerifyLocations: TSslCtxLoadVerifyLocations = nil;
+  _SslCtxSetDefaultVerifyPaths: TSslCtxSetDefaultVerifyPaths = nil;
   _SslCtxCtrl: TSslCtxCtrl = nil;
   _SslNew: TSslNew = nil;
   _SslFree: TSslFree = nil;
@@ -700,6 +705,14 @@ begin
     Result := 0;
 end;
 
+function SslCtxSetDefaultVerifyPaths(ctx: PSSL_CTX): Integer;
+begin
+  if InitSSLInterface and Assigned(_SslCtxSetDefaultVerifyPaths) then
+      Result := _SslCtxSetDefaultVerifyPaths(ctx)
+    else
+      Result := 0;
+end;
+
 function SslCtxCtrl(ctx: PSSL_CTX; cmd: integer; larg: integer; parg: SslPtr): integer;
 begin
   if InitSSLInterface and Assigned(_SslCtxCtrl) then
@@ -711,7 +724,14 @@ end;
 function SslNew(ctx: PSSL_CTX):PSSL;
 begin
   if InitSSLInterface and Assigned(_SslNew) then
-    Result := _SslNew(ctx)
+  begin
+    SSLCS.Enter;
+    try
+      Result := _SslNew(ctx)
+    finally
+      SSLCS.Leave;
+    end
+  end
   else
     Result := nil;
 end;
@@ -719,7 +739,14 @@ end;
 procedure SslFree(ssl: PSSL);
 begin
   if InitSSLInterface and Assigned(_SslFree) then
-    _SslFree(ssl);
+  begin
+    SSLCS.Enter;
+    try
+      _SslFree(ssl);
+    finally
+      SSLCS.Leave;
+    end
+  end
 end;
 
 function SslAccept(ssl: PSSL):Integer;
@@ -1156,25 +1183,33 @@ end;
 function OPENSSL_sk_num(Stack: PSTACK): Integer;
 begin
   if InitSSLInterface and Assigned(_OPENSSL_sk_num) then
-    Result := _OPENSSL_sk_num(Stack);
+    Result := _OPENSSL_sk_num(Stack)
+  else
+    Result := 0;
 end;
 
 function SSL_CTX_get_cert_store(const Ctx: PSSL_CTX): PX509_STORE;
 begin
   if InitSSLInterface and Assigned(_SSL_CTX_get_cert_store) then
-    Result := _SSL_CTX_get_cert_store(Ctx);
+    Result := _SSL_CTX_get_cert_store(Ctx)
+  else
+    Result := nil;
 end;
 
 function OPENSSL_sk_value(Stack: PSTACK; Item: Integer): PAnsiChar;
 begin
   if InitSSLInterface and Assigned(_OPENSSL_sk_value) then
-    Result := _OPENSSL_sk_value(Stack, Item);
+    Result := _OPENSSL_sk_value(Stack, Item)
+  else
+    Result := nil;
 end;
 
 function X509_STORE_add_cert(Store: PX509_STORE; Cert: PX509): Integer;
 begin
   if InitSSLInterface and Assigned(_X509_STORE_add_cert) then
-    Result := _X509_STORE_add_cert(Store, Cert);
+    Result := _X509_STORE_add_cert(Store, Cert)
+  else
+    Result := 0;
 end;
 
 procedure SkX509PopFree(st: PSTACK; func:TSkPopFreeFunc); {pf}
@@ -1293,6 +1328,7 @@ begin
         _SslCtxSetDefaultPasswdCb := GetProcAddr(SSLLibHandle, 'SSL_CTX_set_default_passwd_cb');
         _SslCtxSetDefaultPasswdCbUserdata := GetProcAddr(SSLLibHandle, 'SSL_CTX_set_default_passwd_cb_userdata');
         _SslCtxLoadVerifyLocations := GetProcAddr(SSLLibHandle, 'SSL_CTX_load_verify_locations');
+        _SslCtxSetDefaultVerifyPaths := GetProcAddr(SSLLibHandle, 'SSL_CTX_set_default_verify_paths');
         _SslCtxCtrl := GetProcAddr(SSLLibHandle, 'SSL_CTX_ctrl');
         _SslNew := GetProcAddr(SSLLibHandle, 'SSL_new');
         _SslFree := GetProcAddr(SSLLibHandle, 'SSL_free');

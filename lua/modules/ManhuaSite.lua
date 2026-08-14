@@ -20,7 +20,8 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.MadTheme'
+local Template = require 'templates.MangaK'
+API_URL = 'https://api.manhuasite.com'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -47,7 +48,7 @@ function GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	Template.GetPageNumber()
 

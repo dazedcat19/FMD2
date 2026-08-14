@@ -53,7 +53,15 @@ end
 
 -- Get the page count for the current chapter.
 function GetPageNumber()
-	Template.GetPageNumber()
+	local u = MaybeFillHost(MODULE.RootURL, URL)
+	HTTP.Reset()
+	HTTP.Cookies.Values['unlock_chapter_guest'] = 1
 
-	return no_error
+	if not HTTP.GET(u) then return false end
+
+	for v in CreateTXQuery(HTTP.Document).XPath('//div[@id="chapter-images"]/img').Get() do
+		TASK.PageLinks.Add(require 'fmd.crypto'.DecodeBase64(v.GetAttribute('data-img')))
+	end
+
+	return true
 end

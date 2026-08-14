@@ -1,16 +1,13 @@
-Libraries compiled with `MSYS2/mingw-w64 gcc 9.2.0`:
+Libraries compiled with `MSYS2/mingw-w64 gcc 15.2.0`:
 
-* Brotli 1.0.8
-* Duktape 2.5.0
-* LibWebP 1.1.0
-* Lua 5.4.2
-* PCRE 10.35-RC2
-
-Libraries compiled with `MSYS2/mingw-w64 gcc 10.2.0`:
-* SQLite 3.46.0 with compile-time options `-DSQLITE_LIMIT_ATTACHED=125`
-
-Libraries compiled with `MSYS2/mingw-w64 gcc 15.1.0`:
-* OpenSSL 3.5.1
+* Brotli 1.2.0
+* Duktape 2.7.0
+* LibWebP 1.6.0
+* Lua 5.4.8
+* OpenSSL 3.6.1
+* PCRE2 10.47
+* SQLite 3.51.2 with compile-time options `-DSQLITE_MAX_ATTACHED=125`
+* Zstd 1.5.7
 
 Libraries compiled with `MSVC 19.29.30136`:
 * Lua-protobuf, [master@75e3b51b8e8dda0343c9b4956e0c33b6eef44aa6](https://github.com/starwing/lua-protobuf/tree/75e3b51b8e8dda0343c9b4956e0c33b6eef44aa6)

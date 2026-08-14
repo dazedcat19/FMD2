@@ -714,6 +714,8 @@ msgid ""
 "Failed to detect an install of ImageMagick!\n"
 "Please install ImageMagick from www.imagemagick.org if you haven't already."
 msgstr ""
+"Gagal mendeteksi instalasi ImageMagick!\n"
+"Silakan instal ImageMagick dari www.imagemagick.org jika Anda belum melakukannya."
 
 #: imagemagickmanager.rs_imagemagickpreferencehint
 msgctxt "imagemagickmanager.rs_imagemagickpreferencehint"
@@ -721,6 +723,8 @@ msgid ""
 "ImageMagick has been enabled!\n"
 "The following settings have been disabled because ImageMagick has taken preference."
 msgstr ""
+"ImageMagick telah diaktifkan!\n"
+"Pengaturan berikut telah dinonaktifkan karena ImageMagick lebih diutamakan."
 
 #: selfupdater.rs_buttoncancel
 msgctxt "selfupdater.rs_buttoncancel"
@@ -889,6 +893,40 @@ msgstr "Daftar Komik"
 msgid "Module list"
 msgstr "Daftar Modul"
 
+#: tformcheckmodules.btncheckintegrity.caption
+msgid "Check Modules Integrity"
+msgstr "Periksa integritas modul"
+
+#: tformcheckmodules.btnrefreshmodules.caption
+msgid "Refresh Module List"
+msgstr "Segarkan daftar modul"
+
+#: tformcheckmodules.btnstopcheck.caption
+msgid "Stop Check"
+msgstr "Berhenti periksa"
+
+#: tformcheckmodules.caption
+msgctxt "tformcheckmodules.caption"
+msgid "Check Modules"
+msgstr "Periksa modul"
+
+#: tformcheckmodules.edtfilter.texthint
+msgid "Type to filter modules..."
+msgstr "Cari modul..."
+
+#: tformcheckmodules.tbwebsitesselectall.caption
+msgctxt "tformcheckmodules.tbwebsitesselectall.caption"
+msgid "Select All"
+msgstr "Centang semua"
+
+#: tformcheckmodules.tbwebsitesselectinverse.caption
+msgid "Inverse Selection"
+msgstr "Balik centang"
+
+#: tformcheckmodules.tbwebsitesselectnone.caption
+msgid "Select None"
+msgstr "Hapus semua centang"
+
 #: tformdroptarget.miaddtofavorites.caption
 msgctxt "tformdroptarget.miaddtofavorites.caption"
 msgid "Add to favorites"
@@ -977,6 +1015,10 @@ msgstr "Periksa pemutakhiran"
 #: tluamodulesupdaterform.ckautorestart.caption
 msgid "Auto restart"
 msgstr "Mulai ulang otomatis"
+
+#: tluamodulesupdaterform.ckenablemoduledebug.caption
+msgid "Enable Module Debug"
+msgstr "Aktifkan awakutu modul"
 
 #: tluamodulesupdaterform.ckshowupdatewarning.caption
 msgid "Show update warning"
@@ -1595,7 +1637,7 @@ msgstr "Biasanya melibatkan hubungan yang intim antara perempuan."
 
 #: tmainform.ckimagemagick.caption
 msgid "Enable ImageMagick Conversion"
-msgstr ""
+msgstr "Aktifkan konversi ImageMagick"
 
 #: tmainform.ckoptionsalwaysstarttaskfromfailedchapters.caption
 msgctxt "tmainform.ckoptionsalwaysstarttaskfromfailedchapters.caption"
@@ -1727,7 +1769,7 @@ msgstr "Konversi gambar"
 
 #: tmainform.gbimagemagick.caption
 msgid "Image Magick"
-msgstr ""
+msgstr "Image Magick"
 
 #: tmainform.gbimageproperties.caption
 msgid "Image Properties"
@@ -1861,10 +1903,9 @@ msgstr "[?]"
 #: tmainform.lbimagemagickcompression.caption
 msgctxt "tmainform.lbimagemagickcompression.caption"
 msgid "Image Compression type"
-msgstr ""
+msgstr "Jenis kompresi gambar"
 
 #: tmainform.lbimagemagickhint.caption
-#, fuzzy
 msgctxt "tmainform.lbimagemagickhint.caption"
 msgid "[?]"
 msgstr "[?]"
@@ -1872,12 +1913,12 @@ msgstr "[?]"
 #: tmainform.lbimagemagickquality.caption
 msgctxt "tmainform.lbimagemagickquality.caption"
 msgid "Image quality"
-msgstr ""
+msgstr "Kualitas gambar"
 
 #: tmainform.lbimagemagicksaveas.caption
 msgctxt "tmainform.lbimagemagicksaveas.caption"
 msgid "Save Image as"
-msgstr ""
+msgstr "Simpan gambar sebagai"
 
 #: tmainform.lbjpegquality.caption
 msgid "JPEG quality"
@@ -2490,6 +2531,7 @@ msgid "Expand All"
 msgstr "Bentangkan semua"
 
 #: tmainform.tbwebsitesselectall.caption
+msgctxt "tmainform.tbwebsitesselectall.caption"
 msgid "Select All"
 msgstr "Centang semua"
 
@@ -2583,6 +2625,11 @@ msgstr "Tampilan"
 #: tmainform.tswebsiteadvanced.caption
 msgid "Advanced"
 msgstr "Lanjutan"
+
+#: tmainform.tswebsitecheckmodules.caption
+msgctxt "tmainform.tswebsitecheckmodules.caption"
+msgid "Check Modules"
+msgstr "Periksa modul"
 
 #: tmainform.tswebsitemodules.caption
 msgid "Modules"
@@ -2826,7 +2873,7 @@ msgstr "Mengompresi..."
 
 #: udownloadsmanager.rs_converting
 msgid "Converting..."
-msgstr ""
+msgstr "Mengonversi..."
 
 #: udownloadsmanager.rs_disabled
 msgctxt "udownloadsmanager.rs_disabled"

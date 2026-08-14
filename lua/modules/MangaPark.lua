@@ -83,15 +83,15 @@ function GetInfo()
 	MANGAINFO.CoverLink = MaybeFillHost(MODULE.RootURL, x.XPathString('urlCoverOri', json))
 	MANGAINFO.Authors   = x.XPathString('string-join(authors?*, ", ")', json)
 	MANGAINFO.Artists   = x.XPathString('string-join(artists?*, ", ")', json)
-	MANGAINFO.Genres    = x.XPathString('string-join(genres?*, ", ")', json):gsub("_", " "):gsub("(%l)(%w*)", function(first, rest) return first:upper() .. rest end)
+	MANGAINFO.Genres    = x.XPathString('string-join(genres?*, ", ")', json):gsub('_', ' '):gsub('(%l)(%w*)', function(first, rest) return first:upper() .. rest end)
 	MANGAINFO.Summary   = x.XPathString('summary', json)
 
 	local status = x.XPathString('uploadStatus', json)
 	if status == 'null' then status = x.XPathString('originalStatus', json) end
 	MANGAINFO.Status = MangaInfoStatusIfPos(status)
 
-	HTTP.Reset()
 	local s = '{"query":"{ get_comicChapterList( comicId: ' .. URL:match('(%d+)') .. ' ) { data { id dname title } } }"}'
+	HTTP.Reset()
 	HTTP.MimeType = 'application/json'
 
 	if not HTTP.POST(u, s) then return net_problem end
@@ -99,7 +99,7 @@ function GetInfo()
 	for v in CreateTXQuery(HTTP.Document).XPath('json(*).data.get_comicChapterList().data').Get() do
 		local chapter = v.GetProperty('dname').ToString()
 		local title = v.GetProperty('title').ToString()
-		title = title ~= 'null' and title ~= '' and string.format(' - %s', title) or ''
+		title = (title ~= 'null' and title ~= '') and (' - ' .. title) or ''
 
 		MANGAINFO.ChapterLinks.Add(v.GetProperty('id').ToString())
 		MANGAINFO.ChapterNames.Add(chapter .. title)
@@ -111,12 +111,17 @@ end
 -- Get the page count for the current chapter.
 function GetPageNumber()
 	local u = MODULE.RootURL .. API_URL
-	local s = '{"query":"{ get_chapterNode( id: ' .. URL:match('(%d+)') .. ' ) { data { imageFile { urlList } } } }"}' 
+	local s = '{"query":"{ get_chapterNode( id: ' .. URL:match('(%d+)') .. ' ) { data { imageFile { urlList } } } }"}'
+	HTTP.Reset()
 	HTTP.MimeType = 'application/json'
 
-	if not HTTP.POST(u, s) then return net_problem end
+	if not HTTP.POST(u, s) then return false end
 
 	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).data.get_chapterNode.data.imageFile.urlList()', TASK.PageLinks)
 
-	return no_error
+	for i = 0, TASK.PageLinks.Count - 1 do
+		TASK.PageLinks[i] = TASK.PageLinks[i]:gsub('s%d%d', 's00')
+	end
+
+	return true
 end

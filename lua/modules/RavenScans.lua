@@ -1,23 +1,9 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = '70c8aa5554e84aa9addd7378599e1003'
-	m.Name                     = 'Raven Scans'
-	m.RootURL                  = 'https://ravenscans.com'
-	m.Category                 = 'English-Scanlation'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-end
-
-----------------------------------------------------------------------------------------------------
--- Local Constants
+-- Template Configuration
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.MangaThemesia'
+DirectoryPagination = '/series/list-mode/'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -37,20 +23,24 @@ function GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local i, x = nil
-	local u = MaybeFillHost(MODULE.RootURL, URL)
+	Template.GetPageNumber()
 
-	if not HTTP.GET(u) then return net_problem end
+	return true
+end
 
-	x = CreateTXQuery(HTTP.Document)
-	x.ParseHTML(GetBetween('"images":', '}]', x.XPathString('//script[contains(., "ts_reader")]')))
-	x.XPathStringAll('json(*)()', TASK.PageLinks)
-	for i = 0, TASK.PageLinks.Count - 1 do
-		TASK.PageLinks[i] = TASK.PageLinks[i]:gsub("i%d.wp.com/", "")
-		i = i + 1
-	end
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
 
-	return no_error
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = '70c8aa5554e84aa9addd7378599e1003'
+	m.Name                     = 'Raven Scans'
+	m.RootURL                  = 'https://ravenscans.net'
+	m.Category                 = 'English-Scanlation'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
 end

@@ -17,7 +17,7 @@ end
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.MangaThemesia'
+local Template = require 'templates.Madara'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -40,8 +40,6 @@ end
 -- Get the page count for the current chapter.
 function GetPageNumber()
 	Template.GetPageNumber()
-
-	CreateTXQuery(HTTP.Document).XPathStringAll('//div[@id="readerarea"]//img/@src', TASK.PageLinks)
 
 	return no_error
 end

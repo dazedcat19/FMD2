@@ -1,0 +1,7 @@
+{
+	"use_webdriver": false,
+	"debug": false,
+	"flaresolverr_port": 8191,
+	"testing": false,
+	"flaresolverr_ip": "localhost"
+}

@@ -498,7 +498,7 @@ msgstr "Import"
 
 #: frmmain.rs_infoalttitles
 msgid "Alternative Title(s):"
-msgstr ""
+msgstr "Alternative Title(s):"
 
 #: frmmain.rs_infoartists
 msgid "Artist(s):"
@@ -710,6 +710,8 @@ msgid ""
 "Failed to detect an install of ImageMagick!\n"
 "Please install ImageMagick from www.imagemagick.org if you haven't already."
 msgstr ""
+"Failed to detect an install of ImageMagick!\n"
+"Please install ImageMagick from www.imagemagick.org if you haven't already."
 
 #: imagemagickmanager.rs_imagemagickpreferencehint
 msgctxt "imagemagickmanager.rs_imagemagickpreferencehint"
@@ -717,6 +719,8 @@ msgid ""
 "ImageMagick has been enabled!\n"
 "The following settings have been disabled because ImageMagick has taken preference."
 msgstr ""
+"ImageMagick has been enabled!\n"
+"The following settings have been disabled because ImageMagick has taken preference."
 
 #: selfupdater.rs_buttoncancel
 msgctxt "selfupdater.rs_buttoncancel"
@@ -885,6 +889,40 @@ msgstr "Manga list"
 msgid "Module list"
 msgstr "Module list"
 
+#: tformcheckmodules.btncheckintegrity.caption
+msgid "Check Modules Integrity"
+msgstr "Check Modules Integrity"
+
+#: tformcheckmodules.btnrefreshmodules.caption
+msgid "Refresh Module List"
+msgstr "Refresh Module List"
+
+#: tformcheckmodules.btnstopcheck.caption
+msgid "Stop Check"
+msgstr "Stop Check"
+
+#: tformcheckmodules.caption
+msgctxt "tformcheckmodules.caption"
+msgid "Check Modules"
+msgstr "Check Modules"
+
+#: tformcheckmodules.edtfilter.texthint
+msgid "Type to filter modules..."
+msgstr "Type to filter modules..."
+
+#: tformcheckmodules.tbwebsitesselectall.caption
+msgctxt "tformcheckmodules.tbwebsitesselectall.caption"
+msgid "Select All"
+msgstr "Select All"
+
+#: tformcheckmodules.tbwebsitesselectinverse.caption
+msgid "Inverse Selection"
+msgstr "Inverse Selection"
+
+#: tformcheckmodules.tbwebsitesselectnone.caption
+msgid "Select None"
+msgstr "Select None"
+
 #: tformdroptarget.miaddtofavorites.caption
 msgctxt "TFORMDROPTARGET.MIADDTOFAVORITES.CAPTION"
 msgid "Add to favorites"
@@ -973,6 +1011,10 @@ msgstr "Check update"
 #: tluamodulesupdaterform.ckautorestart.caption
 msgid "Auto restart"
 msgstr "Auto restart"
+
+#: tluamodulesupdaterform.ckenablemoduledebug.caption
+msgid "Enable Module Debug"
+msgstr "Enable Module Debug"
 
 #: tluamodulesupdaterform.ckshowupdatewarning.caption
 msgid "Show update warning"
@@ -1591,7 +1633,7 @@ msgstr "This work usually involves intimate relationships between women."
 
 #: tmainform.ckimagemagick.caption
 msgid "Enable ImageMagick Conversion"
-msgstr ""
+msgstr "Enable ImageMagick Conversion"
 
 #: tmainform.ckoptionsalwaysstarttaskfromfailedchapters.caption
 msgctxt "tmainform.ckoptionsalwaysstarttaskfromfailedchapters.caption"
@@ -1723,7 +1765,7 @@ msgstr "Image Conversion"
 
 #: tmainform.gbimagemagick.caption
 msgid "Image Magick"
-msgstr ""
+msgstr "Image Magick"
 
 #: tmainform.gbimageproperties.caption
 msgid "Image Properties"
@@ -1857,10 +1899,9 @@ msgstr "[?]"
 #: tmainform.lbimagemagickcompression.caption
 msgctxt "tmainform.lbimagemagickcompression.caption"
 msgid "Image Compression type"
-msgstr ""
+msgstr "Image Compression type"
 
 #: tmainform.lbimagemagickhint.caption
-#, fuzzy
 msgctxt "tmainform.lbimagemagickhint.caption"
 msgid "[?]"
 msgstr "[?]"
@@ -1868,12 +1909,12 @@ msgstr "[?]"
 #: tmainform.lbimagemagickquality.caption
 msgctxt "tmainform.lbimagemagickquality.caption"
 msgid "Image quality"
-msgstr ""
+msgstr "Image quality"
 
 #: tmainform.lbimagemagicksaveas.caption
 msgctxt "tmainform.lbimagemagicksaveas.caption"
 msgid "Save Image as"
-msgstr ""
+msgstr "Save Image as"
 
 #: tmainform.lbjpegquality.caption
 msgid "JPEG quality"
@@ -2486,6 +2527,7 @@ msgid "Expand All"
 msgstr "Expand All"
 
 #: tmainform.tbwebsitesselectall.caption
+msgctxt "tmainform.tbwebsitesselectall.caption"
 msgid "Select All"
 msgstr "Select All"
 
@@ -2579,6 +2621,11 @@ msgstr "View"
 #: tmainform.tswebsiteadvanced.caption
 msgid "Advanced"
 msgstr "Advanced"
+
+#: tmainform.tswebsitecheckmodules.caption
+msgctxt "tmainform.tswebsitecheckmodules.caption"
+msgid "Check Modules"
+msgstr "Check Modules"
 
 #: tmainform.tswebsitemodules.caption
 msgid "Modules"
@@ -2822,7 +2869,7 @@ msgstr "Compressing..."
 
 #: udownloadsmanager.rs_converting
 msgid "Converting..."
-msgstr ""
+msgstr "Converting..."
 
 #: udownloadsmanager.rs_disabled
 msgctxt "udownloadsmanager.rs_disabled"

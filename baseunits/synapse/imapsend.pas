@@ -224,6 +224,14 @@ type
 
     {:Try to find given capabily in capabilty string returned from IMAP server.}
     function FindCap(const Value: string): string;
+
+    {:Escapes characters that are not allowed to be sent to an IMAP server, see
+     RFC 2683 3.4.2. Special Characters}
+    function EscapeSpecialCharacters(Value:string): string;
+
+    {:Undoes the escaping done with EscapeSpecialCharacters.}
+    function UnescapeSpecialCharacters(Value:string): string;
+
   published
     {:Status line with result of last operation.}
     property ResultString: string read FResultString;
@@ -267,6 +275,9 @@ type
   end;
 
 implementation
+
+uses
+  synacode;
 
 constructor TIMAPSend.Create;
 begin
@@ -381,6 +392,44 @@ begin
   Result := ReadResult;
 end;
 
+function TIMAPSend.EscapeSpecialCharacters(Value:string): string;
+var
+  i: Integer;
+begin
+  Result := '';
+  for i := 1 to length(Value) do
+  begin
+    // We need to escape double quotes and backslashes
+    if (Value[i] = '"') or (Value[i] = '\') then
+    begin
+      Result := Result + '\';
+    end;
+    Result := Result + Value[i];
+  end;
+end;
+
+function TIMAPSend.UnescapeSpecialCharacters(Value:string): string;
+var i, l: Integer;
+begin
+  Result := '';
+  i := 1;
+  l := length(Value);
+  while i <= l do
+  begin
+    // Search for escaped double quotes and backslashes
+    if (Value[i] = '\') and (i < l) and ((Value[i+1] = '"') or (Value[i+1] = '\')) then
+    begin
+      Result := Result + Value[i+1];
+      Inc(i, 2);
+    end
+    else
+    begin
+      Result := Result + Value[i];
+      Inc(i);
+    end;
+  end;
+end;
+
 function TIMAPSend.IMAPuploadCommand(Value: string; const Data:TStrings): string;
 var
   l: integer;
@@ -409,7 +458,8 @@ end;
 procedure TIMAPSend.ParseFolderList(Value:TStrings);
 var
   n, x: integer;
-  s: string;
+  folder, s: string;
+  quotes : boolean;
 begin
   ProcessLiterals;
   Value.Clear;
@@ -418,15 +468,26 @@ begin
     s := FFullResult[n];
     if (s <> '') and (Pos('\NOSELECT', UpperCase(s)) = 0) then
     begin
-      if s[Length(s)] = '"' then
+      // Does the string end with quotes?
+      quotes := s[Length(s)] = '"';
+      if quotes then
       begin
+        // Remove ending quote and get starting position - 1 of string
         Delete(s, Length(s), 1);
-        x := RPos('"', s);
+        x := RPos(' "', s) + 1;
       end
       else
+        // get starting position - 1 of string
         x := RPos(' ', s);
-      if (x > 0) then
-        Value.Add(Copy(s, x + 1, Length(s) - x));
+      if (x > 0) then begin
+        // Get folder name from starting position to end
+        folder := Copy(s, x + 1, Length(s) - x);
+        if quotes then begin
+          // we only need to unescape if the whole string was quoted
+          folder := UnescapeSpecialCharacters(folder);
+        end;
+        Value.Add(folder);
+      end;
     end;
   end;
 end;
@@ -499,8 +560,20 @@ begin
 end;
 
 function TIMAPSend.AuthLogin: Boolean;
+var
+  request, encoded, response: string;
 begin
-  Result := IMAPcommand('LOGIN "' + FUsername + '" "' + FPassword + '"') = 'OK';
+  if FOAuth2Token <> '' then
+  begin
+    request := 'user=' + FUsername + Chr(1) + 'auth=Bearer ' + FOAuth2Token + Chr(1) + Chr(1);
+    encoded := EncodeBase64(request);
+    response := IMAPcommand('AUTHENTICATE XOAUTH2 ' + encoded);
+    Result := (response = 'OK');
+  end
+  else
+  begin
+    Result := IMAPcommand('LOGIN "' + EscapeSpecialCharacters(FUsername) + '" "' + EscapeSpecialCharacters(FPassword) + '"') = 'OK';
+  end;
   if Result then
     FAuthDone := True;
 end;
@@ -590,63 +663,63 @@ end;
 
 function TIMAPSend.List(FromFolder: string; const FolderList: TStrings): Boolean;
 begin
-  Result := IMAPcommand('LIST "' + FromFolder + '" *') = 'OK';
+  Result := IMAPcommand('LIST "' + EscapeSpecialCharacters(FromFolder) + '" *') = 'OK';
   ParseFolderList(FolderList);
 end;
 
 function TIMAPSend.ListSearch(FromFolder, Search: string; const FolderList: TStrings): Boolean;
 begin
-  Result := IMAPcommand('LIST "' + FromFolder + '" "' + Search +'"') = 'OK';
+  Result := IMAPcommand('LIST "' + EscapeSpecialCharacters(FromFolder) + '" "' + EscapeSpecialCharacters(Search) +'"') = 'OK';
   ParseFolderList(FolderList);
 end;
 
 function TIMAPSend.ListSubscribed(FromFolder: string; const FolderList: TStrings): Boolean;
 begin
-  Result := IMAPcommand('LSUB "' + FromFolder + '" *') = 'OK';
+  Result := IMAPcommand('LSUB "' + EscapeSpecialCharacters(FromFolder) + '" *') = 'OK';
   ParseFolderList(FolderList);
 end;
 
 function TIMAPSend.ListSearchSubscribed(FromFolder, Search: string; const FolderList: TStrings): Boolean;
 begin
-  Result := IMAPcommand('LSUB "' + FromFolder + '" "' + Search +'"') = 'OK';
+  Result := IMAPcommand('LSUB "' + EscapeSpecialCharacters(FromFolder) + '" "' + EscapeSpecialCharacters(Search) +'"') = 'OK';
   ParseFolderList(FolderList);
 end;
 
 function TIMAPSend.CreateFolder(FolderName: string): Boolean;
 begin
-  Result := IMAPcommand('CREATE "' + FolderName + '"') = 'OK';
+  Result := IMAPcommand('CREATE "' + EscapeSpecialCharacters(FolderName) + '"') = 'OK';
 end;
 
 function TIMAPSend.DeleteFolder(FolderName: string): Boolean;
 begin
-  Result := IMAPcommand('DELETE "' + FolderName + '"') = 'OK';
+  Result := IMAPcommand('DELETE "' + EscapeSpecialCharacters(FolderName) + '"') = 'OK';
 end;
 
 function TIMAPSend.RenameFolder(FolderName, NewFolderName: string): Boolean;
 begin
-  Result := IMAPcommand('RENAME "' + FolderName + '" "' + NewFolderName + '"') = 'OK';
+  Result := IMAPcommand('RENAME "' + EscapeSpecialCharacters(FolderName) + '" "' + EscapeSpecialCharacters(NewFolderName) + '"') = 'OK';
 end;
 
 function TIMAPSend.SubscribeFolder(FolderName: string): Boolean;
 begin
-  Result := IMAPcommand('SUBSCRIBE "' + FolderName + '"') = 'OK';
+  Result := IMAPcommand('SUBSCRIBE "' + EscapeSpecialCharacters(FolderName) + '"') = 'OK';
 end;
 
 function TIMAPSend.UnsubscribeFolder(FolderName: string): Boolean;
 begin
-  Result := IMAPcommand('UNSUBSCRIBE "' + FolderName + '"') = 'OK';
+  Result := IMAPcommand('UNSUBSCRIBE "' + EscapeSpecialCharacters(FolderName) + '"') = 'OK';
 end;
 
 function TIMAPSend.SelectFolder(FolderName: string): Boolean;
 begin
-  Result := IMAPcommand('SELECT "' + FolderName + '"') = 'OK';
+  Result := IMAPcommand('SELECT "' + EscapeSpecialCharacters(FolderName) + '"') = 'OK';
   FSelectedFolder := FolderName;
   ParseSelect;
 end;
 
 function TIMAPSend.SelectROFolder(FolderName: string): Boolean;
 begin
-  Result := IMAPcommand('EXAMINE "' + FolderName + '"') = 'OK';
+  Result := IMAPcommand('EXAMINE "' + EscapeSpecialCharacters(FolderName) + '"') = 'OK';
   FSelectedFolder := FolderName;
   ParseSelect;
 end;
@@ -664,7 +737,7 @@ var
 begin
   Result := -1;
   Value := Uppercase(Value);
-  if IMAPcommand('STATUS "' + FolderName + '" (' + Value + ')' ) = 'OK' then
+  if IMAPcommand('STATUS "' + EscapeSpecialCharacters(FolderName) + '" (' + Value + ')' ) = 'OK' then
   begin
     ProcessLiterals;
     for n := 0 to FFullResult.Count - 1 do
@@ -695,7 +768,7 @@ end;
 
 function TIMAPSend.AppendMess(ToFolder: string; const Mess: TStrings): Boolean;
 begin
-  Result := IMAPuploadCommand('APPEND "' + ToFolder + '"', Mess) = 'OK';
+  Result := IMAPuploadCommand('APPEND "' + EscapeSpecialCharacters(ToFolder) + '"', Mess) = 'OK';
 end;
 
 function TIMAPSend.DeleteMess(MessID: integer): boolean;
@@ -761,7 +834,7 @@ function TIMAPSend.CopyMess(MessID: integer; ToFolder: string): Boolean;
 var
   s: string;
 begin
-  s := 'COPY ' + IntToStr(MessID) + ' "' + ToFolder + '"';
+  s := 'COPY ' + IntToStr(MessID) + ' "' + EscapeSpecialCharacters(ToFolder) + '"';
   if FUID then
     s := 'UID ' + s;
   Result := IMAPcommand(s) = 'OK';

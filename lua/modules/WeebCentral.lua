@@ -1,4 +1,121 @@
 ----------------------------------------------------------------------------------------------------
+-- Local Constants
+----------------------------------------------------------------------------------------------------
+
+local DirectoryPagination = '/search/data?limit=32&sort=Recently+Added&order=Descending&official=Any&display_mode=Minimal+Display&offset='
+local DirectoryPageLimit = 32
+
+----------------------------------------------------------------------------------------------------
+-- Helper Functions
+----------------------------------------------------------------------------------------------------
+
+-- Set a minimum time interval between executions.
+local function Delay()
+	local last_delay = tonumber(MODULE.Storage['last_delay']) or 1
+	local delay = tonumber(MODULE.GetOption('delay')) or 1
+	last_delay = os.time() - last_delay
+	if last_delay < delay then
+		sleep((delay - last_delay) * 1000)
+	end
+	MODULE.Storage['last_delay'] = os.time()
+end
+
+----------------------------------------------------------------------------------------------------
+-- Event Functions
+----------------------------------------------------------------------------------------------------
+
+-- Get the page count of the manga list of the current website.
+function GetDirectoryPageNumber()
+	local u = MODULE.RootURL .. DirectoryPagination .. 0
+	PAGENUMBER = 10100
+
+	if not HTTP.GET(u .. PAGENUMBER) then return net_problem end
+
+	local x = CreateTXQuery(HTTP.Document)
+	local s = x.XPathString('//button/@hx-get')
+	while s ~= '' do
+		Delay()
+		PAGENUMBER = tonumber(s:match('offset=(%d+)')) or PAGENUMBER + DirectoryPageLimit
+		if not HTTP.GET(u .. PAGENUMBER) then return net_problem end
+		s = CreateTXQuery(HTTP.Document).XPathString('//button/@hx-get')
+	end
+	PAGENUMBER = math.ceil(PAGENUMBER / DirectoryPageLimit)
+
+	return no_error
+end
+
+-- Get links and names from the manga list of the current website.
+function GetNameAndLink()
+	Delay()
+	local u = MODULE.RootURL .. DirectoryPagination .. (DirectoryPageLimit * URL)
+
+	if not HTTP.GET(u) then return net_problem end
+
+	local x = CreateTXQuery(HTTP.Document)
+	for v in x.XPath('//article/a').Get() do
+		LINKS.Add(v.GetAttribute('href'))
+		NAMES.Add(x.XPathString('h2', v))
+	end
+
+	return no_error
+end
+
+-- Get info and chapter list for the current manga.
+function GetInfo()
+	Delay()
+	local u = MaybeFillHost(MODULE.RootURL, URL)
+
+	if not HTTP.GET(u) then return net_problem end
+
+	local x = CreateTXQuery(HTTP.Document)
+	MANGAINFO.Title     = x.XPathString('(//h1)[1]')
+	MANGAINFO.AltTitles = x.XPathStringAll('//li[./strong="Associated Name(s)"]//li')
+	MANGAINFO.CoverLink = x.XPathString('//meta[@property="og:image"]/@content')
+	MANGAINFO.Authors   = x.XPathStringAll('//li[contains(., "Author")]/span/a')
+	MANGAINFO.Genres    = x.XPathStringAll('//li[contains(., "Tags")]/span/a|//li[contains(., "Type")]/a')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//li[contains(., "Status")]/a'))
+	MANGAINFO.Summary   = x.XPathString('//li[contains(., "Description")]/p')
+
+	local official = x.XPathString('//li[./strong[contains(., "Official Translation")]]/a')
+	if official:find('Yes', 1, true) then MANGAINFO.Summary = 'Official Translation\r\n \r\n' .. MANGAINFO.Summary end
+
+	Delay()
+	if not HTTP.GET(MANGAINFO.URL:gsub('(/series/[^/]+)/[^/]+$', '%1') .. '/full-chapter-list') then return net_problem end
+
+	local x = CreateTXQuery(HTTP.Document)
+	for v in x.XPath('//div[@class="flex items-center"]/a').Get() do
+		local is_official = MODULE.GetOption('detect_official') and x.XPathString('span[1]/img/@src', v):find('official', 1, true)
+		local ofc_link = is_official and '/official' or ''
+		local ofc_name = is_official and ' [Official]' or ''
+
+		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href') .. ofc_link)
+		MANGAINFO.ChapterNames.Add(x.XPathString('span[2]/span[1]', v) .. ofc_name)
+	end
+	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
+
+	return no_error
+end
+
+-- Get the page count and/or page links for the current chapter.
+function GetPageNumber()
+	Delay()
+	local u = MaybeFillHost(MODULE.RootURL, URL):gsub('/official$', '') .. '/images?reading_style=long_strip'
+
+	if not HTTP.GET(u) then return false end
+
+	CreateTXQuery(HTTP.Document).XPathStringAll('//img/@src', TASK.PageLinks)
+
+	return true
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+
+	return true
+end
+
+----------------------------------------------------------------------------------------------------
 -- Module Initialization
 ----------------------------------------------------------------------------------------------------
 
@@ -16,103 +133,19 @@ function Init()
 	m.MaxTaskLimit             = 2
 	m.MaxConnectionLimit       = 4
 	m.SortedList               = true
-end
 
-----------------------------------------------------------------------------------------------------
--- Local Constants
-----------------------------------------------------------------------------------------------------
-
-DirectoryPagination = '/search/data?limit=32&sort=Recently+Added&order=Descending&official=Any&display_mode=Minimal+Display&offset='
-DirectoryPageLimit = 32
-
-----------------------------------------------------------------------------------------------------
--- Event Functions
-----------------------------------------------------------------------------------------------------
-
--- Get the page count of the manga list of the current website.
-function GetDirectoryPageNumber()
-	local s, x = nil
-	local u = MODULE.RootURL .. DirectoryPagination .. 0
-	PAGENUMBER = 8600
-
-	if not HTTP.GET(u .. PAGENUMBER) then return net_problem end
-
-	x = CreateTXQuery(HTTP.Document)
-	s = x.XPathString('//button/@hx-get')
-	while string.len(s) > 0 do
-		PAGENUMBER = tonumber(s:match('offset=(%d+)')) or PAGENUMBER + DirectoryPageLimit
-		if not HTTP.GET(u .. PAGENUMBER) then return net_problem end
-		x = CreateTXQuery(HTTP.Document)
-		s = x.XPathString('//button/@hx-get')
-	end
-	PAGENUMBER = math.ceil(PAGENUMBER / DirectoryPageLimit)
-
-	return no_error
-end
-
--- Get links and names from the manga list of the current website.
-function GetNameAndLink()
-	local v, x = nil
-	local u = MODULE.RootURL .. DirectoryPagination .. (DirectoryPageLimit * URL)
-
-	if not HTTP.GET(u) then return net_problem end
-
-	x = CreateTXQuery(HTTP.Document)
-	for v in x.XPath('//article/a').Get() do
-		LINKS.Add(v.GetAttribute('href'))
-		NAMES.Add(x.XPathString('h2', v))
-	end
-
-	return no_error
-end
-
--- Get info and chapter list for the current manga.
-function GetInfo()
-	local official, v, x = nil
-	local u = MaybeFillHost(MODULE.RootURL, URL)
-
-	if not HTTP.GET(u) then return net_problem end
-
-	x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('(//h1)[1]')
-	MANGAINFO.AltTitles = x.XPathStringAll('//li[./strong="Associated Name(s)"]//li')
-	MANGAINFO.CoverLink = x.XPathString('//meta[@property="og:image"]/@content')
-	MANGAINFO.Authors   = x.XPathStringAll('//li[contains(., "Author")]/span/a')
-	MANGAINFO.Genres    = x.XPathStringAll('//li[contains(., "Tags")]/span/a|//li[contains(., "Type")]/a')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//li[contains(., "Status")]/a'))
-	MANGAINFO.Summary   = x.XPathString('//li[contains(., "Description")]/p')
-
-	official = x.XPathString('//li[./strong[contains(., "Official Translation")]]/a')
-	if official:find('Yes') then MANGAINFO.Summary = 'Official Translation\r\n \r\n' .. MANGAINFO.Summary end
-
-	u = MANGAINFO.URL:gsub("(/series/[^/]+)/[^/]+$", "%1") .. '/full-chapter-list'
-
-	if not HTTP.GET(u) then return net_problem end
-
-	x = CreateTXQuery(HTTP.Document)
-	for v in x.XPath('//a[not(@aria-label)]').Get() do
-		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
-		MANGAINFO.ChapterNames.Add(x.XPathString('span[2]/span[1]', v))
-	end
-	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
-
-	return no_error
-end
-
--- Get the page count for the current chapter.
-function GetPageNumber()
-	local u = MaybeFillHost(MODULE.RootURL, URL) .. '/images?reading_style=long_strip'
-
-	if not HTTP.GET(u) then return net_problem end
-
-	CreateTXQuery(HTTP.Document).XPathStringAll('//img/@src', TASK.PageLinks)
-
-	return no_error
-end
-
--- Prepare the URL, http header and/or http cookies before downloading an image.
-function BeforeDownloadImage()
-	HTTP.Headers.Values['Referer'] = MODULE.RootURL
-
-	return true
+	local slang = require 'fmd.env'.SelectedLanguage
+	local translations = {
+		['en'] = {
+			['delay'] = 'Delay (s) between requests',
+			['detect_official'] = 'Separately mark the official chapter so it will be detected when new ones are available'
+		},
+		['id_ID'] = {
+			['delay'] = 'Tunda (d) antara permintaan',
+			['detect_official'] = 'Tandai bab resmi secara terpisah agar dapat terdeteksi saat yang baru tersedia'
+		}
+	}
+	local lang = translations[slang] or translations.en
+	m.AddOptionSpinEdit('delay', lang.delay, 1)
+	m.AddOptionCheckBox('detect_official', lang.detect_official, false)
 end

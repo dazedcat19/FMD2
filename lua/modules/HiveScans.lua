@@ -1,44 +1,8 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
+-- Template Configuration
 ----------------------------------------------------------------------------------------------------
 
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = 'f01040ee781d4ae1929031419b97d2e0'
-	m.Name                     = 'Hive Scans'
-	m.RootURL                  = 'https://hivetoons.org'
-	m.Category                 = 'English-Scanlation'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnLogin                  = 'Login'
-	m.AccountSupport           = true
-
-	local fmd = require 'fmd.env'
-	local slang = fmd.SelectedLanguage
-	local lang = {
-		['en'] = {
-			['showpaidchapters'] = 'Show paid chapters'
-		},
-		['id_ID'] = {
-			['showpaidchapters'] = 'Tampilkan bab berbayar'
-		},
-		get =
-			function(self, key)
-				local sel = self[slang]
-				if sel == nil then sel = self['en'] end
-				return sel[key]
-			end
-	}
-	m.AddOptionCheckBox('showpaidchapters', lang:get('showpaidchapters'), false)
-end
-
-----------------------------------------------------------------------------------------------------
--- Local Constants
-----------------------------------------------------------------------------------------------------
-
-local Template = require 'templates.Iken'
-API_URL = 'https://api.hivetoons.org'
+local Template = require 'templates.VTheme'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -65,9 +29,38 @@ function GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	Template.GetPageNumber()
 
 	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = 'f01040ee781d4ae1929031419b97d2e0'
+	m.Name                     = 'Hive Scans'
+	m.RootURL                  = 'https://hivetoons.org'
+	m.Category                 = 'English-Scanlation'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnLogin                  = 'Login'
+	m.AccountSupport           = true
+
+	local slang = require 'fmd.env'.SelectedLanguage
+	local translations = {
+		['en'] = {
+			['showpaidchapters'] = 'Show paid chapters'
+		},
+		['id_ID'] = {
+			['showpaidchapters'] = 'Tampilkan bab berbayar'
+		}
+	}
+	local lang = translations[slang] or translations.en
+	m.AddOptionCheckBox('showpaidchapters', lang.showpaidchapters, false)
 end

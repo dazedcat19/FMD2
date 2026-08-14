@@ -6,11 +6,12 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '545acbf017814caab2b6bb28e48779fa'
 	m.Name                     = 'MGKomik'
-	m.RootURL                  = 'https://mgkomik.org'
+	m.RootURL                  = 'https://id.mgkomik.cc'
 	m.Category                 = 'Indonesian'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -37,13 +38,20 @@ function GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
-	if not HTTP.GET(u) then return net_problem end
+	if not HTTP.GET(u) then return false end
 
 	CreateTXQuery(HTTP.Document).XPathStringAll('//div[contains(@class, "page-break")]/img/@src', TASK.PageLinks)
+
+	return true
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	Template.BeforeDownloadImage()
 
 	return true
 end
