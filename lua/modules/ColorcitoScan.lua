@@ -41,7 +41,7 @@ function GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('state?estado', info), 'En emision', 'Finalizado')
 	MANGAINFO.Summary   = x.XPathString('sinopsis', info)
 
-	for v in x.XPath('lastChapters?*', info).Get() do
+	for v in x.XPath('lastChapters?*[patreon = 0]', info).Get() do
 		MANGAINFO.ChapterLinks.Add(slug .. '/'.. v.GetProperty('slug').ToString())
 		MANGAINFO.ChapterNames.Add('Cap. ' .. v.GetProperty('num').ToString())
 	end
