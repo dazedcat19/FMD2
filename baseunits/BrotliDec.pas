@@ -5,7 +5,7 @@ unit BrotliDec;
 interface
 
 uses
-  Classes, SysUtils, Dynlibs;
+  SysUtils, Classes, Dynlibs, SyncObjs;
 
 var
   BrotliLibHandle: TLibHandle = 0;
@@ -19,9 +19,6 @@ function BrotliGetVersion: String;
 function BrotliDecodeStream(inStream, outStream: TMemoryStream): Boolean;
 
 implementation
-
-uses
-  SyncObjs;
 
 type
   TBrotliSize = {$IFDEF CPU386} Integer {$ELSE} Int64 {$ENDIF};

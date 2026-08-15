@@ -25,7 +25,7 @@ unit SimpleTranslator;
 interface
 
 uses
-  Classes, SysUtils, strutils, gettext, LazFileUtils, LCLTranslator,
+  SysUtils, Classes, strutils, gettext, LazFileUtils, LCLTranslator,
   Translations, LResources, Forms, LCLVersion;
 
 type

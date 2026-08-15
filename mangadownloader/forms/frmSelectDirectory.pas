@@ -5,7 +5,7 @@ unit frmSelectDirectory;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, EditBtn,
+  SysUtils, Classes, FileUtil, Forms, Controls, Graphics, Dialogs, EditBtn,
   Buttons, StdCtrls;
 
 type

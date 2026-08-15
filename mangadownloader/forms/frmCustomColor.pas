@@ -5,8 +5,8 @@ unit frmCustomColor;
 interface
 
 uses
-  Classes, SysUtils, Types, Forms, Graphics, Dialogs, ColorBox, ComCtrls,
-  Buttons, VirtualTrees, uOptions, jsonini, uDarkStyleParams;
+  SysUtils, Classes, Types, Forms, Graphics, Dialogs, ColorBox, ComCtrls, jsonini,
+  Buttons, VirtualTrees, uOptions;
 
 type
   TColorMapping = record
@@ -155,7 +155,7 @@ var
 implementation
 
 uses
-  uVars;
+  uVars, uDarkStyleParams;
 
 const
   TextStyleLeftCenter: TTextStyle = (

@@ -11,9 +11,9 @@ unit uDownloadsManager;
 interface
 
 uses
-  LazFileUtils, Classes, SysUtils, ExtCtrls, typinfo, fgl, FileUtil, synautil,
-  blcksock, MultiLog, uBaseUnit, uPacker, uMisc, DownloadedChaptersDB, uOptions, ImgInfos,
-  httpsendthread, DownloadsDB, BaseThread, SQLiteData, dateutils, strutils, ImageMagickManager;
+  SysUtils, Classes, ExtCtrls, typinfo, fgl, FileUtil, LazFileUtils, synautil,
+  blcksock, httpsendthread, dateutils, strutils, BaseThread, uBaseUnit,
+  DownloadsDB, DownloadedChaptersDB;
 
 type
   TDownloadStatusType = (
@@ -291,7 +291,8 @@ resourcestring
 implementation
 
 uses
-  frmMain, uVars, WebsiteModules, SimpleException;
+  frmMain, uVars, WebsiteModules, SimpleException, MultiLog, uPacker,
+  uOptions, ImgInfos, SQLiteData, ImageMagickManager;
 
 function IntToStr(Value: Cardinal): String;
 begin
@@ -1604,6 +1605,7 @@ var
   ds: TDownloadStatusType;
 begin
   inherited Create;
+
   InitCriticalSection(CS_Task);
   InitCriticalSection(CS_ItemsActiveTask);
   InitCriticalSection(CS_StatusCount);
@@ -1635,8 +1637,11 @@ destructor TDownloadManager.Destroy;
 var
   i: Integer;
 begin
-  for i:=0 to Items.Count-1 do
+  for i := 0 to Items.Count - 1 do
+  begin
     Items[i].Free;
+  end;
+
   Items.Free;
   ItemsActiveTask.Free;
   DownloadedChapters.Free;
@@ -1651,20 +1656,33 @@ procedure TDownloadManager.Restore;
 var
   t: TTaskContainer;
 begin
-  if not FDownloadsDB.Connection.Connected then Exit;
-  if FDownloadsDB.OpenTable(False) then
+  if not FDownloadsDB.Connection.Connected then
+  begin
+    Exit;
+  end;
+
+  if not FDownloadsDB.OpenTable(False) then
+  begin
+    Exit;
+  end;
+
   try
-    isRunningRestore:=True;
-    if FDownloadsDB.RecordCount = 0 then Exit;
+    isRunningRestore := True;
+
+    if FDownloadsDB.RecordCount = 0 then
+    begin
+      Exit;
+    end;
+
     EnterCriticalsection(CS_Task);
     try
       //FDownloadsDB.Table.Last; //load all to memory
       FDownloadsDB.Table.First;
       while not FDownloadsDB.Table.EOF do
       begin
-        t:=TTaskContainer.Create;
-        t.Order:=Items.Add(t);
-        t.Manager:=Self;
+        t := TTaskContainer.Create;
+        t.Order := Items.Add(t);
+        t.Manager := Self;
         with t, FDownloadsDB.Table do
         begin
           DlId                            := Fields[f_id].AsString;
@@ -1679,12 +1697,14 @@ begin
           DownloadInfo.Status             := Fields[f_status].AsString;
           DownloadInfo.Progress           := Fields[f_progress].AsString;
           if Pos('/', DownloadInfo.Progress) <> 0 then
+          begin
             DownCounter := StrToIntDef(Trim(ExtractWord(1, DownloadInfo.Progress, ['/'])), 0);
+          end;
           DownloadInfo.SaveTo             := Fields[f_saveto].AsString;
           DownloadInfo.DateAdded          := Fields[f_dateadded].AsDateTime;
-          DownloadInfo.DateLastDownloaded   := Fields[f_datelastdownloaded].AsDateTime;
+          DownloadInfo.DateLastDownloaded := Fields[f_datelastdownloaded].AsDateTime;
           ChapterLinks.Text               := Fields[f_chapterslinks].AsString;
-          ChapterNames.Text                := Fields[f_chaptersnames].AsString;
+          ChapterNames.Text               := Fields[f_chaptersnames].AsString;
           PageLinks.Text                  := Fields[f_pagelinks].AsString;
           PageContainerLinks.Text         := Fields[f_pagecontainerlinks].AsString;
           FileNames.Text                  := Fields[f_filenames].AsString;
@@ -1696,7 +1716,8 @@ begin
     finally
       LeaveCriticalsection(CS_Task);
     end;
-    isRunningRestore:=False;
+
+    isRunningRestore := False;
   finally
     FDownloadsDB.CloseTable;
   end;
@@ -1719,7 +1740,6 @@ end;
 procedure TDownloadManager.Lock;
 begin
   EnterCriticalSection(CS_Task);
-  EnterCriticalSection(FDownloadsDB.Guardian);
   FDownloadsDB.BeginUpdate;
   isRunningBackup := True;
 end;
@@ -1728,7 +1748,6 @@ procedure TDownloadManager.UnLock;
 begin
   isRunningBackup := False;
   FDownloadsDB.EndUpdate;
-  LeaveCriticalSection(FDownloadsDB.Guardian);
   LeaveCriticalSection(CS_Task);
 end;
 

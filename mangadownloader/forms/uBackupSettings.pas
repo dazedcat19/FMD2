@@ -5,18 +5,19 @@ unit uBackupSettings;
 interface
 
 uses
-  Classes,SysUtils,FileUtil,Process;
+  SysUtils, Classes, FileUtil, Process;
 
-function GetBackupTodayFileName:String;
+function GetBackupTodayFileName: String;
 procedure DoBackupToday;
-procedure WriteBackupToFile(const AFileName:String);
+procedure WriteBackupToFile(const AFileName: String);
 
 var
-  BackupLimit:Integer=7;
+  BackupLimit: Integer = 7;
 
 implementation
 
-uses uOptions;
+uses
+  uOptions;
 
 function GetBackupTodayFileName:String;
 begin

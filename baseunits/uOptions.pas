@@ -5,7 +5,7 @@ unit uOptions;
 interface
 
 uses
-  Classes, SysUtils, fileinfo, jsonini, FileUtil, Forms, Graphics,
+  SysUtils, Classes, fileinfo, jsonini, FileUtil, Forms, Graphics,
   LazFileUtils;
 
 type
@@ -848,7 +848,7 @@ end;
 constructor TOptions.Create;
 begin
   inherited Create;
-   
+
   FreeNil(FSaveIni);
   FSaveIni := TJSONIniFile.Create(SETTINGS_FILE);
 

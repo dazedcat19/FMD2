@@ -11,9 +11,8 @@ unit uFavoritesManager;
 interface
 
 uses
-  Classes, SysUtils, fgl, Dialogs, ExtCtrls,
-  LazFileUtils, uBaseUnit, uData, uDownloadsManager, WebsiteModules, uOptions,
-  httpsendthread, FavoritesDB, BaseThread, SQLiteData, MultiLog, SimpleException, VirtualTrees;
+  SysUtils, Classes, fgl, Dialogs, ExtCtrls, LazFileUtils, httpsendthread,
+  BaseThread, uBaseUnit, uData, FavoritesDB, uDownloadsManager;
 
 type
   TFavoriteManager = class;
@@ -158,6 +157,8 @@ type
     // critical section
     procedure Lock; inline;
     procedure UnLock; inline;
+    procedure LockUpdate; inline;
+    procedure UnLockUpdate; inline;
     procedure UpdateOrder; inline;
 
     property Count: Integer read GetFavoritesCount;
@@ -190,7 +191,8 @@ resourcestring
 implementation
 
 uses
-  frmMain, frmCustomMessageDlg, frmNewChapter, uVars, DateUtils;
+  frmMain, frmCustomMessageDlg, frmNewChapter, uVars, DateUtils,WebsiteModules,
+  uOptions, SQLiteData, MultiLog, SimpleException, VirtualTrees;
 
 { TFavoriteContainer }
 
@@ -610,7 +612,7 @@ begin
   if FNeedRepaint > 0 then
   begin
     InterlockedExchange(FNeedRepaint, 0);
-    FormMain.vtFavorites.Repaint;
+    MainForm.vtFavorites.Repaint;
   end;
 end;
 
@@ -670,7 +672,7 @@ begin
   end;
 
   // reset all status
-  FManager.Lock;
+  FManager.LockUpdate;
   try
     for i := 0 to FManager.Items.Count - 1 do
     begin
@@ -688,7 +690,7 @@ begin
       end;
     end;
   finally
-    FManager.UnLock;
+    FManager.UnLockUpdate;
   end;
 
   if (not Terminated) and (not isDlgCounter) then
@@ -881,6 +883,7 @@ begin
         FOrder := i;
         FFavoritesDB.tempSQL += 'UPDATE "favorites" SET "order"=' + PrepSQLValue(FOrder) + ' WHERE "id"=' + PrepSQLValue(Fid) + ';';
         Inc(FFavoritesDB.tempSQLcount);
+
         if FFavoritesDB.tempSQLcount >= MAX_BIG_SQL_FLUSH_QUEUE then
         begin
           FFavoritesDB.FlushSQL(False);
@@ -895,14 +898,16 @@ end;
 constructor TFavoriteManager.Create;
 begin
   inherited Create;
+
   InitCriticalSection(FGuardian);
   isRunningRestore := False;
   FUpdateOrderCount := 0;
   FEnabledCount := 0;
   ForceDirectories(USERDATA_FOLDER);
   isRunning := False;
-  Items := TFavoriteContainers.Create;;
+  Items := TFavoriteContainers.Create;
   FFavoritesDB := TFavoritesDB.Create(FAVORITESDB_FILE);
+  FFavoritesDB.OnError := MainForm.ExceptionHandler;
   FFavoritesDB.Open;
 end;
 
@@ -1094,6 +1099,7 @@ begin
   begin
     Self.DLManager := DLManager;
   end;
+
   if Self.DLManager = nil then
   begin
     Exit;
@@ -1101,7 +1107,8 @@ begin
 
   isMissingCheck := Assigned(TaskThread) and TaskThread.FCheckMissing;
   Self.Sort(Self.FSortColumn);
-  Lock;
+
+  LockUpdate;
   try
     numOfNewChapters := 0;
     numOfMangaNewChapters := 0;
@@ -1119,13 +1126,18 @@ begin
             if NewMangaInfoChaptersPos.Count > 0 then
             begin
               if isMissingCheck then
+              begin
                 newChapterListStr += LineEnding + '- ' + Format(
                   RS_FavoriteHasMissingChapter, [FavoriteInfo.Title, FavoriteInfo.Website,
-                  NewMangaInfoChaptersPos.Count])
+                  NewMangaInfoChaptersPos.Count]);
+              end
               else
+              begin
                 newChapterListStr += LineEnding + '- ' + Format(
                   RS_FavoriteHasNewChapter, [FavoriteInfo.Title, FavoriteInfo.Website,
                   NewMangaInfoChaptersPos.Count]);
+              end;
+
               Inc(numOfMangaNewChapters);
               Inc(numOfNewChapters, NewMangaInfoChaptersPos.Count);
             end
@@ -1209,6 +1221,7 @@ begin
                 lbNotification.Caption :=
                   Format(RS_LblNewChapterFound, [numOfNewChapters, numOfMangaNewChapters]);
               end;
+
               mmMemo.Lines.Text := Trim(newChapterListStr);
               btDownload.Caption := RS_BtnDownload;
               btQueue.Caption := RS_BtnAddToQueue;
@@ -1224,6 +1237,8 @@ begin
           end;
         end;
 
+
+
         // generate download task
         if LNCResult <> ncrCancel then
         begin
@@ -1236,59 +1251,61 @@ begin
           try
             for i := 0 to Items.Count - 1 do
             begin
+              if not Assigned(Items[i].NewMangaInfo) or (Items[i].NewMangaInfoChaptersPos.Count = 0) then
+              begin
+                Continue;
+              end;
+
               with Items[i] do
               begin
-                if Assigned(NewMangaInfo) and (NewMangaInfoChaptersPos.Count > 0) then
+                with DLManager.AddTask do
                 begin
-                  with DLManager.AddTask do
+                  Manager := DLManager;
+                  CurrentDownloadChapterPtr := 0;
+                  DownloadInfo.Module := FavoriteInfo.Module;
+                  DownloadInfo.Link := FavoriteInfo.Link;
+                  DownloadInfo.Title := FavoriteInfo.Title;
+                  DownloadInfo.SaveTo := FavoriteInfo.SaveTo;
+                  DownloadInfo.DateAdded := Now;
+                  DownloadInfo.DateLastDownloaded := Now;
+
+                  for j := 0 to NewMangaInfoChaptersPos.Count - 1 do
                   begin
-                    Manager := DLManager;
-                    CurrentDownloadChapterPtr := 0;
-                    DownloadInfo.Module := FavoriteInfo.Module;
-                    DownloadInfo.Link := FavoriteInfo.Link;
-                    DownloadInfo.Title := FavoriteInfo.Title;
-                    DownloadInfo.SaveTo := FavoriteInfo.SaveTo;
-                    DownloadInfo.DateAdded := Now;
-                    DownloadInfo.DateLastDownloaded := Now;
-
-                    for j := 0 to NewMangaInfoChaptersPos.Count - 1 do
-                    begin
-                      ChapterLinks.Add(NewMangaInfo.ChapterLinks[NewMangaInfoChaptersPos[j]]);
-                      ChapterNames.Add(CustomRename(
-                        OptionChapterCustomRename,
-                        FavoriteInfo.Website,
-                        FavoriteInfo.Title,
-                        NewMangaInfo.Authors,
-                        NewMangaInfo.Artists,
-                        NewMangaInfo.ChapterNames[NewMangaInfoChaptersPos[j]],
-                        Format('%.4d', [NewMangaInfoChaptersPos[j] + 1]),
-                        OptionChangeUnicodeCharacter,
-                        OptionChangeUnicodeCharacterStr));
-                    end;
-
-                    if LNCResult = ncrDownload then
-                    begin
-                      DownloadInfo.Status := Format('[%d/%d] %s',[0,ChapterLinks.Count,RS_Waiting]);
-                      Status := STATUS_WAIT;
-                    end
-                    else
-                    begin
-                      DownloadInfo.Status := Format('[%d/%d] %s',[0,ChapterLinks.Count,RS_Stopped]);
-                      Status := STATUS_STOP;
-                    end;
-
-                    DBInsert;
-                    // add to downloaded chapter list
-                    FavoriteInfo.downloadedChapterList := MergeCaseInsensitive([FavoriteInfo.DownloadedChapterList, chapterLinks.Text]);
-                    // add to downloaded chapter list in downloadmanager
-                    DLManager.DownloadedChapters.Chapters[FavoriteInfo.ModuleID, FavoriteInfo.Link] := chapterLinks.Text;
+                    ChapterLinks.Add(NewMangaInfo.ChapterLinks[NewMangaInfoChaptersPos[j]]);
+                    ChapterNames.Add(CustomRename(
+                      OptionChapterCustomRename,
+                      FavoriteInfo.Website,
+                      FavoriteInfo.Title,
+                      NewMangaInfo.Authors,
+                      NewMangaInfo.Artists,
+                      NewMangaInfo.ChapterNames[NewMangaInfoChaptersPos[j]],
+                      Format('%.4d', [NewMangaInfoChaptersPos[j] + 1]),
+                      OptionChangeUnicodeCharacter,
+                      OptionChangeUnicodeCharacterStr));
                   end;
 
-                  DBUpdateLastUpdated;
-                  // free unused objects
-                  FreeAndNil(NewMangaInfo);
-                  FreeAndNil(NewMangaInfoChaptersPos);
+                  if LNCResult = ncrDownload then
+                  begin
+                    DownloadInfo.Status := Format('[%d/%d] %s',[0,ChapterLinks.Count,RS_Waiting]);
+                    Status := STATUS_WAIT;
+                  end
+                  else
+                  begin
+                    DownloadInfo.Status := Format('[%d/%d] %s',[0,ChapterLinks.Count,RS_Stopped]);
+                    Status := STATUS_STOP;
+                  end;
+
+                  DBInsert;
+                  // add to downloaded chapter list
+                  FavoriteInfo.downloadedChapterList := MergeCaseInsensitive([FavoriteInfo.DownloadedChapterList, chapterLinks.Text]);
+                  // add to downloaded chapter list in downloadmanager
+                  DLManager.DownloadedChapters.Chapters[FavoriteInfo.ModuleID, FavoriteInfo.Link] := chapterLinks.Text;
                 end;
+
+                DBUpdateLastUpdated;
+                // free unused objects
+                FreeAndNil(NewMangaInfo);
+                FreeAndNil(NewMangaInfoChaptersPos);
               end;
             end;
           finally
@@ -1301,10 +1318,12 @@ begin
             begin
               DLManager.Sort(DLManager.SortColumn);
             end;
+
             if LNCResult = ncrDownload then
             begin
               DLManager.CheckAndActiveTask;
             end;
+
             if OptionShowDownloadsTabOnNewTasks then
             begin
               MainForm.pcMain.ActivePage := MainForm.tsDownload;
@@ -1315,6 +1334,7 @@ begin
           begin
             OnUpdateDownload;
           end;
+
           if Assigned(OnUpdateFavorite) then
           begin
             OnUpdateFavorite;
@@ -1324,7 +1344,9 @@ begin
 
     except
       on E: Exception do
+      begin
         ExceptionHandle(Self, E);
+      end;
     end;
 
     // check again for unused objects and free them
@@ -1340,7 +1362,7 @@ begin
       end;
     end;
   finally
-    UnLock;
+    UnLockUpdate;
   end;
 end;
 
@@ -1350,16 +1372,18 @@ var
 begin
   Result := nil;
 
-  if Items.Count <> 0 then
+  if Items.Count = 0 then
   begin
-    for i := 0 to Items.Count - 1 do
+    Exit;
+  end;
+
+  for i := 0 to Items.Count - 1 do
+  begin
+    with Items[i].FavoriteInfo do
     begin
-      with Items[i].FavoriteInfo do
+      if SameText(ATitle, Title) and SameText(AWebsite, ModuleID) then
       begin
-        if SameText(ATitle, Title) and SameText(AWebsite, ModuleID) then
-        begin
-          Exit(Items[i]);
-        end;
+        Exit(Items[i]);
       end;
     end;
   end;
@@ -1376,16 +1400,18 @@ var
 begin
   Result := nil;
 
-  if Items.Count <> 0 then
+  if Items.Count = 0 then
   begin
-    for i := 0 to Items.Count - 1 do
+    Exit
+  end;
+
+  for i := 0 to Items.Count - 1 do
+  begin
+    with Items[i].FavoriteInfo do
     begin
-      with Items[i].FavoriteInfo do
+      if SameText(AModuleID, ModuleID) and SameText(ALink, Link) then
       begin
-        if SameText(AModuleID, ModuleID) and SameText(ALink, Link) then
-        begin
-          Exit(Items[i]);
-        end;
+        Exit(Items[i]);
       end;
     end;
   end;
@@ -1406,7 +1432,7 @@ begin
     Exit;
   end;
 
-  Lock;
+  LockUpdate;
   try
     if IsMangaExist(ATitle, TModuleContainer(AModule).ID) then
     begin
@@ -1415,7 +1441,8 @@ begin
 
     F := TFavoriteContainer.Create(Self);
     F.Enabled := AEnabled;
-    F.FOrder:=Items.Add(F);
+    F.FOrder := Items.Add(F);
+
     with F.FavoriteInfo do
     begin
       Module := AModule;
@@ -1430,10 +1457,10 @@ begin
       DateLastUpdated := Now;
     end;
 
-    F.Status:=STATUS_IDLE;
+    F.Status := STATUS_IDLE;
     F.DBInsert;
   finally
-    UnLock;
+    UnLockUpdate;
   end;
 
   if not isRunning then
@@ -1452,10 +1479,10 @@ begin
     Exit;
   end;
 
-  Lock;
+  LockUpdate;
   try
     F := TFavoriteContainer.Create(Self);
-    F.FOrder:=Items.Add(F);
+    F.FOrder := Items.Add(F);
 
     with F.FavoriteInfo do
     begin
@@ -1471,11 +1498,12 @@ begin
       DateLastUpdated := Now;
     end;
 
-    F.Status:=STATUS_IDLE;
+    F.Status := STATUS_IDLE;
     F.DBReplace(OldId);
   finally
-    UnLock;
+    UnLockUpdate;
   end;
+
   if not isRunning then
   begin
     Sort(SortColumn);
@@ -1516,6 +1544,7 @@ begin
   begin
     Exit;
   end;
+
   if not FFavoritesDB.OpenTable(False) then
   begin
     Exit;
@@ -1526,16 +1555,17 @@ begin
     begin
       Exit;
     end;
-
-    Lock;
+          
     isRunningRestore := True;
+    LockUpdate;
     try
       //FFavoritesDB.Table.Last; //load all to memory
       FFavoritesDB.Table.First;
       while not FFavoritesDB.Table.EOF do
       begin
         F := TFavoriteContainer.Create(Self);
-        F.FOrder:=Items.Add(F);
+        F.FOrder := Items.Add(F);
+
         with F.FavoriteInfo, FFavoritesDB.Table do
         begin
           F.Fid                 := Fields[f_id].AsString;
@@ -1552,10 +1582,11 @@ begin
           DateLastChecked       := Fields[f_datelastchecked].AsDateTime;
           DateLastUpdated       := Fields[f_datelastupdated].AsDateTime;
         end;
+
         FFavoritesDB.Table.Next;
       end;
     finally
-      UnLock;
+      UnLockUpdate;
     end;
 
     isRunningRestore := False;
@@ -1566,13 +1597,13 @@ end;
 
 procedure TFavoriteManager.Backup;
 begin
-  Lock;
+  LockUpdate;
 
   try
     DBUpdateOrder;
     FFavoritesDB.Commit(False);
   finally
-    UnLock;
+    UnLockUpdate;
   end;
 end;
 
@@ -1585,9 +1616,9 @@ begin
   begin
     Exit;
   end;
-
+  
+  Lock;
   try
-    EnterCriticalsection(FGuardian);
     for i := 0 to Items.Count - 1 do
     begin
       with Items[i].FavoriteInfo do
@@ -1600,7 +1631,7 @@ begin
       end;
     end;
   finally
-    LeaveCriticalsection(FGuardian);
+    UnLock;
   end;
 end;
 
@@ -1617,7 +1648,9 @@ function CompareFavoriteContainer(const Item1, Item2: TFavoriteContainer): Integ
         4: Result := Status;
         5: Result := SaveTo;
         else
+        begin
           Result := '';
+        end;
       end;
     end;
   end;
@@ -1631,31 +1664,32 @@ function CompareFavoriteContainer(const Item1, Item2: TFavoriteContainer): Integ
         7: Result := DateLastChecked;
         8: Result := DateLastUpdated;
         else
+        begin
           Result := Now;
+        end;
       end;
     end;
   end;
 
+var
+  itemA, itemB: TFavoriteContainer;
 begin
+  ItemA := Item1;
+  ItemB := Item2;
+
+  if Item1.FManager.SortDirection then
+  begin
+    ItemA := Item2;
+    ItemB := Item1;
+  end;
+
   if (Item1.FManager.SortColumn >= 6) and (Item1.FManager.SortColumn <= 8) then
   begin
-    if Item1.FManager.SortDirection then
-    begin
-      Result := CompareDateTime(GetDateTime(Item2), GetDateTime(Item1));
-    end
-    else
-    begin
-      Result := CompareDateTime(GetDateTime(Item1), GetDateTime(Item2));
-    end;
+    Result := CompareDateTime(GetDateTime(ItemA), GetDateTime(ItemB));
   end
   else
   begin
-    if Item1.FManager.SortDirection then
-    begin
-      Result := NaturalCompareStr(GetStr(Item2), GetStr(Item1));
-    end
-    else
-      Result := NaturalCompareStr(GetStr(Item1), GetStr(Item2));
+    Result := NaturalCompareStr(GetStr(ItemA), GetStr(ItemB));
   end;
 
   if Result = 0 then
@@ -1671,27 +1705,35 @@ begin
     Exit;
   end;
 
-  EnterCriticalSection(FGuardian);
+  Lock;
   try
     SortColumn := AColumn;
     Items.Sort(CompareFavoriteContainer);
     UpdateOrder;
   finally
-    LeaveCriticalSection(FGuardian);
+    UnLock;
   end;
 end;
 
 procedure TFavoriteManager.Lock;
 begin
   EnterCriticalsection(FGuardian);
-  EnterCriticalSection(FFavoritesDB.Guardian);
-  FFavoritesDB.BeginUpdate;
 end;
 
 procedure TFavoriteManager.UnLock;
 begin
+  LeaveCriticalsection(FGuardian);
+end;
+
+procedure TFavoriteManager.LockUpdate;
+begin
+  EnterCriticalsection(FGuardian);
+  FFavoritesDB.BeginUpdate;
+end;
+
+procedure TFavoriteManager.UnLockUpdate;
+begin
   FFavoritesDB.EndUpdate;
-  LeaveCriticalSection(FFavoritesDB.Guardian);
   LeaveCriticalsection(FGuardian);
 end;
 

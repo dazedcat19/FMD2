@@ -5,8 +5,8 @@ unit frmLogger;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls, Spin,
-  ExtCtrls, Buttons, Menus, Clipbrd, ComCtrls, LogTreeView, MultiLog, uCustomControlsMultilog;
+  SysUtils, Classes, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
+  Spin, ExtCtrls, Buttons, Menus, Clipbrd, ComCtrls, uCustomControlsMultilog;
 
 type
 
@@ -39,6 +39,9 @@ var
   FormLogger: TFormLogger;
 
 implementation
+
+uses
+  LogTreeView, MultiLog;
 
 {$R *.lfm}
 

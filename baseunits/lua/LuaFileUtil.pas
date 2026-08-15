@@ -5,11 +5,13 @@ unit LuaFileUtil;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
+  SysUtils, Classes, LuaPackage,
+  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 implementation
 
-uses LuaUtils, LuaPackage, LazFileUtils, uBaseUnit;
+uses
+  LuaUtils, LazFileUtils, uBaseUnit;
 
 function lua_extractfilename(L: Plua_State): Integer; cdecl;
 begin

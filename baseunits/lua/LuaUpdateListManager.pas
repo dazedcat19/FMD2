@@ -5,7 +5,8 @@ unit LuaUpdateListManager;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
+  SysUtils, Classes, LuaClass, uUpdateThread,
+  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 procedure luaUpdateListManagerAddMetaTable(const L: Plua_State; const Obj: Pointer;
   const MetaTable, UserData: Integer);
@@ -13,7 +14,7 @@ procedure luaUpdateListManagerAddMetaTable(const L: Plua_State; const Obj: Point
 implementation
 
 uses
-  LuaClass, LuaUtils, uUpdateThread;
+  LuaUtils;
 
 function lua_GetCurrentDirectoryPageNumber(L: Plua_State): Integer; cdecl;
 begin

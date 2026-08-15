@@ -5,7 +5,7 @@ unit GitHubRepo;
 interface
 
 uses
-  Classes, SysUtils, httpsendthread, BaseThread, fpjson;
+  SysUtils, Classes, httpsendthread, BaseThread, fpjson;
 
 type
 { TGitHubRepo }
@@ -41,7 +41,8 @@ type
 
 implementation
 
-uses jsonparser, jsonscanner, jsonini, uBaseUnit;
+uses
+  jsonparser, jsonscanner, jsonini, uBaseUnit;
 
 { TGitHubRepo }
 

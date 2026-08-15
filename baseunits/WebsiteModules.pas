@@ -10,9 +10,9 @@ unit WebsiteModules;
 interface
 
 uses
-  Classes, SysUtils, fgl, uData, uDownloadsManager, uOptions, httpsendthread,
-  WebsiteModulesSettings, LuaWebsiteBypass, RegExpr, fpjson, jsonparser,
-  jsonscanner, fpjsonrtti, uBaseUnit, httpcookiemanager, BaseThread, syncobjs;
+  SysUtils, Classes, fgl, RegExpr, fpjson, jsonparser, jsonscanner, fpjsonrtti,
+  syncobjs, httpsendthread, uData, uDownloadsManager, WebsiteModulesSettings,
+  LuaWebsiteBypass, httpcookiemanager, BaseThread;
 
 const
   MODULE_NOT_FOUND = -1;
@@ -216,6 +216,9 @@ function CleanOptionName(const S: String): String;
 
 
 implementation
+
+uses
+  uBaseUnit, uOptions;
 
 var
   CS_Connection: TRTLCriticalSection;

@@ -5,7 +5,7 @@ unit GitHubRepoV3;
 interface
 
 uses
-  Classes, SysUtils, fgl, httpsendthread, BaseThread, fpjson, MultiLog, DateUtils;
+  SysUtils, Classes, fgl, httpsendthread, BaseThread, fpjson, DateUtils;
 
 type
 { TGitHubRepo }
@@ -55,7 +55,8 @@ type
 
 implementation
 
-uses jsonConf, jsonini, uBaseUnit, frmLuaModulesUpdater;
+uses
+  frmLuaModulesUpdater, jsonConf, jsonini, uBaseUnit, MultiLog;
 
 function AppendURLDelim(const URL: String): String;
 begin

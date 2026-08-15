@@ -5,11 +5,9 @@ unit frmCheckModules;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, StdCtrls,
-  ComCtrls, Buttons, uCustomControls, WebsiteModules, LuaMangaInfo,
-  LuaMangaCheck, LuaHTTPSend, LuaWebsiteModuleHandler, LuaWebsiteModules, uData,
-  LuaUtils, uBaseUnit, uDownloadsManager, LuaDownloadTask, httpsendthread,
-  StrUtils, frmCustomMessageDlg, StatusBarDownload,
+  SysUtils, Classes, Forms, Controls, Graphics, Dialogs, ExtCtrls, StdCtrls,
+  ComCtrls, Buttons, FileUtil, LazUTF8, LazFileUtils, StrUtils, uCustomControls,
+  StatusBarDownload, uData,
   {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 type
@@ -141,7 +139,9 @@ var
 implementation
 
 uses
-  FileUtil, LazUTF8, LazFileUtils, frmMain;
+  frmMain, frmCustomMessageDlg, LuaMangaInfo, LuaMangaCheck, LuaHTTPSend,
+  LuaWebsiteModuleHandler, LuaWebsiteModules, LuaUtils, LuaDownloadTask,
+  WebsiteModules, uBaseUnit, uDownloadsManager, httpsendthread;
 
 {$R *.lfm}
 
@@ -298,7 +298,7 @@ end;
 
 constructor TModuleCheckThread.Create(AForm: TFormCheckModules);
 begin
-  inherited Create(False, frmMain.MainForm, AForm.imlCheckModules, 16);
+  inherited Create(False, MainForm, AForm.imlCheckModules, 16);
   FForm := AForm;
   FreeOnTerminate := True;
 end;
@@ -711,7 +711,7 @@ procedure TFormCheckModules.FormCloseQuery(Sender: TObject;
 begin
   if FIsScanning or FIsChecking then
   begin
-    CanClose := CenteredMessageDlg(frmMain.MainForm,
+    CanClose := CenteredMessageDlg(MainForm,
       'An operation is in progress. Are you sure you want to close?',
       mtConfirmation, [mbYes, mbNo], 0) = mrYes;
 
@@ -848,7 +848,7 @@ procedure TFormCheckModules.ScanLuaModules;
 begin
   if FIsScanning then
   begin
-    CenteredMessageDlg(frmMain.MainForm, 'A scan is already in progress.',
+    CenteredMessageDlg(MainForm, 'A scan is already in progress.',
       mtInformation, [mbOK], 0);
     Exit;
   end;
@@ -973,7 +973,7 @@ var
 begin
   if lvModules.Items.Count = 0 then
   begin
-    CenteredMessageDlg(frmMain.MainForm, 'No modules to check.'
+    CenteredMessageDlg(MainForm, 'No modules to check.'
     + ' Please refresh the module list first.',
       mtError, [mbOK], 0);
     Exit;
@@ -981,13 +981,13 @@ begin
 
   if FIsChecking then
   begin
-    CenteredMessageDlg(frmMain.MainForm, 'An integrity check is already in progress.',
+    CenteredMessageDlg(MainForm, 'An integrity check is already in progress.',
       mtInformation, [mbOK], 0);
     Exit;
   end;
   if CalcTotalToCheck = 0 then
   begin
-    CenteredMessageDlg(frmMain.MainForm,
+    CenteredMessageDlg(MainForm,
       'No modules selected. Please check at least one module.',
       mtError, [mbOK], 0);
     FIsChecking := False;
@@ -1034,7 +1034,7 @@ begin
   StatusBar.SimpleText := Format('Check complete: %d tests passed, %d tests failed',
     [FSuccessCount, FFailCount]);
 
-  CenteredMessageDlg(frmMain.MainForm, Format('Integrity check complete.'#13#10 +
+  CenteredMessageDlg(MainForm, Format('Integrity check complete.'#13#10 +
     'Tests Passed: %d'#13#10 +
     'Tests Failed: %d', [FSuccessCount, FFailCount]),
     mtInformation, [mbOK], 0);

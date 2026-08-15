@@ -5,7 +5,8 @@ unit LuaWebsiteBypass;
 interface
 
 uses
-  Classes, SysUtils, httpsendthread;
+  SysUtils, Classes, httpsendthread,
+  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 type
 
@@ -26,7 +27,6 @@ procedure doInitialization;
 implementation
 
 uses
-  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif},
   LuaWebsiteModules, LuaHandler, LuaBase, LuaUtils, LuaHTTPSend, LuaClass,
   WebsiteModules, uOptions, uBaseUnit, MultiLog;
 

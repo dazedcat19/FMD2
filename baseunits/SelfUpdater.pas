@@ -5,8 +5,8 @@ unit SelfUpdater;
 interface
 
 uses
-  Classes, SysUtils, httpsendthread, uOptions, StatusBarDownload, process,
-  Controls, Dialogs, Forms;
+  SysUtils, Classes, httpsendthread, StatusBarDownload, process, Controls,
+  Dialogs, Forms;
 
 type
 
@@ -46,7 +46,8 @@ resourcestring
 
 implementation
 
-uses uVars, frmMain, frmCustomMessageDlg;
+uses
+  uVars, uOptions, frmMain, frmCustomMessageDlg;
 
 { TSelfUpdaterThread }
 
@@ -116,8 +117,8 @@ begin
     end;
 
     FMDOptions.General.AfterFMDDo := DO_UPDATE;
-    FormMain.tmExitCommand.Interval := 32;
-    FormMain.tmExitCommand.Enabled := True;
+    MainForm.tmExitCommand.Interval := 32;
+    MainForm.tmExitCommand.Enabled := True;
   end
   else
   begin
@@ -192,7 +193,7 @@ end;
 
 constructor TSelfUpdaterThread.Create;
 begin
-  inherited Create(True, FormMain, FormMain.IconList, 24);
+  inherited Create(True, MainForm, MainForm.IconList, 24);
   FFailedMessage := '';
   HTTP.OnRedirected := @HTTPRedirected;
   Synchronize(@SyncStart);

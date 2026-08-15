@@ -11,9 +11,8 @@ unit frmImportFavorites;
 interface
 
 uses
-  Classes, SysUtils, Forms, Dialogs, StdCtrls, Buttons, EditBtn,
-  LazFileUtils, uBaseUnit, WebsiteModules, uOptions, RegExpr,
-  frmNewChapter, DBDataProcess, Controls, uCustomControls;
+  SysUtils, Classes, Forms, Dialogs, StdCtrls, Buttons, EditBtn, LazFileUtils,
+  RegExpr, Controls, uCustomControls;
 
 type
 
@@ -47,7 +46,8 @@ resourcestring
 implementation
 
 uses
-  frmMain, frmCustomMessageDlg, uSilentThread, uVars;
+  frmMain, frmCustomMessageDlg, uSilentThread, uVars, frmNewChapter, uOptions,
+  DBDataProcess, uBaseUnit, WebsiteModules;
 
 {$R *.lfm}
 

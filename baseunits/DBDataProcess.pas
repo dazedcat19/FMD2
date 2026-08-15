@@ -10,8 +10,8 @@ unit DBDataProcess;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, LazFileUtils, uOptions, MultiLog, sqlite3conn,
-  sqlite3backup, sqlite3dyn, sqlite3ds, sqldb, DB, RegExpr, SQLiteData;
+  SysUtils, Classes, FileUtil, LazFileUtils, sqlite3conn, sqlite3backup,
+  sqlite3dyn, sqlite3ds, sqldb, DB, RegExpr, SQLiteData;
 
 type
   TFieldValuePair = record
@@ -203,7 +203,7 @@ procedure OverwriteDBDataProcess(const AWebsite, NWebsite: String);
 implementation
 
 uses
-  uBaseUnit, uVars, WebsiteModules, frmMain;
+  uBaseUnit, uVars, uOptions, MultiLog, WebsiteModules, frmMain;
 
 function NaturalCompareCallback({%H-}user: pointer; len1: longint;
   data1: pointer; len2: longint; data2: pointer): longint; cdecl;

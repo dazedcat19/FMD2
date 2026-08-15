@@ -5,8 +5,8 @@ unit DBUpdater;
 interface
 
 uses
-  Classes, SysUtils, httpsendthread, uOptions, StatusBarDownload,
-  WebsiteModules, process, Controls, Dialogs, Buttons;
+  SysUtils, Classes, httpsendthread, StatusBarDownload, WebsiteModules,
+  process, Controls, Dialogs, Buttons;
 
 type
 
@@ -51,7 +51,8 @@ resourcestring
 
 implementation
 
-uses uVars, LazFileUtils, frmMain, frmCustomMessageDlg;
+uses
+  uVars, uOptions, LazFileUtils, frmMain, frmCustomMessageDlg;
 
 function GetDBURL(const AName: String): String;
 begin
@@ -92,14 +93,14 @@ end;
 
 procedure TDBUpdaterThread.SyncCloseUsed;
 begin
-  FormMain.edMangaListSearch.Clear;
-  FormMain.vtMangaList.Clear;
+  MainForm.edMangaListSearch.Clear;
+  MainForm.vtMangaList.Clear;
   dataProcess.Close;
 end;
 
 procedure TDBUpdaterThread.SyncReopenUsed;
 begin
-  FormMain.OpenDataDB(FModule.ID);
+  MainForm.OpenDataDB(FModule.ID);
 end;
 
 procedure TDBUpdaterThread.SyncRemoveAttached;
@@ -212,7 +213,7 @@ end;
 
 constructor TDBUpdaterThread.Create;
 begin
-  inherited Create(True, FormMain, FormMain.IconList, 24);
+  inherited Create(True, MainForm, MainForm.IconList, 24);
   FItems := TStringList.Create;
   FFailedList := TStringList.Create;
   HTTP.OnRedirected := @HTTPRedirected;

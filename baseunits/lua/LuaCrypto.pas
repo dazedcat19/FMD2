@@ -5,12 +5,13 @@ unit LuaCrypto;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
+  SysUtils, Classes, LuaPackage,
+  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 implementation
 
 uses
-  LuaUtils, LuaPackage, BaseCrypto, synacode, uBaseUnit, htmlelements;
+  LuaUtils, BaseCrypto, synacode, uBaseUnit, htmlelements;
 
 function GetLuaString(L: Plua_State; idx: Integer): String;
 var

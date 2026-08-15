@@ -34,10 +34,10 @@ unit NaturalSortUnit;
 interface
 
 uses
+  SysUtils, Classes, Math
   {$IFDEF WINDOWS}
-  Windows,
+  , Windows
   {$ENDIF}
-  Classes, SysUtils, Math
   {$IFDEF LINUX}
   , UnixType
   {$ENDIF}

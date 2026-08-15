@@ -34,9 +34,9 @@ unit Img2Pdf;
 interface
 
 uses
-  Classes, SysUtils, LazFileUtils, FPimage, ImgInfos, MemBitmap,
+  SysUtils, Classes, LazFileUtils, FPimage, ImgInfos, MemBitmap,
   FPReadJPEG, FPWriteJPEG, FPReadPNG, JPEGLib, JdAPImin, JDataSrc, Jerror,
-  zstream, AnimatedGif, MultiLog;
+  zstream;
 
 type
   TCompressionQuality = 0..100;
@@ -98,7 +98,8 @@ type
 
 implementation
 
-uses webp, FPWritePNG;
+uses
+  webp, FPWritePNG, AnimatedGif, MultiLog;
 
 type
 

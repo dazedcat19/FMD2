@@ -5,7 +5,7 @@ unit ZstdDec;
 interface
 
 uses
-  Classes, SysUtils, Dynlibs;
+  SysUtils, Classes, Dynlibs, SyncObjs;
 
 var
   ZstdLibHandle: TLibHandle = 0;
@@ -19,9 +19,6 @@ function ZstdGetVersion: String;
 function ZstdDecodeStream(inStream, outStream: TMemoryStream): Boolean;
 
 implementation
-
-uses
-  SyncObjs;
 
 type
   TZSTD_inBuffer = record

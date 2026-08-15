@@ -36,7 +36,7 @@ unit SimpleException;
 interface
 
 uses
-  Classes, SysUtils, LazFileUtils, Forms, Controls, SimpleExceptionForm
+  SysUtils, Classes, LazFileUtils, Forms, Controls, SimpleExceptionForm
   {$IFDEF WINDOWS}
   , Windows, win32proc
   {$ENDIF}

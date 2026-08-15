@@ -3,18 +3,20 @@ program md;
 {$mode objfpc}{$H+}
 
 uses
- {$IFDEF UNIX} {$IFDEF UseCThreads}
-  cthreads,
- {$ENDIF} {$ENDIF}
- {$ifdef windows}
-  windows,
- {$endif}
-  Interfaces, // this includes the LCL widgetset
-  Forms, LazFileUtils, jsonini, simpleipc, sqlite3dyn, uBaseUnit, uOptions,
-  uVars, webp, CheckUpdate, DBUpdater, SelfUpdater, uDownloadsManager,
-  LuaWebsiteModules, LuaBase, SimpleException, Classes, sysutils, frmMain,
-  frmCheckModules, uDarkStyle, uMetaDarkStyle, uDarkStyleSchemes, uDarkStyleParams,
-  MultiLog, FileChannel, ssl_openssl3_lib, blcksock, ssl_openssl3, SQLiteData;
+  SysUtils, Classes, Interfaces, Forms, LazFileUtils, FileChannel, jsonini,
+  simpleipc, sqlite3dyn, ssl_openssl3_lib, blcksock, ssl_openssl3,
+  frmMain, frmCheckModules, uBaseUnit,
+  webp, CheckUpdate, DBUpdater, SelfUpdater, LuaWebsiteModules, LuaBase,
+  SimpleException, SQLiteData, MultiLog,
+  uOptions, uVars, uDownloadsManager, uDarkStyle, uMetaDarkStyle,
+  uDarkStyleSchemes, uDarkStyleParams
+  {$IFDEF UNIX} {$IFDEF UseCThreads}
+  , cthreads
+  {$ENDIF} {$ENDIF}
+  {$ifdef windows}
+  , windows
+  {$endif}
+  ;
 
 var
   CheckInstance: Boolean = True;

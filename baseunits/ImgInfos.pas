@@ -34,7 +34,7 @@ unit ImgInfos;
 interface
 
 uses
-  Classes, SysUtils, LazFileUtils, FPimage,
+  SysUtils, Classes, LazFileUtils, FPimage,
   FPReadJPEG, FPReadPNG, FPReadGif, FPReadBMP, FPReadTiff,
   FPWriteJPEG, FPWritePNG, FPWriteBMP, FPWriteTiff;
 

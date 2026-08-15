@@ -5,12 +5,13 @@ unit uMisc;
 interface
 
 uses
+  SysUtils, Classes, strutils
   {$ifdef windows}
-  ShellApi, Windows,
+  , ShellApi, Windows
   {$else}
-  UTF8Process,
+  , UTF8Process
   {$endif}
-  Classes, SysUtils, strutils;
+  ;
 
 type
   TArrayOfString = array of String;

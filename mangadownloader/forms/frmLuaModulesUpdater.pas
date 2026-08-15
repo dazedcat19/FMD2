@@ -5,10 +5,9 @@ unit frmLuaModulesUpdater;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  Buttons, Menus, ExtCtrls, VirtualTrees, synautil, httpsendthread, BaseThread,
-  StatusBarDownload, GitHubRepoV3, MultiLog, fpjson, jsonparser, jsonscanner,
-  dateutils;
+  SysUtils, Classes, FileUtil, LazFileUtils, Forms, Controls, Graphics, Dialogs,
+  StdCtrls, Buttons, Menus, ExtCtrls, fpjson, jsonparser, jsonscanner, dateutils,
+  VirtualTrees, BaseThread, httpsendthread, StatusBarDownload, GitHubRepoV3;
 
 type
 
@@ -188,7 +187,9 @@ resourcestring
 
 implementation
 
-uses frmCustomColor, frmDialogYesNo, frmMain, frmCustomMessageDlg, uOptions, uBaseUnit, LazFileUtils;
+uses
+  frmMain, frmCustomColor, frmDialogYesNo, frmCustomMessageDlg, uBaseUnit,
+  uOptions, synautil, MultiLog;
 
 const
   // RFC 3339 - ISO 8601

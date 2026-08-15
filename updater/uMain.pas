@@ -5,14 +5,14 @@ unit uMain;
 interface
 
 uses
+  SysUtils, Classes, zipper, FileUtil, LazFileUtils, LazUTF8, Forms, Dialogs,
+  ComCtrls, StdCtrls, ExtCtrls, RegExpr, blcksock, ssl_openssl3,
+  ssl_openssl3_lib, synacode, httpsendthread, uMisc, BaseThread,
+  SimpleTranslator, SimpleException
   {$ifdef unix}
-  cthreads,
-  cmem,
+  , cthreads, cmem
   {$endif}
-  Classes, SysUtils, zipper, FileUtil, LazFileUtils, LazUTF8, LazUTF8Classes,
-  Forms, Dialogs, ComCtrls, StdCtrls, ExtCtrls, RegExpr, blcksock,
-  ssl_openssl3, ssl_openssl3_lib, synacode, httpsendthread, uMisc, BaseThread,
-  SimpleTranslator, SimpleException;
+  ;
 
 type
 

@@ -13,17 +13,15 @@ unit uBaseUnit;
 interface
 
 uses
+  SysUtils, Classes, Types, Graphics, LazFileUtils, LConvEncoding, strutils,
+  dateutils, variants, fpjson, jsonparser, jsonscanner, fgl, RegExpr, synautil,
+  httpsend, synacode, FPimage, FPWritePNG, zstream, FPReadPNG, VirtualTrees, MultiLog
   {$ifdef windows}
-  Windows,
+  , Windows
   {$else}
-  UTF8Process,
+  , UTF8Process
   {$endif}
-  SysUtils, Classes, Graphics, LazFileUtils, LConvEncoding,
-  strutils, dateutils, variants, base64, fpjson, jsonparser, jsonscanner,
-  fgl, RegExpr, synautil, httpsend,
-  synacode, MultiLog, FPimage, GZIPUtils, uMisc, httpsendthread, uOptions,
-  ImgInfos, NaturalSortUnit,
-  MemBitmap, FPWritePNG, zstream, FPReadPNG, VirtualTrees, ImageMagickManager;
+  ;
 
 const
   LineEnding2 = LineEnding + LineEnding;
@@ -666,7 +664,8 @@ implementation
 
 uses
   frmMain, uVars, WebsiteModules, webp, DCPrijndael, DCPsha512, FPWriteJPEG,
-  LuaWebsiteModules;
+  LuaWebsiteModules, GZIPUtils, uMisc, httpsendthread, uOptions,
+  ImgInfos, NaturalSortUnit, MemBitmap, ImageMagickManager;
 
 {$IFDEF WINDOWS}
 // thanks Leledumbo for the code
@@ -849,7 +848,7 @@ begin
       (FindNext(searchRec) = 0) and
       (FindNext(searchRec) <> 0);
   finally
-    FindClose(searchRec);
+    SysUtils.FindClose(searchRec);
   end;
 end;
 
@@ -2635,7 +2634,7 @@ begin
 
     if FileExists(FilePath) then
     begin
-      DeleteFile(FilePath);
+      SysUtils.DeleteFile(FilePath);
     end;
 
     try
@@ -2801,14 +2800,14 @@ begin
 
     ImgNew := TFPMemoryImage.create(newWidth, newHeigth);
     try
-      CopyImageRect(Img1, ImgNew, 0, 0, Rect(0, 0, Img1.Width, Img1.Height));
+      CopyImageRect(Img1, ImgNew, 0, 0, Types.Rect(0, 0, Img1.Width, Img1.Height));
       if Landscape then
-        CopyImageRect(Img2, ImgNew, Img1.Width + 1, 0, Rect(0, 0, Img2.Width, Img2.Height))
+        CopyImageRect(Img2, ImgNew, Img1.Width + 1, 0, Types.Rect(0, 0, Img2.Width, Img2.Height))
       else
-        CopyImageRect(Img2, ImgNew, 0, Img1.Height + 1, Rect(0, 0, Img2.Width, Img2.Height));
+        CopyImageRect(Img2, ImgNew, 0, Img1.Height + 1, Types.Rect(0, 0, Img2.Width, Img2.Height));
       AFinalName := D + FinalName;
       if FileExists(AFinalName) then
-        DeleteFile(AFinalName);
+        SysUtils.DeleteFile(AFinalName);
       if not FileExists(AFinalName) then
       begin
         h := {%H-}GetImageFileWriterClass(AImgName1);
@@ -2824,8 +2823,8 @@ begin
         end;
         if Result then
         begin
-          DeleteFile(AImgName1);
-          DeleteFile(AImgName2);
+          SysUtils.DeleteFile(AImgName1);
+          SysUtils.DeleteFile(AImgName2);
         end;
       end;
     finally

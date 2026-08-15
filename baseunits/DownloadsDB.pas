@@ -5,7 +5,7 @@ unit DownloadsDB;
 interface
 
 uses
-  Classes, SysUtils, SQLiteData, uBaseUnit, sqlite3dyn;
+  SysUtils, Classes, SQLiteData, sqlite3dyn;
 
 type
 
@@ -15,20 +15,21 @@ type
   public
     constructor Create(const AFilename: String);
     function Add(
-      const Aenabled:Boolean; const Aorder,Ataskstatus,Achapterptr,Anumberofpages,Acurrentpage:Integer;
-      const Amoduleid,Alink,Atitle,Astatus,Aprogress,Asaveto:String;
-      const Adateadded,Adatelastdownloaded:TDateTime;
-      const Achapterslinks,Achaptersnames,Apagelinks,Apagecontainerlinks,Afilenames,Acustomfilenames,Achaptersstatus:String
+      const Aenabled: Boolean;
+      const Aorder, Ataskstatus, Achapterptr, Anumberofpages, Acurrentpage: Integer;
+      const Amoduleid, Alink, Atitle, Astatus, Aprogress, Asaveto: String;
+      const Adateadded, Adatelastdownloaded: TDateTime;
+      const Achapterslinks, Achaptersnames, Apagelinks, Apagecontainerlinks, Afilenames, Acustomfilenames, Achaptersstatus: String
       ): String; inline;
     procedure Update(
-      const Aid:String;
-      const Ataskstatus,Achapterptr,Anumberofpages,Acurrentpage:Integer;
-      const Astatus,Aprogress:String;
-      const Adatelastdownloaded:TDateTime;
-      const Apagelinks,Apagecontainerlinks,Afilenames,Achaptersstatus:String
+      const Aid: String;
+      const Ataskstatus, Achapterptr, Anumberofpages, Acurrentpage: Integer;
+      const Astatus, Aprogress: String;
+      const Adatelastdownloaded: TDateTime;
+      const Apagelinks, Apagecontainerlinks, Afilenames, Achaptersstatus: String
       ); inline;
-    procedure UpdateEnabled(const Aid:String;const Aenabled:Boolean); inline;
-    procedure UpdateStatus(const Aid:String;const Ataskstatus:Integer;const Astatus:String); inline;
+    procedure UpdateEnabled(const Aid: String; const Aenabled: Boolean); inline;
+    procedure UpdateStatus(const Aid: String; const Ataskstatus: Integer; const Astatus: String); inline;
     procedure Delete(const Aid:String); inline;
   end;
 
@@ -57,6 +58,9 @@ const
   f_chaptersstatus     = 21;
 
 implementation
+
+uses
+  uBaseUnit;
 
 { TDownloadsDB }
 
@@ -133,7 +137,7 @@ procedure TDownloadsDB.Update(
   const Apagelinks,Apagecontainerlinks,Afilenames,Achaptersstatus:String
   );
 begin
-  AppendSQLSafe('UPDATE "downloads" SET "taskstatus"=' +
+  AppendSQL('UPDATE "downloads" SET "taskstatus"=' +
     PrepSQLValue(Ataskstatus) +
     ',"chapterptr"=' +         PrepSQLValue(Achapterptr) +
     ',"numberofpages"=' +      PrepSQLValue(Anumberofpages) +

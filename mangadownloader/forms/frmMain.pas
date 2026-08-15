@@ -11,21 +11,18 @@ unit frmMain;
 interface
 
 uses
+  SysUtils, Classes, Types, Forms, Controls, Graphics, Dialogs, StdCtrls,
+  LCLType, ExtCtrls, ComCtrls, Buttons, Spin, Menus, simpleipc, process, lclproc,
+  LCLIntf, EditBtn, GroupedEdit, PairSplitter, FileUtil, TAGraph, TASources,
+  TASeries, TATools, StrUtils, RegExpr, Clipbrd, LazFileUtils, LazUTF8,
+  sqlite3dyn, ssl_openssl3_lib, VirtualTrees, RichMemo, AnimatedGif, uBaseUnit,
+  uSilentThread, WebsiteModules, uUpdateThread, uCustomControls
   {$ifdef windows}
-  ActiveX, windows,
+  , ActiveX, windows
   {$else}
-  FakeActiveX,
+  , FakeActiveX
   {$endif}
-  uOptions, Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, LCLType,
-  ExtCtrls, ComCtrls, Buttons, Spin, Menus, VirtualTrees, RichMemo, simpleipc, process,
-  lclproc, types, LCLIntf, EditBtn, GroupedEdit, PairSplitter, MultiLog,
-  FileChannel, FileUtil, LazStringUtils, TAGraph, TASources, TASeries, TATools,
-  AnimatedGif, uBaseUnit, uDownloadsManager, uFavoritesManager, StrUtils,
-  uSilentThread, uMisc, uGetMangaInfosThread, frmDropTarget, frmAccountManager,
-  frmAccountSet, frmWebsiteOptionCustom, frmCustomColor, frmLogger, frmTransferFavorites,
-  frmLuaModulesUpdater, CheckUpdate, DBDataProcess, uDarkStyleParams, uWin32WidgetSetDark,
-  SimpleTranslator, httpsendthread, DateUtils, SimpleException, WebsiteModules,
-  uCustomControls, uCustomControlsMultiLog, ImageMagickManager, frmCheckModules;
+  ;
 
 type
 
@@ -902,8 +899,9 @@ type
     procedure NewSearch(const ASearchStr: String);
   end;
 
-var
+var                
   MainForm: TMainForm;
+
   TimerBackupInterval: Integer = 10;
 
 const
@@ -1024,10 +1022,16 @@ uses
   {$ifdef windows}
   WinAPI,
   {$endif}
-  frmImportFavorites, frmShutdownCounter, frmSelectDirectory,
-  frmWebsiteSettings, uUpdateThread, uVars, RegExpr, sqlite3dyn, Clipbrd,
-  ssl_openssl3_lib, LazFileUtils, LazUTF8, webp, DBUpdater, pcre2, pcre2lib, dynlibs,
-  LuaWebsiteModules, LuaBase, uBackupSettings, frmCustomMessageDlg, BrotliDec, ZstdDec;
+  frmImportFavorites, frmShutdownCounter, frmSelectDirectory, frmDropTarget,
+  frmWebsiteSettings, frmAccountManager, frmWebsiteOptionCustom, frmCustomColor,
+  frmLogger, frmTransferFavorites, frmLuaModulesUpdater, frmCustomMessageDlg,
+  frmCheckModules,
+  DBUpdater, LuaWebsiteModules, MultiLog, FileChannel, CheckUpdate, DBDataProcess,
+  SimpleTranslator, httpsendthread, DateUtils, SimpleException,
+  uBackupSettings, uDownloadsManager, uFavoritesManager, uGetMangaInfosThread,
+  uVars, uMisc, uDarkStyleParams, uWin32WidgetSetDark, uOptions,
+  uCustomControlsMultiLog, ImageMagickManager,
+  webp, pcre2, dynlibs, BrotliDec, ZstdDec;
 
 var
   // thread for open db
@@ -1214,7 +1218,7 @@ begin
       dataProcess.Open(FWebsite);
     end;
 
-    if FormMain.edMangaListSearch.Text <> '' then
+    if MainForm.edMangaListSearch.Text <> '' then
     begin
       dataProcess.Search(MainForm.edMangaListSearch.Text);
     end;
@@ -1246,7 +1250,6 @@ var
   WaitingGif: String = 'waiting.gif';
 begin
   Randomize;
-  FormMain := Self;
   winBuildNumber := 0;
   {$ifdef windows}
   PrevWndProc := windows.WNDPROC(windows.GetWindowLongPtr(Self.Handle, GWL_WNDPROC));
@@ -3242,11 +3245,11 @@ var
 begin
   pmUpdate.Items[0].Enabled := True;
   pmUpdate.Items[3].Enabled := True;
+
   if Sender is TControl then
   begin
     button := TControl(Sender);
-    lowerLeft := Point(button.Left, button.Top + button.Height * 2 +
-      (button.Height div 2));
+    lowerLeft := Types.Point(button.Left, button.Top + button.Height * 2 + (button.Height div 2));
     lowerLeft := ClientToScreen(lowerLeft);
     pmUpdate.Popup(lowerLeft.X, lowerLeft.Y);
   end;
@@ -6420,7 +6423,7 @@ begin
       end;
 
       AddTextToInfo(RS_InfoSummary, mangaInfo.Summary);
-      CaretPos := Point(0, 0);
+      CaretPos := Types.Point(0, 0);
     finally
       Lines.EndUpdate;
     end;

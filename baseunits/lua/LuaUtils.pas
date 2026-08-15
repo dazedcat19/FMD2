@@ -5,7 +5,8 @@ unit LuaUtils;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif}, LuaClass;
+  SysUtils, Classes, LuaClass,
+  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 procedure luaNewLib(const L: Plua_State; const lr: PluaL_Reg); inline;
 function luaNewLibTable(const L: Plua_State; const lr: PluaL_Reg; const Table: Integer = -1): Integer; overload; inline;
@@ -47,7 +48,8 @@ procedure luaL_register(const L: Plua_State; const Name: String; const lr: PluaL
 
 implementation
 
-uses MultiLog;
+uses
+  MultiLog;
 
 procedure luaNewLib(const L: Plua_State; const lr: PluaL_Reg);
 var

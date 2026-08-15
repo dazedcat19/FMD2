@@ -5,15 +5,13 @@ unit LuaCriticalSection;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
+  SysUtils, Classes, syncobjs, LuaClass,
+  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 procedure luaCriticalSectionAddMetaTable(const L: Plua_State; const Obj: Pointer;
   const MetaTable, UserData: Integer);
 
 implementation
-
-uses
-  syncobjs, LuaClass;
 
 type
   TUserData = TCriticalSection;

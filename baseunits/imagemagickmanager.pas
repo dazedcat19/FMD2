@@ -5,8 +5,8 @@ unit ImageMagickManager;
 interface
 
 uses
-  Classes, SysUtils, synautil, StrUtils, StdCtrls, Process, Windows, Registry,
-  LazFileUtils, SyncObjs, MultiLog;
+  SysUtils, Classes, synautil, StrUtils, StdCtrls, Process, Windows, Registry,
+  LazFileUtils, SyncObjs;
 
 type
   { TImageMagickManager }
@@ -77,7 +77,7 @@ resourcestring
 implementation
 
 uses
-  frmMain;
+  frmMain, MultiLog;
 
 { TImageMagickManager }
 

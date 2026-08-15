@@ -5,8 +5,8 @@ unit LuaHandler;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif},
-  LuaBase, LuaClass;
+  SysUtils, Classes, LuaBase, LuaClass,
+  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 type
 
@@ -35,7 +35,8 @@ type
 
 implementation
 
-uses httpsendthread;
+uses
+  httpsendthread;
 
 { TLuaHandler }
 

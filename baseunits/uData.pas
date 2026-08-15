@@ -13,8 +13,8 @@ unit uData;
 interface
 
 uses
-  Classes, SysUtils, uBaseUnit, DBDataProcess, uOptions, httpsendthread,
-  BaseThread, LazFileUtils, strutils, httpsend;
+  SysUtils, Classes, Dialogs, LazFileUtils, strutils, httpsendthread,
+  BaseThread, uBaseUnit, DBDataProcess;
 
 type
 
@@ -50,7 +50,7 @@ var
 implementation
 
 uses
-  Dialogs, WebsiteModules, uUpdateThread;
+  WebsiteModules, uOptions;
 
 { TMangaInformation }
 

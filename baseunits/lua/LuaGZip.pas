@@ -5,11 +5,13 @@ unit LuaGZip;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
+  SysUtils, Classes, LuaPackage,
+  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 implementation
 
-uses GZIPUtils, MultiLog, LuaUtils, LuaPackage;
+uses
+  GZIPUtils, MultiLog, LuaUtils;
 
 function lua_inflate(L: Plua_State): Integer; cdecl;
 var

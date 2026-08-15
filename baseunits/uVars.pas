@@ -5,9 +5,9 @@ unit uVars;
 interface
 
 uses
-  frmMain, uDownloadsManager, uFavoritesManager, uUpdateThread, DBDataProcess,
-  uSilentThread, uBaseUnit, uGetMangaInfosThread, CheckUpdate, uOptions,
-  DBUpdater, SelfUpdater, FileChannel, simpleipc;
+  SysUtils, Classes, frmMain, uDownloadsManager, uFavoritesManager,
+  uUpdateThread, DBDataProcess, uSilentThread, uBaseUnit, uGetMangaInfosThread,
+  CheckUpdate, uOptions, DBUpdater, SelfUpdater, FileChannel, simpleipc;
 
 var
   FormMain: TMainForm;

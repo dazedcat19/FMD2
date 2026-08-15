@@ -5,7 +5,8 @@ unit LuaIXQValue;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif}, xquery;
+  SysUtils, Classes, xquery, LuaClass,
+  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 type
   { TLuaIXQValue }
@@ -22,7 +23,7 @@ procedure luaIXQValuePush(const L: Plua_State; const Obj: IXQValue); inline;
 implementation
 
 uses
-  LuaClass, LuaUtils;
+  LuaUtils;
 
 type
   TUserData = TLuaIXQValue;

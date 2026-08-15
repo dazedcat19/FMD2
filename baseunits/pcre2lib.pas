@@ -25,7 +25,7 @@ unit pcre2lib;
 interface
 
 uses
-  Classes, SysUtils, DynLibs, ctypes;
+  SysUtils, Classes, DynLibs, ctypes;
 
 type
   PPCRE2_UCHAR8 = ^PCRE2_UCHAR8;

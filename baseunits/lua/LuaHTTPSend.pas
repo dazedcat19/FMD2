@@ -5,7 +5,8 @@ unit LuaHTTPSend;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
+  SysUtils, Classes, LuaClass, httpsendthread,
+  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 procedure luaHTTPSendThreadAddMetaTable(const L: Plua_State; const Obj: Pointer;
   const MetaTable, UserData: Integer);
@@ -13,7 +14,7 @@ procedure luaHTTPSendThreadAddMetaTable(const L: Plua_State; const Obj: Pointer;
 implementation
 
 uses
-  uBaseUnit, httpsendthread, LuaClass, LuaUtils, LuaStrings, LuaMemoryStream;
+  uBaseUnit, LuaUtils, LuaStrings, LuaMemoryStream;
 
 type
   TUserData = THTTPSendThread;

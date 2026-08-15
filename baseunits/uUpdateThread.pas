@@ -11,9 +11,9 @@ unit uUpdateThread;
 interface
 
 uses
-  Classes, SysUtils, typinfo, fgl, uData, LazFileUtils, uBaseUnit, uMisc,
-  WebsiteModules, DBDataProcess, uOptions, httpsendthread, uCustomControls,
-  BaseThread, MultiLog, ExtCtrls, Forms, Controls, Buttons, Graphics;
+  SysUtils, Classes, typinfo, fgl, LazFileUtils, httpsendthread, ExtCtrls,
+  Forms, Controls, Buttons, Graphics, Dialogs, BaseThread, uBaseUnit, uData,
+  DBDataProcess, WebsiteModules;
 
 type
   TUpdateListManagerThread = class;
@@ -138,7 +138,8 @@ resourcestring
 implementation
 
 uses
-  frmMain, frmCustomMessageDlg, uVars, LuaWebsiteModuleHandler, Dialogs;
+  frmMain, frmCustomMessageDlg, uVars, LuaWebsiteModuleHandler, uMisc, uOptions,
+  uCustomControls, MultiLog;
 
 const
   CL_ProgressBarBaseLine = clBtnFace;
@@ -524,8 +525,8 @@ procedure TUpdateListManagerThread.SyncCreate;
 var
   txtHeight: Integer;
 begin
-  FControlMargin := FormMain.ScaleFontTo96(2);
-  FProgressBarHeight := FormMain.ScaleFontTo96(7);
+  FControlMargin := MainForm.ScaleFontTo96(2);
+  FProgressBarHeight := MainForm.ScaleFontTo96(7);
   FStatusBar := TPanel.Create(nil);
   with FStatusBar do
   begin
@@ -568,7 +569,7 @@ begin
     BorderSpacing.Bottom := FControlMargin;
     Width := Height;
     OnClick := @ButtonCancelClick;
-    Images := FormMain.IconList;
+    Images := MainForm.IconList;
     ImageIndex := 24;
   end;
 

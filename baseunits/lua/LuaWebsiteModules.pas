@@ -5,7 +5,9 @@ unit LuaWebsiteModules;
 interface
 
 uses
-  Classes, SysUtils, fgl, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif}, LuaStringsStorage, WebsiteModules, syncobjs;
+  SysUtils, Classes, fgl, syncobjs, FileUtil, xquery, httpsendthread,
+  LuaStringsStorage, WebsiteModules,
+  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 type
   TLuaWebsiteModulesContainer = class;
@@ -142,11 +144,10 @@ var
 implementation
 
 uses
-  uOptions, FileUtil, MultiLog, LuaClass, LuaBase, LuaMangaInfo, LuaHTTPSend,
-  LuaXQuery, LuaUtils, LuaDownloadTask, LuaUpdateListManager, LuaStrings,
-  LuaCriticalSection, LuaPackage, uData, LuaMangaCheck,
-  uDownloadsManager, xquery, httpsendthread, uVars, uBaseUnit, LuaWebsiteBypass,
-  LuaWebsiteModuleHandler;
+  uOptions, MultiLog, LuaClass, LuaBase, LuaMangaInfo, LuaHTTPSend, LuaXQuery,
+  LuaUtils, LuaDownloadTask, LuaUpdateListManager, LuaStrings, LuaPackage,
+  LuaCriticalSection, uData, LuaMangaCheck, uDownloadsManager, uVars, uBaseUnit,
+  LuaWebsiteBypass, LuaWebsiteModuleHandler;
 
 threadvar
   TempModules:TLuaWebsiteModules;

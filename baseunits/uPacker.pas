@@ -11,8 +11,7 @@ unit uPacker;
 interface
 
 uses
-  Classes, Zipper, zstream, SysUtils, uBaseUnit, Img2Pdf, FileUtil,
-  LazFileUtils, SimpleException, uEpub, uOptions, process, MultiLog;
+  SysUtils, Classes, Zipper, zstream, FileUtil, process, LazFileUtils;
 
 type
   TPackerFormat = (pfZIP, pfCBZ, pfPDF, pfEPUB);
@@ -45,7 +44,7 @@ type
 implementation
 
 uses
-  frmMain;
+  frmMain, uBaseUnit, Img2Pdf, SimpleException, uEpub, uOptions, MultiLog;
 
 procedure TPacker.FileFound(FileIterator: TFileIterator);
 begin

@@ -16,9 +16,8 @@ unit uGetMangaInfosThread;
 interface
 
 uses
-  SysUtils, LazFileUtils, StrUtils, Graphics, Dialogs, uBaseUnit, uData, Forms,
-  uOptions, BaseThread, ImgInfos, webp, MultiLog, MemBitmap, VirtualTrees,
-  DBDataProcess, WebsiteModules;
+  SysUtils, Classes, LazFileUtils, Graphics, Dialogs, Forms, BaseThread, VirtualTrees,
+  uData, WebsiteModules;
 
 type
 
@@ -52,7 +51,8 @@ type
 implementation
 
 uses
-  frmMain, frmCustomMessageDlg, uVars;
+  frmMain, frmCustomMessageDlg, uVars, uBaseUnit, uOptions, ImgInfos, webp,
+  MultiLog, MemBitmap, DBDataProcess;
 
 procedure TGetMangaInfosThread.MainThreadAddInfos;
 var

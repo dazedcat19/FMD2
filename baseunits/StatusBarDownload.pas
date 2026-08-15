@@ -5,7 +5,7 @@ unit StatusBarDownload;
 interface
 
 uses
-  Classes, SysUtils, BaseThread, httpsendthread, blcksock, ExtCtrls, Forms,
+  SysUtils, Classes, BaseThread, httpsendthread, blcksock, ExtCtrls, Forms,
   Controls, Buttons, Graphics, ComCtrls;
 
 type
@@ -62,7 +62,8 @@ type
 
 implementation
 
-uses uBaseUnit, Math;
+uses
+  uBaseUnit, Math;
 
 const
   CL_ProgressBarBaseLine = clBtnFace;

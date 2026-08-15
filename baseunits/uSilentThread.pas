@@ -15,8 +15,8 @@ unit uSilentThread;
 interface
 
 uses
-  SysUtils, fgl, uBaseUnit, uData, uDownloadsManager,
-  WebsiteModules, uOptions, httpsendthread, BaseThread, LazFileUtils, MultiLog;
+  SysUtils, Classes, fgl, httpsendthread, LazFileUtils, BaseThread,
+  WebsiteModules, uData;
 
 type
 
@@ -107,7 +107,7 @@ resourcestring
 implementation
 
 uses
-  frmMain, uVars;
+  frmMain, uVars, uBaseUnit, uDownloadsManager, uOptions, MultiLog;
 
 { TSilentThreadManager }
 

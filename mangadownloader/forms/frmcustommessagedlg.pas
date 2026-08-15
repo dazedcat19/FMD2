@@ -5,7 +5,7 @@ unit frmCustomMessageDlg;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, DialogRes, Buttons,
+  SysUtils, Classes, Forms, Controls, Graphics, Dialogs, DialogRes, Buttons,
   ExtCtrls, StdCtrls, LCLType, Windows;
 
 type
