@@ -618,6 +618,8 @@ end;
 
 procedure TFavoriteTask.SyncStartChecking;
 begin
+  FManager.DB.BeginUpdate;
+
   with MainForm do
   begin
     btCancelFavoritesCheck.Visible := True;
@@ -631,7 +633,9 @@ begin
 end;
 
 procedure TFavoriteTask.SyncFinishChecking;
-begin
+begin 
+  FManager.DB.EndUpdate;
+
   with MainForm do
   begin
     btCancelFavoritesCheck.Visible := False;
@@ -874,22 +878,23 @@ begin
     Exit;
   end;
 
-  for i := 0 to Items.Count - 1 do
-  begin
-    with Items[i] do
+  FFavoritesDB.BeginUpdate;
+  try
+    for i := 0 to Items.Count - 1 do
     begin
-      if i <> FOrder then
+      with Items[i] do
       begin
-        FOrder := i;
-        FFavoritesDB.tempSQL += 'UPDATE "favorites" SET "order"=' + PrepSQLValue(FOrder) + ' WHERE "id"=' + PrepSQLValue(Fid) + ';';
-        Inc(FFavoritesDB.tempSQLcount);
-
-        if FFavoritesDB.tempSQLcount >= MAX_BIG_SQL_FLUSH_QUEUE then
+        if i <> FOrder then
         begin
-          FFavoritesDB.FlushSQL(False);
+          FOrder := i;
+          FFavoritesDB.AddSQL('UPDATE "favorites" SET "order"=' + PrepSQLValue(FOrder) + ' WHERE "id"=' + PrepSQLValue(Fid) + ';');
         end;
       end;
     end;
+
+    FFavoritesDB.EndUpdate;
+  except
+    FFavoritesDB.RollbackUpdate;
   end;
 
   FUpdateOrderCount := 0;
@@ -1249,64 +1254,72 @@ begin
 
           DLManager.Lock;
           try
-            for i := 0 to Items.Count - 1 do
-            begin
-              if not Assigned(Items[i].NewMangaInfo) or (Items[i].NewMangaInfoChaptersPos.Count = 0) then
-              begin
-                Continue;
-              end;
+            DLManager.DB.BeginUpdate;
 
-              with Items[i] do
+            try
+              for i := 0 to Items.Count - 1 do
               begin
-                with DLManager.AddTask do
+                if not Assigned(Items[i].NewMangaInfo) or (Items[i].NewMangaInfoChaptersPos.Count = 0) then
                 begin
-                  Manager := DLManager;
-                  CurrentDownloadChapterPtr := 0;
-                  DownloadInfo.Module := FavoriteInfo.Module;
-                  DownloadInfo.Link := FavoriteInfo.Link;
-                  DownloadInfo.Title := FavoriteInfo.Title;
-                  DownloadInfo.SaveTo := FavoriteInfo.SaveTo;
-                  DownloadInfo.DateAdded := Now;
-                  DownloadInfo.DateLastDownloaded := Now;
-
-                  for j := 0 to NewMangaInfoChaptersPos.Count - 1 do
-                  begin
-                    ChapterLinks.Add(NewMangaInfo.ChapterLinks[NewMangaInfoChaptersPos[j]]);
-                    ChapterNames.Add(CustomRename(
-                      OptionChapterCustomRename,
-                      FavoriteInfo.Website,
-                      FavoriteInfo.Title,
-                      NewMangaInfo.Authors,
-                      NewMangaInfo.Artists,
-                      NewMangaInfo.ChapterNames[NewMangaInfoChaptersPos[j]],
-                      Format('%.4d', [NewMangaInfoChaptersPos[j] + 1]),
-                      OptionChangeUnicodeCharacter,
-                      OptionChangeUnicodeCharacterStr));
-                  end;
-
-                  if LNCResult = ncrDownload then
-                  begin
-                    DownloadInfo.Status := Format('[%d/%d] %s',[0,ChapterLinks.Count,RS_Waiting]);
-                    Status := STATUS_WAIT;
-                  end
-                  else
-                  begin
-                    DownloadInfo.Status := Format('[%d/%d] %s',[0,ChapterLinks.Count,RS_Stopped]);
-                    Status := STATUS_STOP;
-                  end;
-
-                  DBInsert;
-                  // add to downloaded chapter list
-                  FavoriteInfo.downloadedChapterList := MergeCaseInsensitive([FavoriteInfo.DownloadedChapterList, chapterLinks.Text]);
-                  // add to downloaded chapter list in downloadmanager
-                  DLManager.DownloadedChapters.Chapters[FavoriteInfo.ModuleID, FavoriteInfo.Link] := chapterLinks.Text;
+                  Continue;
                 end;
 
-                DBUpdateLastUpdated;
-                // free unused objects
-                FreeAndNil(NewMangaInfo);
-                FreeAndNil(NewMangaInfoChaptersPos);
+                with Items[i] do
+                begin
+                  with DLManager.AddTask do
+                  begin
+                    Manager := DLManager;
+                    CurrentDownloadChapterPtr := 0;
+                    DownloadInfo.Module := FavoriteInfo.Module;
+                    DownloadInfo.Link := FavoriteInfo.Link;
+                    DownloadInfo.Title := FavoriteInfo.Title;
+                    DownloadInfo.SaveTo := FavoriteInfo.SaveTo;
+                    DownloadInfo.DateAdded := Now;
+                    DownloadInfo.DateLastDownloaded := Now;
+
+                    for j := 0 to NewMangaInfoChaptersPos.Count - 1 do
+                    begin
+                      ChapterLinks.Add(NewMangaInfo.ChapterLinks[NewMangaInfoChaptersPos[j]]);
+                      ChapterNames.Add(CustomRename(
+                        OptionChapterCustomRename,
+                        FavoriteInfo.Website,
+                        FavoriteInfo.Title,
+                        NewMangaInfo.Authors,
+                        NewMangaInfo.Artists,
+                        NewMangaInfo.ChapterNames[NewMangaInfoChaptersPos[j]],
+                        Format('%.4d', [NewMangaInfoChaptersPos[j] + 1]),
+                        OptionChangeUnicodeCharacter,
+                        OptionChangeUnicodeCharacterStr));
+                    end;
+
+                    if LNCResult = ncrDownload then
+                    begin
+                      DownloadInfo.Status := Format('[%d/%d] %s',[0,ChapterLinks.Count,RS_Waiting]);
+                      Status := STATUS_WAIT;
+                    end
+                    else
+                    begin
+                      DownloadInfo.Status := Format('[%d/%d] %s',[0,ChapterLinks.Count,RS_Stopped]);
+                      Status := STATUS_STOP;
+                    end;
+
+                    DBInsert;
+                    // add to downloaded chapter list
+                    FavoriteInfo.downloadedChapterList := MergeCaseInsensitive([FavoriteInfo.DownloadedChapterList, chapterLinks.Text]);
+                    // add to downloaded chapter list in downloadmanager
+                    DLManager.DownloadedChapters.Chapters[FavoriteInfo.ModuleID, FavoriteInfo.Link] := chapterLinks.Text;
+                  end;
+
+                  DBUpdateLastUpdated;
+                  // free unused objects
+                  FreeAndNil(NewMangaInfo);
+                  FreeAndNil(NewMangaInfoChaptersPos);
+                end;
               end;
+
+              DLManager.DB.EndUpdate;
+            except
+              DLManager.DB.RollbackUpdate;
             end;
           finally
             DLManager.UnLock;
@@ -1601,7 +1614,7 @@ begin
 
   try
     DBUpdateOrder;
-    FFavoritesDB.Commit(False);
+    FFavoritesDB.Commit;
   finally
     UnLockUpdate;
   end;
@@ -1728,12 +1741,10 @@ end;
 procedure TFavoriteManager.LockUpdate;
 begin
   EnterCriticalsection(FGuardian);
-  FFavoritesDB.BeginUpdate;
 end;
 
 procedure TFavoriteManager.UnLockUpdate;
 begin
-  FFavoritesDB.EndUpdate;
   LeaveCriticalsection(FGuardian);
 end;
 

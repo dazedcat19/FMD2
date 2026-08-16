@@ -77,7 +77,7 @@ begin
     begin
       lua_pushcfunction(L, o.RegLib);
       Exit(1);
-    end
+    end;
   end;
 
   c := TCachedPackage(Package.Find(p));

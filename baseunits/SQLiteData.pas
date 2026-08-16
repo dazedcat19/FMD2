@@ -16,8 +16,8 @@ type
     procedure DoInternalDisconnect; override;
     procedure sqlite3_handlerror;
   public
-    procedure ExecuteSQL(const asql: string); inline;
-    function ExecuteQuery(const asql: string): string; inline;
+    procedure ExecuteSQL(const asql: String); inline;
+    function ExecuteQuery(const asql: String): String; inline;
     property Handle read GetHandle;
     property Statements;
   end;
@@ -28,6 +28,7 @@ type
 
   TSQliteData = class
   private
+    FUpdateCount: Integer;
     FAutoVacuum: Boolean;
     FConn: TSQLite3ConnectionH;
     FFieldsParams: String;
@@ -63,10 +64,15 @@ type
     constructor Create;
     destructor Destroy; override;
 
-    procedure Lock;
+    procedure Lock; inline;
     procedure Unlock; inline;
+    procedure BeginUpdate;
+    procedure EndUpdate;
+    procedure RollbackUpdate;
     function Connected: Boolean; inline;
-
+               
+    procedure InternalCommit;
+    procedure AddSQL(const SQL: String);
     function Open(const AOpenTable: Boolean = True; const AGetRecordCount: Boolean = True): Boolean; virtual;
     function OpenTable(const AGetRecordCount: Boolean = True): Boolean; virtual;
     procedure Close; virtual;
@@ -89,43 +95,6 @@ type
     property AutoApplyUpdates: Boolean read GetAutoApplyUpdates write SetAutoApplyUpdates;
     property AutoVacuum: Boolean read FAutoVacuum write SetAutoVacuum;
     property OnError: TExceptionEvent read FOnError write SetOnError;
-  end;
-
-var
-  {$ifdef NO_COMMIT_QUEUE}
-  MAX_COMMIT_QUEUE:Integer=0;
-  MAX_SQL_FLUSH_QUEUE:Integer=0;
-  {$else}
-  MAX_COMMIT_QUEUE:Integer = 1 shl 4;
-  MAX_SQL_FLUSH_QUEUE:Integer = 1 shl 8;
-  {$endif}
-  MAX_BIG_SQL_FLUSH_QUEUE:Integer=1 shl {$ifdef CPU64}14{$else}12{$endif}-1;
-
-type
-  { TSQLiteDataWA }
-
-  TSQLiteDataWA = class(TSQliteData)
-  private
-    FUpdateCount: Integer;
-  public
-    tempSQL: String;
-    tempSQLcount: Integer;
-    commitCount: Integer;
-    maxSQLqueue: Integer;
-    maxCommitQueue: Integer;
-  protected
-    procedure InternalCommit; inline;
-  public
-    constructor Create;
-    destructor Destroy; override;
-
-    procedure BeginUpdate; inline;
-    procedure EndUpdate; inline;
-    procedure AppendSQL(const SQL: string); inline;
-    procedure AppendSQLSafe(const SQL: string); inline;
-    procedure FlushSQL(const UseQueue: Boolean = True); inline;
-    procedure FlushSQLSafe; inline;
-    procedure Commit(const UseQueue: Boolean = True);
   end;
 
 function QuotedStrD(const S: String): String; overload; inline;
@@ -185,138 +154,6 @@ begin
   Result := SQLString;
 end;
 
-{ TSQLiteDataWA }
-
-procedure TSQLiteDataWA.InternalCommit;
-begin
-  if (commitCount = 0) or (FUpdateCount <> 0) then
-  begin
-    Exit;
-  end;
-
-  Lock;
-  try
-    try
-      Transaction.CommitRetaining;
-      commitCount := 0;
-    except
-      on E: Exception do
-      begin
-        Transaction.Rollback;
-      end;
-    end;
-  finally
-    Unlock;
-  end;
-end;
-
-constructor TSQLiteDataWA.Create;
-begin
-  inherited Create;
-
-  maxSQLqueue := MAX_SQL_FLUSH_QUEUE;
-  maxCommitQueue := MAX_COMMIT_QUEUE;
-  Table.PacketRecords := 1;
-  Table.UniDirectional := True;
-  tempSQL := '';
-  tempSQLcount := 0;
-  commitCount := 0;
-  FUpdateCount := 0;
-end;
-
-destructor TSQLiteDataWA.Destroy;
-begin
-  FUpdateCount := 0;
-  FlushSQL;
-  InternalCommit;
-
-  inherited Destroy;
-end;
-
-procedure TSQLiteDataWA.BeginUpdate;
-begin
-  InterlockedIncrement(FUpdateCount);
-end;
-
-procedure TSQLiteDataWA.EndUpdate;
-begin
-  if FUpdateCount > 0 then
-  begin
-    InterlockedDecrement(FUpdateCount);
-  end;
-
-  if FUpdateCount = 0 then
-  begin
-    FlushSQL;
-  end;
-end;
-
-procedure TSQLiteDataWA.AppendSQL(const SQL: string);
-begin
-  AppendSQLSafe(SQL);
-
-  if tempSQLcount >= maxSQLqueue then
-  begin
-    FlushSQL;
-  end;
-end;
-
-procedure TSQLiteDataWA.AppendSQLSafe(const SQL: string);
-begin
-  Lock;
-
-  try 
-    tempSQL += SQL;
-    Inc(tempSQLcount);
-  finally
-    Unlock;
-  end
-end;
-
-procedure TSQLiteDataWA.FlushSQL(const UseQueue: Boolean);
-begin
-  if (tempSQLcount > 0) and ((FUpdateCount = 0) or (UseQueue = False)) then
-  begin
-    FlushSQLSafe;
-  end;
-
-  if commitCount >= maxCommitQueue then
-  begin
-    InternalCommit;
-  end;
-end;
-
-procedure TSQLiteDataWA.FlushSQLSafe;
-begin 
-  Lock;
-
-  try
-    Connection.ExecuteSQL(tempsql);
-    tempSQL := '';
-    tempSQLcount := 0;
-    Inc(commitCount);
-  finally
-    Unlock;
-  end
-end;
-
-procedure TSQLiteDataWA.Commit(const UseQueue: Boolean);
-begin
-  if not Connection.Connected then
-  begin
-    Exit;
-  end;
-
-  FlushSQL(UseQueue);
-
-  if not UseQueue then
-  begin
-    InterlockedExchange(FUpdateCount,0);
-  end;
-
-  InternalCommit;
-end;
-
 { TSQLite3ConnectionH }
 
 procedure TSQLite3ConnectionH.DoInternalDisconnect;
@@ -355,7 +192,7 @@ begin
   Logger.SendCallStack(Self.ClassName + ' Error ' + IntToStr(ErrCode) + ': ' + ErrMsg);
 end;
 
-procedure TSQLite3ConnectionH.ExecuteSQL(const asql: string);
+procedure TSQLite3ConnectionH.ExecuteSQL(const asql: String);
 var
   zSql: PAnsiChar;
   zSqlend: PAnsiChar;
@@ -395,7 +232,7 @@ begin
   end;
 end;
 
-function TSQLite3ConnectionH.ExecuteQuery(const asql: string): string;
+function TSQLite3ConnectionH.ExecuteQuery(const asql: String): string;
 var
   zSql: PAnsiChar;
   zSqlend: PAnsiChar;
@@ -560,6 +397,17 @@ begin
     try
       FConn.DatabaseName := FFileName;
       FConn.Connected := True;
+
+      // Set journal to WAL and RAM cache to ~64MB
+      // for quick writes and no data loss
+      FConn.ExecuteSQL('PRAGMA journal_mode = WAL;');
+      FConn.ExecuteSQL('PRAGMA synchronous = NORMAL;');
+      FConn.ExecuteSQL('PRAGMA temp_store = MEMORY;');
+      FConn.ExecuteSQL('PRAGMA cache_size = -64000;');
+
+      // Force merge of db and db-wal files
+      FConn.ExecuteSQL('PRAGMA wal_checkpoint(TRUNCATE);');
+
       FTrans.Active := True;
     except
       on E: Exception do  
@@ -724,6 +572,7 @@ begin
   InitCriticalSection(FGuardian);
 
   FConn := TSQLite3ConnectionH.Create(nil);
+
   FTrans := TSQLTransaction.Create(nil);
   FQuery := TSQLQuery.Create(nil);
   FConn.CharSet := 'UTF8';
@@ -979,7 +828,7 @@ begin
       FQuery.Close;
     end;
 
-    FTrans.Commit;
+    InternalCommit;
     if qactive <> qactive then
     begin
       FQuery.Active := FQuery.Active;
@@ -998,6 +847,79 @@ end;
 function TSQliteData.Connected: Boolean;
 begin
   Result := FConn.Connected and FQuery.Active;
+end;   
+
+procedure TSQliteData.InternalCommit;
+begin
+  if FUpdateCount <> 0 then
+  begin
+    Exit;
+  end;
+
+  Lock;
+  try
+    try
+      if FTrans.Active then
+      begin
+        FTrans.Commit;
+        FTrans.StartTransaction;
+      end;
+    except
+      on E: Exception do
+      begin
+        FTrans.Rollback;
+      end;
+    end;
+  finally
+    Unlock;
+  end;
+end;
+
+procedure TSQliteData.BeginUpdate;
+begin
+  InterLockedIncrement(FUpdateCount);
+
+  if not FTrans.Active then
+  begin
+    FTrans.StartTransaction;
+  end;
+end; 
+
+procedure TSQliteData.EndUpdate;
+begin
+  if FUpdateCount > 0 then
+  begin
+    InterLockedDecrement(FUpdateCount);
+  end;
+
+  InternalCommit;
+end;
+
+procedure TSQliteData.RollbackUpdate;
+begin
+  FTrans.Rollback;
+end;
+
+procedure TSQliteData.AddSQL(const SQL: String);
+begin
+  if not FConn.Connected then
+  begin
+    Exit;
+  end;
+
+  Lock;
+  try
+    if not FTrans.Active then
+    begin
+      FTrans.StartTransaction;
+    end;
+
+    FConn.ExecuteSQL(SQL);
+  finally
+    Unlock;
+  end;
+
+  InternalCommit;
 end;
 
 end.

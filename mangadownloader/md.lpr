@@ -87,45 +87,6 @@ begin
     begin
        AlwaysLoadLuaFromFile := True
     end
-    // don't use commit queue, might be slow on large databases
-    else if SameText(AppParams[i], '--no-commit-queue') then
-    begin
-      MAX_COMMIT_QUEUE := 0;
-      MAX_SQL_FLUSH_QUEUE := 0;
-    end
-    // set max commit queue before writing it to disk
-    else if SameText(AppParams[i], '--max-commit-queue') then
-    begin
-      v := StrToIntDef(AppParams.ValueFromIndex[i], -1);
-      if v < 1 then
-      begin
-        v := 1;
-      end;
-
-      MAX_COMMIT_QUEUE := v;
-    end
-    // max sql lines before flush it to sqlite engine
-    else if SameText(AppParams[i], '--max-flush-queue') then
-    begin
-      v := StrToIntDef(AppParams.ValueFromIndex[i], -1);
-      if v < 1 then
-      begin
-        v := 1;
-      end;
-
-      MAX_SQL_FLUSH_QUEUE := v;
-    end
-    // max sql lines before flush it to sqlite engine, used in large iterations
-    else if SameText(AppParams[i], '--max-big-flush-queue') then
-    begin
-      v := StrToIntDef(AppParams.ValueFromIndex[i],-1);
-      if v < 1 then
-      begin
-        v := 1;
-      end;
-
-      MAX_BIG_SQL_FLUSH_QUEUE := v;
-    end
     // timer backup interval, in minutes
     else if SameText(AppParams[i], '--backup-interval') then
     begin

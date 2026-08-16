@@ -571,13 +571,17 @@ begin
   AvailableLanguages.Clear;
 
   if lauto then
+  begin
     for i := Low(ldir) to High(ldir) do
     begin
       sdir := tdir + ldir[i] + PathDelim;
       searchLangDir(sdir, tappname);
-    end
+    end;
+  end
   else
+  begin
     searchLangDir(tdir, tappname);
+  end;
 
   if AvailableLanguages.Count > 0 then
     AvailableLanguages.CustomSort(@SortValue);

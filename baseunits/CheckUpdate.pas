@@ -71,7 +71,9 @@ begin
         end;
       end
       else
+      begin
         MainForm.btCheckLatestVersion.Caption := RS_BtnCheckUpdates;
+      end;
     finally
       Free;
     end;

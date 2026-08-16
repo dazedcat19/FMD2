@@ -14,19 +14,15 @@ type
   TDownloadedChaptersDB = class(TSQliteData)
   private
     FGuardian: TRTLCriticalSection;
-    FCommitCount: Integer;
     function GetChapters(const AModuleID, ALink: String): String;
     procedure SetChapters(const AModuleID, ALink: String; AValue: String);
   protected
     procedure Lock; inline;
     procedure UnLock; inline;
-    procedure InternalCommit; inline;
-    procedure CheckCommit; inline;
   public
     constructor Create;
     destructor Destroy; override;
     function Open: Boolean;
-    procedure Commit; override;
     procedure Delete(const AModuleID, ALink: String);
     property Chapters[const AModuleID, ALink: String]: String read GetChapters write SetChapters;
   end;
@@ -120,7 +116,7 @@ begin
 
   if posted then
   begin
-    CheckCommit;
+    Commit;
   end;
 end;
 
@@ -134,29 +130,12 @@ begin
   LeaveCriticalSection(FGuardian);
 end;
 
-procedure TDownloadedChaptersDB.InternalCommit;
-begin
-  inherited CommitRetaining;
-
-  FCommitCount := 0;
-end;
-
-procedure TDownloadedChaptersDB.CheckCommit;
-begin
-  Inc(FCommitCount);
-  if FCommitCount >= MAX_COMMIT_QUEUE then
-  begin
-    InternalCommit;
-  end;
-end;
-
 constructor TDownloadedChaptersDB.Create;
 begin
   inherited Create;
 
   InitCriticalSection(FGuardian);
 
-  FCommitCount := 0;
   AutoApplyUpdates := True;
   Table.Options := Table.Options - [sqoAutoCommit];
   Table.PacketRecords := 1;
@@ -171,7 +150,7 @@ destructor TDownloadedChaptersDB.Destroy;
 begin           
   DoneCriticalSection(FGuardian);
 
-  InternalCommit;
+  Commit;
 
   inherited Destroy;
 end;
@@ -179,11 +158,6 @@ end;
 function TDownloadedChaptersDB.Open: Boolean;
 begin
   Result := inherited Open(True,False);
-end;
-
-procedure TDownloadedChaptersDB.Commit;
-begin
-  InternalCommit;
 end;
 
 procedure TDownloadedChaptersDB.Delete(const AModuleID, ALink: String);
@@ -206,7 +180,7 @@ begin
     UnLock;
   end;
 
-  CheckCommit;
+  Commit;
 end;
 
 end.

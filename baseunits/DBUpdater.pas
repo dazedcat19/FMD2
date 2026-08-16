@@ -201,8 +201,10 @@ begin
         dataProcess.Open(FModule.ID);
       end
       else
+      begin
         FFailedList.Add(Format(RS_FailedDownload, [FModule.Name + ' Manga List', HTTP.ResultCode,
           HTTP.ResultString]));
+      end;
     except
       on E: Exception do
         FFailedList.Add(E.Message);

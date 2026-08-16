@@ -530,7 +530,7 @@ begin
       TempModules[i].Module.Free;
       TempModules[i].Free;
       TempModules.Delete(i);
-    end
+    end;
   end;
 
   if TempModules.Count <> 0 then
@@ -730,7 +730,7 @@ begin
       FByteCode := LuaDumpFileToStream(FileName);
     finally
       LeaveCriticalSection(FGuardian);
-    end
+    end;
   end
   else
   begin

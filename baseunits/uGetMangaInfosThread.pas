@@ -299,7 +299,7 @@ begin
           FCover.Bitmap := bmp.Bitmap;
         finally
           FreeAndNil(bmp);
-        end
+        end;
       end
       else
       begin

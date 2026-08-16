@@ -1388,35 +1388,54 @@ end;
 
 procedure TTaskContainer.SetStatus(AValue: TDownloadStatusType);
 begin
-  if FStatus = AValue then Exit;
+  if FStatus = AValue then
+  begin
+    Exit;
+  end;
+
   if Assigned(Manager) then
+  begin
     Manager.ChangeStatusCount(FStatus, AValue);
+  end;
+
   FStatus := AValue;
 end;
 
 procedure TTaskContainer.SetEnabled(AValue: Boolean);
 begin
-  if FEnabled = AValue then Exit;
+  if FEnabled = AValue then
+  begin
+    Exit;
+  end;
+
   FEnabled := AValue;
   if Assigned(Manager) then
   begin
     if not Manager.isRunningRestore then
+    begin
       DBupdateEnabled;
+    end;
+
     if Enabled then
-      Dec(Manager.DisabledCount)
+    begin
+      Dec(Manager.DisabledCount);
+    end
     else
+    begin
       Inc(Manager.DisabledCount);
+    end;
   end;
 end;
 
 function TTaskContainer.GetRunnning: Boolean;
 begin
-  Result:=TaskThread<>nil;
+  Result := TaskThread <> nil;
 end;
 
 constructor TTaskContainer.Create;
 begin
   inherited Create;
+
   Order := -1;
   FDirty := False;
   DlId := '';
@@ -1445,8 +1464,12 @@ begin
   ChapterLinks.Free;
   ChaptersStatus.Free;
   DoneCriticalsection(CS_Container);
+
   if Assigned(Manager) then
+  begin
     Manager.DecStatusCount(Status);
+  end;
+
   inherited Destroy;
 end;
 
@@ -1457,7 +1480,7 @@ end;
 
 procedure TTaskContainer.DBInsert;
 begin
-  DlId:=Manager.FDownloadsDB.Add(
+  DlId := Manager.FDownloadsDB.Add(
     FEnabled,
     Order,
     Integer(Status),
@@ -1729,7 +1752,7 @@ begin
   try
     //Logger.Send('TDownloadManager.Backup');
     DBUpdateOrder;
-    FDownloadsDB.Commit(False);
+    FDownloadsDB.Commit;
     DownloadedChapters.Commit;
     DownloadedChapters.Refresh;
   finally
@@ -1740,14 +1763,12 @@ end;
 procedure TDownloadManager.Lock;
 begin
   EnterCriticalSection(CS_Task);
-  FDownloadsDB.BeginUpdate;
   isRunningBackup := True;
 end;
 
 procedure TDownloadManager.UnLock;
 begin
   isRunningBackup := False;
-  FDownloadsDB.EndUpdate;
   LeaveCriticalSection(CS_Task);
 end;
 
@@ -1760,22 +1781,23 @@ begin
     Exit;
   end;
 
-  for i := 0 to Items.Count - 1 do
-  begin
-    with Items[i] do
+  FDownloadsDB.BeginUpdate;
+  try
+    for i := 0 to Items.Count - 1 do
     begin
-      if i <> Order then
+      with Items[i] do
       begin
-        Order := i;
-        FDownloadsDB.tempSQL += 'UPDATE "downloads" SET "order"=' + PrepSQLValue(Order) + ' WHERE "id"=''' + DlId + ''';';
-        Inc(FDownloadsDB.tempSQLcount);
-
-        if FDownloadsDB.tempSQLcount >= MAX_BIG_SQL_FLUSH_QUEUE then
+        if i <> Order then
         begin
-          FDownloadsDB.FlushSQL(False);
+          Order := i;
+          FDownloadsDB.AddSQL('UPDATE "downloads" SET "order"=' + PrepSQLValue(Order) + ' WHERE "id"=''' + DlId + ''';');
         end;
       end;
     end;
+
+    FDownloadsDB.EndUpdate;
+  except
+    FDownloadsDB.RollbackUpdate;
   end;
 
   FUpdateOrderCount := 0;
@@ -1860,7 +1882,7 @@ begin
     end
     else
     begin
-      FDownloadsDB.Commit(False);
+      FDownloadsDB.Commit;
       MainForm.tmRefreshDownloadsInfo.Enabled := False;
       MainForm.UpdateVtDownload;
 

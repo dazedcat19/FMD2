@@ -220,11 +220,12 @@ begin
     regx := TRegExpr.Create;
     try
       regx.Expression := REGEX_HOST;
-      for i:= 0 to urlList.Count-1 do
+
+      for i:= 0 to urlList.Count - 1 do
       begin
-        host := '';
         m := nil;
         host := LowerCase(regx.Replace(urlList[i], '$2', True));
+
         if host <> '' then
         begin
           m := Modules.LocateModuleByHost(host);
@@ -240,7 +241,9 @@ begin
             path);
         end
         else
+        begin
           FUnimportedMangas.Add(mangaList.Strings[i] + ' <' + urlList.Strings[i] + '>');
+        end;
       end;
     finally
       regx.Free;

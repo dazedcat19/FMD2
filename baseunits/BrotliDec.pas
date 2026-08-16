@@ -57,20 +57,29 @@ end;
 
 procedure InitBrotliModule;
 begin
-  if IsBrotliModuleLoaded then Exit;
+  if IsBrotliModuleLoaded then
+  begin
+    Exit;
+  end;
+
   brotliCS.Enter;
   try
-    if not IsBrotliModuleLoaded then begin
+    if not IsBrotliModuleLoaded then
+    begin
       BrotliLibHandle := LoadLibrary(PChar(DLLBrotliName));
-      if BrotliLibHandle <> 0 then begin
+      if BrotliLibHandle <> 0 then
+      begin
         pBrotliDecoderCreateInstance := TBrotliDecoderCreateInstance(GetProcAddress(BrotliLibHandle, 'BrotliDecoderCreateInstance'));
         pBrotliDecoderDestroyInstance := TBrotliDecoderDestroyInstance(GetProcAddress(BrotliLibHandle, 'BrotliDecoderDestroyInstance'));
         pBrotliDecoderSetParameter := TBrotliDecoderSetParameter(GetProcAddress(BrotliLibHandle, 'BrotliDecoderSetParameter'));
         pBrotliDecoderDecompressStream := TBrotliDecoderDecompressStream(GetProcAddress(BrotliLibHandle, 'BrotliDecoderDecompressStream'));
         pBrotliDecoderVersion := TBrotliDecoderVersion(GetProcAddress(BrotliLibHandle, 'BrotliDecoderVersion'));
         brotliLibLoaded := True;
-      end else
+      end
+      else
+      begin
         raise EInOutError.CreateFmt(SErrLoadFailed, [DLLBrotliName]);
+      end;
     end;
   finally
     brotliCS.Leave;

@@ -293,7 +293,7 @@ begin
     end;
 
     Result := Tree.Count <> 0;
-  end
+  end;
 end;
 
 function TGitHubRepo.GetUpdate: Boolean;

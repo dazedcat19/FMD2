@@ -271,8 +271,7 @@ begin
     begin
      FProgressText := FProgressText + '/' + FormatByteSize(FTotalSize);
     end;
-  end
-  else
+  end;
 end;
 
 procedure TStatusBarDownload.UpdateStatusText(AStatusText: String);

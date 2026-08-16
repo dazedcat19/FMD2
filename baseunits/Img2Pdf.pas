@@ -338,7 +338,7 @@ begin
       end;
     finally
       RDR.Free;
-    end
+    end;
   finally
     IMG.Free;
   end;

@@ -107,7 +107,7 @@ resourcestring
 implementation
 
 uses
-  frmMain, uVars, uBaseUnit, uDownloadsManager, uOptions, MultiLog;
+  frmMain, uVars, uBaseUnit, uDownloadsManager, uOptions, SQLiteData, MultiLog;
 
 { TSilentThreadManager }
 
@@ -521,47 +521,66 @@ begin
 end;
 
 procedure TSilentThread.Execute;
+var
+  threadDB: TSQLiteData;
 begin
-  while FManager.GetMetaData(Self) do
+  if FType = MD_DownloadAll then
   begin
-    Synchronize(FManager.UpdateLoadStatus);
+    threadDB := DLManager.DB;
+  end
+  else
+  begin
+    threadDB := FavoriteManager.DB;
+  end;
 
-    try
-      FInfo.HTTP.Reset;
-      FInfo.MangaInfo.Clear;
-      FInfo.Module := FModule;
-      FInfo.MangaInfo.Title := FTitle;
 
-      case FType of
-        MD_DownloadAll:
-          begin
-            if (FInfo.GetInfoFromURL(FURL) = NO_ERROR) and not(Terminated) then
+  threadDB.BeginUpdate;
+  try
+    while FManager.GetMetaData(Self) do
+    begin
+      Synchronize(FManager.UpdateLoadStatus);
+
+      try
+        FInfo.HTTP.Reset;
+        FInfo.MangaInfo.Clear;
+        FInfo.Module := FModule;
+        FInfo.MangaInfo.Title := FTitle;
+
+        case FType of
+          MD_DownloadAll:
             begin
-              Synchronize(SyncDownloadAll);
+              if (FInfo.GetInfoFromURL(FURL) = NO_ERROR) and not(Terminated) then
+              begin
+                Synchronize(SyncDownloadAll);
+              end;
             end;
-          end;
 
-        MD_AddToFavorites:
-          begin
-            if (FInfo.GetInfoFromURL(FURL) = NO_ERROR) and not(Terminated) then
+          MD_AddToFavorites:
             begin
-              Synchronize(SyncAddToFavorite);
+              if (FInfo.GetInfoFromURL(FURL) = NO_ERROR) and not(Terminated) then
+              begin
+                Synchronize(SyncAddToFavorite);
+              end;
             end;
-          end;
 
-        MD_ImportToFavorites:
-          begin
-            FInfo.MangaInfo.Status := FStatus;
-            FInfo.MangaInfo.NumChapter := StrToIntDef(FNumChapter, 0);
-            FInfo.MangaInfo.ChapterLinks.Text := FChapterLinks;
-            FEnabled := FEnabled;
-            Synchronize(SyncImportToFavorite);
-          end;
+          MD_ImportToFavorites:
+            begin
+              FInfo.MangaInfo.Status := FStatus;
+              FInfo.MangaInfo.NumChapter := StrToIntDef(FNumChapter, 0);
+              FInfo.MangaInfo.ChapterLinks.Text := FChapterLinks;
+              FEnabled := FEnabled;
+              Synchronize(SyncImportToFavorite);
+            end;
+        end;
+      except
+        on E: Exception do
+          MainForm.ExceptionHandler(Self, E);
       end;
-    except
-      on E: Exception do
-        MainForm.ExceptionHandler(Self, E);
     end;
+
+    threadDB.EndUpdate;
+  finally
+    threadDB.RollbackUpdate;
   end;
 
   if FMDOptions.General.SortDLAddNew then
@@ -576,6 +595,7 @@ end;
 constructor TSilentThread.Create(const AManager: TSilentThreadManager);
 begin
   inherited Create(False);
+
   FInfo := TMangaInformation.Create(Self);
   FManager := AManager;
   FManager.AddThread(Self);
@@ -584,6 +604,7 @@ end;
 destructor TSilentThread.Destroy;
 begin
   FManager.RemoveThread(Self);
+
   if not isExiting then
   begin
     Synchronize(FManager.UpdateLoadStatus);

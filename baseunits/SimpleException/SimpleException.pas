@@ -572,6 +572,7 @@ end;
 procedure TSimpleException.CallExceptionHandler;
 begin
   if (ThreadID <> MainThreadID) then
+  begin
     try
       TThread.Synchronize(TThread.CurrentThread, @ExceptionHandler);
     except
@@ -581,7 +582,8 @@ begin
       else
       {$ENDIF}
         SaveLogToFile(SCantHandleException);
-    end
+    end;
+  end
   else
     ExceptionHandler;
 end;

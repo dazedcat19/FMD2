@@ -386,7 +386,7 @@ begin
     RunExternalProcess(Sza, ['x', filepath, '-o' +
       AnsiQuotedStr(datapath, '"'), '-aoa'], False, True);
     DeleteFile(filepath);
-  end
+  end;
 end;
 
 constructor TUpdateListManagerThread.Create;
