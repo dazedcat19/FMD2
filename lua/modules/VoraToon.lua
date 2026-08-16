@@ -1,24 +1,8 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = 'b8206e754d4541689c1d367f7e19fd64'
-	m.Name                     = 'KomikCast'
-	m.RootURL                  = 'https://v2.komikcast.fit'
-	m.Category                 = 'Indonesian'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
-end
-
-----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local API_URL = 'https://be.komikcast.cc'
+local API_URL = 'https://api.voratoon.com'
 local DirectoryPagination = '/series?take=100000'
 
 ----------------------------------------------------------------------------------------------------
@@ -42,7 +26,7 @@ function GetNameAndLink()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	for v in CreateTXQuery(HTTP.Document).XPath('parse-json(.)?data?*?data').Get() do
+	for v in CreateTXQuery(HTTP.Document).XPath('json(*).data().data').Get() do
 		LINKS.Add('series/' .. v.GetProperty('slug').ToString())
 		NAMES.Add(v.GetProperty('title').ToString())
 	end
@@ -94,7 +78,7 @@ function GetPageNumber()
 
 	if not HTTP.GET(u) then return false end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('parse-json(.)?data?data?images?*', TASK.PageLinks)
+	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).data.data.images()', TASK.PageLinks)
 
 	return true
 end
@@ -104,4 +88,20 @@ function BeforeDownloadImage()
 	SetRequestHeaders()
 
 	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = 'b8206e754d4541689c1d367f7e19fd64'
+	m.Name                     = 'VoraToon'
+	m.RootURL                  = 'https://v1.voratoon.com'
+	m.Category                 = 'Indonesian'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 end
