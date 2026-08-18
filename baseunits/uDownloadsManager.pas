@@ -54,6 +54,7 @@ type
     Task: TTaskThread;
     HTTP: THTTPSendThread;
     WorkId: Integer;
+    IsConverting: Boolean;   // True while SaveImageStreamToFile is running ConvertStream
     constructor Create(const ATask: TTaskThread);
     destructor Destroy; override;
   end;
@@ -393,7 +394,7 @@ begin
       if Assigned(TModuleContainer(Task.Container.DownloadInfo.Module).OnSaveImage) then
         savedFilename := TModuleContainer(Task.Container.DownloadInfo.Module).OnSaveImage(Self, Task.CurrentWorkingDir, workFilename, TModuleContainer(Task.Container.DownloadInfo.Module))
       else
-        savedFilename := SaveImageStreamToFile(HTTP, Task.CurrentWorkingDir, workFilename);
+        savedFilename := SaveImageStreamToFile(HTTP, Task.CurrentWorkingDir, workFilename, @IsConverting);
       Result := savedFilename <> '';
     end;
   end;
@@ -620,7 +621,7 @@ begin
   Result := True;
               
   ImageMagick := TImageMagickManager.Instance;
-  if not (ImageMagick.Enabled) then
+  if not (ImageMagick.Enabled) or not (ImageMagick.PathFound) then
   begin
     Exit;
   end;
@@ -1277,20 +1278,10 @@ begin
         if CheckForFinish then
         begin
           Container.DownloadInfo.Progress := '';
-          Container.Status := STATUS_CONVERT;
-          if not Convert then
+          Container.Status := STATUS_COMPRESS;
+          if not Compress then
           begin
             Container.Status := STATUS_FAILED;
-          end;
-
-          if Container.Status <> STATUS_FAILED then
-          begin
-            Container.DownloadInfo.Progress := '';
-            Container.Status := STATUS_COMPRESS;
-            if not Compress then
-            begin
-              Container.Status := STATUS_FAILED;
-            end;
           end;
         end
         else

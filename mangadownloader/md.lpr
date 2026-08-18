@@ -14,6 +14,7 @@ uses
   Forms, LazFileUtils, jsonini, simpleipc, sqlite3dyn, uBaseUnit, FMDVars, webp,
   CheckUpdate, DBUpdater, SelfUpdater, uDownloadsManager, LuaWebsiteModules,
   LuaBase, SimpleException, Classes, sysutils, frmMain, frmCheckModules,
+  frmTaskMonitor,
   uDarkStyle, uMetaDarkStyle, uDarkStyleSchemes, uDarkStyleParams, MultiLog,
   FileChannel, ssl_openssl3_lib, blcksock, ssl_openssl3, SQLiteData;
 
@@ -253,12 +254,6 @@ begin
     InitSSLInterface;
   end;
   {$endif}
-
-  //webp
-  if FileExists(FMD_DIRECTORY + DLLWebPName) then
-  begin
-    DLLWebPName := FMD_DIRECTORY + DLLWebPName;
-  end;
 
   Case iDarkMode of
      0:  PreferredAppMode := pamAllowDark;
