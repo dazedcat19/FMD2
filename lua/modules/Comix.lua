@@ -283,18 +283,16 @@ function GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(info.status, 'releasing', 'finished', 'on_hiatus', 'discontinued')
 	MANGAINFO.Summary   = info.synopsis
 
+	if info.firstChapterUrl == '' then return no_error end
+
 	local interceptor = [[
 		const items = window._capturedChapters || [];
 		window._capturedChapters = items;
 
-		if (parsed && parsed.result && Array.isArray(parsed.result.items)) {
-			const resItems = parsed.result.items;
-
-			if (resItems.length === 0) {
-				submit({ items: [] });
-			} else if (resItems[0].mangaId) {
+		if (parsed && parsed.result && Array.isArray(parsed.result.items) && parsed.result.items.length > 0) {
+			if (parsed.result.items[0].mangaId) {
 				const meta = parsed.result.meta || parsed.result.pagination;
-				for (const it of resItems) items.push(it);
+				for (const it of parsed.result.items) items.push(it);
 
 				if (meta && meta.hasNext) {
 					setTimeout(() => {
