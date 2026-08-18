@@ -756,6 +756,8 @@ begin
 end;
 
 procedure TSQliteData.Commit;
+var
+  isActive: Boolean;
 begin
   if not FConn.Connected then
   begin
@@ -765,12 +767,19 @@ begin
   Lock;
   try
     try
-      if FQuery.Active then
+      isActive := FQuery.Active;
+
+      if isActive then
       begin
         FQuery.ApplyUpdates;
       end;
 
       Transaction.Commit;
+
+      if isActive then
+      begin
+        OpenTable(False);
+      end;
     except
       on E: Exception do
       begin

@@ -74,7 +74,7 @@ end;
 procedure TDownloadedChaptersDB.SetChapters(const AModuleID, ALink: String;
   AValue: String);
 var
-  posted: Boolean;
+  posted, isNew: Boolean;
 begin
   if AValue = '' then
   begin
@@ -87,6 +87,7 @@ begin
   end;
 
   posted := False;
+  isNew := False;
   Lock;
   try
     with Table do
@@ -99,6 +100,7 @@ begin
       else
       begin
         Append;
+        isNew := True;
         Fields[0].AsString := LowerCase(AModuleID + ALink);
         Fields[1].AsString := AValue;
       end;
@@ -117,6 +119,11 @@ begin
   if posted then
   begin
     Commit;
+
+    if isNew then
+    begin
+      IncRecordCount;
+    end;
   end;
 end;
 

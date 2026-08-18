@@ -801,7 +801,7 @@ type
 
     // fill edSaveTo with default path
     procedure FillSaveTo(const AModule: Pointer);
-    function SafeReadEdSaveTo(AppendPathDelim: Boolean = False): String;
+    function SafeReadEdSaveTo(TrailingPathDelim: Boolean = False): String;
     function OverrideSaveTo(const AModule: Pointer): String;
 
     // View manga information
@@ -6286,16 +6286,17 @@ begin
   edSaveTo.Text := saveToPath;
 end;
 
-function TMainForm.SafeReadEdSaveTo(AppendPathDelim: Boolean = False): String;
+function TMainForm.SafeReadEdSaveTo(TrailingPathDelim: Boolean = False): String;
 var
   saveToPath: String;
 begin
   saveToPath := edSaveTo.Text;
   saveToPath := SanitizeFilePath(saveToPath);
+  saveToPath := TrimPath(saveToPath);
 
-  if not AppendPathDelim then
+  if TrailingPathDelim then
   begin
-    saveToPath := TrimPath(saveToPath);
+    saveToPath := AppendPathDelim(saveToPath);
   end;
             
   edSaveTo.Text := saveToPath;
