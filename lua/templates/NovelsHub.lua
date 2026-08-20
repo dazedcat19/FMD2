@@ -104,7 +104,7 @@ function _M.GetInfo()
 				local title = ch.title
 				local number = ch.number
 
-				if not title:find('-', 1, true) then
+				if not title or not title:find('-', 1, true) then
 					title = 'Chapter ' .. number
 				end
 
