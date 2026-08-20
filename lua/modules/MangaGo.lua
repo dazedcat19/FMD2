@@ -1,26 +1,8 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = '77c3c3cd38444bd7bb4e5f63f2c5c93c'
-	m.Name                     = 'MangaGo'
-	m.RootURL                  = 'https://www.mangago.me'
-	m.Category                 = 'English'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnDownloadImage          = 'DownloadImage'
-	m.TotalDirectory           = #DirectoryPages
-	m.SortedList               = true
-end
-
-----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-DirectoryPages = {'Yaoi', 'Comedy', 'Shounen Ai', 'Shoujo', 'Yuri', 'Josei', 'Fantasy', 'School%20Life',
+local DirectoryPages = {'Yaoi', 'Comedy', 'Shounen Ai', 'Shoujo', 'Yuri', 'Josei', 'Fantasy', 'School%20Life',
 	'Romance', 'Doujinshi', 'Smut', 'Adult', 'Mystery', 'One Shot', 'Ecchi', 'Shounen', 'Martial Arts',
 	'Shoujo Ai', 'Supernatural', 'Drama', 'Action', 'Adventure', 'Harem', 'Historical', 'Horror',
 	'Mature', 'Mecha', 'Psychological', 'Sci-fi', 'Seinen', 'Slice Of Life', 'Sports', 'Gender Bender',
@@ -117,7 +99,7 @@ end
 
 -- Generate the dynamic image descrambling key.
 local function GetDescramblingKey(deobfuscated_js, image_url)
-	local duktape = require('fmd.duktape')
+	local duktape = require 'fmd.duktape'
 	local start_marker = 'var renImg = function(img,width,height,id){'
 	local end_marker = 'key = key.split('
 
@@ -175,8 +157,9 @@ function GetNameAndLink()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	CreateTXQuery(HTTP.Document).XPathHREFAll('//span[@class="title"]/a', LINKS, NAMES)
-	UPDATELIST.CurrentDirectoryPageNumber = tonumber(CreateTXQuery(HTTP.Document).XPathString('//div[@class="pagination"]//li[last()-1]//span')) or 1
+	local x = CreateTXQuery(HTTP.Document)
+	x.XPathHREFAll('//span[@class="title"]/a', LINKS, NAMES)
+	UPDATELIST.CurrentDirectoryPageNumber = tonumber(x.XPathString('//div[@class="pagination"]//li[last()-1]//span')) or 1
 
 	return no_error
 end
@@ -202,13 +185,13 @@ function GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local duktape = require('fmd.duktape')
-	local u = MaybeFillHost(MODULE.RootURL, URL)
+	local duktape = require 'fmd.duktape'
+	local u = URL:find('/read-manga/', 1, true) and MaybeFillHost(MODULE.RootURL, URL) or MaybeFillHost('https://www.mangago.zone', URL)
 
 	if not HTTP.GET(u) then return false end
-	
+
 	local x = CreateTXQuery(HTTP.Document)
 	local imgsrcs_script = x.XPathString('//script[contains(., "imgsrcs")]')
 	local imgsrc_b64 = imgsrcs_script:match('var imgsrcs%s*=%s*\'([^\']+)\'')
@@ -268,7 +251,7 @@ function DownloadImage()
 		local desckey = fragment:match('desckey=([^&]+)')
 		local cols = tonumber(fragment:match('cols=([^&]+)'))
 
-		local puzzle = require('fmd.imagepuzzle').Create(cols, cols)
+		local puzzle = require 'fmd.imagepuzzle'.Create(cols, cols)
 		local key_array = {}
 		for val in desckey:gmatch('([^a]+)') do
 			table.insert(key_array, tonumber(val) or 0)
@@ -282,4 +265,22 @@ function DownloadImage()
 	end
 
 	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = '77c3c3cd38444bd7bb4e5f63f2c5c93c'
+	m.Name                     = 'MangaGo'
+	m.RootURL                  = 'https://www.mangago.me'
+	m.Category                 = 'English'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnDownloadImage          = 'DownloadImage'
+	m.TotalDirectory           = #DirectoryPages
+	m.SortedList               = true
 end
