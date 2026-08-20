@@ -26,16 +26,15 @@ type
     FContainer: TFavoriteContainer;
     FTask: TFavoriteTask;
     FMangaInformation: TMangaInformation;
-    FCheckIsCancelled: Boolean;
+    FCheckCancelled: Boolean;
 
   protected
     procedure Execute; override;
     procedure DoCheck;
     procedure DoCheckMissing;
+    procedure AbortCheck;
 
   public
-    property CheckIsCancelled: Boolean read FCheckIsCancelled write FCheckIsCancelled;
-
     constructor Create(const ATask: TFavoriteTask);
     destructor Destroy; override;
   end;
@@ -334,14 +333,14 @@ begin
   while FTask.GetNext(FContainer) do
   begin                  
     FContainer.Thread := Self;
-    CheckIsCancelled := False;
+    FCheckCancelled := False;
 
     if FTask.FCheckMissing then
       DoCheckMissing
     else
       DoCheck;
 
-    if Terminated or CheckIsCancelled then
+    if Terminated or FCheckCancelled then
     begin
       FContainer.Status := STATUS_IDLE;
       // free unused objects
@@ -357,7 +356,7 @@ begin
     end;
 
     FContainer.Thread := nil;
-    if not Terminated and not CheckIsCancelled then
+    if not Terminated and not FCheckCancelled then
     begin
       FTask.UpdateStatus;
     end;
@@ -387,7 +386,7 @@ begin
       // get new manga info
       FMangaInformation.GetInfoFromURL(FavoriteInfo.Link);
 
-      if not Terminated and not CheckIsCancelled then
+      if not Terminated and not FCheckCancelled then
       begin
         NewMangaInfo := FMangaInformation.MangaInfo.Clone;
         NewMangaInfoChaptersPos := TCardinalList.Create;
@@ -423,7 +422,7 @@ begin
           end;
         end;
 
-        if not Terminated and not CheckIsCancelled then
+        if not Terminated and not FCheckCancelled then
         begin
           FContainer.FavoriteInfo.DateLastChecked := Now;
           if (NewMangaInfoChaptersPos.Count <> 0) then
@@ -469,7 +468,7 @@ begin
       // get manga info from site
       FMangaInformation.GetInfoFromURL(FavoriteInfo.Link);
 
-      if not Terminated and not CheckIsCancelled then
+      if not Terminated and not FCheckCancelled then
       begin
         FreeAndNil(NewMangaInfo);
         FreeAndNil(NewMangaInfoChaptersPos);
@@ -564,7 +563,7 @@ begin
           end;
         end;
 
-        if not Terminated and not CheckIsCancelled then
+        if not Terminated and not FCheckCancelled then
         begin
           FContainer.FavoriteInfo.DateLastChecked := Now;
           if NewMangaInfoChaptersPos.Count <> 0 then
@@ -581,6 +580,12 @@ begin
       on E: Exception do
         ExceptionHandle(Self, E);
     end;
+end;
+
+procedure TFavoriteThread.AbortCheck;
+begin
+  FCheckCancelled := True;
+  FMangaInformation.HTTP.Abort;
 end;
 
 constructor TFavoriteThread.Create(const ATask: TFavoriteTask);
@@ -1069,10 +1074,9 @@ begin
   begin
     with Items[FavoriteIndex] do
     begin
-      if (Thread <> nil) and Assigned(Thread.FMangaInformation) then
+      if Thread <> nil then
       begin
-        Thread.CheckIsCancelled := True;
-        Thread.FMangaInformation.HTTP.Abort;
+        Thread.AbortCheck;
       end;
 
       if Status <> STATUS_IDLE then
