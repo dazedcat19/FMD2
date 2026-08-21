@@ -507,7 +507,13 @@ end;
 
 procedure TSQliteData.GetRecordCount;
 begin
-  FRecordCount := StrToIntDef(FConn.ExecuteQuery('SELECT COUNT(*) FROM' + QuotedStrD(FTableName) + ';'), 0);
+  Lock;
+
+  try
+    FRecordCount := StrToIntDef(FConn.ExecuteQuery('SELECT COUNT(*) FROM' + QuotedStrD(FTableName) + ';'), 0);
+  finally
+    Unlock;
+  end;
 end;
 
 procedure TSQliteData.SetRecordCount(const AValue: Integer);
@@ -590,9 +596,10 @@ end;
 destructor TSQliteData.Destroy;
 begin
   Self.Close;
-  FConn.Free;
+
   FQuery.Free;
   FTrans.Free;
+  FConn.Free;
 
   DoneCriticalSection(FGuardian);
 
@@ -906,7 +913,16 @@ end;
 
 procedure TSQliteData.RollbackUpdate;
 begin
-  FTrans.Rollback;
+  Lock;
+
+  try
+    if FTrans.Active then
+    begin
+      FTrans.Rollback;
+    end;
+  finally
+    Unlock;
+  end;
 end;
 
 procedure TSQliteData.AddSQL(const SQL: String);

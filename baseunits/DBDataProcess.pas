@@ -2032,21 +2032,26 @@ begin
 end;
 
 procedure TDBDataProcess.RemoveFilter;
+var
+  isActive: Boolean;
 begin
-  if FFiltered then
+  if not FFiltered then
   begin
-    FFilterAllSites := False;
-    FFiltered := False;
-    FFilterApplied := False;
-    FFilterSQL := '';
-    FReadQuery.SQL.Text := FSQLSelect;
-    FRecordCount := 0;
-    DetachAllSites;
+    Exit;
+  end;
 
-    if FReadQuery.Active then
-    begin
-      OpenTable(FTableName, True);
-    end;
+  isActive := FReadQuery.Active;
+  FFilterAllSites := False;
+  FFiltered := False;
+  FFilterApplied := False;
+  FFilterSQL := '';
+  FReadQuery.SQL.Text := FSQLSelect;
+  FRecordCount := 0;
+  DetachAllSites;
+
+  if isActive then
+  begin
+    OpenTable(FTableName, True);
   end;
 end;
 
