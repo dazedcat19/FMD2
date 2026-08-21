@@ -1,40 +1,4 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = '88a001d7619244ef98d13ecd869b8e64'
-	m.Name                     = 'Comix'
-	m.RootURL                  = 'https://comix.to'
-	m.Category                 = 'English'
-	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnDownloadImage          = 'DownloadImage'
-	m.SortedList               = true
-	m.MaxTaskLimit             = 2
-	m.MaxConnectionLimit       = 4
-
-	local fmd = require 'fmd.env'
-	local slang = fmd.SelectedLanguage
-	local translations = {
-		['en'] = {
-			['showscangroup'] = 'Show scanlation group',
-			['deduplicatechapters'] = 'Deduplicate chapters (prefer official chapters, followed by the highest-voted or most recent)'
-		},
-		['id_ID'] = {
-			['showscangroup'] = 'Tampilkan grup scanlation',
-			['deduplicatechapters'] = 'Hapus bab ganda (utamakan bab resmi, diikuti yang paling banyak dipilih atau terbaru)'
-		}
-	}
-	local lang = translations[slang] or translations['en']
-	m.AddOptionCheckBox('showscangroup', lang.showscangroup, false)
-	m.AddOptionCheckBox('deduplicatechapters', lang.deduplicatechapters, false)
-end
-
-----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
@@ -72,6 +36,56 @@ local function GetNodejsScript(interceptor)
 			setTimeout(() => submit({ error: 'Timed out waiting for data' }), 60000);
 		});
 	});
+	console.log(JSON.stringify(resultJSON));
+	]]
+end
+
+local function GetChapterFetchScript(mid)
+	return [[
+	const resultJSON = await page.evaluate(async (mangaId) => {
+		try {
+			const mainScript = document.querySelector('script[type="module"][src*="/dist/main-"]');
+			if (!mainScript) return { error: 'Could not find main bundle script tag' };
+
+			const mainScriptUrl = mainScript.src;
+			const mainResponse = await fetch(mainScriptUrl);
+			if (!mainResponse.ok) return { error: 'Could not load main bundle' };
+			const mainJavaScript = await mainResponse.text();
+
+			const environmentFile = mainJavaScript.match(/from\s*["']\.\/(env-[^"']+\.js)["']/);
+			if (!environmentFile) return { error: 'Could not find environment bundle' };
+
+			const envModule = await import(new URL(environmentFile[1], mainScriptUrl).href);
+			const mangaApi = Object.values(envModule).find(
+				v => v && typeof v === 'object' && typeof v.chapters === 'function'
+			);
+			if (!mangaApi) return { error: 'Could not find manga API' };
+
+			const items = [];
+			let page = 1;
+			while (page <= 200) {
+				const response = await mangaApi.chapters(mangaId, {
+					page: page,
+					limit: 100,
+					order: { number: 'asc' }
+				});
+				
+				const pageItems = response && response.items;
+				if (!Array.isArray(pageItems) || pageItems.length === 0) break;
+
+				items.push(...pageItems);
+
+				const meta = (response && (response.meta || response.pagination)) || {};
+				const lastPage = meta.lastPage || meta.last_page || page;
+				if (!(meta.hasNext || page < lastPage)) break;
+				page++;
+			}
+			return { items: items };
+		} catch (e) {
+			return { error: e.message || String(e) };
+		}
+	}, ]] .. string.format('%q', mid) .. [[);
+
 	console.log(JSON.stringify(resultJSON));
 	]]
 end
@@ -239,6 +253,7 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
+	local json = require 'utils.json'
 	local mid = URL:match('/title/([^%-]+)%-')
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
@@ -247,7 +262,7 @@ function GetInfo()
 	local rc = HTTP.ResultCode
 	if (rc == 403) or (rc == 429) or (rc == 503) then MANGAINFO.Title = 'Cloudflare workaround is required' return no_error end
 	local x = CreateTXQuery(HTTP.Document)
-	local info = require 'utils.json'.decode(x.XPathString('//script[@id="initial-data"]')).queries['["manga","detail","' .. mid .. '"]']
+	local info = json.decode(x.XPathString('//script[@id="initial-data"]')).queries['["manga","detail","' .. mid .. '"]']
 
 	local authors = {}
 	for _, author in ipairs(info.authors or {}) do
@@ -285,77 +300,56 @@ function GetInfo()
 
 	if info.firstChapterUrl == '' then return no_error end
 
-	local interceptor = [[
-		const items = window._capturedChapters || [];
-		window._capturedChapters = items;
-
-		if (parsed && parsed.result && Array.isArray(parsed.result.items) && parsed.result.items.length > 0) {
-			if (parsed.result.items[0].mangaId) {
-				const meta = parsed.result.meta || parsed.result.pagination;
-				for (const it of parsed.result.items) items.push(it);
-
-				if (meta && meta.hasNext) {
-					setTimeout(() => {
-						let btn = null;
-						const active = document.querySelector('.mchap-foot .npager__num.is-active');
-						if (active && active.nextElementSibling && active.nextElementSibling.classList.contains('npager__num')) {
-							btn = active.nextElementSibling;
-						}
-						if (btn && !btn.disabled) btn.click();
-					}, 200);
-				} else {
-					submit({ items: items });
-				}
-			}
-		}
-	]]
-
 	local now = os.time()
 	local output = MODULE.Storage[mid]
 	local timestamp = tonumber(MODULE.Storage[mid .. '_time']) or 0
 
 	if output == '' or (now - timestamp) >= 900 then
-		local js_code = GetNodejsScript(interceptor)
+		local js_code = GetChapterFetchScript(mid)
 		output = require 'utils.nodejs'.run_html_load_with_js(MODULE.RootURL .. URL, js_code)
 
-		if not output:find('Timed out', 1, true) then
+		if not json.decode(output).error then
 			MODULE.Storage[mid] = output
 			MODULE.Storage[mid .. '_time'] = tostring(now)
 		end
 	end
-	x.ParseHTML(output)
+
+	local data = json.decode(output)
+	local error = data.error
+	if error then
+		MANGAINFO.Title = 'Error: ' .. error
+		print('Error: ' .. error)
+		return no_error
+	end
 
 	local deduplicate  = MODULE.GetOption('deduplicatechapters')
 	local optgroup     = MODULE.GetOption('showscangroup')
 	local chapter_map  = {}
 	local chapter_list = {}
 	local has_integer  = {}
+	local raw_chapters = {}
 
-	for v in x.XPath('json(*).items()').Get() do
-		local number = v.GetProperty('number').ToString()
-		local id = v.GetProperty('id').ToString()
-		local name = v.GetProperty('name').ToString()
-		local vol_num = v.GetProperty('volume').ToString()
-		local scan_group_id = tonumber(v.GetProperty('group').GetProperty('id').ToString()) or 0
-		local scan_group_name = v.GetProperty('group').GetProperty('name').ToString()
-		local votes = tonumber(v.GetProperty('votes').ToString()) or 0
-		local official_str = v.GetProperty('isOfficial').ToString()
-		local official = (official_str == '1' or official_str == 'true') and 1 or 0
-		local url = v.GetProperty('url').ToString()
-
-		if not number:find('%.') then
-			has_integer[number] = true
-		end
+	for _, v in ipairs(data.items or {}) do
+		local number = tostring(v.number)
+		local id = v.id
+		local name = v.name
+		local vol_num = v.volume
+		local group = type(v.group) == 'table' and v.group or {}
+		local scan_group_id = group.id or 0
+		local scan_group_name = group.name
+		local votes = v.votes or 0
+		local official = v.isOfficial
+		local url = v.url
 
 		if not deduplicate then
-			local volume = (vol_num ~= '0') and ('Vol. ' .. vol_num .. ' ') or ''
-			local chapter = (number ~= '') and ('Ch. ' .. number) or ''
-			local title = (name ~= '') and (' - ' .. name) or ''
+			local volume = (vol_num ~= 0) and ('Vol. ' .. vol_num .. ' ') or ''
+			local chapter = number and ('Ch. ' .. number) or ''
+			local title = name and (' - ' .. name) or ''
 			local scanlator = ''
 			if optgroup then
-				if scan_group_name ~= '' then
+				if scan_group_name then
 					scanlator = ' [' .. scan_group_name .. ']'
-				elseif official == 1 then
+				elseif official then
 					scanlator = ' [Official]'
 				else
 					scanlator = ' [Unknown]'
@@ -365,22 +359,33 @@ function GetInfo()
 			MANGAINFO.ChapterLinks.Add(url)
 			MANGAINFO.ChapterNames.Add(volume .. chapter .. title .. scanlator)
 		else
-			local base = number:match('^(%d+)')
-			local key = (base and has_integer[base]) and base or number
-			local current = chapter_map[key]
-			local ch_data = {
+			table.insert(raw_chapters, {
 				id = id, name = name, vol_num = vol_num, number = number,
 				scan_group_id = scan_group_id, scan_group_name = scan_group_name,
 				votes = votes, official = official, url = url
-			}
+			})
+		end
+	end
+
+	if deduplicate then
+		for _, ch in ipairs(raw_chapters) do
+			if not ch.number:find('%.') then
+				has_integer[ch.number] = true
+			end
+		end
+
+		for _, ch in ipairs(raw_chapters) do
+			local base = ch.number:match('^(%d+)')
+			local key = (base and has_integer[base]) and base or ch.number
+			local current = chapter_map[key]
 
 			if not current then
-				chapter_map[key] = ch_data
+				chapter_map[key] = ch
 				table.insert(chapter_list, key)
 			else
-				local new_official = ch_data.official == 1
-				local cur_official = current.official == 1
-				local new_group = ch_data.scan_group_id == 10702
+				local new_official = ch.official
+				local cur_official = current.official
+				local new_group = ch.scan_group_id == 10702
 				local cur_group = current.scan_group_id == 10702
 				local better = false
 
@@ -388,31 +393,29 @@ function GetInfo()
 					better = new_official
 				elseif new_group ~= cur_group then
 					better = new_group
-				elseif ch_data.votes ~= current.votes then
-					better = ch_data.votes > current.votes
+				elseif ch.votes ~= current.votes then
+					better = ch.votes > current.votes
 				else
-					better = ch_data.id > current.id
+					better = ch.id > current.id
 				end
 
 				if better then
-					chapter_map[key] = ch_data
+					chapter_map[key] = ch
 				end
 			end
 		end
-	end
 
-	if deduplicate then
 		for _, key in ipairs(chapter_list) do
 			local ch = chapter_map[key]
 
-			local volume = (ch.vol_num ~= '0') and ('Vol. ' .. ch.vol_num .. ' ') or ''
-			local chapter = (ch.number ~= '') and ('Ch. ' .. ch.number) or ''
-			local title = (ch.name ~= '') and (' - ' .. ch.name) or ''
+			local volume = (ch.vol_num ~= 0) and ('Vol. ' .. ch.vol_num .. ' ') or ''
+			local chapter = ch.number and ('Ch. ' .. ch.number) or ''
+			local title = ch.name and (' - ' .. ch.name) or ''
 			local scanlator = ''
 			if optgroup then
-				if ch.scan_group_name ~= '' then
+				if ch.scan_group_name then
 					scanlator = ' [' .. ch.scan_group_name .. ']'
-				elseif ch.official == 1 then
+				elseif ch.official then
 					scanlator = ' [Official]'
 				else
 					scanlator = ' [Unknown]'
@@ -423,7 +426,6 @@ function GetInfo()
 			MANGAINFO.ChapterNames.Add(volume .. chapter .. title .. scanlator)
 		end
 	end
-	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
 end
@@ -528,4 +530,40 @@ function DownloadImage()
 	end
 
 	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = '88a001d7619244ef98d13ecd869b8e64'
+	m.Name                     = 'Comix'
+	m.RootURL                  = 'https://comix.to'
+	m.Category                 = 'English'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnDownloadImage          = 'DownloadImage'
+	m.SortedList               = true
+	m.MaxTaskLimit             = 2
+	m.MaxConnectionLimit       = 4
+
+	local fmd = require 'fmd.env'
+	local slang = fmd.SelectedLanguage
+	local translations = {
+		['en'] = {
+			['showscangroup'] = 'Show scanlation group',
+			['deduplicatechapters'] = 'Deduplicate chapters (prefer official chapters, followed by the highest-voted or most recent)'
+		},
+		['id_ID'] = {
+			['showscangroup'] = 'Tampilkan grup scanlation',
+			['deduplicatechapters'] = 'Hapus bab ganda (utamakan bab resmi, diikuti oleh yang paling banyak mendapat suara atau terbaru)'
+		}
+	}
+	local lang = translations[slang] or translations['en']
+	m.AddOptionCheckBox('showscangroup', lang.showscangroup, false)
+	m.AddOptionCheckBox('deduplicatechapters', lang.deduplicatechapters, false)
 end
