@@ -5,11 +5,13 @@ unit LuaDuktape;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
+  SysUtils, Classes, LuaPackage,
+  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 implementation
 
-uses Duktape, MultiLog, LuaUtils, LuaPackage;
+uses
+  Duktape, MultiLog, LuaUtils;
 
 function lua_execjs(L: Plua_State): Integer; cdecl;
 begin

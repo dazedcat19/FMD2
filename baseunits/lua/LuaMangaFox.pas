@@ -5,12 +5,13 @@ unit LuaMangaFox;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
+  SysUtils, Classes, LuaPackage,
+  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 implementation
 
 uses
-  LuaUtils, LuaPackage, MangaFoxWatermark;
+  LuaUtils, MangaFoxWatermark;
 
 function mf_loadtemplate(L: Plua_State): Integer; cdecl;
 begin

@@ -5,9 +5,9 @@ unit frmLuaModulesUpdater;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  Buttons, Menus, ExtCtrls, VirtualTrees, synautil, httpsendthread, BaseThread, StatusBarDownload,
-  XQueryEngineHTML, GitHubRepoV3, MultiLog, fpjson, jsonparser, jsonscanner, dateutils;
+  SysUtils, Classes, FileUtil, LazFileUtils, Forms, Controls, Graphics, Dialogs,
+  StdCtrls, Buttons, Menus, ExtCtrls, fpjson, jsonparser, jsonscanner, dateutils,
+  VirtualTrees, BaseThread, httpsendthread, StatusBarDownload, GitHubRepoV3;
 
 type
 
@@ -138,6 +138,10 @@ type
     procedure SyncFinishDownload;
     procedure SyncFinal;
     procedure SyncGitHubConnectFail;
+    procedure SyncGitHubRateLimited;
+    procedure SyncGitHubErrorMessage;
+    procedure SyncGitHubNoErrorMessage;
+    procedure SyncGitHubDownloadFailed;
     function SyncRepos(const ARepos, AReposUp: TLuaModulesRepos): Boolean;
     procedure Download;
     procedure DoSync;
@@ -146,14 +150,21 @@ type
     constructor Create(const AOwner: TLuaModulesUpdaterForm);
     destructor Destroy; override;
     procedure AddStatus(const S: String);
+    procedure DoSyncGitHubConnectFail;
+    procedure DoSyncGitHubRateLimited;
+    procedure DoSyncGitHubErrorMessage(AError: Boolean = True);
   end;
 
 var
   LuaModulesUpdaterForm: TLuaModulesUpdaterForm;
 
 resourcestring
-  RS_GitHubConnectFail = 'Failed to connect to GitHub API for latest module updates.'#13#10'Please try again later.';
+  RS_GitHubConnectFail = 'Failed to connect to GitHub API.'#13#10'Please check your internet connection or try again later.';
+  RS_GitHubRateLimited = 'GitHub API is rate limited.'#13#10'Change the network or try again after %d minute(s)';
   RS_GitHubRateStats = 'GitHub API core rate - call limit: %d, remaining calls: %d, used calls: %d, limit refresh: %s';
+  RS_GitHubErrorMessage = 'GitHub returned an error.'#13#10'Check log for more information.';
+  RS_GitHubNoErrorMessage = 'GitHub API didn''t return a valid response.'#13#10'Try checking %s in your browser.';
+  RS_GitHubDownloadFailed = 'Modules update failed to download modules from GitHub.'#13#10'Please try update again.';
   RS_CheckLocalModules = 'Checking local modules...';
   RS_AwaitingProceed = 'Awaiting permission to proceed...';
   RS_DeletingFlaggedModules = 'Deleting flagged modules...';
@@ -176,7 +187,9 @@ resourcestring
 
 implementation
 
-uses frmCustomColor, frmDialogYesNo, frmMain, frmCustomMessageDlg, FMDOptions, LazFileUtils;
+uses
+  frmMain, frmCustomColor, frmDialogYesNo, frmCustomMessageDlg, uBaseUnit,
+  uOptions, synautil, MultiLog;
 
 const
   // RFC 3339 - ISO 8601
@@ -260,6 +273,7 @@ destructor TLuaModulesRepos.Destroy;
 begin
   Clear;
   Items.Free;
+
   inherited Destroy;
 end;
 
@@ -305,6 +319,7 @@ begin
 
   try
     Self.Clear;
+
     if d.JSONType=jtArray then
     begin
       with TJSONArray(d) do
@@ -329,6 +344,7 @@ begin
   finally
     d.Free;
   end;
+
   Sort;
 end;
 
@@ -343,14 +359,16 @@ begin
   a := TJSONArray.Create;
   try
     for i := 0 to Items.Count - 1 do
-    begin
-      o := TJSONObject.Create;
+    begin  
       m := Repo[i];
+
+      o := TJSONObject.Create;
       o.Add('name', m.name);
       o.Add('sha', m.sha);
       o.Add('last_modified', DateTimeToJSON(m.last_modified));
       o.Add('last_message', m.last_message);
       o.Add('flag', Integer(m.flag));
+
       a.Add(o);
     end;
 
@@ -373,10 +391,12 @@ end;
 
 procedure TLuaModulesRepos.Sort;
 begin
-  if Items.Count <> 0 then
+  if Items.Count = 0 then
   begin
-    Items.Sort;
+    Exit;
   end;
+
+  Items.Sort;
 end;
 
 function TLuaModulesRepos.Clone: TLuaModulesRepos;
@@ -384,6 +404,7 @@ var
   i: Integer;
 begin
   Result := TLuaModulesRepos.Create;
+
   for i := 0 to Items.Count - 1 do
   begin
     Result.Items.AddObject(Items[i], Repo[i].Clone);
@@ -394,31 +415,49 @@ end;
 
 procedure TDownloadThread.Execute;
 var
-  f: String;
-  c: Boolean;
+  AFile, AFileName: String;
+  AExists, ACanDownload: Boolean;
 begin
+  AFileName := ExtractFileName(FModule.name);
   FModule.oflag := FModule.flag;
   FModule.flag := fDownloading;
   FOwner.FOwner.ListDirty;
   FOwner.UpdateProgressBar(FOwner.FDownloadedCount, FOwner.FDownloadTotalCount);
-  FOwner.UpdateStatusText(Format(RS_DownloadingModule, [ExtractFileName(FModule.name)]));
+  FOwner.UpdateStatusText(Format(RS_DownloadingModule, [AFileName]));
+  ACanDownload := False;
+
   if FHTTP.GET(FOwner.FGitHubRepo.GetDownloadURL(FModule.name)) then
   begin
-    if ForceDirectories(LUA_REPO_FOLDER) then
+    if FHTTP.ResultCode < 400 then
     begin
-      f := LUA_REPO_FOLDER + TrimFilename(FModule.name);
-      c := True;
+      ACanDownload := True
+    end
+    else
+    begin
+      Logger.SendError('LuaModulesUpdater.DownloadThread.Execute: ' + AFileName + ': ' + StreamToString(FHTTP.Document));
+    end;
+  end;
 
-      if FileExists(f) then
+  if ACanDownload then
+  begin
+    ACanDownload := False;
+
+    AExists := ForceDirectories(LUA_REPO_FOLDER);
+    if AExists then
+    begin
+      AFile := LUA_REPO_FOLDER + TrimFilename(FModule.name);
+
+      if FileExists(AFile) then
       begin
-        c := DeleteFile(f);
+        AExists := DeleteFile(AFile);
       end;
 
-      c := ForceDirectories(ExtractFileDir(f));
-      if c then
+      AExists := ForceDirectories(ExtractFileDir(AFile));
+      if AExists then
       begin
-        FHTTP.SaveDocumentToFile(f, False, FModule.last_modified);
-        if FileExists(f) then
+        FHTTP.SaveDocumentToFile(AFile, False, FModule.last_modified);
+
+        if FileExists(AFile) then
         begin
           case FModule.oflag of
             fNew: FOwner.AddStatus(Format(RS_StatusNew, [FModule.name]));
@@ -426,23 +465,28 @@ begin
             fFailedDownload: FOwner.AddStatus(Format(RS_StatusRedownloaded, [FModule.name]));
           else;
           end;
+
           FModule.flag := fDownloaded;
           InterLockedIncrement(FOwner.FDownloadedCount);
+          ACanDownload := True;
         end;
       end;
     end;
-  end
-  else
+  end;
+
+  if not ACanDownload then
   begin
     FOwner.AddStatus(Format(RS_StatusFailed, [FModule.name]));
     FModule.flag := fFailedDownload;
   end;
+
   FOwner.FOwner.ListDirty;
 end;
 
 constructor TDownloadThread.Create(const Owner: TCheckUpdateThread; const T: TLuaModuleRepo);
 begin
   inherited Create(False);
+
   FOwner := Owner;
   FHTTP := THTTPSendThread.Create(Self);
   FModule := T;
@@ -453,6 +497,7 @@ destructor TDownloadThread.Destroy;
 begin
   FOwner.RemoveThread(Self);
   FHTTP.Free;
+
   inherited Destroy;
 end;
 
@@ -488,6 +533,7 @@ end;
 procedure TCheckUpdateThread.SyncFinishChecking;
 begin
   FOwner.btCheckUpdate.Caption := RS_FinishChecking;
+
   FOwner.vtLuaModulesRepos.BeginUpdate;
   try
     FMainRepos := FOwner.Repos;
@@ -568,6 +614,7 @@ begin
             end;
           end;
         end;
+
         if yesRestart then
         begin
           MainForm.RestartFMD;
@@ -585,6 +632,56 @@ begin
   CenteredMessageDlg(MainForm, RS_GitHubConnectFail, mtError, [mbOk], 0);
 end;
 
+procedure TCheckUpdateThread.DoSyncGitHubConnectFail;
+begin
+  Synchronize(@SyncGitHubConnectFail);
+end;
+
+procedure TCheckUpdateThread.SyncGitHubRateLimited;
+var
+  resetMinutesLeft: Integer;
+begin
+  resetMinutesLeft := Round((FGitHubRepo.APIResetTime - Now) * 24 * 60);
+  if resetMinutesLeft <= 0 then
+  begin
+    resetMinutesLeft := 15;
+  end;
+
+  CenteredMessageDlg(MainForm, Format(RS_GitHubRateLimited, [resetMinutesLeft]), mtError, [mbOk], 0);
+end;
+
+procedure TCheckUpdateThread.DoSyncGitHubRateLimited;
+begin
+  Synchronize(@SyncGitHubRateLimited);
+end; 
+
+procedure TCheckUpdateThread.SyncGitHubNoErrorMessage;
+begin
+  CenteredMessageDlg(MainForm, Format(RS_GitHubNoErrorMessage, [FGitHubRepo.api_url + 'rate_limit']), mtError, [mbOk], 0);
+end;
+
+procedure TCheckUpdateThread.SyncGitHubErrorMessage;
+begin
+  CenteredMessageDlg(MainForm, RS_GitHubErrorMessage, mtError, [mbOk], 0);
+end;
+
+procedure TCheckUpdateThread.DoSyncGitHubErrorMessage(AError: Boolean = True);
+begin
+  if AError then
+  begin
+    Synchronize(@SyncGitHubErrorMessage);
+  end
+  else
+  begin
+    Synchronize(@SyncGitHubNoErrorMessage);
+  end;
+end;
+
+procedure TCheckUpdateThread.SyncGitHubDownloadFailed;
+begin
+  CenteredMessageDlg(MainForm, RS_GitHubDownloadFailed, mtError, [mbOk], 0);
+end;
+
 function TCheckUpdateThread.SyncRepos(const ARepos, AReposUp: TLuaModulesRepos): Boolean;
 var
   i, j, imax, jmax, k, inew, iupdate: Integer;
@@ -595,6 +692,7 @@ begin
   j := 0;
   inew := 0;
   iupdate := 0;
+
   imax := ARepos.Items.Count;
   jmax := AReposUp.Items.Count;
   while (i < imax) or (j < jmax) do
@@ -623,6 +721,7 @@ begin
       begin
         Inc(i);
         Inc(j);
+
         if m.flag = fUpdate then
         begin
           Inc(iupdate);
@@ -631,14 +730,18 @@ begin
       else
       begin  // scan remote ARepos till end
         newfound := False;
+
         for k := j + 1 to jmax - 1 do
         begin
-          if m.name = AReposUp[k].name then // j to k-1 is new
+          if m.name <> AReposUp[k].name then // j to k-1 is new
           begin
-            newfound := True;
-            Break;
+            Continue;
           end;
+
+          newfound := True;
+          Break;
         end;
+
         if newfound then // add new
         begin
           for k := j to k - 1 do
@@ -648,6 +751,7 @@ begin
             ARepos.Add(m);
             Inc(inew);
           end;
+
           j := k + 1;
         end
         else  // current is marked to delete
@@ -658,8 +762,7 @@ begin
         end;
       end;
     end
-    else
-    if m = nil then // new found
+    else if m = nil then // new found
     begin
       m := u.Clone;
       m.flag := fNew;
@@ -674,6 +777,7 @@ begin
       Inc(i);
     end;
   end;
+
   if inew <> 0 then
   begin
     ARepos.Items.Sort;
@@ -697,9 +801,11 @@ begin
   begin
     UpdateProgressBar(i + 1, FRepos.Items.Count);
     UpdateStatusText(RS_DeletingFlaggedModules);
+
     if FRepos[i].flag = fDelete then
     begin
       m := FRepos[i];
+
       f := LUA_REPO_FOLDER + TrimFilename(m.Name);
       if FileExists(f) and DeleteFile(f) then
       begin
@@ -731,11 +837,13 @@ begin
       end;
 
       TDownloadThread.Create(Self, FRepos[i]);
+
       message := FGitHubRepo.GetLastCommitMessage(m.Name);
       if message <> '' then
       begin
          m.last_message := message;
       end;
+
       Inc(i);
     end;
   end;
@@ -746,6 +854,7 @@ begin
     begin
       Break;
     end;
+
     Sleep(HeartBeatRate);
   end;
 
@@ -763,12 +872,13 @@ begin
   begin
     Sleep(HeartBeatRate);
   end;
+
   Synchronize(@SyncFinishDownload);
 end;
 
 procedure TCheckUpdateThread.DoSync;
 var
-  foundupdate: Boolean;
+  foundUpdate, downloadFailed: Boolean;
   i, imax: Integer;
   m: TLuaModuleRepo;
   trepos: TLuaModulesRepos;
@@ -778,18 +888,17 @@ begin
   LoadingProgressBar;
   UpdateStatusText(RS_GitHubConnecting);
 
-  if FGitHubRepo.CheckRateLimited then
-  begin
-    Synchronize(@SyncGitHubConnectFail);
-  end;
+  FGitHubRepo.CheckRateLimited(Self);
 
   if FGitHubRepo.GetUpdate then
   begin
     FReposUp := TLuaModulesRepos.Create;
+
     for i := 0 to FGitHubRepo.Tree.Count - 1 do
     begin
       FReposUp.Add(FGitHubRepo.Tree[i].path).sha := FGitHubRepo.Tree[i].sha;
     end;
+
     FReposUp.Sort;
   end;
 
@@ -801,7 +910,7 @@ begin
   if (FReposUp.Count <> 0) and not Terminated then
   begin
     // check
-    foundupdate := SyncRepos(FRepos, FReposUp);
+    foundUpdate := SyncRepos(FRepos, FReposUp);
 
     // look for missing local files and previously failed download
     for i := 0 to FRepos.Items.Count - 1 do
@@ -812,17 +921,18 @@ begin
 
       if m.flag = fFailedDownload then
       begin
-         foundupdate := True
+         foundUpdate := True
       end
       else if (not (m.flag in [fNew, fUpdate])) and
         (not FileExists(LUA_REPO_FOLDER + TrimFilename(m.name))) then
       begin
         m.flag := fFailedDownload;
-        if not foundupdate then
+        if not foundUpdate then
         begin
-          foundupdate := True;
+          foundUpdate := True;
         end;
       end;
+
       case m.flag of
         fNew: FStatusList.Add(Format(RS_StatusNew, [m.name]));
         fUpdate: FStatusList.Add(Format(RS_StatusUpdate, [m.name]));
@@ -833,12 +943,12 @@ begin
     end;
 
     // get properties
-    //if foundupdate and (not Terminated) then
+    //if foundUpdate and (not Terminated) then
       //LoadReposProps;
 
     Synchronize(@SyncFinishChecking);
 
-    if foundupdate and (not Terminated) then
+    if foundUpdate and (not Terminated) then
     begin
       if OptionModulesUpdaterShowUpdateWarning then
       begin
@@ -851,6 +961,7 @@ begin
         FProceed := True;
         Sleep(1500); // delay to show the update status
       end;
+
       if FProceed then
       begin
         FDownloadTotalCount := FStatusList.Count;
@@ -859,6 +970,7 @@ begin
     end;
 
     // cleanup
+    downloadFailed := False;
     i := 0;
     imax := FRepos.Items.Count;
     while i < imax do
@@ -874,14 +986,22 @@ begin
         if m.flag in [fNew, fUpdate, fFailedDownload] then
         begin
           m.flag := fFailedDownload;
+          downloadFailed := True;
         end
         else
         begin
           m.flag := fNone;
         end;
+
         Inc(i);
       end;
     end;
+
+    if downloadFailed and FProceed then
+    begin
+      Synchronize(@SyncGitHubDownloadFailed);
+    end;
+
     trepos := FMainRepos;
     FMainRepos := FRepos;
     FRepos := trepos;
@@ -893,6 +1013,7 @@ begin
   try
     Synchronize(@SyncStartChecking);
     DoSync;
+
     if not Terminated then
     begin
       Sleep(1000);
@@ -901,12 +1022,14 @@ begin
     on E: Exception do
       Logger.SendException('LuaModulesUpdater.Error!', E);
   end;
+
   Synchronize(@SyncFinal);
 end;
 
 constructor TCheckUpdateThread.Create(const AOwner: TLuaModulesUpdaterForm);
 begin
   inherited Create(False, MainForm, MainForm.IconList, 24);
+
   InitCriticalSection(FThreadsCS);
   FOwner := AOwner;
   FThreads := TFPList.Create;
@@ -932,6 +1055,7 @@ begin
   FThreads.Free;
   FGitHubRepo.Free;
   DoneCriticalsection(FThreadsCS);
+
   inherited Destroy;
 end;
 
@@ -951,10 +1075,12 @@ end;
 
 procedure TLuaModulesUpdaterForm.btCheckUpdateClick(Sender: TObject);
 begin
-  if ThreadCheck = nil then
+  if ThreadCheck <> nil then
   begin
-    ThreadCheck := TCheckUpdateThread.Create(Self);
+    Exit;
   end;
+
+  ThreadCheck := TCheckUpdateThread.Create(Self);
 end;
 
 procedure TLuaModulesUpdaterForm.FormCreate(Sender: TObject);
@@ -975,6 +1101,7 @@ begin
     ThreadCheck.Terminate;
     ThreadCheck.WaitFor;
   end;
+
   Repos.Free;
   DoneCriticalsection(FListCS);
   RemoveVT(vtLuaModulesRepos);
@@ -982,23 +1109,29 @@ end;
 
 procedure TLuaModulesUpdaterForm.btCheckUpdateTerminateClick(Sender: TObject);
 begin
-  if ThreadCheck <> nil then
+  if ThreadCheck = nil then
   begin
-    ThreadCheck.Terminate;
+    Exit;
   end;
+
+  ThreadCheck.FProceed := False;
+  ThreadCheck.Terminate;
 end;
 
 procedure TLuaModulesUpdaterForm.tmRepaintListTimer(Sender: TObject);
 begin
-  if FListDirty then
+  if not FListDirty then
   begin
-    vtLuaModulesRepos.Repaint;
-    EnterCriticalsection(FListCS);
-    try
-      FListDirty := False;
-    finally
-      LeaveCriticalsection(FListCS);
-    end;
+    Exit;
+  end;
+
+  vtLuaModulesRepos.Repaint;
+  EnterCriticalsection(FListCS);
+
+  try
+    FListDirty := False;
+  finally
+    LeaveCriticalsection(FListCS);
   end;
 end;
 
@@ -1023,8 +1156,10 @@ var
 begin
   m1 := PLuaModuleRepo(Sender.GetNodeData(Node1))^;
   m2 := PLuaModuleRepo(Sender.GetNodeData(Node2))^;
+
   case Column of
     0: Result := AnsiCompareStr(m1.name, m2.name);
+
     1:
     begin
       if m1.last_modified > m2.last_modified then
@@ -1036,6 +1171,7 @@ begin
         Result := -1;
       end;
     end;
+
     2: Result := AnsiCompareStr(m1.last_message, m2.last_message);
   end;
 end;
@@ -1062,6 +1198,7 @@ begin
   begin
     Exit;
   end;
+
   ImageIndex := Integer(PLuaModuleRepo(Sender.GetNodeData(Node))^.flag) - 1;
 end;
 
@@ -1071,15 +1208,17 @@ var
   xNode: PLuaModuleRepo;
 begin
   xNode := Sender.GetNodeData(Node);
-  if Assigned(xNode) then
+  if not Assigned(xNode) then
   begin
-    with xNode^ do
-    begin
-      case Column of
-        0: CellText := name;
-        1: CellText := DateTimeToStr(last_modified);
-        2: CellText := last_message;
-      end;
+    Exit; 
+  end;
+
+  with xNode^ do
+  begin
+    case Column of
+      0: CellText := name;
+      1: CellText := DateTimeToStr(last_modified);
+      2: CellText := last_message;
     end;
   end;
 end;
@@ -1105,13 +1244,15 @@ end;
 
 procedure TLuaModulesUpdaterForm.ListDirty;
 begin
-  if TryEnterCriticalsection(FListCS) <> 0 then
+  if TryEnterCriticalsection(FListCS) = 0 then
   begin
-    try
-      FListDirty := True;
-    finally
-      LeaveCriticalsection(FListCS);
-    end;
+    Exit;
+  end;
+
+  try
+    FListDirty := True;
+  finally
+    LeaveCriticalsection(FListCS);
   end;
 end;
 
@@ -1126,6 +1267,7 @@ var
   i: Integer;
 begin
   vtLuaModulesRepos.Clear;
+
   for i := 0 to Repos.Items.Count - 1 do
   begin
     vtLuaModulesRepos.AddChild(nil, Repos[i]);

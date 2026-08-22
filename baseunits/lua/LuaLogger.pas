@@ -5,12 +5,13 @@ unit LuaLogger;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
+  SysUtils, Classes, LuaPackage,
+  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 implementation
 
 uses
-  MultiLog, LuaUtils, LuaPackage;
+  MultiLog, LuaUtils;
 
 function logger_send(L: Plua_State): Integer; cdecl;
 begin

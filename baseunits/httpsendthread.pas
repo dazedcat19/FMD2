@@ -5,7 +5,7 @@ unit httpsendthread;
 interface
 
 uses
-  Classes, SysUtils, httpsend, synautil, synacode, ssl_openssl3, blcksock,
+  SysUtils, Classes, httpsend, synautil, synacode, ssl_openssl3, blcksock,
   BaseThread, httpcookiemanager, dateutils, strutils,
   GZIPUtils, BrotliDec, ZstdDec;
 
@@ -885,6 +885,7 @@ begin
   end
   else
   if Sock.SocksIP <> '' then
+  begin
     with Sock do
     begin
       if SocksType = ST_Socks5 then
@@ -895,7 +896,8 @@ begin
       Port := SocksPort;
       User := SocksUsername;
       Pass := SocksPassword;
-    end
+    end;
+  end
   else
   begin
     ProxyType := '';

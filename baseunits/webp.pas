@@ -5,7 +5,7 @@ unit webp;
 interface
 
 uses
-  Classes, SysUtils, MemBitmap, Dynlibs;
+  SysUtils, Classes, MemBitmap, Dynlibs, SyncObjs;
 
 var
   WebPLibHandle: TLibHandle = 0;
@@ -18,9 +18,6 @@ function WebPToMemBitmap(webp: TMemoryStream): TMemBitmap;
 function WebPGetVersion: String;
 
 implementation
-
-uses
-  SyncObjs;
 
 type
   TWebPGetInfo = function (data: Pointer; data_size: UInt32; width, height: pInt32): Int32; cdecl;

@@ -5,8 +5,8 @@ unit frmWebsiteSettings;
 interface
 
 uses
-  Classes, SysUtils, WebsiteModules, VirtualPropertyGrid, frmCustomColor, Forms, LCLType,
-  Controls, PairSplitter, EditBtn, VirtualTrees, uBaseUnit, Graphics, uCustomControls;
+  SysUtils, Classes, Forms, LCLType, Controls, PairSplitter, EditBtn, Graphics,
+  VirtualTrees, VirtualPropertyGrid, uCustomControls;
 
 type
 
@@ -52,7 +52,8 @@ var
 
 implementation
 
-uses FMDOptions;
+uses
+  frmCustomColor, WebsiteModules, uOptions, uBaseUnit;
 
 {$R *.lfm}
 

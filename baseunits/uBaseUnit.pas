@@ -13,17 +13,15 @@ unit uBaseUnit;
 interface
 
 uses
+  SysUtils, Classes, Types, Graphics, LazFileUtils, LConvEncoding, strutils,
+  dateutils, variants, fpjson, jsonparser, jsonscanner, fgl, RegExpr, synautil,
+  httpsend, synacode, FPimage, FPWritePNG, zstream, FPReadPNG, VirtualTrees, MultiLog
   {$ifdef windows}
-  Windows,
+  , Windows
   {$else}
-  UTF8Process,
+  , UTF8Process
   {$endif}
-  SysUtils, Classes, Graphics, LazFileUtils, LConvEncoding,
-  strutils, dateutils, variants, base64, fpjson, jsonparser, jsonscanner,
-  fgl, RegExpr, synautil, httpsend,
-  synacode, MultiLog, FPimage, GZIPUtils, uMisc, httpsendthread, FMDOptions,
-  ImgInfos, NaturalSortUnit,
-  MemBitmap, FPWritePNG, zstream, FPReadPNG, VirtualTrees, ImageMagickManager;
+  ;
 
 const
   LineEnding2 = LineEnding + LineEnding;
@@ -57,7 +55,10 @@ const
     'Yuri',          'Webtoons');
 
   Symbols: set of Char =
-    ['\', '/', ':', '*', '?', '"', '<', '>', '|', #9, ';'];
+    ['\', '/', ':', '*', '?', '"', '<', '>', '|', ';', #0..#31];
+
+  PathSymbols: set of Char =
+    ['\', '/'];
 
   StringFilterChar: array [0..35] of array [0..1] of String = (
     (#10, '\n'),
@@ -236,13 +237,13 @@ const
   {$ifdef windows}
   // MAX_PATH = 260
   // MAX_PATH - 12 - 1
-  MAX_PATHDIR = 247;
+  MAX_PATHDIR = 246;
   // fmd max file extension = 4
   // max path + file in windows explorer is 259
   // = MAX_PATH - fmd max file extension - 1
   // 1 is pahtdelim "/"
-  FMDMaxImageFilePath = 255;
-  // if directory length is max_pathdir, the remaining allowed filename is 7
+  FMDMaxImageFilePath = 254;
+  // if directory length is MAX_PATHDIR, the remaining allowed filename is 7
   // = 259 - fmd max file extension - 1
   {$endif}
 
@@ -526,6 +527,7 @@ function URLDecode(const s: String): String;
 function HTMLDecode(const AStr: String): String;
 
 function RemoveSymbols(const input: String): String;
+function SanitizeFilePath(const InputPath: String): String;
 function CorrectPathSys(const Path: String): String;
 function RemovePathDelim(const Path: string): string;
 
@@ -565,6 +567,7 @@ function CustomRename(const AString, AWebsite, AMangaName, AAuthor, AArtist, ACh
   const AReplaceUnicode: Boolean;
   const AReplaceUnicodeStr: String;
   const AFileName: String = ''): String;
+function NormalizeKorean(const Input: String): String;
 
 // Get substring from source
 function GetString(const Source, sStart, sEnd: String): String;
@@ -660,8 +663,9 @@ procedure SendLogException(const AText: String; AException: Exception); inline;
 implementation
 
 uses
-  frmMain, WebsiteModules, webp, DCPrijndael, DCPsha512, FPWriteJPEG,
-  LuaWebsiteModules;
+  frmMain, uVars, WebsiteModules, webp, DCPrijndael, DCPsha512, FPWriteJPEG,
+  LuaWebsiteModules, GZIPUtils, uMisc, httpsendthread, uOptions,
+  ImgInfos, NaturalSortUnit, MemBitmap, ImageMagickManager;
 
 {$IFDEF WINDOWS}
 // thanks Leledumbo for the code
@@ -844,7 +848,7 @@ begin
       (FindNext(searchRec) = 0) and
       (FindNext(searchRec) <> 0);
   finally
-    FindClose(searchRec);
+    SysUtils.FindClose(searchRec);
   end;
 end;
 
@@ -1381,16 +1385,58 @@ end;
 
 function RemoveSymbols(const input: String): String;
 var
-  i: Integer;
+  i, j: Integer;
 begin
   Result := input;
-  if Result = '' then Exit;
-  i := 1;
-  while i <= Length(Result) do
-    if CharInSet(Result[i], Symbols) then
-      Delete(Result, i, 1)
-    else
-      Inc(i);
+  if Result = '' then
+  begin
+    Exit;
+  end;
+
+  SetLength(Result, Length(input));
+
+  j := 1;
+  for i := 1 to Length(input) do
+  begin
+    if not CharInSet(input[i], Symbols) then
+    begin
+      Result[j] := input[i];
+      Inc(j);
+    end;
+  end;
+
+  SetLength(Result, j - 1);
+end;
+
+function SanitizeFilePath(const InputPath: String): String;
+var
+  sanitizedPath,
+  pathDrive: String;
+  pathParts: TStringArray;
+  i: Integer;
+begin
+  Result := InputPath;
+
+  if Result = '' then
+  begin
+    Exit;
+  end;
+
+  sanitizedPath := SetDirSeparators(InputPath);
+  sanitizedPath := ResolveDots(sanitizedPath);
+  pathDrive := ExtractFileDrive(sanitizedPath);
+  pathParts := sanitizedPath.Split(PathDelim);
+
+  for i := 0 to Length(pathParts) - 1 do
+  begin
+    if pathParts[i] <> pathDrive then
+    begin
+      pathParts[i] := RemoveSymbols(pathParts[i]);
+    end;
+  end;
+
+  sanitizedPath := String.Join(PathDelim, pathParts);
+  Result := sanitizedPath;
 end;
 
 procedure TrimStrings(TheStrings: TStrings);
@@ -1487,10 +1533,12 @@ begin
   if Length(s) > MAX_PATHDIR then
   begin
     s := MainForm.CheckLongNamePaths(s);
-    if not MainForm.cbOptionEnableLongNamePaths.Checked then
+
+    if not FMDOptions.General.LongNamePaths then
     begin
       SetLength(s, MAX_PATHDIR);
     end;
+
     Result := UTF8Encode(s);
   end;
   {$ELSE}
@@ -1818,10 +1866,13 @@ begin
   Result := AString;
 
   // for rename chapter only
-  if AChapter <> '' then begin
+  if AChapter <> '' then
+  begin
     // numbering/index
     if (Pos(CR_NUMBERING, Result) = 0) and (Pos(CR_CHAPTER, Result) = 0) then
+    begin
       Result := ANumbering + Result;
+    end;
     Result := StringReplaceBrackets(Result, CR_NUMBERING, ANumbering, [rfReplaceAll]);
 
     // pad number
@@ -1829,20 +1880,27 @@ begin
     if OptionConvertDigitVolume then
     begin
       if OptionConvertDigitChapter then
-        VolumeChapterPadZero(fchapter, OptionConvertDigitVolumeLength, OptionConvertDigitChapterLength)
+      begin
+        VolumeChapterPadZero(fchapter, OptionConvertDigitVolumeLength, OptionConvertDigitChapterLength);
+      end
       else
+      begin
         VolumeChapterPadZero(fchapter, OptionConvertDigitVolumeLength, 0);
+      end;
     end
-    else
-    if OptionConvertDigitChapter then
+    else if OptionConvertDigitChapter then
+    begin
       VolumeChapterPadZero(fchapter, 0, OptionConvertDigitChapterLength);
+    end;
 
     fchapter := FixStringLocal(fchapter);
 
     Result := StringReplaceBrackets(Result, CR_CHAPTER, fchapter, [rfReplaceAll]);
 
     if Result = '' then
+    begin
       Result := ANumbering;
+    end;
   end;
 
   Result := StringReplaceBrackets(Result, CR_WEBSITE, FixStringLocal(AWebsite), [rfReplaceAll]);
@@ -1850,9 +1908,17 @@ begin
   Result := StringReplaceBrackets(Result, CR_AUTHOR, FixStringLocal(AAuthor), [rfReplaceAll]);
   Result := StringReplaceBrackets(Result, CR_ARTIST, FixStringLocal(AArtist), [rfReplaceAll]);
   Result := StringReplaceBrackets(Result, CR_FILENAME, FixStringLocal(AFileName), [rfReplaceAll]);
-  if Result = '' then Result := FixStringLocal(AMangaName);
+  if Result = '' then
+  begin
+    Result := FixStringLocal(AMangaName);
+  end;
 
-  if Result = '' then Exit;
+  if Result = '' then
+  begin
+    Exit;
+  end;
+
+  Result := MainForm.CheckSingularCharacterLimit(Result);
 
   // remove pathdelim
   Result := TrimChar(Result, AllowDirectorySeparators);
@@ -2116,18 +2182,79 @@ begin
   end;
 end;
 
+function NormalizeKorean(const Input: string): string;
+var
+  wsInput: WideString;
+  wsFinal: WideString;
+  i: Integer;
+begin
+  wsInput := UTF8Decode(Input);
+  wsFinal := '';
+  i := 1;
+
+  while i <= Length(wsInput) do
+  begin
+    // Check for Korean Jamo sequences
+    if (i + 1 <= Length(wsInput)) and
+       (Ord(wsInput[i]) >= $1100) and (Ord(wsInput[i]) <= $1112) and     // Initial
+       (Ord(wsInput[i + 1]) >= $1161) and (Ord(wsInput[i + 1]) <= $1175) then // Medial
+    begin
+      // Check for final consonant
+      if (i + 2 <= Length(wsInput)) and
+         (Ord(wsInput[i + 2]) >= $11A8) and (Ord(wsInput[i + 2]) <= $11C2) then
+      begin
+        // 3-Jamo: initial + medial + final
+        wsFinal := wsFinal + WideChar($AC00 +
+          ((Ord(wsInput[i]) - $1100) * 588) +
+          ((Ord(wsInput[i + 1]) - $1161) * 28) +
+          (Ord(wsInput[i + 2]) - $11A7));
+        i := i + 3;
+      end
+      else
+      begin
+        // 2-Jamo: initial + medial (no final)
+        wsFinal := wsFinal + WideChar($AC00 +
+          ((Ord(wsInput[i]) - $1100) * 588) +
+          ((Ord(wsInput[i + 1]) - $1161) * 28));
+        i := i + 2;
+      end;
+    end
+    else
+    begin
+      // Not Korean Jamo, keep as is
+      wsFinal := wsFinal + wsInput[i];
+      i := i + 1;
+    end;
+  end;
+
+  Result := UTF8Encode(wsFinal);
+end;
+
 function CommonStringFilter(const Source: String): String;
+var
+  FilteredString: String;
 begin
   Result := Source;
-  if Source = '' then Exit;
-  Result := Trim(HTMLEntitiesFilter(StringFilter(Trim(Source))));
+  if Length(Result) = 0 then
+  begin
+    Exit;
+  end;
+
+  FilteredString := NormalizeKorean(Source);
+  FilteredString := StringFilter(Trim(FilteredString));
+  FilteredString := Trim(HTMLEntitiesFilter(FilteredString));
+
+  Result := FilteredString;
 end;
 
 function StringBreaks(const Source: String): String;
 begin
   Result := Source;
   if Length(Result) = 0 then
+  begin
     Exit;
+  end;
+
   Result := StringReplace(Result, '\n', #10, [rfReplaceAll]);
   Result := StringReplace(Result, '\r', #13, [rfReplaceAll]);
 end;
@@ -2136,7 +2263,10 @@ function BreaksString(const Source: String): String;
 begin
   Result := Source;
   if Length(Result) = 0 then
+  begin
     Exit;
+  end;
+
   Result := StringReplace(Result, #10, '\n', [rfReplaceAll]);
   Result := StringReplace(Result, #13, '\r', [rfReplaceAll]);
 end;
@@ -2145,7 +2275,10 @@ function RemoveBreaks(const Source: String): String;
 begin
   Result := Source;
   if Length(Result) = 0 then
+  begin
     Exit;
+  end;
+
   Result := StringReplace(Result, #10, '', [rfReplaceAll]);
   Result := StringReplace(Result, #13, '', [rfReplaceAll]);
 end;
@@ -2154,7 +2287,10 @@ function RemoveStringBreaks(const Source: String): String;
 begin
   Result := Source;
   if Length(Result) = 0 then
+  begin
     Exit;
+  end;
+
   Result := StringReplace(Result, #10, '', [rfReplaceAll]);
   Result := StringReplace(Result, #13, '', [rfReplaceAll]);
   Result := StringReplace(Result, '\n', '', [rfReplaceAll]);
@@ -2165,7 +2301,9 @@ function RemoveDoubleSpace(const Source: String): String;
 begin
   Result := Source;
   while Pos('  ', Result) > 0 do
+  begin
     Result := StringReplace(Result, '  ', ' ', [rfReplaceAll, rfIgnoreCase]);
+  end;
 end;
 
 function TrimChar(const Source: String; const Chars: TSysCharSet): String;
@@ -2179,14 +2317,20 @@ var
   i, j: Longint;
 begin
   Result := Source;
+
   i := Length(Result);
   if i > 0 then
   begin
     j := 1;
     while (j <= i) and (Result[j] in Chars) do
+    begin
       Inc(j);
+    end;
+
     if j > 1 then
+    begin
       Delete(Result, 1, j - 1);
+    end;
   end;
 end;
 
@@ -2195,21 +2339,31 @@ var
   i, j: Longint;
 begin
   Result := Source;
+
   i := Length(Result);
   if i > 0 then
   begin
     j := i;
     while (j > 0) and (Result[j] in Chars) do
+    begin
       Dec(j);
+    end;
+
     if j <> i then
+    begin
       SetLength(Result, j);
+    end;
   end;
 end;
 
 function GoogleResultURL(const AURL: String): String;
 begin
   Result := AURL;
-  if Pos('google.', LowerCase(AURL)) = 0 then Exit;
+  if Pos('google.', LowerCase(AURL)) = 0 then
+  begin
+    Exit;
+  end;
+
   Result := DecodeURL(ReplaceRegExpr('(?i)^.*google\..*\&url=([^\&]+)\&?.*$', AURL, '$1', True));
 end;
 
@@ -2217,14 +2371,29 @@ procedure GoogleResultURLs(const AURLs: TStrings);
 var
   i: Integer;
 begin
-  if AURLs.Count = 0 then Exit;
-  if Pos('google.', LowerCase(AURLs.Text)) = 0 then Exit;
-  with TRegExpr.Create('(?i)^.*google\..*\&url=([^\&]+)\&?.*$') do try
-    for i := 0 to AURLs.Count - 1 do
-      if Pos('google.', LowerCase(AURLs[i])) <> 0 then
-        AURLs[i] := DecodeURL(Replace(AURLs[i], '$1', True));
-  finally
-    Free;
+  if AURLs.Count = 0 then
+  begin
+    Exit;
+  end;
+
+  if Pos('google.', LowerCase(AURLs.Text)) = 0 then
+  begin
+    Exit;
+  end;
+
+  with TRegExpr.Create('(?i)^.*google\..*\&url=([^\&]+)\&?.*$') do
+  begin
+    try
+      for i := 0 to AURLs.Count - 1 do
+      begin
+        if Pos('google.', LowerCase(AURLs[i])) <> 0 then
+        begin
+          AURLs[i] := DecodeURL(Replace(AURLs[i], '$1', True));
+        end;
+      end;
+    finally
+      Free;
+    end;
   end;
 end;
 
@@ -2232,8 +2401,12 @@ function CreateFQDNName(AFileName: String): String;
 var
   UniqueTimestampName: String;
 begin
-  UniqueTimestampName := StringReplace(ExtractFileName(AFileName), ExtractFileExt(AFileName), '', [rfReplaceAll])+ '_' + FormatDateTime('yyyy-mm-dd_hh-nn-ss', Now);
-  Result := StringReplace(('FQDNList_' + UniqueTimestampName), ' ', '_', [rfReplaceAll]);
+  UniqueTimestampName := StringReplace(ExtractFileName(AFileName), ExtractFileExt(AFileName), '', [rfReplaceAll]);
+  UniqueTimestampName := RemoveSymbols(UniqueTimestampName);
+  Delete(UniqueTimestampName, 100, 200);
+  UniqueTimestampName := UniqueTimestampName + '_' + FormatDateTime('yyyy-mm-dd_hh-nn-ss', Now);
+  UniqueTimestampName := StringReplace(('FQDNList_' + UniqueTimestampName), ' ', '_', [rfReplaceAll]);
+  Result := UniqueTimestampName;
 end;
  
 function CreateFQDNFolder(Sender: TObject; ACurrentDir, AFileName: String): String;
@@ -2316,23 +2489,28 @@ var
   writer: TFPWriterPNG;
 begin
   Result := False;
+
   mem := nil;
   try
     mem := WebPToMemBitmap(AStream);
     if Assigned(mem) then
-    try
-      writer := TFPWriterPNG.create;
-      writer.Indexed := False;
-      writer.UseAlpha := mem.HasTransparentPixels;
-      writer.CompressionLevel := ALevel;
-      mem.SaveToStream(AStream, writer);
-      Result := True;
-    finally
-      writer.Free;
+    begin
+      try
+        writer := TFPWriterPNG.create;
+        writer.Indexed := False;
+        writer.UseAlpha := mem.HasTransparentPixels;
+        writer.CompressionLevel := ALevel;
+        mem.SaveToStream(AStream, writer);
+        Result := True;
+      finally
+        writer.Free;
+      end;
     end;
   finally
     if Assigned(mem) then
+    begin
       mem.Free;
+    end;
   end;
 end;
 
@@ -2343,21 +2521,26 @@ var
   writer: TFPWriterJPEG;
 begin
   Result := False;
+
   mem := nil;
   try
     mem := WebPToMemBitmap(AStream);
     if Assigned(mem) then
-    try
-      writer := TFPWriterJPEG.create;
-      writer.CompressionQuality := AQuality;
-      mem.SaveToStream(AStream, writer);
-      Result := True;
-    finally
-      writer.Free;
+    begin
+      try
+        writer := TFPWriterJPEG.create;
+        writer.CompressionQuality := AQuality;
+        mem.SaveToStream(AStream, writer);
+        Result := True;
+      finally
+        writer.Free;
+      end;
     end;
   finally
     if Assigned(mem) then
+    begin
       mem.Free;
+    end;
   end;
 end;
 
@@ -2369,6 +2552,7 @@ var
 begin
   Result := False;
   img := TFPMemoryImage.create(0,0);
+
   reader := TFPReaderPNG.create;
   try
     writer := nil;
@@ -2380,8 +2564,11 @@ begin
       Result := True;
     except
     end;
+
     if writer <> nil then
+    begin
       writer.Free;
+    end;
   finally
     reader.Free;
     img.Free;
@@ -2447,7 +2634,7 @@ begin
 
     if FileExists(FilePath) then
     begin
-      DeleteFile(FilePath);
+      SysUtils.DeleteFile(FilePath);
     end;
 
     try
@@ -2466,14 +2653,20 @@ begin
     if FileExists(FilePath) then
     begin
       Result := FilePath;
-      if Age > 0 then
-      begin
-        try
-          FileSetDateUTF8(FilePath, Age);
-        except
-          on E: Exception do
-            SendLogException('SaveImageStreamToFile.FileSetDate Error! ' + FilePath, E);
+
+      try
+        if not OptionImageServerTime then
+        begin
+          Age := DateTimeToFileDate(Now);
         end;
+
+        if Age > 0 then
+        begin
+          FileSetDateUTF8(FilePath, Age);
+        end;
+      except
+        on E: Exception do
+          SendLogException('SaveImageStreamToFile.FileSetDate Error! ' + FilePath, E);
       end;
     end;
   end;
@@ -2485,11 +2678,18 @@ var
   lastmodified: LongInt;
 begin
   Result := '';
-  if AHTTP = nil then Exit;
-  s := Trim(AHTTP.Headers.Values['last-modified']);
+  if AHTTP = nil then
+  begin
+    Exit;
+  end;
+                                     
   lastmodified := 0;
+  s := Trim(AHTTP.Headers.Values['last-modified']);
   if s <> '' then
+  begin
     lastmodified := DateTimeToFileDate(DecodeRfcDateTime(s));
+  end;
+
   Result := SaveImageStreamToFile(AHTTP.Document, Path, FileName, lastmodified);
 end;
 
@@ -2600,14 +2800,14 @@ begin
 
     ImgNew := TFPMemoryImage.create(newWidth, newHeigth);
     try
-      CopyImageRect(Img1, ImgNew, 0, 0, Rect(0, 0, Img1.Width, Img1.Height));
+      CopyImageRect(Img1, ImgNew, 0, 0, Types.Rect(0, 0, Img1.Width, Img1.Height));
       if Landscape then
-        CopyImageRect(Img2, ImgNew, Img1.Width + 1, 0, Rect(0, 0, Img2.Width, Img2.Height))
+        CopyImageRect(Img2, ImgNew, Img1.Width + 1, 0, Types.Rect(0, 0, Img2.Width, Img2.Height))
       else
-        CopyImageRect(Img2, ImgNew, 0, Img1.Height + 1, Rect(0, 0, Img2.Width, Img2.Height));
+        CopyImageRect(Img2, ImgNew, 0, Img1.Height + 1, Types.Rect(0, 0, Img2.Width, Img2.Height));
       AFinalName := D + FinalName;
       if FileExists(AFinalName) then
-        DeleteFile(AFinalName);
+        SysUtils.DeleteFile(AFinalName);
       if not FileExists(AFinalName) then
       begin
         h := {%H-}GetImageFileWriterClass(AImgName1);
@@ -2623,8 +2823,8 @@ begin
         end;
         if Result then
         begin
-          DeleteFile(AImgName1);
-          DeleteFile(AImgName2);
+          SysUtils.DeleteFile(AImgName1);
+          SysUtils.DeleteFile(AImgName2);
         end;
       end;
     finally

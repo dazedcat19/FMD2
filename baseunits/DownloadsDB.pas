@@ -5,30 +5,31 @@ unit DownloadsDB;
 interface
 
 uses
-  Classes, SysUtils, SQLiteData, uBaseUnit, sqlite3dyn;
+  SysUtils, Classes, SQLiteData, sqlite3dyn;
 
 type
 
   { TDownloadsDB }
 
-  TDownloadsDB = class(TSQLiteDataWA)
+  TDownloadsDB = class(TSQliteData)
   public
     constructor Create(const AFilename: String);
     function Add(
-      const Aenabled:Boolean; const Aorder,Ataskstatus,Achapterptr,Anumberofpages,Acurrentpage:Integer;
-      const Amoduleid,Alink,Atitle,Astatus,Aprogress,Asaveto:String;
-      const Adateadded,Adatelastdownloaded:TDateTime;
-      const Achapterslinks,Achaptersnames,Apagelinks,Apagecontainerlinks,Afilenames,Acustomfilenames,Achaptersstatus:String
+      const Aenabled: Boolean;
+      const Aorder, Ataskstatus, Achapterptr, Anumberofpages, Acurrentpage: Integer;
+      const Amoduleid, Alink, Atitle, Astatus, Aprogress, Asaveto: String;
+      const Adateadded, Adatelastdownloaded: TDateTime;
+      const Achapterslinks, Achaptersnames, Apagelinks, Apagecontainerlinks, Afilenames, Acustomfilenames, Achaptersstatus: String
       ): String; inline;
     procedure Update(
-      const Aid:String;
-      const Ataskstatus,Achapterptr,Anumberofpages,Acurrentpage:Integer;
-      const Astatus,Aprogress:String;
-      const Adatelastdownloaded:TDateTime;
-      const Apagelinks,Apagecontainerlinks,Afilenames,Achaptersstatus:String
+      const Aid: String;
+      const Ataskstatus, Achapterptr, Anumberofpages, Acurrentpage: Integer;
+      const Astatus, Aprogress: String;
+      const Adatelastdownloaded: TDateTime;
+      const Apagelinks, Apagecontainerlinks, Afilenames, Achaptersstatus: String
       ); inline;
-    procedure UpdateEnabled(const Aid:String;const Aenabled:Boolean); inline;
-    procedure UpdateStatus(const Aid:String;const Ataskstatus:Integer;const Astatus:String); inline;
+    procedure UpdateEnabled(const Aid: String; const Aenabled: Boolean); inline;
+    procedure UpdateStatus(const Aid: String; const Ataskstatus: Integer; const Astatus: String); inline;
     procedure Delete(const Aid:String); inline;
   end;
 
@@ -57,6 +58,9 @@ const
   f_chaptersstatus     = 21;
 
 implementation
+
+uses
+  uBaseUnit;
 
 { TDownloadsDB }
 
@@ -89,18 +93,19 @@ begin
     '"customfilenames" TEXT,' +
     '"chaptersstatus" TEXT';
   FieldsParams := '"id","enabled","order","taskstatus","chapterptr","numberofpages","currentpage","moduleid","link","title","status","progress","saveto","dateadded","datelastdownloaded","chapterslinks","chaptersnames","pagelinks","pagecontainerlinks","filenames","customfilenames","chaptersstatus"';
-  SelectParams := 'SELECT ' + FieldsParams + ' FROM '+QuotedStrD(TableName)+' ORDER BY "order"';
+  SelectParams := 'SELECT ' + FieldsParams + ' FROM ' + QuotedStrD(TableName) + ' ORDER BY "order"';
 end;
 
 function TDownloadsDB.Add(
-  const Aenabled:Boolean; const Aorder,Ataskstatus,Achapterptr,Anumberofpages,Acurrentpage:Integer;
-  const Amoduleid,Alink,Atitle,Astatus,Aprogress,Asaveto:String;
-  const Adateadded,Adatelastdownloaded:TDateTime;
-  const Achapterslinks,Achaptersnames,Apagelinks,Apagecontainerlinks,Afilenames,Acustomfilenames,Achaptersstatus:String
+  const Aenabled: Boolean; const Aorder, Ataskstatus, Achapterptr, Anumberofpages, Acurrentpage: Integer;
+  const Amoduleid, Alink, Atitle, Astatus, Aprogress, Asaveto: String;
+  const Adateadded, Adatelastdownloaded: TDateTime;
+  const Achapterslinks, Achaptersnames, Apagelinks, Apagecontainerlinks, Afilenames, Acustomfilenames, Achaptersstatus: String
   ): String;
+var
+  SQL: String;
 begin
-  Connection.ExecuteSQL(
-    'INSERT INTO "downloads" ("enabled","order","taskstatus","chapterptr","numberofpages","currentpage","moduleid","link","title","status","progress","saveto","dateadded","datelastdownloaded","chapterslinks","chaptersnames","pagelinks","pagecontainerlinks","filenames","customfilenames","chaptersstatus") VALUES (' +
+  SQL := 'INSERT INTO "downloads" ("enabled","order","taskstatus","chapterptr","numberofpages","currentpage","moduleid","link","title","status","progress","saveto","dateadded","datelastdownloaded","chapterslinks","chaptersnames","pagelinks","pagecontainerlinks","filenames","customfilenames","chaptersstatus") VALUES (' +
     PrepSQLValue(Aenabled) + ',' +
     PrepSQLValue(Aorder) + ',' +
     PrepSQLValue(Ataskstatus) + ',' +
@@ -121,46 +126,48 @@ begin
     PrepSQLValue(Apagecontainerlinks) + ',' +
     PrepSQLValue(Afilenames) + ',' +
     PrepSQLValue(Acustomfilenames) + ',' +
-    PrepSQLValue(Achaptersstatus) + ');');
-  Result:=IntToStr(sqlite3_last_insert_rowid(Connection.Handle));
+    PrepSQLValue(Achaptersstatus) + ');';
+
+  AddSQL(SQL);
+  Result := IntToStr(sqlite3_last_insert_rowid(Connection.Handle));
 end;
 
 procedure TDownloadsDB.Update(
-  const Aid:String;
-  const Ataskstatus,Achapterptr,Anumberofpages,Acurrentpage:Integer;
-  const Astatus,Aprogress:String;
-  const Adatelastdownloaded:TDateTime;
-  const Apagelinks,Apagecontainerlinks,Afilenames,Achaptersstatus:String
+  const Aid: String;
+  const Ataskstatus, Achapterptr, Anumberofpages, Acurrentpage: Integer;
+  const Astatus, Aprogress: String;
+  const Adatelastdownloaded: TDateTime;
+  const Apagelinks, Apagecontainerlinks, Afilenames, Achaptersstatus: String
   );
 begin
-  AppendSQLSafe('UPDATE "downloads" SET "taskstatus"=' +
+  AddSQL('UPDATE "downloads" SET "taskstatus"=' +
     PrepSQLValue(Ataskstatus) +
-    ',"chapterptr"=' +         PrepSQLValue(Achapterptr) +
-    ',"numberofpages"=' +      PrepSQLValue(Anumberofpages) +
-    ',"currentpage"=' +        PrepSQLValue(Acurrentpage) +
-    ',"status"=' +             PrepSQLValue(Astatus) +
-    ',"progress"=' +           PrepSQLValue(Aprogress) +
+    ',"chapterptr"=' + PrepSQLValue(Achapterptr) +
+    ',"numberofpages"=' + PrepSQLValue(Anumberofpages) +
+    ',"currentpage"=' + PrepSQLValue(Acurrentpage) +
+    ',"status"=' + PrepSQLValue(Astatus) +
+    ',"progress"=' + PrepSQLValue(Aprogress) +
     ',"datelastdownloaded"=' + PrepSQLValue(Adatelastdownloaded) +
-    ',"pagelinks"=' +          PrepSQLValue(Apagelinks) +
+    ',"pagelinks"=' + PrepSQLValue(Apagelinks) +
     ',"pagecontainerlinks"=' + PrepSQLValue(Apagecontainerlinks) +
-    ',"filenames"=' +          PrepSQLValue(Afilenames) +
-    ',"chaptersstatus"=' +     PrepSQLValue(Achaptersstatus) +
-    ' WHERE "id"='''+Aid+''';');
+    ',"filenames"=' + PrepSQLValue(Afilenames) +
+    ',"chaptersstatus"=' + PrepSQLValue(Achaptersstatus) +
+    ' WHERE "id"=''' + Aid + ''';');
 end;
 
 procedure TDownloadsDB.UpdateEnabled(const Aid:String;const Aenabled:Boolean);
 begin
-  AppendSQL('UPDATE "downloads" SET "enabled"='+PrepSQLValue(Aenabled)+' WHERE "id"='''+Aid+''';');
+  AddSQL('UPDATE "downloads" SET "enabled"=' + PrepSQLValue(Aenabled) + ' WHERE "id"=''' + Aid + ''';');
 end;
 
 procedure TDownloadsDB.UpdateStatus(const Aid:String;const Ataskstatus:Integer;const Astatus:String);
 begin
-  AppendSQL('UPDATE "downloads" SET "taskstatus"='+PrepSQLValue(Ataskstatus)+',"status"='+PrepSQLValue(Astatus)+' WHERE "id"='''+Aid+''';');
+  AddSQL('UPDATE "downloads" SET "taskstatus"=' + PrepSQLValue(Ataskstatus) + ',"status"=' + PrepSQLValue(Astatus) + ' WHERE "id"=''' + Aid + ''';');
 end;
 
 procedure TDownloadsDB.Delete(const Aid:String);
 begin
-  AppendSQL('DELETE FROM "downloads" WHERE "id"='''+Aid+''';');
+  AddSQL('DELETE FROM "downloads" WHERE "id"=''' + Aid + ''';');
 end;
 
 end.

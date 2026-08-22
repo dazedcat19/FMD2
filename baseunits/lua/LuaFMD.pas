@@ -5,12 +5,13 @@ unit LuaFMD;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
+  SysUtils, Classes, LuaPackage,
+  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 implementation
 
 uses
-  LuaUtils, LuaPackage, FMDOptions, SimpleTranslator;
+  LuaUtils, uOptions, SimpleTranslator;
 
 function luaopen_fmd(L: Plua_State): Integer; cdecl;
 var

@@ -1,12 +1,13 @@
 program updater;
 
 uses
+  SysUtils, Classes, Process
   {$ifdef windows}
-  windows,
+  , windows
   {$else}
-  fileutil,
+  , fileutil
   {$endif}
-  sysutils, process;
+  ;
 
 const
   RetryCount = 30;

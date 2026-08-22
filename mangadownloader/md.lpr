@@ -3,19 +3,20 @@ program md;
 {$mode objfpc}{$H+}
 
 uses
-  FMDOptions,
- {$IFDEF UNIX} {$IFDEF UseCThreads}
-  cthreads,
- {$ENDIF} {$ENDIF}
- {$ifdef windows}
-  windows,
- {$endif}
-  Interfaces, // this includes the LCL widgetset
-  Forms, LazFileUtils, jsonini, simpleipc, sqlite3dyn, uBaseUnit, FMDVars, webp,
-  CheckUpdate, DBUpdater, SelfUpdater, uDownloadsManager, LuaWebsiteModules,
-  LuaBase, SimpleException, Classes, sysutils, frmMain, frmCheckModules,
-  uDarkStyle, uMetaDarkStyle, uDarkStyleSchemes, uDarkStyleParams, MultiLog,
-  FileChannel, ssl_openssl3_lib, blcksock, ssl_openssl3, SQLiteData;
+  SysUtils, Classes, Interfaces, Forms, LazFileUtils, FileChannel, jsonini,
+  simpleipc, sqlite3dyn, ssl_openssl3_lib, blcksock, ssl_openssl3,
+  frmMain, frmCheckModules, uBaseUnit,
+  webp, CheckUpdate, DBUpdater, SelfUpdater, LuaWebsiteModules, LuaBase,
+  SimpleException, SQLiteData, MultiLog,
+  uOptions, uVars, uDownloadsManager, uDarkStyle, uMetaDarkStyle,
+  uDarkStyleSchemes, uDarkStyleParams
+  {$IFDEF UNIX} {$IFDEF UseCThreads}
+  , cthreads
+  {$ENDIF} {$ENDIF}
+  {$ifdef windows}
+  , windows
+  {$endif}
+  ;
 
 var
   CheckInstance: Boolean = True;
@@ -85,45 +86,6 @@ begin
     if SameText(AppParams[i], '--lua-dofile') then
     begin
        AlwaysLoadLuaFromFile := True
-    end
-    // don't use commit queue, might be slow on large databases
-    else if SameText(AppParams[i], '--no-commit-queue') then
-    begin
-      MAX_COMMIT_QUEUE := 0;
-      MAX_SQL_FLUSH_QUEUE := 0;
-    end
-    // set max commit queue before writing it to disk
-    else if SameText(AppParams[i], '--max-commit-queue') then
-    begin
-      v := StrToIntDef(AppParams.ValueFromIndex[i], -1);
-      if v < 1 then
-      begin
-        v := 1;
-      end;
-
-      MAX_COMMIT_QUEUE := v;
-    end
-    // max sql lines before flush it to sqlite engine
-    else if SameText(AppParams[i], '--max-flush-queue') then
-    begin
-      v := StrToIntDef(AppParams.ValueFromIndex[i], -1);
-      if v < 1 then
-      begin
-        v := 1;
-      end;
-
-      MAX_SQL_FLUSH_QUEUE := v;
-    end
-    // max sql lines before flush it to sqlite engine, used in large iterations
-    else if SameText(AppParams[i], '--max-big-flush-queue') then
-    begin
-      v := StrToIntDef(AppParams.ValueFromIndex[i],-1);
-      if v < 1 then
-      begin
-        v := 1;
-      end;
-
-      MAX_BIG_SQL_FLUSH_QUEUE := v;
     end
     // timer backup interval, in minutes
     else if SameText(AppParams[i], '--backup-interval') then
@@ -264,11 +226,30 @@ begin
      0:  PreferredAppMode := pamAllowDark;
      1:  PreferredAppMode := pamForceDark;
      2:  PreferredAppMode := pamForceLight;
-  end;
+  end; 
 
   Application.Scaled := True;
   uMetaDarkStyle.ApplyMetaDarkStyle(DefaultDark);
   Application.Initialize;
+
+  try
+    // Perform the Unicode path check
+    for i := 1 to Length(ParamStr(0)) do
+    begin
+      if Ord(ParamStr(0)[i]) > 127 then
+      begin
+        raise Exception.Create(RS_FMDUnicodePathError);
+      end;
+    end;
+
+  except
+    on E: Exception do
+    begin
+      SendLogException('ApplicationStartup.PathValidation', E);
+      raise;
+    end;
+  end;
+
   Application.CreateForm(TMainForm, MainForm);
   MainForm.winBuildNumber := g_buildNumber;
   Application.CreateForm(TFormCheckModules, FormCheckModules);

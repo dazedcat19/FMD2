@@ -5,7 +5,7 @@ unit uEpub;
 interface
 
 uses
-  Classes, SysUtils, fgl;
+  SysUtils, Classes, fgl;
 
 type
   TPage = class;

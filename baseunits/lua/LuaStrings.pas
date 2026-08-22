@@ -5,14 +5,16 @@ unit LuaStrings;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
+  SysUtils, Classes, LuaPackage,
+  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 procedure luaStringsAddMetaTable(const L: Plua_State; const Obj: Pointer;
   const MetaTable, UserData: Integer);
 
 implementation
 
-uses LuaClass, LuaUtils, LuaPackage;
+uses
+  LuaClass, LuaUtils;
 
 type
   TUserData = TStrings;

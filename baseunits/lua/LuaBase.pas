@@ -5,7 +5,8 @@ unit LuaBase;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
+  SysUtils, Classes,
+  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 procedure LuaBaseRegisterBasic(const L: Plua_State); inline;
 procedure LuaBaseRegisterCreateObject(const L: Plua_State); inline;
@@ -219,9 +220,13 @@ function LuaLoadFromStreamOrFile(const L: Plua_State;
   const AStream: TMemoryStream; const AFileName: String): Integer;
 begin
   if (not AlwaysLoadLuaFromFile) and (AStream <> nil) then
-    Result := luaL_loadbuffer(L, AStream.Memory, AStream.Size, PAnsiChar(AFileName))
+  begin
+    Result := luaL_loadbuffer(L, AStream.Memory, AStream.Size, PAnsiChar(AFileName));
+  end
   else
+  begin
     Result := luaL_loadfile(L, PAnsiChar(AFileName));
+  end;
 end;
 
 procedure LuaExecute(const L: Plua_State; const AStream: TMemoryStream;

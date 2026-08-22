@@ -11,9 +11,8 @@ unit frmImportFavorites;
 interface
 
 uses
-  Classes, SysUtils, Forms, Dialogs, StdCtrls, Buttons, EditBtn,
-  LazFileUtils, uBaseUnit, WebsiteModules, FMDOptions, RegExpr,
-  frmNewChapter, DBDataProcess, Controls, uCustomControls;
+  SysUtils, Classes, Forms, Dialogs, StdCtrls, Buttons, EditBtn, LazFileUtils,
+  RegExpr, Controls, uCustomControls;
 
 type
 
@@ -47,7 +46,8 @@ resourcestring
 implementation
 
 uses
-  frmMain, frmCustomMessageDlg, uSilentThread, FMDVars;
+  frmMain, frmCustomMessageDlg, uSilentThread, uVars, frmNewChapter, uOptions,
+  DBDataProcess, uBaseUnit, WebsiteModules;
 
 {$R *.lfm}
 
@@ -216,15 +216,16 @@ begin
 
   if urlList.Count > 0 then
   begin
-    path:= CleanAndExpandDirectory(settingsfile.ReadString('saveto', 'SaveTo', ''));
+    path := CleanAndExpandDirectory(FMDOptions.SaveReadStr(FMDOptions.SaveSaveTo, 'SaveTo', ''));
     regx := TRegExpr.Create;
     try
       regx.Expression := REGEX_HOST;
-      for i:= 0 to urlList.Count-1 do
+
+      for i:= 0 to urlList.Count - 1 do
       begin
-        host := '';
         m := nil;
         host := LowerCase(regx.Replace(urlList[i], '$2', True));
+
         if host <> '' then
         begin
           m := Modules.LocateModuleByHost(host);
@@ -240,7 +241,9 @@ begin
             path);
         end
         else
+        begin
           FUnimportedMangas.Add(mangaList.Strings[i] + ' <' + urlList.Strings[i] + '>');
+        end;
       end;
     finally
       regx.Free;

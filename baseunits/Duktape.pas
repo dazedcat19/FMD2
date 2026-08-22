@@ -5,7 +5,7 @@ unit Duktape;
 interface
 
 uses
-  Classes, SysUtils, Duktape.Api, MultiLog;
+  SysUtils, Classes, Duktape.Api, FileCache, MultiLog;
 
 function ExecJS(const text: String): String;
 
@@ -14,7 +14,8 @@ var
 
 implementation
 
-uses FileCache, uBaseUnit, LazFileUtils;
+uses
+  uBaseUnit, LazFileUtils;
 
 var
   modules: TFileCache;
@@ -147,7 +148,7 @@ begin
 end;
 
 initialization
-  modules:=TFileCache.Create(@loadModuleFile);
+  modules := TFileCache.Create(@loadModuleFile);
 
 finalization
   modules.Free;

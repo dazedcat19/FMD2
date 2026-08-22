@@ -5,7 +5,7 @@ unit frmShutdownCounter;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, StdCtrls, Buttons, ExtCtrls, LCLType,
+  SysUtils, Classes, Forms, Controls, StdCtrls, Buttons, ExtCtrls, LCLType,
   DefaultTranslator;
 
 type

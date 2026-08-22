@@ -5,7 +5,8 @@ unit LuaClass;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
+  SysUtils, Classes,
+  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 type
   PObject = ^TObject;
@@ -68,7 +69,8 @@ procedure luaClassAddUserData(const L: Plua_State; const MetaTable: Integer; con
 
 implementation
 
-uses LuaUtils, MultiLog;
+uses
+  LuaUtils, MultiLog;
 
 type
 

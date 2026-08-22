@@ -10,8 +10,7 @@ unit CheckUpdate;
 interface
 
 uses
-  SysUtils, Forms, Controls, uBaseUnit, FMDOptions, httpsendthread,
-  BaseThread, SelfUpdater, fileinfo;
+  SysUtils, Forms, Controls, httpsendthread, BaseThread, SelfUpdater, fileinfo;
 
 type
 
@@ -41,7 +40,7 @@ resourcestring
 implementation
 
 uses
-  frmMain, frmUpdateDialog, FMDVars, jsonini;
+  frmMain, frmUpdateDialog, uVars, uBaseUnit, uOptions, jsonini;
 
 { TCheckUpdateThread }
 
@@ -72,7 +71,9 @@ begin
         end;
       end
       else
+      begin
         MainForm.btCheckLatestVersion.Caption := RS_BtnCheckUpdates;
+      end;
     finally
       Free;
     end;

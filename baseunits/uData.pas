@@ -13,8 +13,8 @@ unit uData;
 interface
 
 uses
-  Classes, SysUtils, uBaseUnit, DBDataProcess, FMDOptions, httpsendthread,
-  BaseThread, LazFileUtils, strutils, httpsend;
+  SysUtils, Classes, Dialogs, LazFileUtils, strutils, httpsendthread,
+  BaseThread, uBaseUnit, DBDataProcess;
 
 type
 
@@ -37,6 +37,7 @@ type
     constructor Create(const AOwnerThread: TBaseThread = nil);
     destructor Destroy; override;
     function GetInfoFromURL(const AURL: String): Byte;
+    function DataExists(const ADataProcess: TDBDataProcess): Boolean;
     procedure SyncInfoToData(const ADataProcess: TDBDataProcess); overload;
     procedure AddInfoToData(const ATitle, ALink: String; const ADataProcess: TDBDataProcess); overload;
     property Thread: TBaseThread read FOwner;
@@ -49,13 +50,14 @@ var
 implementation
 
 uses
-  Dialogs, WebsiteModules, uUpdateThread;
+  WebsiteModules, uOptions;
 
 { TMangaInformation }
 
 constructor TMangaInformation.Create(const AOwnerThread: TBaseThread);
 begin
   inherited Create;
+
   FOwner := AOwnerThread;
   HTTP := THTTPSendThread.Create(AOwnerThread);
   MangaInfo := TMangaInfo.Create;
@@ -67,19 +69,31 @@ end;
 destructor TMangaInformation.Destroy;
 begin
   if Assigned(MangaInfo) then
+  begin
     MangaInfo.Free;
+  end;
+
   if Assigned(MangaCheck) then
+  begin
     MangaCheck.Free;
+  end;
+  
   HTTP.Free;
   inherited Destroy;
 end;
 
 procedure TMangaInformation.SetModule(const AValue: Pointer);
 begin
-  if FModule = AValue then Exit;
+  if FModule = AValue then
+  begin
+    Exit;
+  end;
+
   FModule := AValue;
   if Assigned(FModule) and Assigned(HTTP) then
+  begin
     TModuleContainer(FModule).PrepareHTTP(HTTP);
+  end;
 end;
 
 function TMangaInformation.GetInfoFromURL(const AURL: String): Byte;
@@ -90,7 +104,9 @@ var
   bmangaInfo: TBaseMangaInfo;
 begin
   if Trim(AURL) = '' then
+  begin
     Exit(INFORMATION_NOT_FOUND);
+  end;
 
   GetBaseMangaInfo(MangaInfo, bmangaInfo);
 
@@ -106,11 +122,16 @@ begin
     Result := TModuleContainer(FModule).OnGetInfo(Self, AURL, TModuleContainer(FModule));
   end
   else
+  begin
     Exit(INFORMATION_NOT_FOUND);
+  end;
 
-  with MangaInfo do begin
+  with MangaInfo do
+  begin
     if Link = '' then
+    begin
       Link := RemoveHostFromURL(MangaInfo.URL);
+    end;
 
     // cleanup info
     CoverLink := CleanURL(CoverLink);
@@ -128,24 +149,47 @@ begin
 
     // fix info
     if (LeftStr(Authors, 1) = '<') or (Authors = '-') or (Authors = ':') then
+    begin
       Authors := '';
+    end;
+
     if (LeftStr(Artists, 1) = '<') or (Artists = '-') or (Artists = ':') then
+    begin
       Artists := '';
+    end;
+
     if (Summary = '-') or (Summary = ':') then
+    begin
       Summary := '';
+    end;
+
     if Title = '' then
+    begin
       Title := 'N/A';
+    end;
+
     if (LeftStr(AltTitles, 1) = '<') or (AltTitles = '-') or (AltTitles = ':') then
+    begin
       AltTitles := '';
+    end;
+
     FillBaseMangaInfo(MangaInfo, bmangaInfo);
 
     // cleanup chapters
-    if ChapterLinks.Count > 0 then begin
+    if ChapterLinks.Count > 0 then
+    begin
       while ChapterNames.Count < ChapterLinks.Count do
+      begin
         ChapterNames.Add('');
+      end;
+
       while ChapterLinks.Count < ChapterNames.Count do
+      begin
         ChapterNames.Delete(ChapterNames.Count - 1);
-      for j := 0 to ChapterLinks.Count - 1 do begin
+      end;
+
+      for j := 0 to ChapterLinks.Count - 1 do
+      begin
         ChapterLinks[j] := Trim(ChapterLinks[j]);
         ChapterNames[j] := Trim(ChapterNames[j]);
       end;
@@ -159,7 +203,9 @@ begin
       begin
         del := False;
         if (j + 1) < ChapterLinks.Count then
+        begin
           for k := j + 1 to ChapterLinks.Count - 1 do
+          begin
             if SameText(ChapterLinks[j], ChapterLinks[k]) then
             begin
               ChapterLinks.Delete(j);
@@ -167,8 +213,13 @@ begin
               del := True;
               Break;
             end;
+          end;
+        end;
+
         if not del then
+        begin
           Inc(j);
+        end;
       end;
     end;
 
@@ -176,28 +227,41 @@ begin
     begin
       // remove host from chapter links
       if isRemoveHostFromChapterLinks then
+      begin
         RemoveHostFromURLsPair(ChapterLinks, ChapterNames);
+      end;
+
       // fixing chapter name
       for j := 0 to ChapterNames.Count - 1 do
+      begin
         ChapterNames[j] := Trim(CleanString(RemoveStringBreaks(
           CommonStringFilter(ChapterNames[j]))));
+      end;
 
       //remove manga name from chapter
       if OptionRemoveMangaNameFromChapter and (Title <> '') then
       begin
         s := LowerCase(Title);
         j := Length(s);
-        for k := 0 to ChapterNames.Count - 1 do begin
+        for k := 0 to ChapterNames.Count - 1 do
+        begin
           s2 := LowerCase(ChapterNames[k]);
           if Length(s2) > j then
-            if Pos(s, s2) = 1 then begin
+          begin
+            if Pos(s, s2) = 1 then
+            begin
               s2 := ChapterNames[k];
               Delete(s2, 1, j);
               s2 := Trim(s2);
+
               if LeftStr(s2, 2) = '- ' then
+              begin
                 Delete(s2, 1, 2);
+              end;
+
               ChapterNames[k] := s2;
             end;
+          end;
         end;
       end;
     end;
@@ -206,23 +270,53 @@ begin
   end;
 end;
 
+function TMangaInformation.DataExists(const ADataProcess: TDBDataProcess): Boolean;
+begin
+  Result := False;
+
+  if not Assigned(ADataProcess) then
+  begin
+    Exit;
+  end;
+
+  Result := ADataProcess.ExistsData(MangaInfo.Link);
+end;
+
 procedure TMangaInformation.SyncInfoToData(const ADataProcess: TDBDataProcess);
 begin
-  if Assigned(ADataProcess) then
-    with MangaInfo do
-      ADataProcess.UpdateData(Title, AltTitles, Link, Authors, Artists, Genres, Status, Summary,
-        NumChapter, ModuleID);
+  if not Assigned(ADataProcess) then
+  begin
+    Exit;
+  end;
+
+  with MangaInfo do
+  begin
+    ADataProcess.UpdateData(Title, AltTitles, Link, Authors, Artists, Genres, Status, Summary,
+      NumChapter, ModuleID);
+  end;
 end;
 
 procedure TMangaInformation.AddInfoToData(const ATitle, ALink: String; const ADataProcess: TDBDataProcess);
 begin
-  if Assigned(ADataProcess) then
+  if not Assigned(ADataProcess) then
   begin
-    if (MangaInfo.Title = '') and (ATitle <> '') then MangaInfo.Title := ATitle;
-    if (MangaInfo.Link = '') and (ALink <> '') then MangaInfo.Link := ALink;
-    with MangaInfo do
-      ADataProcess.AddData(Title, AltTitles, Link, Authors, Artists, Genres, Status,
-        StringBreaks(Summary), NumChapter, Now);
+    Exit;
+  end;
+
+  if (MangaInfo.Title = '') and (ATitle <> '') then
+  begin
+    MangaInfo.Title := ATitle;
+  end;
+
+  if (MangaInfo.Link = '') and (ALink <> '') then
+  begin
+    MangaInfo.Link := ALink;
+  end;
+
+  with MangaInfo do
+  begin
+    ADataProcess.AddData(Title, AltTitles, Link, Authors, Artists, Genres, Status,
+      StringBreaks(Summary), NumChapter, Now, True);
   end;
 end;
 

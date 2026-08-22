@@ -5,8 +5,8 @@ unit DBUpdater;
 interface
 
 uses
-  Classes, SysUtils, httpsendthread, FMDOptions, StatusBarDownload,
-  WebsiteModules, process, Controls, Dialogs, Buttons;
+  SysUtils, Classes, httpsendthread, StatusBarDownload, WebsiteModules,
+  process, Controls, Dialogs, Buttons;
 
 type
 
@@ -51,7 +51,8 @@ resourcestring
 
 implementation
 
-uses FMDVars, LazFileUtils, frmMain, frmCustomMessageDlg;
+uses
+  uVars, uOptions, LazFileUtils, frmMain, frmCustomMessageDlg;
 
 function GetDBURL(const AName: String): String;
 begin
@@ -92,14 +93,14 @@ end;
 
 procedure TDBUpdaterThread.SyncCloseUsed;
 begin
-  FormMain.edMangaListSearch.Clear;
-  FormMain.vtMangaList.Clear;
+  MainForm.edMangaListSearch.Clear;
+  MainForm.vtMangaList.Clear;
   dataProcess.Close;
 end;
 
 procedure TDBUpdaterThread.SyncReopenUsed;
 begin
-  FormMain.OpenDataDB(FModule.ID);
+  MainForm.OpenDataDB(FModule.ID);
 end;
 
 procedure TDBUpdaterThread.SyncRemoveAttached;
@@ -158,10 +159,13 @@ begin
 
           if used then
             Synchronize(@SyncCloseUsed)
-          else
-          if dataProcess.WebsiteLoaded(FModule.ID) then
+          else if dataProcess.WebsiteLoaded(FModule.ID) then
+          begin
             Synchronize(@SyncRemoveAttached);
+          end;
+
           with TProcess.Create(nil) do
+          begin
             try
               UpdateStatusText(Format('[%d/%d] ' + RS_Extracting, [FIndex + 1, FItems.Count, FModule.Name]));
               Executable := CURRENT_ZIP_EXE;
@@ -173,23 +177,34 @@ begin
               Options := Options + [poWaitOnExit];
               ShowWindow := swoHIDE;
               Execute;
+
               cont := ExitStatus = 0;
               if cont then
-                DeleteFile(currentfilename)
+              begin
+                DeleteFile(currentfilename);
+              end
               else
+              begin
                 FFailedList.Add(RS_FailedExtract, [FModule.Name, ExitStatus]);
+              end;
             finally
               Free;
             end;
+          end;
+
           if cont and used then
+          begin
             Synchronize(@SyncReopenUsed);
+          end;
         end;
 
         dataProcess.Open(FModule.ID);
       end
       else
+      begin
         FFailedList.Add(Format(RS_FailedDownload, [FModule.Name + ' Manga List', HTTP.ResultCode,
           HTTP.ResultString]));
+      end;
     except
       on E: Exception do
         FFailedList.Add(E.Message);
@@ -200,7 +215,7 @@ end;
 
 constructor TDBUpdaterThread.Create;
 begin
-  inherited Create(True, FormMain, FormMain.IconList, 24);
+  inherited Create(True, MainForm, MainForm.IconList, 24);
   FItems := TStringList.Create;
   FFailedList := TStringList.Create;
   HTTP.OnRedirected := @HTTPRedirected;

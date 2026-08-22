@@ -5,8 +5,7 @@ unit frmUpdateDialog;
 interface
 
 uses
-  Forms, Controls, StdCtrls,
-  Buttons, DefaultTranslator, ExtCtrls;
+  Forms, Controls, StdCtrls, Buttons, DefaultTranslator, ExtCtrls;
 
 type
 

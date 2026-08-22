@@ -5,8 +5,8 @@ unit SelfUpdater;
 interface
 
 uses
-  Classes, SysUtils, httpsendthread, FMDOptions, StatusBarDownload, process,
-  Controls, Dialogs, Forms;
+  SysUtils, Classes, httpsendthread, StatusBarDownload, process, Controls,
+  Dialogs, Forms;
 
 type
 
@@ -46,7 +46,8 @@ resourcestring
 
 implementation
 
-uses FMDVars, frmMain, frmCustomMessageDlg;
+uses
+  uVars, uOptions, frmMain, frmCustomMessageDlg;
 
 { TSelfUpdaterThread }
 
@@ -82,14 +83,25 @@ end;
 
 procedure TSelfUpdaterThread.ProceedUpdate;
 begin
-  if not DownloadSuccess then Exit;
+  if not DownloadSuccess then
+  begin
+    Exit;
+  end;
+
   if FileExists(OLD_CURRENT_UPDATER_EXE) then
+  begin
     DeleteFile(OLD_CURRENT_UPDATER_EXE);
+  end;
+
   if FileExists(CURRENT_UPDATER_EXE) then
+  begin
     RenameFile(CURRENT_UPDATER_EXE, OLD_CURRENT_UPDATER_EXE);
+  end;
+
   if FileExists(OLD_CURRENT_UPDATER_EXE) then
   begin
     with TProcess.Create(nil) do
+    begin
       try
         InheritHandles := False;
         CurrentDirectory := FMD_DIRECTORY;
@@ -102,35 +114,54 @@ begin
       finally
         Free;
       end;
-    DoAfterFMD := DO_UPDATE;
-    FormMain.tmExitCommand.Interval := 32;
-    FormMain.tmExitCommand.Enabled := True;
+    end;
+
+    FMDOptions.General.AfterFMDDo := DO_UPDATE;
+    MainForm.tmExitCommand.Interval := 32;
+    MainForm.tmExitCommand.Enabled := True;
   end
   else
+  begin
     FFailedMessage := Format(RS_MissingFile, [OLD_CURRENT_UPDATER_EXE]);
+  end;
 end;
 
 procedure TSelfUpdaterThread.Execute;
 begin
   DownloadSuccess := False;
+
   if UpdateURL = '' then
+  begin
     Exit;
+  end;
+
   try
     UpdateStatusText(Format(RS_Downloading, [UpdateURL]));
+
     if HTTP.GET(UpdateURL) and (HTTP.ResultCode < 300) then
     begin
       DownloadSuccess := True;
       Filename := FMD_DIRECTORY + UPDATE_PACKAGE_NAME;
-      if FileExists(Filename) then
-        DeleteFile(Filename);
-      if not FileExists(Filename) then
-        HTTP.Document.SaveToFile(Filename);
 
       if FileExists(Filename) then
+      begin
         DeleteFile(Filename);
+      end;
+
       if not FileExists(Filename) then
       begin
         HTTP.Document.SaveToFile(Filename);
+      end;
+
+      if FileExists(Filename) then
+      begin
+        DeleteFile(Filename);
+      end;
+
+      if not FileExists(Filename) then
+      begin
+        HTTP.Document.SaveToFile(Filename);
+
         if not FileExists(Filename) then
         begin
           FFailedMessage := Format(RS_FailedToSave, [Filename]);
@@ -150,8 +181,10 @@ begin
       end;
     end
     else
+    begin
       FFailedMessage := Format(RS_FailedDownload, [NewVersionString,
         HTTP.ResultCode, HTTP.ResultString]);
+    end;
   except
     on E: Exception do
       FFailedMessage := E.Message;
@@ -160,7 +193,7 @@ end;
 
 constructor TSelfUpdaterThread.Create;
 begin
-  inherited Create(True, FormMain, FormMain.IconList, 24);
+  inherited Create(True, MainForm, MainForm.IconList, 24);
   FFailedMessage := '';
   HTTP.OnRedirected := @HTTPRedirected;
   Synchronize(@SyncStart);
@@ -169,10 +202,14 @@ end;
 destructor TSelfUpdaterThread.Destroy;
 begin
   if (not Terminated) and (FFailedMessage <> '') then
-    Synchronize(@SyncShowFailed)
-  else
-  if DownloadSuccess then
+  begin
+    Synchronize(@SyncShowFailed);
+  end
+  else if DownloadSuccess then
+  begin
     Synchronize(@SyncFinishRestart);
+  end;
+
   Synchronize(@SyncFinal);
   inherited Destroy;
 end;

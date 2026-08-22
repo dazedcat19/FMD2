@@ -5,7 +5,7 @@ unit VirtualPropertyGrid;
 interface
 
 uses
-  Classes, SysUtils, typinfo, Types, FPCanvas, VirtualTrees, Graphics,
+  SysUtils, Classes, typinfo, Types, FPCanvas, VirtualTrees, Graphics,
   LMessages, Themes, Controls, LCLIntf;
 
 type

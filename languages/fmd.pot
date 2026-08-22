@@ -94,6 +94,54 @@ msgstr ""
 msgid "Username or password can't be empty!"
 msgstr ""
 
+#: frmcustommessagedlg.rs_dialogbuttonabort
+msgctxt "frmcustommessagedlg.rs_dialogbuttonabort"
+msgid "Abort"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonall
+msgctxt "frmcustommessagedlg.rs_dialogbuttonall"
+msgid "All"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttoncancel
+msgctxt "frmcustommessagedlg.rs_dialogbuttoncancel"
+msgid "Cancel"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonclose
+msgid "Close"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonignore
+msgid "Ignore"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonno
+msgid "No"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonnoall
+msgid "No to All"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonok
+msgctxt "frmcustommessagedlg.rs_dialogbuttonok"
+msgid "OK"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonretry
+msgid "Retry"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonyes
+msgid "Yes"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonyesall
+msgid "Yes to All"
+msgstr ""
+
 #: frmcustommessagedlg.rs_dialogconfirmation
 msgctxt "frmcustommessagedlg.rs_dialogconfirmation"
 msgid "Confirmation"
@@ -173,12 +221,38 @@ msgstr ""
 
 #: frmluamodulesupdater.rs_githubconnectfail
 msgid ""
-"Failed to connect to GitHub API for latest module updates.\n"
-"Please try again later."
+"Failed to connect to GitHub API.\n"
+"Please check your internet connection or try again later."
 msgstr ""
 
 #: frmluamodulesupdater.rs_githubconnecting
 msgid "Connecting to GitHub..."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubdownloadfailed
+msgid ""
+"Modules update failed to download modules from GitHub.\n"
+"Please try update again."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githuberrormessage
+msgid ""
+"GitHub returned an error.\n"
+"Check log for more information."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubnoerrormessage
+#, object-pascal-format
+msgid ""
+"GitHub API didn't return a valid response.\n"
+"Try checking %s in your browser."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubratelimited
+#, object-pascal-format
+msgid ""
+"GitHub API is rate limited.\n"
+"Change the network or try again after %d minute(s)"
 msgstr ""
 
 #: frmluamodulesupdater.rs_githubratestats
@@ -233,6 +307,10 @@ msgstr ""
 
 #: frmmain.rs_alldownloads
 msgid "All downloads"
+msgstr ""
+
+#: frmmain.rs_applybuttonsaved
+msgid "Saved!"
 msgstr ""
 
 #: frmmain.rs_btnok
@@ -356,6 +434,10 @@ msgstr ""
 
 #: frmmain.rs_fmdalreadyrunning
 msgid "Free Manga Downloader already running!"
+msgstr ""
+
+#: frmmain.rs_fmdunicodepatherror
+msgid "UnicodePathError: Application can't run in a folder path with unicode characters."
 msgstr ""
 
 #: frmmain.rs_hintfavoriteproblem
@@ -1036,6 +1118,11 @@ msgstr ""
 msgid "Enable live search (slow on long list)"
 msgstr ""
 
+#: tmainform.cboptionmangaloadaddtolist.caption
+msgctxt "tmainform.cboptionmangaloadaddtolist.caption"
+msgid "Enable add manga to manga list after info load"
+msgstr ""
+
 #: tmainform.cboptionminimizeonstart.caption
 msgid "Minimize on start"
 msgstr ""
@@ -1123,6 +1210,10 @@ msgstr ""
 
 #: tmainform.cbselectmanga.hint
 msgid "For more manga sites, please go to Options->Manga sites"
+msgstr ""
+
+#: tmainform.cbservercreationtime.caption
+msgid "Use server creation time over local time"
 msgstr ""
 
 #: tmainform.cbuseregexpr.caption
@@ -1581,6 +1672,10 @@ msgstr ""
 
 #: tmainform.gbimagemagick.caption
 msgid "Image Magick"
+msgstr ""
+
+#: tmainform.gbimageproperties.caption
+msgid "Image Properties"
 msgstr ""
 
 #: tmainform.gboptionexternal.caption

@@ -5,8 +5,8 @@ unit frmCustomColor;
 interface
 
 uses
-  Classes, SysUtils, Types, Forms, Graphics, Dialogs, ColorBox, ComCtrls,
-  Buttons, VirtualTrees, FMDOptions, jsonini, uDarkStyleParams;
+  SysUtils, Classes, Types, Forms, Graphics, Dialogs, ColorBox, ComCtrls, jsonini,
+  Buttons, VirtualTrees, uOptions;
 
 type
   TColorMapping = record
@@ -19,7 +19,7 @@ type
 
   TThemeCustomColorManager = class
   private
-    FThemeColorMappings: array[0..14] of TColorMapping;
+    FThemeColorMappings: array[0..15] of TColorMapping;
     procedure SetColorMapping(Index: Integer; const AName: String; ALight, ADark: TColor);
   public
     constructor Create;
@@ -146,13 +146,16 @@ type
 procedure AddVT(const AVT: VirtualTrees.TVirtualStringTree); inline;
 procedure RemoveVT(const AVT: VirtualTrees.TVirtualStringTree); inline;
 procedure Apply;
-procedure LoadFromIniFile(const AIniFile: TJSONIniFile);
-procedure SaveToIniFile(const AIniFile: TJSONIniFile);
+procedure LoadCustomColors;
+procedure SaveCustomColors;
 
 var
   CustomColorForm: TCustomColorForm;
 
 implementation
+
+uses
+  uVars, uDarkStyleParams;
 
 const
   TextStyleLeftCenter: TTextStyle = (
@@ -340,44 +343,44 @@ begin
   end;
 end;
 
-procedure LoadFromIniFile(const AIniFile: TJSONIniFile);
+procedure LoadCustomColors;
 var
   i: Integer;
 begin
-  with AIniFile do
+  with FMDOptions do
   begin
     //basiclist
     for i := 0 to BasicListColors.Count - 1 do
     begin
-      BasicListColors[i] := StringToColor(ReadString('BasicListColors', BasicListColors.N[i],
+      BasicListColors[i] := StringToColor(SaveReadStr(SaveBasicListColors, BasicListColors.N[i],
         ColorToString(BasicListColors[i])));
     end;
 
     //mangalist
     for i := 0 to MangaListColors.Count - 1 do
     begin
-      MangaListColors[i] := StringToColor(ReadString('MangaListColors', MangaListColors.N[i],
+      MangaListColors[i] := StringToColor(SaveReadStr(SaveMangaListColors, MangaListColors.N[i],
         ColorToString(MangaListColors[i])));
     end;
 
     //favoritelist
     for i := 0 to FavoriteListColors.Count - 1 do
     begin
-      FavoriteListColors[i] := StringToColor(ReadString('FavoriteListColors', FavoriteListColors.N[i],
+      FavoriteListColors[i] := StringToColor(SaveReadStr(SaveFavoriteListColors, FavoriteListColors.N[i],
         ColorToString(FavoriteListColors[i])));
     end;
 
     //chapterlist
     for i := 0 to ChapterListColor.Count - 1 do
     begin
-      ChapterListColor[i] := StringToColor(ReadString('ChapterListColor', ChapterListColor.N[i],
+      ChapterListColor[i] := StringToColor(SaveReadStr(SaveChapterListColor, ChapterListColor.N[i],
         ColorToString(ChapterListColor[i])));
     end;
 
     //modulelist
     for i := 0 to ModuleListColor.Count - 1 do
     begin
-      ModuleListColor[i] := StringToColor(ReadString('ModuleListColor', ModuleListColor.N[i],
+      ModuleListColor[i] := StringToColor(SaveReadStr(SaveModuleListColor, ModuleListColor.N[i],
         ColorToString(ModuleListColor[i])));
     end;
 
@@ -385,40 +388,40 @@ begin
   end;
 end;
 
-procedure SaveToIniFile(const AIniFile: TJSONIniFile);
+procedure SaveCustomColors;
 var
   i: Integer;
 begin
-  with AIniFile do
+  with FMDOptions do
   begin
     //basiclist
     for i := 0 to BasicListColors.Count - 1 do
     begin
-      WriteString('BasicListColors', BasicListColors.N[i], ColorToString(BasicListColors[i]));
+      SaveWriteStr(SaveBasicListColors, BasicListColors.N[i], ColorToString(BasicListColors[i]));
     end;
 
     //mangalist
     for i := 0 to MangaListColors.Count - 1 do
     begin
-      WriteString('MangaListColors', MangaListColors.N[i], ColorToString(MangaListColors[i]));
+      SaveWriteStr(SaveMangaListColors, MangaListColors.N[i], ColorToString(MangaListColors[i]));
     end;
 
     //favoritelist
     for i := 0 to FavoriteListColors.Count - 1 do
     begin
-      WriteString('FavoriteListColors', FavoriteListColors.N[i], ColorToString(FavoriteListColors[i]));
+      SaveWriteStr(SaveFavoriteListColors, FavoriteListColors.N[i], ColorToString(FavoriteListColors[i]));
     end;
 
     //chapterlist
     for i := 0 to ChapterListColor.Count - 1 do
     begin
-      WriteString('ChapterListColor', ChapterListColor.N[i], ColorToString(ChapterListColor[i]));
+      SaveWriteStr(SaveChapterListColor, ChapterListColor.N[i], ColorToString(ChapterListColor[i]));
     end;
 
     //modulelist
     for i := 0 to ModuleListColor.Count - 1 do
     begin
-      WriteString('ModuleListColor', ModuleListColor.N[i], ColorToString(ModuleListColor[i]));
+      SaveWriteStr(SaveModuleListColor, ModuleListColor.N[i], ColorToString(ModuleListColor[i]));
     end;
   end;
 end;
@@ -432,20 +435,21 @@ constructor TThemeCustomColorManager.Create;
 begin
   // Initialize theme color mappings
   SetColorMapping(0, 'BSDisabled', clBtnShadow, clGrayText);
-  SetColorMapping(1, 'BSTreeLine', clBtnShadow, clGrayText);
-  SetColorMapping(2, 'BSUnfocusedSelection', clMedGray, clGray);
-  SetColorMapping(3, 'BSUnfocusedSelectionBorder', clGray, clMedGray);
-  SetColorMapping(4, 'BSSortedColumn', CL_BSSortedColumn, CL_BSSortedColumnDark);
-  SetColorMapping(5, 'BSEnabledWebsiteSettings', CL_BSEnabledWebsiteSettings, CL_BSEnabledWebsiteSettingsDark);
-  SetColorMapping(6, 'MNNewManga', CL_MNNewManga, CL_MNNewMangaDark);
-  SetColorMapping(7, 'MNCompletedManga', CL_MNCompletedManga, CL_MNCompletedMangaDark);
-  SetColorMapping(8, 'FVBrokenFavorite', CL_FVBrokenFavorite, CL_FVBrokenFavoriteDark);
-  SetColorMapping(9, 'FVChecking', CL_FVChecking, CL_FVCheckingDark);
-  SetColorMapping(10, 'FVNewChapterFound', CL_FVNewChapterFound, CL_FVNewChapterFoundDark);
-  SetColorMapping(11, 'FVCompletedManga', CL_FVCompletedManga, CL_FVCompletedMangaDark);
-  SetColorMapping(12, 'FVEmptyChapters', CL_FVEmptyChapters, CL_FVEmptyChaptersDark);
-  SetColorMapping(13, 'CHDownloaded', CL_CHDownloaded, CL_CHDownloadedDark);
-  SetColorMapping(14, 'MDNewUpdate', CL_MDNewUpdate, CL_MDNewUpdateDark);
+  SetColorMapping(1, 'BSGridLine', clBtnShadow, clGrayText);
+  SetColorMapping(2, 'BSTreeLine', clBtnShadow, clGrayText);
+  SetColorMapping(3, 'BSUnfocusedSelection', clMedGray, clGray);
+  SetColorMapping(4, 'BSUnfocusedSelectionBorder', clGray, clMedGray);
+  SetColorMapping(5, 'BSSortedColumn', CL_BSSortedColumn, CL_BSSortedColumnDark);
+  SetColorMapping(6, 'BSEnabledWebsiteSettings', CL_BSEnabledWebsiteSettings, CL_BSEnabledWebsiteSettingsDark);
+  SetColorMapping(7, 'MNNewManga', CL_MNNewManga, CL_MNNewMangaDark);
+  SetColorMapping(8, 'MNCompletedManga', CL_MNCompletedManga, CL_MNCompletedMangaDark);
+  SetColorMapping(9, 'FVBrokenFavorite', CL_FVBrokenFavorite, CL_FVBrokenFavoriteDark);
+  SetColorMapping(10, 'FVChecking', CL_FVChecking, CL_FVCheckingDark);
+  SetColorMapping(11, 'FVNewChapterFound', CL_FVNewChapterFound, CL_FVNewChapterFoundDark);
+  SetColorMapping(12, 'FVCompletedManga', CL_FVCompletedManga, CL_FVCompletedMangaDark);
+  SetColorMapping(13, 'FVEmptyChapters', CL_FVEmptyChapters, CL_FVEmptyChaptersDark);
+  SetColorMapping(14, 'CHDownloaded', CL_CHDownloaded, CL_CHDownloadedDark);
+  SetColorMapping(15, 'MDNewUpdate', CL_MDNewUpdate, CL_MDNewUpdateDark);
 end;
 
 procedure TThemeCustomColorManager.SetColorMapping(Index: Integer; const AName: String; ALight, ADark: TColor);
@@ -459,34 +463,38 @@ function TThemeCustomColorManager.CheckDefaultCustomColors(const AName: String; 
 var
   i: Integer;
 begin
-  Result := AColor; // Default to custom color
+  Result := AColor;
 
   for i := Low(FThemeColorMappings) to High(FThemeColorMappings) do
   begin
-    if (AName = FThemeColorMappings[i].Name) then
+    if (AName <> FThemeColorMappings[i].Name) then
     begin
-      if IsDarkModeEnabled then
-      begin
-        if AColor = FThemeColorMappings[i].Light then
-        begin
-          Result := FThemeColorMappings[i].Dark;
-        end;
-      end
-      else
-      begin
-        if AColor = FThemeColorMappings[i].Dark then
-        begin
-          Result := FThemeColorMappings[i].Light;
-        end;
-      end;
-      Exit; // Exit early once found
+      Continue;
     end;
+
+    if IsDarkModeEnabled then
+    begin
+      if AColor = FThemeColorMappings[i].Light then
+      begin
+        Result := FThemeColorMappings[i].Dark;
+      end;
+    end
+    else
+    begin
+      if AColor = FThemeColorMappings[i].Dark then
+      begin
+        Result := FThemeColorMappings[i].Light;
+      end;
+    end;
+
+    Exit;
   end;
 end;
 
 procedure TThemeCustomColorManager.CheckListColors;
 begin
   BasicListColors[2] := CheckDefaultCustomColors('BSDisabled', BasicListColors[2]);
+  BasicListColors[8] := CheckDefaultCustomColors('BSGridLine', BasicListColors[8]);
   BasicListColors[13] := CheckDefaultCustomColors('BSTreeLine', BasicListColors[13]);
   BasicListColors[14] := CheckDefaultCustomColors('BSUnfocusedSelection', BasicListColors[14]);
   BasicListColors[15] := CheckDefaultCustomColors('BSUnfocusedSelectionBorder', BasicListColors[15]);
@@ -1019,7 +1027,7 @@ begin
     VTBasicList.CI[18] := clWindowText;
     VTBasicList.CI[19] := clBtnFace;
     VTBasicList.CI[20] := clWindow;
-    VTBasicList.CI[21] := $F8E6D6;
+    VTBasicList.CI[21] := $F0F0F0;
     VTBasicList.CI[22] := clYellow;
   end
   else if SelectedColorList = VTMangaList then

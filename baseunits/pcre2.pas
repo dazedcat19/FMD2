@@ -28,7 +28,7 @@ unit pcre2;
 interface
 
 uses
-  Classes, SysUtils, pcre2lib;
+  SysUtils, Classes, pcre2lib;
 
 type
   TPCRE2SubstringOffset = packed record

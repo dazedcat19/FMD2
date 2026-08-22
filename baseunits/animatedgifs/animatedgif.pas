@@ -5,7 +5,7 @@ unit AnimatedGif;
 interface
 
 uses
-  Classes, SysUtils, Graphics, FPImage, MemBitmap;
+  SysUtils, Classes, Graphics, FPImage, MemBitmap;
 
 type
     TDisposeMode = (dmNone, dmKeep, dmErase, dmRestore);

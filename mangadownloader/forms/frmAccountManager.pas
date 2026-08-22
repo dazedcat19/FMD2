@@ -5,9 +5,8 @@ unit frmAccountManager;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, Buttons,
-  ExtCtrls, VirtualTrees, WebsiteModules,
-  HTTPSendThread, BaseThread, frmAccountSet, SimpleException;
+  SysUtils, Classes, Forms, Controls, Graphics, Dialogs, Buttons,
+  ExtCtrls, math, VirtualTrees, BaseThread, HTTPSendThread, WebsiteModules;
 
 type
 
@@ -82,7 +81,8 @@ resourcestring
 
 implementation
 
-uses frmCustomColor, frmMain, math;
+uses
+  frmMain, frmCustomColor, frmAccountSet, SimpleException;
 
 var
   AccountThreadList: TAccountCheck;

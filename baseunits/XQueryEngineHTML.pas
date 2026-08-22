@@ -5,7 +5,7 @@ unit XQueryEngineHTML;
 interface
 
 uses
-  Classes, SysUtils, xquery, xquery_json, simplehtmltreeparser;
+  SysUtils, Classes, xquery, xquery_json, simplehtmltreeparser;
 
 type
 

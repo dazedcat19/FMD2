@@ -35,8 +35,8 @@ unit MangaFoxWatermark;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, LazFileUtils, Math, FPimage, FPReadJPEG, FPWriteJPEG,
-  FPWritePNG, ImgInfos;
+  SysUtils, Classes, FileUtil, LazFileUtils, Math, FPimage, FPReadJPEG,
+  FPWriteJPEG, FPWritePNG, ImgInfos;
 
 procedure SetTemplateDirectory(const ADirectory: String);
 function LoadTemplate(const ADirectory: String = ''): Integer;

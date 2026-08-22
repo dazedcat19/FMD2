@@ -5,7 +5,7 @@ unit frmDialogYesNo;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls;
+  SysUtils, Classes, Forms, Controls, Graphics, Dialogs, StdCtrls;
 
 type
 

@@ -5,7 +5,9 @@ unit LuaWebsiteModules;
 interface
 
 uses
-  Classes, SysUtils, fgl, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif}, LuaStringsStorage, WebsiteModules, syncobjs;
+  SysUtils, Classes, fgl, syncobjs, FileUtil, xquery, httpsendthread,
+  LuaStringsStorage, WebsiteModules,
+  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 type
   TLuaWebsiteModulesContainer = class;
@@ -142,11 +144,10 @@ var
 implementation
 
 uses
-  FMDOptions, FileUtil, MultiLog, LuaClass, LuaBase, LuaMangaInfo, LuaHTTPSend,
-  LuaXQuery, LuaUtils, LuaDownloadTask, LuaUpdateListManager, LuaStrings,
-  LuaCriticalSection, LuaPackage, uData, LuaMangaCheck,
-  uDownloadsManager, xquery, httpsendthread, FMDVars, uBaseUnit, LuaWebsiteBypass,
-  LuaWebsiteModuleHandler;
+  uOptions, MultiLog, LuaClass, LuaBase, LuaMangaInfo, LuaHTTPSend, LuaXQuery,
+  LuaUtils, LuaDownloadTask, LuaUpdateListManager, LuaStrings, LuaPackage,
+  LuaCriticalSection, uData, LuaMangaCheck, uDownloadsManager, uVars, uBaseUnit,
+  LuaWebsiteBypass, LuaWebsiteModuleHandler;
 
 threadvar
   TempModules:TLuaWebsiteModules;
@@ -529,7 +530,7 @@ begin
       TempModules[i].Module.Free;
       TempModules[i].Free;
       TempModules.Delete(i);
-    end
+    end;
   end;
 
   if TempModules.Count <> 0 then
@@ -713,15 +714,23 @@ end;
 function TLuaWebsiteModulesContainer.ByteCode: TMemoryStream;
 begin
   // don't need to cache lua file on --lua-dofile
-  if AlwaysLoadLuaFromFile then Exit(nil);
-  if FByteCode <> nil then Exit(FByteCode);
+  if AlwaysLoadLuaFromFile then
+  begin
+    Exit(nil);
+  end;
+
+  if FByteCode <> nil then
+  begin
+    Exit(FByteCode);
+  end;
+
   if TryEnterCriticalSection(FGuardian) <> 0 then
   begin
     try
       FByteCode := LuaDumpFileToStream(FileName);
     finally
       LeaveCriticalSection(FGuardian);
-    end
+    end;
   end
   else
   begin
@@ -759,7 +768,11 @@ var
   o: TOptionItem;
 begin
   Result := Options.Add(AName);
-  if Result = -1 then Exit;
+  if Result = -1 then
+  begin
+    Exit;
+  end;
+
   o := TOptionItem(AClass.Create);
   o.Caption := ACaption;
   Options.Objects[Result] := o;
@@ -772,7 +785,11 @@ var
   i: Integer;
 begin
   i := AddOption(AName, ACaption, TOptionItemCheckBox);
-  if i = -1 then Exit;
+  if i = -1 then
+  begin
+    Exit;
+  end;
+
   o := TOptionItemCheckBox(Options.Objects[i]);
   o.Value := ADefault;
   Module.AddOptionCheckBox(@o.Value, Options[i], @o.Caption);
@@ -784,7 +801,11 @@ var
   i: Integer;
 begin
   i := AddOption(AName, ACaption, TOptionItemEdit);
-  if i = -1 then Exit;
+  if i = -1 then
+  begin
+    Exit;
+  end;
+
   o := TOptionItemEdit(Options.Objects[i]);
   o.Value := ADefault;
   Module.AddOptionEdit(@o.Value, Options[i], @o.Caption);
@@ -797,7 +818,11 @@ var
   i: Integer;
 begin
   i := AddOption(AName, ACaption, TOptionItemSpinEdit);
-  if i = -1 then Exit;
+  if i = -1 then
+  begin
+    Exit;
+  end;
+
   o := TOptionItemSpinEdit(Options.Objects[i]);
   o.Value := ADefault;
   Module.AddOptionSpinEdit(@o.Value, Options[i], @o.Caption);
@@ -810,7 +835,11 @@ var
   i: Integer;
 begin
   i := AddOption(AName, ACaption, TOptionItemComboBox);
-  if i = -1 then Exit;
+  if i = -1 then
+  begin
+    Exit;
+  end;
+
   o := TOptionItemComboBox(Options.Objects[i]);
   o.Items := AItems;
   o.Value := ADefault;
@@ -889,17 +918,26 @@ function lua_addservercookies(L: Plua_State): Integer; cdecl;
 begin
   Result := 0;
   if lua_gettop(L) = 2 then
-    TLuaWebsiteModule(luaClassGetObject(L)).Module.CookieManager.AddServerCookies(luaToString(L, 1), luaToString(L, 2), Now)
+  begin
+    TLuaWebsiteModule(luaClassGetObject(L)).Module.CookieManager.AddServerCookies(luaToString(L, 1), luaToString(L, 2), Now);
+  end
   else
+  begin
     TLuaWebsiteModule(luaClassGetObject(L)).Module.CookieManager.AddServerCookies('', luaToString(L, 1), Now);
+  end;
 end;
 
 function lua_getservercookies(L: Plua_State): Integer; cdecl;
 begin
   if lua_gettop(L) = 2 then
-    lua_pushstring(L, TLuaWebsiteModule(luaClassGetObject(L)).Module.CookieManager.GetServerCookies(luaToString(L, 1), luaToString(L, 2)))
+  begin
+    lua_pushstring(L, TLuaWebsiteModule(luaClassGetObject(L)).Module.CookieManager.GetServerCookies(luaToString(L, 1), luaToString(L, 2)));
+  end
   else
+  begin
     lua_pushstring(L, TLuaWebsiteModule(luaClassGetObject(L)).Module.CookieManager.GetServerCookies(luaToString(L, 1), ''));
+  end;
+
   Result := 1;
 end;
 
@@ -907,9 +945,13 @@ function lua_removecookies(L: Plua_State): Integer; cdecl;
 begin
   Result := 0;
   if lua_gettop(L) = 2 then
-    TLuaWebsiteModule(luaClassGetObject(L)).Module.CookieManager.RemoveCookies(luaToString(L, 1), luaToString(L, 2))
+  begin
+    TLuaWebsiteModule(luaClassGetObject(L)).Module.CookieManager.RemoveCookies(luaToString(L, 1), luaToString(L, 2));
+  end
   else
+  begin
     TLuaWebsiteModule(luaClassGetObject(L)).Module.CookieManager.RemoveCookies(luaToString(L, 1), '');
+  end;
 end;
 
 function lua_clearcookies(L: Plua_State): Integer; cdecl;
@@ -925,26 +967,35 @@ var
   o: TObject;
 begin
   m := TLuaWebsiteModule(luaClassGetObject(L));
-  i:=m.Options.IndexOf(luaToString(L, 1));
+  i := m.Options.IndexOf(luaToString(L, 1));
   Result := 1;
   if i = -1 then
+  begin
     lua_pushnil(L)
+  end
   else
   begin
     o := m.Options.Objects[i];
     if o is TOptionItemCheckBox then
-      lua_pushboolean(L, TOptionItemCheckBox(o).Value)
+    begin
+      lua_pushboolean(L, TOptionItemCheckBox(o).Value);
+    end
+    else if o is TOptionItemEdit then
+    begin
+      lua_pushstring(L, TOptionItemEdit(o).Value);
+    end
+    else if o is TOptionItemSpinEdit then
+    begin
+      lua_pushinteger(L, TOptionItemSpinEdit(o).Value);
+    end
+    else if o is TOptionItemComboBox then
+    begin
+      lua_pushinteger(L, TOptionItemComboBox(o).Value);
+    end
     else
-    if o is TOptionItemEdit then
-      lua_pushstring(L, TOptionItemEdit(o).Value)
-    else
-    if o is TOptionItemSpinEdit then
-      lua_pushinteger(L, TOptionItemSpinEdit(o).Value)
-    else
-    if o is TOptionItemComboBox then
-      lua_pushinteger(L, TOptionItemComboBox(o).Value)
-    else
+    begin
       lua_pushnil(L);
+    end;
   end;
 end;
 
@@ -1032,8 +1083,10 @@ begin
 
     luaClassAddObject(L, MetaTable, Storage, 'Storage', @luaStringsStorageAddMetaTable);
 
-    if Module.Account<>nil then
+    if Module.Account <> nil then
+    begin
       luaClassAddObject(L, MetaTable, Module.Account, 'Account', @luaWebsiteModuleAccountAddMetaTable);
+    end;
 
     luaClassAddIntegerProperty(L, MetaTable, 'Tag', @Module.Tag);
   end;

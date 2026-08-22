@@ -5,7 +5,7 @@ unit BaseThread;
 interface
 
 uses
-  Classes, SysUtils;
+  SysUtils, Classes;
 
 type
 

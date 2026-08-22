@@ -5,8 +5,8 @@ unit LuaHandler;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif},
-  LuaBase, LuaClass;
+  SysUtils, Classes, LuaBase, LuaClass,
+  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 type
 
@@ -35,7 +35,8 @@ type
 
 implementation
 
-uses httpsendthread;
+uses
+  httpsendthread;
 
 { TLuaHandler }
 
@@ -97,14 +98,20 @@ var
   l: Integer;
 begin
   Result := 0;
+
   l := FLoadedChunks.IndexOf(AName);
   if (l <> -1) then
   begin
     if AlwaysLoadLuaFromFile then
-      FLoadedChunks.Delete(l)
+    begin
+      FLoadedChunks.Delete(l);
+    end
     else
+    begin
       Exit;
+    end;
   end;
+
   Result := LuaLoadFromStreamOrFile(FHandle, AChunk, AName);
   if Result = 0 then
   begin

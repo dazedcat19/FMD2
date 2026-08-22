@@ -27,7 +27,7 @@ unit MemBitmap;
 interface
 
 uses
-  Classes, SysUtils, FPImage, Graphics;
+  SysUtils, Classes, FPImage, Graphics;
 
 type
     PMemPixel = ^TMemPixel;
@@ -1385,4 +1385,4 @@ begin
 end;
 
 end.
-
+

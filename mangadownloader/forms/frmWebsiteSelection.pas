@@ -5,7 +5,8 @@ unit frmWebsiteSelection;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls, Buttons;
+  SysUtils, Classes, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
+  Buttons;
 
 type
 
