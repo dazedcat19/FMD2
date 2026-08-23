@@ -157,10 +157,15 @@ function GetInfo()
 		MANGAINFO.Summary = MANGAINFO.Summary .. '\r\n \r\nExtra Info:\r\n' .. extra_info
 	end
 
+	local deduplicate = MODULE.GetOption('deduplicatechapters')
+	local query_name = deduplicate and 'get_comic_chapterList_uniqList' or 'get_comic_chapterList_fullList'
+	local select_type = deduplicate and 'Select_Comic_ChapterList_UniqList' or 'Select_Comic_ChapterList'
+	local size = deduplicate and 1000 or 100
+
 	local page = 1
 	local pages = nil
 	while true do
-		local s = '{"query":"query get_comic_chapterList_fullList($select: Select_Comic_ChapterList) { get_comic_chapterList_fullList(select: $select) { paging { pages } items { data { id dname title } } } }","variables":{"select":{"comic_id":"' .. mid .. '","page":' .. page .. ',"size":100,"sortby":"chapter_asc"}}}'
+		local s = '{"query":"query ' .. query_name .. '($select: ' .. select_type .. ') { ' .. query_name .. '(select: $select) { paging { pages limit } items { data { id dname title } } } }","variables":{"select":{"comic_id":"' .. mid .. '","page":' .. page .. ',"size":' .. size .. ',"sortby":"chapter_asc"}}}'
 
 		HTTP.Reset()
 		HTTP.MimeType = 'application/json'
@@ -168,7 +173,7 @@ function GetInfo()
 		if not HTTP.POST(u, s) then return net_problem end
 
 		local x = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString()))
-		for v in x.XPath('parse-json(.)?data?get_comic_chapterList_fullList?items?*?data').Get() do
+		for v in x.XPath('parse-json(.)?data?' .. query_name .. '?items?*?data').Get() do
 			local chapter = v.GetProperty('dname').ToString()
 			local title = v.GetProperty('title').ToString()
 			title = (title ~= '') and (' - ' .. title) or ''
@@ -176,8 +181,9 @@ function GetInfo()
 			MANGAINFO.ChapterLinks.Add(v.GetProperty('id').ToString())
 			MANGAINFO.ChapterNames.Add(chapter .. title)
 		end
+		
 		if not pages then
-			pages = tonumber(x.XPathString('json(*).data.get_comic_chapterList_fullList.paging.pages')) or 1
+			pages = tonumber(x.XPathString('json(*).data.' .. query_name .. '.paging.pages')) or 1
 		end
 		if page >= pages then break end
 		page = page + 1
@@ -219,6 +225,19 @@ function Init()
 		m.OnGetInfo                = 'GetInfo'
 		m.OnGetPageNumber          = 'GetPageNumber'
 		m.SortedList               = true
+
+		local fmd = require 'fmd.env'
+		local slang = fmd.SelectedLanguage
+		local translations = {
+			['en'] = {
+				['deduplicatechapters'] = 'Use a deduplicated chapter list from website (may hide other scanlator uploads)'
+			},
+			['id_ID'] = {
+				['deduplicatechapters'] = 'Gunakan daftar bab tanpa bab ganda dari situs (mungkin menyembunyikan unggahan dari penerjemah lain)'
+			}
+		}
+		local lang = translations[slang] or translations['en']
+		m.AddOptionCheckBox('deduplicatechapters', lang.deduplicatechapters, false)
 	end
 	AddWebsiteModule('54f7ea4222e84dec965f2171c555292a', 'https://xcomic.me', 'English')
 	AddWebsiteModule('baa132b2a72342e7a9bc7b2b6452f8df', 'https://xcomic.net')

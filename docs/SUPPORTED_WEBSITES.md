@@ -636,7 +636,7 @@
 | WuxiaWorld | [![https://wuxiaworld.site](https://img.shields.io/website?url=https://wuxiaworld.site%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://wuxiaworld.site)](https://wuxiaworld.site) | - | - | - |
 | XBatCat | [![https://xbat.app](https://img.shields.io/website?url=https://xbat.app%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://xbat.app)](https://xbat.app) | OK | 21.01.2026 | - |
 | xCaliBRScans | [![https://xcalibrscans.com](https://img.shields.io/website?url=https://xcalibrscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://xcalibrscans.com)](https://xcalibrscans.com) | - | - | - |
-| XComic | [![https://xcomic.me](https://img.shields.io/website?url=https://xcomic.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://xcomic.me)](https://xcomic.me) | OK | 15.08.2026 | - |
+| XComic | [![https://xcomic.me](https://img.shields.io/website?url=https://xcomic.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://xcomic.me)](https://xcomic.me) | OK | 23.08.2026 | - |
 | XlecX | [![https://xlecx.one](https://img.shields.io/website?url=https://xlecx.one%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://xlecx.one)](https://xlecx.one) | OK | 28.04.2025 | - |
 | Xmanhwa | [![https://www.xmanhwa.me](https://img.shields.io/website?url=https://www.xmanhwa.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.xmanhwa.me)](https://www.xmanhwa.me) | - | - | - |
 | XoxoComics | [![https://xoxocomic.com](https://img.shields.io/website?url=https://xoxocomic.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://xoxocomic.com)](https://xoxocomic.com) | - | - | - |
