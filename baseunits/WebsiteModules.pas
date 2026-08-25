@@ -362,22 +362,38 @@ begin
   AHTTP.OnHTTPRequest := @WebsiteBypassHTTPRequest;
   AHTTP.OnAfterSetHTTPCookies := @MergeHTTPCookiesFromSetting;
 
-  if not Settings.Enabled then exit;
+  if not Settings.Enabled then
+  begin
+    Exit;
+  end;
+
   with Settings.HTTP do
   begin
-    if UserAgent<>'' then
-      AHTTP.UserAgent:=UserAgent;
+    if Cookies <> '' then
+    begin
+      AHTTP.MergeCookies(Cookies);
+    end;
+
+    if UserAgent <> '' then
+    begin
+      AHTTP.UserAgent := UserAgent;
+    end;
+
     with Proxy do
     begin
       case Proxy.ProxyType of
-        ptDirect:AHTTP.SetNoProxy;
-        ptHTTP:s:='HTTP';
-        ptSOCKS4:s:='SOCKS4';
-        ptSOCKS5:s:='SOCKS5';
-        else s:='';
+        ptDirect: AHTTP.SetNoProxy;
+        ptHTTP: s := 'HTTP';
+        ptSOCKS4: s := 'SOCKS4';
+        ptSOCKS5: s := 'SOCKS5';
+        else
+          s := '';
       end;
-      if s<>'' then
-        AHTTP.SetProxy(s,ProxyHost,ProxyPort,ProxyUsername,ProxyPassword);
+
+      if s <> '' then
+      begin
+        AHTTP.SetProxy(s, ProxyHost, ProxyPort, ProxyUsername, ProxyPassword);
+      end;
     end;
   end;
 end;

@@ -197,8 +197,6 @@ begin
             Synchronize(@SyncReopenUsed);
           end;
         end;
-
-        dataProcess.Open(FModule.ID);
       end
       else
       begin

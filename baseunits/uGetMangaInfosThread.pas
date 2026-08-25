@@ -100,7 +100,6 @@ begin
     else
     begin
       FInfo.AddInfoToData(FInfo.MangaInfo.Title, FInfo.MangaInfo.Link, tempDataProcess);
-      tempDataProcess.Sort;
     end;
   finally
     if oldModuleID = FModule.ID then

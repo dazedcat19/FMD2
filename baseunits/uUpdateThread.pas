@@ -858,7 +858,6 @@ begin
             begin
               UpdateStatusText(RS_UpdatingList + Format(' [%d/%d] %s',
                 [websitePtr, websites.Count, Module.Name]) + ' | ' + RS_SavingData + '...');
-              mainDataProcess.Sort;
               mainDataProcess.Close;
               Synchronize(@RefreshList);
             end;

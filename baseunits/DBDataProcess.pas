@@ -11,12 +11,17 @@ interface
 
 uses
   SysUtils, Classes, FileUtil, LazFileUtils, sqlite3conn, sqlite3backup,
-  sqlite3dyn, sqlite3ds, sqldb, DB, RegExpr, SQLiteData;
+  sqlite3dyn, sqldb, DB, RegExpr, SQLiteData;
 
 type
   TFieldValuePair = record
     Field: String;
     Value: String;
+  end;
+
+  TDBFieldDef = record
+    Name: String;
+    TypeAndConstraints: String;
   end;
 
   { TMangaInfoData }
@@ -36,18 +41,6 @@ type
     Summary: String;
     NumChapter,
     JDN: Integer;
-  end;
-             
-  { TVacuumThread }
-
-  TDBVacuumThread = class(TThread)
-  private
-    FDatabaseFile,
-    FWebsite: string;
-  protected
-    procedure Execute; override;
-  public
-    constructor Create(const ADatabaseFile, AWebsite: string);
   end;
 
   { TDBDataProcess }
@@ -72,17 +65,22 @@ type
     FSitesList: TStringList;
     FAttachedSites: TStringList;
     FSQLSelect: String;
+    FSQLOrderBy: String;
+    FSQLSelectOrderBy: String;
     FFilterSQL: String;
     FLinks: TStringList;
     FRecNo: Integer;
     function GetLinkCount: Integer;
     procedure ResetRecNo(Dataset: TDataSet);
+
   protected
+    procedure CreateIndexes;
     procedure CreateTable;
-    procedure CreateField(const FieldName: String);
-    procedure CheckFieldsExist(const ATableName: String);
-    procedure ConvertNewTable(const TableParams: String);
-    procedure VacuumTable;
+    procedure CreateField(const FieldName, FieldType: String);
+    procedure RenameField(const FieldOldName, FieldNewName: String);
+    procedure DeleteField(const FieldName: String);
+    procedure CheckFieldsExist;
+    procedure ConvertNewTable(const Fields: TStringList);
     procedure GetRecordCount;
     procedure AddSQLCond(const sqltext: String; useOR: Boolean = False);
     procedure AddSQLSimpleFilter(const fieldname, Value: String;
@@ -176,34 +174,38 @@ type
   end;
 
 const
-  DBDataProcessParam = '"link","title","alttitles","authors","artists","genres","status","summary","numchapter","jdn"';
-  DBDataProcessParamInsert = ':link,:title,:alttitles,:authors,:artists,:genres,:status,:summary,:numchapter,:jdn';
-  DBDataProcessParams: array [0..9] of ShortString =
-    ('link', 'title', 'alttitles', 'authors', 'artists', 'genres', 'status',
-    'summary', 'numchapter', 'jdn');
-  DBTempFieldWebsiteIndex = Length(DBDataProcessParams);
-  DBDataProccesCreateParam =
-    '"link" TEXT NOT NULL PRIMARY KEY,' +
-    '"title" TEXT,' +
-    '"alttitles" TEXT,' +
-    '"authors" TEXT,' +
-    '"artists" TEXT,' +
-    '"genres" TEXT,' +
-    '"status" TEXT,' +
-    '"summary" TEXT,' +
-    '"numchapter" INTEGER,' +
-    '"jdn" INTEGER';
+  DB_FIELDS: array[0..9] of TDBFieldDef = (
+    (Name: 'link';       TypeAndConstraints: 'TEXT NOT NULL PRIMARY KEY'),
+    (Name: 'title';      TypeAndConstraints: 'TEXT'),
+    (Name: 'alttitles';  TypeAndConstraints: 'TEXT'),
+    (Name: 'authors';    TypeAndConstraints: 'TEXT'),
+    (Name: 'artists';    TypeAndConstraints: 'TEXT'),
+    (Name: 'genres';     TypeAndConstraints: 'TEXT'),
+    (Name: 'status';     TypeAndConstraints: 'TEXT'),
+    (Name: 'summary';    TypeAndConstraints: 'TEXT'),
+    (Name: 'numchapter'; TypeAndConstraints: 'INTEGER'),
+    (Name: 'jdn';        TypeAndConstraints: 'INTEGER')
+  );
+
+  DBTempFieldWebsiteIndex = Length(DB_FIELDS);
+
+var
+  DBDataProcessParam: String;
+  DBDataProcessParamInsert: String;
+  DBDataProccesCreateParam: String;
+  DBDataProcessParams: array[0..High(DB_FIELDS)] of String;
 
 function DBDataFilePath(const AModuleID: String): String;
 function DBDataFileExist(const AModuleID: String): Boolean;
 procedure CopyDBDataProcess(const AWebsite, NWebsite: String);
 function DeleteDBDataProcess(const AWebsite: String): Boolean;
-procedure OverwriteDBDataProcess(const AWebsite, NWebsite: String);
+procedure OverwriteDBDataProcess(const AWebsite, NWebsite: String); 
+procedure InitDBConstants;
 
 implementation
 
 uses
-  uBaseUnit, uVars, uOptions, MultiLog, WebsiteModules, frmMain;
+  uBaseUnit, uOptions, MultiLog, WebsiteModules;
 
 function NaturalCompareCallback({%H-}user: pointer; len1: longint;
   data1: pointer; len2: longint; data2: pointer): longint; cdecl;
@@ -301,13 +303,13 @@ begin
 
   tryc := 0;
   while not DeleteFile(DATA_FOLDER + AWebsite + DBDATA_EXT) do
-  begin
+  begin 
+    Inc(tryc);
     if tryc > 3 then
     begin
       Break;
     end;
 
-    Inc(tryc);
     Sleep(250);
   end;
 
@@ -315,7 +317,15 @@ begin
 end;
 
 procedure OverwriteDBDataProcess(const AWebsite, NWebsite: String);
+var
+  OldFile, NewFile: String;
+  Retries, MaxRetries, SleepMS: Integer;
 begin
+  SleepMS := 250;
+  MaxRetries := 3;
+  OldFile := DATA_FOLDER + AWebsite + DBDATA_EXT;
+  NewFile := DATA_FOLDER + NWebsite + DBDATA_EXT;
+
   if not FileExists(DATA_FOLDER + NWebsite + DBDATA_EXT) then
   begin
     Exit;
@@ -326,48 +336,42 @@ begin
     Exit;
   end;
 
-  RenameFile(DATA_FOLDER + NWebsite + DBDATA_EXT, DATA_FOLDER + AWebsite + DBDATA_EXT);
-end;
-
-{ TDBVacuumThread }
-
-constructor TDBVacuumThread.Create(const ADatabaseFile, AWebsite: string);
-begin
-  inherited Create(False);
-  FDatabaseFile := ADatabaseFile;
-  FWebsite := AWebsite;
-  FreeOnTerminate := True;
-end;
-
-procedure TDBVacuumThread.Execute;
-var
-  VacuumConn: TSQLite3ConnectionH;
-  VacuumTrans: TSQLTransaction;
-begin
-  VacuumTrans := TSQLTransaction.Create(nil);
-  VacuumConn := TSQLite3ConnectionH.Create(nil);
-
-  try
-    VacuumConn.DatabaseName := FDatabaseFile;
-    VacuumConn.Transaction := VacuumTrans;
-
-    try
-      VacuumConn.ExecuteDirect('END TRANSACTION;');
-
-      try
-        VacuumConn.ExecuteDirect('VACUUM;');
-      finally
-        VacuumConn.ExecuteDirect('BEGIN TRANSACTION;');
-      end;
-    except
-      on E: Exception do
-      begin
-        SendLogException(Self.ClassName + '[' + FWebsite + '].VacuumTable.Error!', E);
-      end;
+  Retries := 0;
+  while not RenameFile(NewFile, OldFile) do
+  begin
+    Inc(Retries);
+    if Retries > MaxRetries then
+    begin
+      SendLogError('OverwriteDBDataProcess[' + AWebsite + '] Failed to rename temp DB to original path.');
+      Exit;
     end;
-  finally
-    VacuumTrans.Free;
-    VacuumConn.Free;
+
+    Sleep(SleepMS);
+  end;
+end;
+
+procedure InitDBConstants;
+var
+  i: Integer;
+begin
+  DBDataProcessParam := '';
+  DBDataProcessParamInsert := '';
+  DBDataProccesCreateParam := '';
+
+  for i := Low(DB_FIELDS) to High(DB_FIELDS) do
+  begin
+    DBDataProcessParams[i] := DB_FIELDS[i].Name;
+
+    if i > Low(DB_FIELDS) then
+    begin
+      DBDataProcessParam       := DBDataProcessParam + ',';
+      DBDataProcessParamInsert := DBDataProcessParamInsert + ',';
+      DBDataProccesCreateParam := DBDataProccesCreateParam + ',';
+    end;
+
+    DBDataProcessParam       := DBDataProcessParam + '"' + DB_FIELDS[i].Name + '"';
+    DBDataProcessParamInsert := DBDataProcessParamInsert + ':' + DB_FIELDS[i].Name;
+    DBDataProccesCreateParam := DBDataProccesCreateParam + '"' + DB_FIELDS[i].Name + '" ' + DB_FIELDS[i].TypeAndConstraints;
   end;
 end;
 
@@ -450,6 +454,32 @@ begin
   end;
 end;
 
+procedure TDBDataProcess.CreateIndexes;
+begin
+  if not FConn.Connected then
+  begin
+    Exit;
+  end;
+
+  Lock;
+    try
+      try
+        FConn.ExecuteDirect('CREATE INDEX IF NOT EXISTS "idx_' + FTableName +
+          '_title" ON "' + FTableName + '" (title COLLATE NATCMP ASC);');
+
+        FTrans.CommitRetaining;
+      except
+        on E: Exception do
+        begin
+          SendLogException(Self.ClassName + '.CreateIndexes.Error!', E);
+          FTrans.Rollback;
+        end;
+      end;
+    finally
+      Unlock;
+    end;
+end;
+
 procedure TDBDataProcess.CreateTable;
 begin
   if not FConn.Connected then
@@ -459,87 +489,140 @@ begin
 
   Lock;
   try
-    FConn.ExecuteDirect('DROP TABLE IF EXISTS "' + FTableName + '"');
-    FConn.ExecuteDirect('CREATE TABLE "' + FTableName + '" (' +
-      DBDataProccesCreateParam + ');');
-    FTrans.CommitRetaining; 
-  finally
-    Unlock;
-  end;
-end;
+    try 
+      FConn.ExecuteDirect('DROP TABLE IF EXISTS "' + FTableName + '"');
+      FConn.ExecuteDirect('CREATE TABLE "' + FTableName + '" (' + DBDataProccesCreateParam + ');');
 
-procedure TDBDataProcess.CreateField(const FieldName: String);
-begin
-  if not FConn.Connected then
-  begin
-    Exit;
-  end;
-     
-  Lock;
-  try
-    FConn.ExecuteDirect('ALTER TABLE "' + FTableName + '" ADD COLUMN "' + FieldName + '" TEXT;');
-    FTrans.CommitRetaining;
-  finally
-    Unlock;
-  end;
-end;
-
-procedure TDBDataProcess.ConvertNewTable(const TableParams: String);
-begin
-  if not FConn.Connected then
-  begin
-    Exit;
-  end;
-     
-  Lock;
-  try
-    try
-      with FConn do
-      begin
-        try
-          ExecuteDirect('ALTER TABLE "' + FTableName + '" RENAME TO "' + FTableName + '_old"');
-          ExecuteDirect('CREATE TABLE "' + FTableName + '" (' + DBDataProccesCreateParam + ');');
-          ExecuteDirect('INSERT INTO "' + FTableName + '" (' + TableParams + ') SELECT ' + TableParams + ' FROM "' + FTableName + '_old"');
-          ExecuteDirect('DROP TABLE "' + FTableName + '_old"');
-        except
-          on E: Exception do
-            SendLogException(Self.ClassName + '[' + Website + '].Convert.Error!', E);
-        end;
-      end;
-
-      FTrans.Commit;
-      VacuumTable;
-    except
-      FTrans.Rollback;
-    end;    
-  finally
-    Unlock;
-  end;
-end;
-
-procedure TDBDataProcess.VacuumTable;
-begin 
-  if not FConn.Connected then
-  begin
-    Exit;
-  end;
-
-  Lock;
-  try
-    try      
-      FConn.ExecuteDirect('END TRANSACTION;');
-
-      try
-        FConn.ExecuteDirect('VACUUM;');
-      finally  
-        FConn.ExecuteDirect('BEGIN TRANSACTION;');
-      end;
+      FTrans.CommitRetaining;
     except
       on E: Exception do
       begin
-        SendLogException(Self.ClassName + '[' + Website + '].VacuumTable.Error!', E);
+        SendLogException(Self.ClassName + '[' + Website + '].CreateTable.Error!', E);
+        FTrans.Rollback;
       end;
     end;
+  finally
+    Unlock;
+  end;
+end;
+
+procedure TDBDataProcess.CreateField(const FieldName, FieldType: String);
+begin
+  if not FConn.Connected then
+  begin
+    Exit;
+  end;
+     
+  Lock;
+  try
+    try  
+      FConn.ExecuteDirect('ALTER TABLE "' + FTableName + '" ADD COLUMN "' + FieldName + '" ' + FieldType + ';');
+
+      FTrans.CommitRetaining;
+    except
+      on E: Exception do
+      begin
+        SendLogException(Self.ClassName + '[' + Website + '].CreateField.Error!', E);
+        FTrans.Rollback;
+      end;
+    end;
+  finally
+    Unlock;
+  end;
+end;
+
+procedure TDBDataProcess.RenameField(const FieldOldName, FieldNewName: String);
+begin
+  if not FConn.Connected then
+  begin
+    Exit;
+  end;
+
+  Lock;
+  try
+    try
+      FConn.ExecuteDirect('ALTER TABLE "' + FTableName + '" RENAME COLUMN "' + FieldOldName + '" TO "' + FieldNewName + '";');
+
+      FTrans.CommitRetaining;
+    except
+      on E: Exception do
+      begin
+        SendLogException(Self.ClassName + '[' + Website + '].RenameField.Error!', E);
+        FTrans.Rollback;
+      end;
+    end;
+  finally
+    Unlock;
+  end;
+end;
+
+procedure TDBDataProcess.DeleteField(const FieldName: String);
+begin
+  if not FConn.Connected then
+  begin
+    Exit;
+  end;
+
+  Lock;
+  try
+    try
+      FConn.ExecuteDirect('ALTER TABLE "' + FTableName + '" DROP COLUMN "' + FieldName + '";');
+
+      FTrans.CommitRetaining;
+    except
+      on E: Exception do
+      begin
+        SendLogException(Self.ClassName + '[' + Website + '].DeleteField.Error!', E);
+        FTrans.Rollback;
+      end;
+    end;
+  finally
+    Unlock;
+  end;
+end;
+
+procedure TDBDataProcess.ConvertNewTable(const Fields: TStringList);
+var
+  SharedParams, FieldName: String;
+  i, idx: Integer;
+begin
+  if not FConn.Connected then
+  begin
+    Exit;
+  end;
+
+  SharedParams := '';
+  for i := Low(DB_FIELDS) to High(DB_FIELDS) do
+  begin
+    FieldName := DB_FIELDS[i].Name;
+    if Fields.Find(FieldName, idx) then
+    begin
+      if i > Low(DB_FIELDS) then
+      begin
+        SharedParams := SharedParams + ',';
+      end;
+
+      SharedParams := SharedParams + '"' + FieldName + '"';
+    end;
+  end;
+
+  Lock;
+  try
+    try
+      FConn.ExecuteDirect('ALTER TABLE "' + FTableName + '" RENAME TO "' + FTableName + '_old"');
+      CreateTable;
+      FConn.ExecuteDirect('INSERT INTO "' + FTableName + '" (' + SharedParams + ') SELECT ' + SharedParams + ' FROM "' + FTableName + '_old"');
+      CreateIndexes;
+      FConn.ExecuteDirect('DROP TABLE "' + FTableName + '_old"');
+
+      FTrans.CommitRetaining;
+    except  
+      on E: Exception do
+      begin
+        SendLogException(Self.ClassName + '[' + Website + '].ConvertNewTable.Error!', E);
+        FTrans.Rollback;
+      end;
+    end;    
   finally
     Unlock;
   end;
@@ -552,9 +635,16 @@ begin
   FRecordCount := 0;
   bsql := Trim(FReadQuery.SQL.Text);
 
-  if UpperCase(LeftStr(bsql, 8)) = 'SELECT *' then
+  if UpperCase(LeftStr(bsql, 8)) <> 'SELECT *' then
   begin
+    Exit;
+  end;
+
+  Lock;
+  try
     FRecordCount := StrToIntDef(FConn.ExecuteQuery('SELECT COUNT("link") ' + copy(bsql, 9, length(bsql))), 0);
+  finally
+    Unlock;
   end;
 end;
 
@@ -975,6 +1065,8 @@ begin
   FAttachedSites := TStringList.Create;
   FTableName := 'masterlist';
   FSQLSelect := 'SELECT * FROM "' + FTableName + '"';
+  FSQLOrderBy := ' ORDER BY "title" COLLATE NATCMP ASC';
+  FSQLSelectOrderBy := FSQLSelect + FSQLOrderBy;
   FRecordCount := 0;   
   FSorted := False;
   FFiltered := False;
@@ -986,7 +1078,7 @@ begin
   ResetRecNo(nil); 
 
   FReadQuery := TSQLQuery.Create(nil);
-  FReadQuery.SQL.Text := FSQLSelect;
+  FReadQuery.SQL.Text := FSQLSelectOrderBy;
   FReadQuery.PacketRecords := 25;
   FReadQuery.DataBase := FTrans.DataBase;
   FReadQuery.Transaction := FTrans;
@@ -1013,8 +1105,6 @@ begin
 end;
 
 destructor TDBDataProcess.Destroy;
-var
-  i: Integer;
 begin
   try
     if FConn.Connected then
@@ -1110,8 +1200,9 @@ begin
         CreateTable;
       end;
 
+      CheckFieldsExist;         
+      CreateIndexes;
       OpenTable(FTableName, True);
-      CheckFieldsExist(FTableName);
       Result := FReadQuery.Active;
     except
       on E: Exception do
@@ -1155,8 +1246,7 @@ begin
         FTrans.Active := True;
       end;
 
-      FSQLSelect := 'SELECT * FROM "' + FTableName + '"';
-      FReadQuery.SQL.Text := FSQLSelect;
+      FReadQuery.SQL.Text := FSQLSelectOrderBy;
 
       if CheckRecordCount then
       begin
@@ -1195,56 +1285,55 @@ begin
   end;
 end;
 
-procedure TDBDataProcess.CheckFieldsExist(const ATableName: String);
+procedure TDBDataProcess.CheckFieldsExist;
 var
-  ts: TStringList;
-  i, j: Integer;
-  FieldName, TableParams: String;
-  FoundMissing: Boolean;
+  CurrentDBFields: TStringList;
+  FieldOldName, FieldNewName: String;
+  i: Integer;
 begin
-  if FConn.Connected then
+  if not FConn.Connected then
   begin
     Exit;
   end;
 
-  FoundMissing := False;
-  TableParams := '';
-  ts := TStringList.Create;
+  CurrentDBFields := TStringList.Create;
 
+  Lock;
   try
-    FConn.GetFieldNames(ATableName, ts);
-    ts.Sorted := True;
-    for j := Low(DBDataProcessParams) to High(DBDataProcessParams) do
-    begin
-      FieldName := DBDataProcessParams[j];
+    try
+      FConn.GetFieldNames(FTableName, CurrentDBFields);
 
-      if ts.Find(FieldName, i) then
+      if CurrentDBFields.Count <> Length(DB_FIELDS) then
       begin
-        if j > 0 then
-        begin
-          TableParams := TableParams + ',';
-        end;
-
-        TableParams := TableParams + '"' + FieldName + '"';
+        CurrentDBFields.Sorted := True;
+        ConvertNewTable(CurrentDBFields);
       end
       else
       begin
-        FoundMissing := True;
+        for i := Low(DB_FIELDS) to High(DB_FIELDS) do
+        begin
+          FieldOldName := CurrentDBFields[i];
+          FieldNewName := DB_FIELDS[i].Name;
+
+          if not SameText(FieldOldName, FieldNewName) then
+          begin
+            RenameField(FieldOldName, FieldNewName);
+          end;
+        end;
+      end;
+    except
+      on E: Exception do
+      begin
+        SendLogException(Self.ClassName + '[' + FTableName + '].CheckFieldsExist.Error!', E);
       end;
     end;
-
-    if FoundMissing then
-    begin
-      ConvertNewTable(TableParams);
-    end;
   finally
-    ts.Free;
+    CurrentDBFields.Free;
+    Unlock;
   end;
 end;
 
 procedure TDBDataProcess.Close;
-var
-  databaseName: String;
 begin
   FRecordCount := 0;
 
@@ -1253,18 +1342,11 @@ begin
     Exit;
   end;
 
-  databaseName := FConn.DatabaseName;
   try
     FReadQuery.Close;
     RemoveFilter;
     FConn.Close;
     FConn.DatabaseName := '';
-
-    if FSorted and FMDOptions.General.DBVacuumExit then
-    begin
-      TDBVacuumThread.Create(databaseName, FWebsite);
-    end;
-            
     FSorted := False;
     FWebsite := '';
   except
@@ -1497,7 +1579,6 @@ begin
       Result := FWriteQuery.RowsAffected > 0;
       FWriteQuery.Close;
 
-      //FReadQuery.SQL.Text := FSQLSelect;
       FReadQuery.Open;
     except
       on E: Exception do
@@ -1593,7 +1674,6 @@ begin
       Result := FWriteQuery.RowsAffected > 0;
       FWriteQuery.Close;
 
-      //FReadQuery.SQL.Text := FSQLSelect;
       FReadQuery.Open;
     except
       on E: Exception do
@@ -1634,8 +1714,6 @@ begin
     if Result then
     begin
       Dec(FRecordCount);
-      // Refresh the read query to reflect deletion
-      //FReadQuery.SQL.Text := FSQLSelect;
       FReadQuery.Open;
     end;
   except
@@ -1957,7 +2035,7 @@ begin
             end;
 
             SQL.Add(')');
-            SQL.Add('ORDER BY "title" COLLATE NATCMP');
+            SQL.Add(FSQLOrderBy);
             filtersingle := False;
           end;
         end;
@@ -1967,6 +2045,7 @@ begin
           SQL.Add(FSQLSelect);
           SQL.Add('WHERE');
           GenerateSQLFilter;
+          SQL.Add(FSQLOrderBy);
         end;
 
         Self.GetRecordCount;
@@ -1976,7 +2055,7 @@ begin
 
         if FFilterApplied then
         begin
-          FFilterSQL := SQL.Text;
+          FFilterSQL := StringReplace(SQL.Text, FSQLOrderBy, '', [rfIgnoreCase, rfReplaceAll]);;
         end
         else
         begin
@@ -2016,11 +2095,15 @@ begin
     DeleteFile(filepath);
   end;
 
-  if ForceDirectories(DATA_FOLDER) then
+  if not ForceDirectories(DATA_FOLDER) then
   begin
-    InternalOpen(filepath);
-    CreateTable;
+    Exit;
   end;
+
+  InternalOpen(filepath);
+  ExecuteDirect('PRAGMA auto_vacuum = FULL;');
+  CreateTable;
+  CreateIndexes;
 end;
 
 procedure TDBDataProcess.GetFieldNames(const List: TStringList);
@@ -2045,7 +2128,7 @@ begin
   FFiltered := False;
   FFilterApplied := False;
   FFilterSQL := '';
-  FReadQuery.SQL.Text := FSQLSelect;
+  FReadQuery.SQL.Text := FSQLSelectOrderBy;
   FRecordCount := 0;
   DetachAllSites;
 
@@ -2187,5 +2270,8 @@ begin
     FreeAndNil(FLinks);
   end;
 end;
+
+initialization
+  InitDBConstants;
 
 end.
