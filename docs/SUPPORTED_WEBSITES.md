@@ -492,7 +492,7 @@
 | Raw Sen Manga | [![https://raw.senmanga.com](https://img.shields.io/website?url=https://raw.senmanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://raw.senmanga.com)](https://raw.senmanga.com) | OK | 31.08.2025 | - |
 | Raw1001 | [![https://raw1001.net](https://img.shields.io/website?url=https://raw1001.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://raw1001.net)](https://raw1001.net) | OK | 20.01.2025 | - |
 | RawDevart | [![https://rawdevart.com](https://img.shields.io/website?url=https://rawdevart.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://rawdevart.com)](https://rawdevart.com) | - | - | - |
-| RawDEX | [![https://rawdex.net](https://img.shields.io/website?url=https://rawdex.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://rawdex.net)](https://rawdex.net) | OK | 23.07.2025 | - |
+| RawDEX | [![https://rawdex.net](https://img.shields.io/website?url=https://rawdex.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://rawdex.net)](https://rawdex.net) | OK | 25.08.2026 | - |
 | RawINU | [![https://rawinu.com](https://img.shields.io/website?url=https://rawinu.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://rawinu.com)](https://rawinu.com) | OK | 19.01.2025 | - |
 | Rawkuma | [![https://rawkuma.net](https://img.shields.io/website?url=https://rawkuma.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://rawkuma.net)](https://rawkuma.net) | OK | 01.07.2026 | - |
 | RawMangaUpdate | [![https://www.rawmangaupdate.com](https://img.shields.io/website?url=https://www.rawmangaupdate.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.rawmangaupdate.com)](https://www.rawmangaupdate.com) | - | - | - |
