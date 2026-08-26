@@ -294,6 +294,18 @@ msgstr "无法获取漫画信息。请检查您的网络连接并再次尝试。
 msgid "Download count:"
 msgstr "下载计数："
 
+#: frmmain.rs_dlgmovesavetofiles
+msgid ""
+"Files exist in the current save location.\n"
+"Do you want to move them to the new location?"
+msgstr ""
+
+#: frmmain.rs_dlgmovesavetofilesmulti
+msgid ""
+"Some favorites have files in their current save locations.\n"
+"Do you want to move them to the new locations?"
+msgstr ""
+
 #: frmmain.rs_dlgquit
 msgid "Are you sure you want to exit?"
 msgstr "确定要退出吗？"
@@ -1028,6 +1040,14 @@ msgstr "作为已停止任务添加到下载列表"
 #: tmainform.cbfilterstatus.text
 msgid "<none>"
 msgstr "<无>"
+
+#: tmainform.cbimagemagickcompression.text
+msgid "None"
+msgstr ""
+
+#: tmainform.cbimagemagicksaveas.text
+msgid "JPEG"
+msgstr ""
 
 #: tmainform.cbonlynew.caption
 msgid "Search only new manga"
@@ -2835,10 +2855,19 @@ msgstr "发现已完成漫画(s)"
 msgid "Favorites check is running!"
 msgstr "正在运行收藏夹检查！"
 
+#: ufavoritesmanager.rs_dlgmissingchaptercaption
+msgid "Found missing chapter(s)"
+msgstr ""
+
 #: ufavoritesmanager.rs_dlgnewchaptercaption
 msgctxt "ufavoritesmanager.rs_dlgnewchaptercaption"
 msgid "Found new chapter(s)"
 msgstr "发现新章节(s)"
+
+#: ufavoritesmanager.rs_favoritehasmissingchapter
+#, object-pascal-format
+msgid "%s <%s> has %d missing chapter(s)."
+msgstr ""
 
 #: ufavoritesmanager.rs_favoritehasnewchapter
 #, object-pascal-format
@@ -2849,6 +2878,11 @@ msgstr "%s <%s> 有 %d 新章节(s)."
 #, object-pascal-format
 msgid "%d completed manga(s) will be removed:"
 msgstr "%d 已完成漫画(s) 将被删除:"
+
+#: ufavoritesmanager.rs_lblmissingchapterfound
+#, object-pascal-format
+msgid "Found %d missing chapter(s) from %d manga(s):"
+msgstr ""
 
 #: ufavoritesmanager.rs_lblnewchapterfound
 #, object-pascal-format

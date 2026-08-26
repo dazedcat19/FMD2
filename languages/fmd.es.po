@@ -295,6 +295,18 @@ msgstr "No se puede obtener la información del manga. Por favor revisa tu conex
 msgid "Download count:"
 msgstr "Cuenta de Descarga:"
 
+#: frmmain.rs_dlgmovesavetofiles
+msgid ""
+"Files exist in the current save location.\n"
+"Do you want to move them to the new location?"
+msgstr ""
+
+#: frmmain.rs_dlgmovesavetofilesmulti
+msgid ""
+"Some favorites have files in their current save locations.\n"
+"Do you want to move them to the new locations?"
+msgstr ""
+
 #: frmmain.rs_dlgquit
 msgid "Are you sure you want to exit?"
 msgstr "¿Estás seguro que quieres salir?"
@@ -1029,6 +1041,14 @@ msgstr "Agregar a Descargas como Tarea Detenida"
 #: tmainform.cbfilterstatus.text
 msgid "<none>"
 msgstr "<ninguno>"
+
+#: tmainform.cbimagemagickcompression.text
+msgid "None"
+msgstr ""
+
+#: tmainform.cbimagemagicksaveas.text
+msgid "JPEG"
+msgstr ""
 
 #: tmainform.cbonlynew.caption
 msgid "Search only new manga"
@@ -2834,10 +2854,19 @@ msgstr "Manga(s) Completado(s) Encontrado(s)"
 msgid "Favorites check is running!"
 msgstr "Vericación de Favoritos está Ejecutandose"
 
+#: ufavoritesmanager.rs_dlgmissingchaptercaption
+msgid "Found missing chapter(s)"
+msgstr ""
+
 #: ufavoritesmanager.rs_dlgnewchaptercaption
 msgctxt "ufavoritesmanager.rs_dlgnewchaptercaption"
 msgid "Found new chapter(s)"
 msgstr "Encontrado(s) Nuevo(s) Capítulo (s)"
+
+#: ufavoritesmanager.rs_favoritehasmissingchapter
+#, object-pascal-format
+msgid "%s <%s> has %d missing chapter(s)."
+msgstr ""
 
 #: ufavoritesmanager.rs_favoritehasnewchapter
 #, object-pascal-format
@@ -2848,6 +2877,11 @@ msgstr "%s <%s> has %d Nuevo(s) Capítulo(s)."
 #, object-pascal-format
 msgid "%d completed manga(s) will be removed:"
 msgstr "%d Manga(s) Completado(s) será(n) removido(s):"
+
+#: ufavoritesmanager.rs_lblmissingchapterfound
+#, object-pascal-format
+msgid "Found %d missing chapter(s) from %d manga(s):"
+msgstr ""
 
 #: ufavoritesmanager.rs_lblnewchapterfound
 #, object-pascal-format
