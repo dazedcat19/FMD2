@@ -343,8 +343,8 @@ function GetInfo()
 
 		if not deduplicate then
 			local volume = (vol_num ~= 0) and ('Vol. ' .. vol_num .. ' ') or ''
-			local chapter = number and ('Ch. ' .. number) or ''
-			local title = name and (' - ' .. name) or ''
+			local chapter = number ~= '' and ('Ch. ' .. number) or ''
+			local title = name ~= '' and (' - ' .. name) or ''
 			local scanlator = ''
 			if optgroup then
 				if scan_group_name then
@@ -409,8 +409,8 @@ function GetInfo()
 			local ch = chapter_map[key]
 
 			local volume = (ch.vol_num ~= 0) and ('Vol. ' .. ch.vol_num .. ' ') or ''
-			local chapter = ch.number and ('Ch. ' .. ch.number) or ''
-			local title = ch.name and (' - ' .. ch.name) or ''
+			local chapter = ch.number ~= '' and ('Ch. ' .. ch.number) or ''
+			local title = ch.name ~= '' and (' - ' .. ch.name) or ''
 			local scanlator = ''
 			if optgroup then
 				if ch.scan_group_name then
