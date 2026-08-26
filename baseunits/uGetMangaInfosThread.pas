@@ -97,7 +97,7 @@ begin
       FInfo.SyncInfoToData(tempDataProcess);
       tempDataProcess.Commit;
     end
-    else
+    else if FMDOptions.General.MangaLoadAddToList then
     begin
       FInfo.AddInfoToData(FInfo.MangaInfo.Title, FInfo.MangaInfo.Link, tempDataProcess);
     end;
@@ -239,7 +239,8 @@ begin
       begin
         Exit;
       end;
-
+         
+      MainThreadAddInfos;
       Synchronize(MainThreadShowInfos);
       FCover.Clear;
       // If there's cover then we will load it to the TPicture component.
@@ -258,11 +259,6 @@ begin
       if not (Terminated or isExiting) then
       begin
         Synchronize(MainThreadShowCover);
-      end;
-
-      if FMDOptions.General.MangaLoadAddToList then
-      begin
-        MainThreadAddInfos;
       end;
     end;
   except

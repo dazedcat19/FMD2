@@ -284,7 +284,7 @@ end;
 
 procedure TMangaInformation.SyncInfoToData(const ADataProcess: TDBDataProcess);
 begin
-  if not Assigned(ADataProcess) then
+  if not Assigned(ADataProcess) or (MangaInfo.Title = 'N/A')then
   begin
     Exit;
   end;
