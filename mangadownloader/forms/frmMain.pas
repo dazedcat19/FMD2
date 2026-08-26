@@ -1211,17 +1211,19 @@ begin
 
   Synchronize(@SyncOpenStart);
 
-  if dataProcess <> nil then
+  if dataProcess.Website <> FWebsite then
   begin
-    if dataProcess.Website <> FWebsite then
-    begin
-      dataProcess.Open(FWebsite);
-    end;
+    dataProcess.Open(FWebsite);
+  end
+  else if not dataProcess.Connected then
+  begin
+    dataProcess.Connect(dataProcess.Website);
+    dataProcess.Refresh(True);
+  end;
 
-    if MainForm.edMangaListSearch.Text <> '' then
-    begin
-      dataProcess.Search(MainForm.edMangaListSearch.Text);
-    end;
+  if MainForm.edMangaListSearch.Text <> '' then
+  begin
+    dataProcess.Search(MainForm.edMangaListSearch.Text);
   end;
 
   if not Terminated then
