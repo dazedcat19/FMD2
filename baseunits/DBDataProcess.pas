@@ -97,6 +97,7 @@ type
     procedure DetachAllSites;
     function ExecuteDirect(SQL: String): Boolean;
     function CheckWebsiteAndFilePath(const AWebsite: String; var AFilePath: String): Boolean;
+
   public
     constructor Create;
     destructor Destroy; override;
@@ -389,10 +390,12 @@ end;
 
 procedure TDBDataProcess.ResetRecNo(Dataset: TDataSet);
 begin
-  FRecNo := 0;
+  FRecNo := -1;
 end;
 
 function TDBDataProcess.GoToRecNo(const ARecIndex: Integer): Boolean;
+var
+  RecDelta: Integer;
 begin  
   Result := False;
 
@@ -401,23 +404,28 @@ begin
     Exit;
   end;
 
-  if FReadQuery.RecNo = ARecIndex + 1 then
+  if FRecNo = ARecIndex then
   begin
     Exit(True);
   end;
 
-  if (FRecordCount = 0) or ((FRecordCount > 0) and (ARecIndex >= FRecordCount)) then
-  begin
-    GetRecordCount;
-  end;
-
-  if (ARecIndex < 0) or (ARecIndex >= FRecordCount) then
+  if (ARecIndex < 0) or (ARecIndex > FRecordCount) then
   begin
     Exit;
   end;
 
   try
-    FReadQuery.RecNo := ARecIndex + 1;
+    RecDelta := ARecIndex - FRecNo;
+
+    if (FRecNo >= 0) and (Abs(RecDelta) <= 100) then
+    begin
+      FReadQuery.MoveBy(RecDelta);
+    end
+    else
+    begin
+      FReadQuery.RecNo := ARecIndex + 1;
+    end;
+
     FRecNo := ARecIndex;
     Result := True;
   except
@@ -462,22 +470,22 @@ begin
   end;
 
   Lock;
+  try
     try
-      try
-        FConn.ExecuteDirect('CREATE INDEX IF NOT EXISTS "idx_' + FTableName +
-          '_title" ON "' + FTableName + '" (title COLLATE NATCMP ASC);');
+      FConn.ExecuteDirect('CREATE INDEX IF NOT EXISTS "idx_' + FTableName +
+        '_title" ON "' + FTableName + '" (title COLLATE NATCMP ASC);');
 
-        FTrans.CommitRetaining;
-      except
-        on E: Exception do
-        begin
-          SendLogException(Self.ClassName + '.CreateIndexes.Error!', E);
-          FTrans.Rollback;
-        end;
+      FTrans.CommitRetaining;
+    except
+      on E: Exception do
+      begin
+        SendLogException(Self.ClassName + '.CreateIndexes.Error!', E);
+        FTrans.Rollback;
       end;
-    finally
-      Unlock;
     end;
+  finally
+    Unlock;
+  end;
 end;
 
 procedure TDBDataProcess.CreateTable;
@@ -663,10 +671,13 @@ begin
     if (Strings[Count - 1] <> '(') and
       (UpCase(Trim(Strings[Count - 1])) <> 'WHERE') then
     begin
-      sqlAndOr := 'AND';
       if useOR then
       begin
         sqlAndOr := 'OR';
+      end
+      else
+      begin
+        sqlAndOr := 'AND';
       end;
 
       Add(sqlAndOr);
@@ -793,12 +804,16 @@ begin
   end;
 
   try
-    FReadQuery.RecNo := RecIndex + 1;
-    Result := FReadQuery.Fields[DBTempFieldWebsiteIndex].AsString;
+    if GoToRecNo(RecIndex) then
+    begin
+      Result := FReadQuery.Fields[DBTempFieldWebsiteIndex].AsString;
+    end;
   except
     on E: Exception do
+    begin
       SendLogException(Self.ClassName + '[' + Website + '].GetWebsiteName Error!' +
       'RecIndex: ' + IntToStr(RecIndex), E);
+    end;
   end;
 end;
 
@@ -993,7 +1008,9 @@ begin
         FAttachedSites.Delete(i);
       except
         on E: Exception do
+        begin
           SendLogException(Self.ClassName + '[' + Website + '].DetachAllSites.Error!', E);
+        end;
       end;
     end;
 
@@ -1019,8 +1036,10 @@ begin
       Result := True;
     except
       on E: Exception do
+      begin
         SendLogException(Self.ClassName + '[' + Website + '].ExecuteDirect.Error!'#13#10 +
           'SQL: ' + SQL, E);
+      end;
     end;
   finally
     Unlock;
@@ -1079,7 +1098,7 @@ begin
 
   FReadQuery := TSQLQuery.Create(nil);
   FReadQuery.SQL.Text := FSQLSelectOrderBy;
-  FReadQuery.PacketRecords := 25;
+  FReadQuery.PacketRecords := 5000;
   FReadQuery.DataBase := FTrans.DataBase;
   FReadQuery.Transaction := FTrans;
   FReadQuery.ReadOnly := True;
@@ -1092,7 +1111,7 @@ begin
                                          
 
   FWriteQuery := TSQLQuery.Create(nil);
-  FWriteQuery.PacketRecords := 25;
+  FWriteQuery.PacketRecords := 5000;
   FWriteQuery.DataBase := FTrans.DataBase;
   FWriteQuery.Transaction := FTrans;
   FWriteQuery.ReadOnly := False;
@@ -1116,7 +1135,9 @@ begin
     end;
   except
     on E: Exception do
+    begin
       SendLogException(Self.ClassName + '[' + Website + '].Destroy.Error!', E);
+    end;
   end;
 
   DoneLocateLink;
@@ -1185,6 +1206,7 @@ end;
 function TDBDataProcess.Open(const AWebsite: String): Boolean;
 begin
   Lock;
+
   try
     Close;
     Result := False;
@@ -1206,7 +1228,9 @@ begin
       Result := FReadQuery.Active;
     except
       on E: Exception do
+      begin
         SendLogException(Self.ClassName + '.Open.Error!', E);
+      end;
     end;
   finally
     Unlock;
@@ -1247,13 +1271,12 @@ begin
       end;
 
       FReadQuery.SQL.Text := FSQLSelectOrderBy;
+      FReadQuery.Open;
 
       if CheckRecordCount then
       begin
         GetRecordCount;
       end;
-
-      FReadQuery.Open;
     end;
   except
     on E: Exception do
@@ -1351,7 +1374,9 @@ begin
     FWebsite := '';
   except
     on E: Exception do
+    begin
       SendLogException(Self.ClassName + '[' + Website + '].Close.Error!', E);
+    end;
   end;
 end;
 
@@ -1718,7 +1743,9 @@ begin
     end;
   except
     on E: Exception do
+    begin
       SendLogException(ClassName + '[' + Website + '].DeleteData.Error!',E);
+    end;
   end;
 end;
 
@@ -1747,7 +1774,9 @@ begin
       end;
     except
       on E: Exception do
+      begin
         SendLogException(Self.ClassName + '[' + Website + '].Commit.Error!',E);
+      end;
     end;
   finally
     Unlock;
@@ -1765,7 +1794,9 @@ begin
     FTrans.Rollback;
   except
     on E: Exception do
+    begin
       SendLogException(Self.ClassName + '[' + Website + '].Rollback.Error!',E);
+    end;
   end;
 end;
 
@@ -2159,7 +2190,9 @@ begin
         ExecuteDirect('ALTER TABLE "' + FTableName + '_ordered" RENAME TO "' + FTableName + '"');
       except
         on E: Exception do
+        begin
           SendLogException(Self.ClassName + '[' + Website + '].Sort.Error!', E);
+        end;
       end;
     end;
 
@@ -2174,6 +2207,7 @@ var
   i: LongInt;
 begin
   Result := FModule;
+  i := -1;
 
   if not FAllSitesAttached then
   begin
@@ -2181,19 +2215,20 @@ begin
   end;
 
   try
-    FReadQuery.RecNo := RecIndex + 1;
-    FRecNo := RecIndex;
+    if GoToRecNo(RecIndex) then
+    begin
+      i := FReadQuery.Fields[DBTempFieldWebsiteIndex].AsInteger
+    end;
+
+    if i <> -1 then
+    begin
+      Result := Pointer(FAttachedSites.Objects[i]);
+    end;
   except
     on E: Exception do
     begin
       SendLogException(Self.ClassName + '[' + Website + '].GetModule.Error!', E);
     end;
-  end;
-
-  i := FReadQuery.Fields[DBTempFieldWebsiteIndex].AsInteger;
-  if i <> -1 then
-  begin
-    Result := Pointer(FAttachedSites.Objects[i]);
   end;
 end;
 
