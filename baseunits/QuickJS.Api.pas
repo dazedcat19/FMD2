@@ -22,7 +22,7 @@
   IN THE SOFTWARE.
 }
 
-unit QuickJS.Api; // sync with version - "2020-04-12".
+unit QuickJS.Api; // sync with version - "2026-06-04".
 
 {$IfDef FPC}
   {$MODE Delphi}
@@ -54,15 +54,14 @@ uses
 {                              QuickJS Constants                                }
 {===============================================================================}
 const
-  QJS_VERSION = '2020-04-12';
+  QJS_VERSION = '2026-06-04';
 const
   { all tags with a reference count are negative }
-  JS_TAG_FIRST                = -11; { first negative tag }
-  JS_TAG_BIG_DECIMAL          = -11;
-  JS_TAG_BIG_INT              = -10;
-  JS_TAG_BIG_FLOAT            = -9;
+  JS_TAG_FIRST                = -9; { first negative tag }
+  JS_TAG_BIG_INT              = -9;
   JS_TAG_SYMBOL               = -8;
   JS_TAG_STRING               = -7;
+  JS_TAG_STRING_ROPE          = -6;
   JS_TAG_MODULE               = -3; { used internally }
   JS_TAG_FUNCTION_BYTECODE    = -2; { used internally }
   JS_TAG_OBJECT               = -1;
@@ -74,7 +73,8 @@ const
   JS_TAG_UNINITIALIZED        = 4;
   JS_TAG_CATCH_OFFSET         = 5;
   JS_TAG_EXCEPTION            = 6;
-  JS_TAG_FLOAT64              = 7;
+  JS_TAG_SHORT_BIG_INT        = 7;
+  JS_TAG_FLOAT64              = 8;
   { any larger tag is FLOAT64 if JS_NAN_BOXING }
 
   JS_FLOAT64_NAN = NaN;
@@ -108,10 +108,9 @@ const
   { throw an exception if false would be returned in strict mode /
      (JS_SetProperty) }
   JS_PROP_THROW_STRICT     = (1 shl 15);
-  JS_PROP_NO_ADD           = (1 shl 16); { internal use }
-  JS_PROP_NO_EXOTIC        = (1 shl 17); { internal use }
+  JS_PROP_NO_EXOTIC        = (1 shl 16); { internal use }
 
-  JS_DEFAULT_STACK_SIZE    = (256 * 1024);
+  JS_DEFAULT_STACK_SIZE    = (1024 * 1024);
 
   { JS_Eval() flags }
   JS_EVAL_TYPE_GLOBAL      = (0 shl 0); { global code (default) }
@@ -121,7 +120,6 @@ const
   JS_EVAL_TYPE_MASK        = (3 shl 0);
 
   JS_EVAL_FLAG_STRICT      = (1 shl 3); { force 'strict' mode }
-  JS_EVAL_FLAG_STRIP       = (1 shl 4); { force 'strip' mode }
   (*
     compile but do not run. The result is an object with a
      JS_TAG_FUNCTION_BYTECODE or JS_TAG_MODULE tag. It can be executed
@@ -131,13 +129,27 @@ const
 
   { don't include the stack frames before this eval in the Error() backtraces }
   JS_EVAL_FLAG_BACKTRACE_BARRIER = (1 shl 6);
+  { allow top-level await in normal script. JS_Eval() returns a promise.
+     Only allowed with JS_EVAL_TYPE_GLOBAL }
+  JS_EVAL_FLAG_ASYNC        = (1 shl 7);
+
+  { select which debug info is stripped from the compiled code, see JS_SetStripInfo() }
+  JS_STRIP_SOURCE           = (1 shl 0); { strip source code }
+  JS_STRIP_DEBUG            = (1 shl 1); { strip all debug info including source code }
 
   { Object Writer/Reader (currently only used to handle precompiled code)  }
   JS_WRITE_OBJ_BYTECODE     = (1 shl 0); { allow function/module }
   JS_WRITE_OBJ_BSWAP        = (1 shl 1); { byte swapped output }
+  JS_WRITE_OBJ_SAB          = (1 shl 2); { allow SharedArrayBuffer }
+  JS_WRITE_OBJ_REFERENCE    = (1 shl 3); { allow object references to encode arbitrary object graph }
 
   JS_READ_OBJ_BYTECODE      = (1 shl 0); { allow function/module  }
   JS_READ_OBJ_ROM_DATA      = (1 shl 1); { avoid duplicating 'buf' data  }
+  JS_READ_OBJ_SAB           = (1 shl 2); { allow SharedArrayBuffer }
+  JS_READ_OBJ_REFERENCE     = (1 shl 3); { allow object references }
+
+  { JSON parsing flags, see JS_ParseJSON2() }
+  JS_PARSE_JSON_EXT         = (1 shl 0); { allow extended JSON }
 
   { C property definition }
   JS_DEF_CFUNC            = 0;
@@ -250,6 +262,7 @@ type
       0 : (&int32 : int32);
       1 : (float64 : Double);
       2 : (Ptr : Pointer);
+      3 : (short_big_int : Int64); { inline value for JS_TAG_SHORT_BIG_INT }
   end;
 
   JSValue = record
@@ -494,6 +507,45 @@ type
   end;
   PJSCFunctionListEntry = ^JSCFunctionListEntry;
 
+  { module loader with import-attribute support (JS_SetModuleLoaderFunc2) }
+  PJSModuleLoaderFunc2 = ^JSModuleLoaderFunc2;
+  JSModuleLoaderFunc2  = function (ctx : JSContext; module_name : {$IFDEF FPC}PChar{$Else}PAnsiChar{$EndIf};
+                              opaque : Pointer; attributes : JSValueConst) : JSModuleDef; cdecl;
+
+  { return -1 if exception, 0 if OK }
+  PJSModuleCheckSupportedImportAttributes = ^JSModuleCheckSupportedImportAttributes;
+  JSModuleCheckSupportedImportAttributes = function (ctx : JSContext; opaque : Pointer;
+                              attributes : JSValueConst) : Integer; cdecl;
+
+  JSTypedArrayEnum = (
+    JS_TYPED_ARRAY_UINT8C = 0,
+    JS_TYPED_ARRAY_INT8,
+    JS_TYPED_ARRAY_UINT8,
+    JS_TYPED_ARRAY_INT16,
+    JS_TYPED_ARRAY_UINT16,
+    JS_TYPED_ARRAY_INT32,
+    JS_TYPED_ARRAY_UINT32,
+    JS_TYPED_ARRAY_BIG_INT64,
+    JS_TYPED_ARRAY_BIG_UINT64,
+    JS_TYPED_ARRAY_FLOAT16,
+    JS_TYPED_ARRAY_FLOAT32,
+    JS_TYPED_ARRAY_FLOAT64
+  );
+
+  JSPromiseStateEnum = (
+    JS_PROMISE_PENDING = 0,
+    JS_PROMISE_FULFILLED,
+    JS_PROMISE_REJECTED
+  );
+
+  PJSSharedArrayBufferFunctions = ^JSSharedArrayBufferFunctions;
+  JSSharedArrayBufferFunctions = record
+    sab_alloc  : function (opaque : Pointer; size : size_t) : Pointer; cdecl;
+    sab_free   : procedure (opaque, Ptr : Pointer); cdecl;
+    sab_dup    : procedure (opaque, Ptr : Pointer); cdecl;
+    sab_opaque : Pointer;
+  end;
+
   {$IFDEF mswindows}const QJSDLL = {$IfDef WIN64}'quickjs64.dll'{$Else}'quickjs32.dll'{$EndIf};{$endif}
   { QuickJS external APIs }
 
@@ -527,25 +579,18 @@ type
 { the following functions are used to select the intrinsic object to save memory  }
 
   function JS_NewContextRaw(rt: JSRuntime): JSContext; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
-  procedure JS_AddIntrinsicBaseObjects(ctx: JSContext); cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
-  procedure JS_AddIntrinsicDate(ctx: JSContext); cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
-  procedure JS_AddIntrinsicEval(ctx: JSContext); cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
-  procedure JS_AddIntrinsicStringNormalize(ctx: JSContext); cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+  function JS_AddIntrinsicBaseObjects(ctx: JSContext): Integer; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+  function JS_AddIntrinsicDate(ctx: JSContext): Integer; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+  function JS_AddIntrinsicEval(ctx: JSContext): Integer; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+  function JS_AddIntrinsicStringNormalize(ctx: JSContext): Integer; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
   procedure JS_AddIntrinsicRegExpCompiler(ctx: JSContext); cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
-  procedure JS_AddIntrinsicRegExp(ctx: JSContext); cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
-  procedure JS_AddIntrinsicJSON(ctx: JSContext); cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
-  procedure JS_AddIntrinsicProxy(ctx: JSContext); cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
-  procedure JS_AddIntrinsicMapSet(ctx: JSContext); cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
-  procedure JS_AddIntrinsicTypedArrays(ctx: JSContext); cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
-  procedure JS_AddIntrinsicPromise(ctx: JSContext); cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
-
-  procedure JS_AddIntrinsicBigInt(ctx: JSContext); cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
-  procedure JS_AddIntrinsicBigFloat(ctx: JSContext); cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
-  procedure JS_AddIntrinsicBigDecimal(ctx: JSContext); cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
-  { enable operator overloading }
-  procedure JS_AddIntrinsicOperators(ctx: JSContext); cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
-  { enable "use math" }
-  procedure JS_EnableBignumExt(ctx: JSContext; enable : JS_BOOL); cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+  function JS_AddIntrinsicRegExp(ctx: JSContext): Integer; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+  function JS_AddIntrinsicJSON(ctx: JSContext): Integer; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+  function JS_AddIntrinsicProxy(ctx: JSContext): Integer; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+  function JS_AddIntrinsicMapSet(ctx: JSContext): Integer; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+  function JS_AddIntrinsicTypedArrays(ctx: JSContext): Integer; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+  function JS_AddIntrinsicPromise(ctx: JSContext): Integer; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+  function JS_AddIntrinsicWeakRef(ctx: JSContext): Integer; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
 
   function js_string_codePointRange(ctx: JSContext; this_val:JSValueConst; argc:Integer; argv:PJSValueConst):JSValue; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
 
@@ -582,6 +627,8 @@ type
   { object class support }
 
   function JS_NewClassID(pclass_id:PJSClassID):JSClassID; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+  { Returns the class ID if 'v' is an object, otherwise JS_INVALID_CLASS_ID. }
+  function JS_GetClassID(v:JSValue):JSClassID; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
   function JS_NewClass(rt: JSRuntime; class_id:JSClassID; class_def: PJSClassDef):Integer; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
   function JS_IsRegisteredClass(rt: JSRuntime; class_id:JSClassID):Integer; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
 
@@ -593,9 +640,10 @@ type
 
 
   function JS_Throw(ctx: JSContext; obj:JSValue):JSValue; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+  procedure JS_SetUncatchableException(ctx: JSContext; flag: JS_BOOL); cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
   function JS_GetException(ctx: JSContext):JSValue; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+  function JS_HasException(ctx: JSContext):JS_BOOL; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
   function JS_IsError(ctx: JSContext; val:JSValueConst):JS_BOOL; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
-  procedure JS_ResetUncatchableError(ctx: JSContext); cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
   function JS_NewError(ctx: JSContext):JSValue; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
   function JS_ThrowSyntaxError(ctx: JSContext; fmt : {$IFDEF FPC}PChar{$Else}PAnsiChar{$EndIf}; args : Array of Const): JSValue; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
   function JS_ThrowTypeError(ctx: JSContext; fmt : {$IFDEF FPC}PChar{$Else}PAnsiChar{$EndIf}; args : Array of Const): JSValue; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
@@ -644,8 +692,8 @@ type
 
   function JS_GetPropertyStr(ctx:JSContext; this_obj:JSValueConst; prop:{$IFDEF FPC}PChar{$Else}PAnsiChar{$EndIf}):JSValue; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
   function JS_GetPropertyUint32(ctx:JSContext; this_obj:JSValueConst; idx:UInt32):JSValue; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
-  function JS_SetPropertyInternal(ctx:JSContext; this_obj:JSValueConst;
-                              prop:JSAtom; val:JSValue; flags:Integer):Integer; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+  function JS_SetPropertyInternal(ctx:JSContext; obj:JSValueConst;
+                              prop:JSAtom; val:JSValue; this_obj:JSValueConst; flags:Integer):Integer; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
 
   function JS_SetPropertyUint32(ctx:JSContext; this_obj:JSValueConst; idx:UInt32; val:JSValue):Integer;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
   function JS_SetPropertyInt64(ctx:JSContext; this_obj:JSValueConst; idx:Int64; val:JSValue):Integer;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
@@ -658,10 +706,13 @@ type
   function JS_GetPrototype(ctx:JSContext; val:JSValueConst):JSValueConst;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
 
   function JS_GetOwnPropertyNames(ctx: JSContext; ptab:PPJSPropertyEnum; plen: pUInt32; obj:JSValueConst; flags : Integer): Integer;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+  procedure JS_FreePropertyEnum(ctx: JSContext; tab:PJSPropertyEnum; len: UInt32); cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
   function JS_GetOwnProperty(ctx: JSContext; desc : PJSPropertyDescriptor; obj : JSValueConst; prop : JSAtom): Integer; cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
 
   { 'buf' must be zero terminated i.e. buf[buf_len] := #0.  }
   function JS_ParseJSON(ctx:JSContext; buf:{$IFDEF FPC}PChar{$Else}PAnsiChar{$EndIf}; buf_len:size_t; filename:{$IFDEF FPC}PChar{$Else}PAnsiChar{$EndIf}):JSValue;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+  { same as JS_ParseJSON but with flags, see JS_PARSE_JSON_EXT }
+  function JS_ParseJSON2(ctx:JSContext; buf:{$IFDEF FPC}PChar{$Else}PAnsiChar{$EndIf}; buf_len:size_t; filename:{$IFDEF FPC}PChar{$Else}PAnsiChar{$EndIf}; flags:Integer):JSValue;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
   function JS_JSONStringify(ctx:JSContext; obj, replacer, space0 : JSValueConst):JSValue;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
   function JS_Call(ctx:JSContext; func_obj:JSValueConst; this_obj:JSValueConst; argc:Integer; argv:PJSValueConstArr):JSValue;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
   function JS_Invoke(ctx:JSContext; this_val:JSValueConst; atom:JSAtom; argc:Integer; argv:PJSValueConst):JSValue;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
@@ -670,7 +721,11 @@ type
   function JS_DetectModule(const input:{$IFDEF FPC}PChar{$Else}PAnsiChar{$EndIf}; input_len : size_t):JS_BOOL;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
   { 'input' must be zero terminated i.e. buf[buf_len] := #0.  }
   function JS_Eval(ctx:JSContext; input:{$IFDEF FPC}PChar{$Else}PAnsiChar{$EndIf}; input_len:size_t; filename:{$IFDEF FPC}PChar{$Else}PAnsiChar{$EndIf}; eval_flags:Integer):JSValue;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+  { same as JS_Eval() but with an explicit 'this_obj' parameter }
+  function JS_EvalThis(ctx:JSContext; this_obj:JSValueConst; input:{$IFDEF FPC}PChar{$Else}PAnsiChar{$EndIf}; input_len:size_t;
+             filename:{$IFDEF FPC}PChar{$Else}PAnsiChar{$EndIf}; eval_flags:Integer):JSValue;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
   function JS_EvalFunction(ctx:JSContext; fun_obj : JSValue):JSValue;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+  function JS_NewDate(ctx:JSContext; epoch_ms:Double):JSValue;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
   function JS_GetGlobalObject(ctx:JSContext):JSValue;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
   function JS_IsInstanceOf(ctx:JSContext; val:JSValueConst; obj:JSValueConst):Integer;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
   function JS_DefineProperty(ctx:JSContext; this_obj:JSValueConst; prop:JSAtom; val:JSValueConst; getter:JSValueConst;
@@ -685,6 +740,7 @@ type
   procedure JS_SetOpaque(obj:JSValue; opaque:pointer);cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
   function JS_GetOpaque(obj:JSValueConst; class_id:JSClassID):pointer;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
   function JS_GetOpaque2(ctx:JSContext; obj:JSValueConst; class_id:JSClassID):pointer;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+  function JS_GetAnyOpaque(obj:JSValueConst; class_id:PJSClassID):pointer;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
 
   function JS_NewArrayBuffer(ctx:JSContext; buf:pUInt8; len:size_t; free_func:PJSFreeArrayBufferDataFunc; opaque:pointer;
              is_shared:JS_BOOL):JSValue;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
@@ -694,8 +750,13 @@ type
 
   function JS_GetTypedArrayBuffer(ctx : JSContext; obj : JSValueConst;
              pbyte_offset, pbyte_length, pbytes_per_element : psize_t):JSValue;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+  function JS_NewTypedArray(ctx:JSContext; argc:Integer; argv:PJSValueConst; array_type:JSTypedArrayEnum):JSValue;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+
+  procedure JS_SetSharedArrayBufferFunctions(rt:JSRuntime; const sf:PJSSharedArrayBufferFunctions);cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
 
   function JS_NewPromiseCapability(ctx:JSContext; resolving_funcs:PJSValue):JSValue;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+  function JS_PromiseState(ctx:JSContext; promise:JSValue):JSPromiseStateEnum;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+  function JS_PromiseResult(ctx:JSContext; promise:JSValue):JSValue;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
 
   procedure JS_SetHostPromiseRejectionTracker(rt: JSRuntime;
              cb : PJSHostPromiseRejectionTracker; opaque : Pointer); cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
@@ -710,6 +771,20 @@ type
   procedure JS_SetModuleLoaderFunc(rt:JSRuntime;
              module_normalize:PJSModuleNormalizeFunc;
              module_loader:PJSModuleLoaderFunc; opaque:pointer);cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+  { same as JS_SetModuleLoaderFunc but with import attributes; if
+     module_check_attrs = nil, no attribute checking is done }
+  procedure JS_SetModuleLoaderFunc2(rt:JSRuntime;
+             module_normalize:PJSModuleNormalizeFunc;
+             module_loader:PJSModuleLoaderFunc2;
+             module_check_attrs:PJSModuleCheckSupportedImportAttributes;
+             opaque:pointer);cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+
+  { select which debug info is stripped from the compiled code, see JS_STRIP_* }
+  procedure JS_SetStripInfo(rt:JSRuntime; flags:Integer);cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+  function JS_GetStripInfo(rt:JSRuntime):Integer;cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
+
+  { set the [IsHTMLDDA] internal slot }
+  procedure JS_SetIsHTMLDDA(ctx:JSContext; obj:JSValueConst);cdecl; external {$IFDEF mswindows}QJSDLL{$endif};
 
   { JS Job support  }
 
@@ -780,6 +855,8 @@ function JS_VALUE_IS_NAN(v : JSValue) : JS_BOOL; inline;
 function JS_VALUE_GET_INT(v : JSValue): Integer;
 function JS_VALUE_GET_BOOL(v : JSValue): Boolean;
 function JS_VALUE_GET_FLOAT64(v : JSValue): Double;
+{ small BigInt values (JS_TAG_SHORT_BIG_INT) are stored inline, same slot as int32/bool }
+function JS_VALUE_GET_SHORT_BIG_INT(v : JSValue): Int64;
 function JS_VALUE_GET_PTR(v : JSValue): Pointer;
 function JS_MKVAL(tag : Int64; val : Int32): JSValue;
 function JS_MKPTR(tag : Int64; ptr : Pointer): JSValue;
@@ -788,6 +865,7 @@ function JS_TAG_IS_FLOAT64(tag : Int64): Boolean; inline;
 function JS_NAN : JSValue;
 {$EndIf}
 function __JS_NewFloat64({%H-}ctx : JSContext; d : Double): JSValue;
+function __JS_NewShortBigInt({%H-}ctx : JSContext; d : Int64): JSValue;
 
 function JS_VALUE_IS_BOTH_INT(v1, v2 : JSValue): Boolean;
 function JS_VALUE_IS_BOTH_FLOAT(v1, v2 : JSValue): Boolean;
@@ -810,9 +888,7 @@ function JS_NewBool({%H-}ctx : JSContext; val : JS_BOOL): JSValue; inline;
 function JS_NewInt32( {%H-}ctx : JSContext; val : Int32): JSValue; inline;
 function JS_NewCatchOffset( {%H-}ctx : JSContext; val : Int32): JSValue; inline;
 function JS_NewFloat64(ctx : JSContext; d : Double): JSValue;
-function JS_IsBigInt(v : JSValueConst): JS_BOOL; inline;
-function JS_IsBigFloat(v : JSValueConst): JS_BOOL; inline;
-function JS_IsBigDecimal(v : JSValueConst): JS_BOOL; inline;
+function JS_IsBigInt({%H-}ctx : JSContext; v : JSValueConst): JS_BOOL; inline;
 function JS_IsBool(v : JSValueConst): JS_BOOL; inline;
 function JS_IsNull(v : JSValueConst): JS_BOOL; inline;
 function JS_IsUndefined(v : JSValueConst): JS_BOOL; inline;
@@ -880,6 +956,11 @@ end;
 function JS_VALUE_GET_BOOL(v : JSValue): Boolean;
 begin
   Result := Boolean(v);
+end;
+
+function JS_VALUE_GET_SHORT_BIG_INT(v : JSValue): Int64;
+begin
+  Result := Integer(v);
 end;
 
 function JS_VALUE_GET_PTR(v : JSValue): Pointer;
@@ -979,6 +1060,11 @@ end;
 function JS_VALUE_GET_FLOAT64(v : JSValue): Double;
 begin
   Result := v.u.float64;
+end;
+
+function JS_VALUE_GET_SHORT_BIG_INT(v : JSValue): Int64;
+begin
+  Result := v.u.short_big_int;
 end;
 
 function JS_VALUE_GET_PTR(v : JSValue): Pointer;
@@ -1144,19 +1230,17 @@ begin
     Result := __JS_NewFloat64(ctx, d);
 end;
 
-function JS_IsBigInt(v : JSValueConst): Boolean; inline;
+function __JS_NewShortBigInt({%H-}ctx : JSContext; d : Int64): JSValue;
 begin
- Result := Boolean(JS_VALUE_GET_TAG(v) = JS_TAG_BIG_INT);
+  Result := JS_MKVAL(JS_TAG_SHORT_BIG_INT, Int32(d));
 end;
 
-function JS_IsBigFloat(v : JSValueConst): Boolean; inline;
+function JS_IsBigInt({%H-}ctx : JSContext; v : JSValueConst): Boolean; inline;
+var
+  tag : Int64;
 begin
-  Result := Boolean(JS_VALUE_GET_TAG(v) = JS_TAG_BIG_FLOAT);
-end;
-
-function JS_IsBigDecimal(v : JSValueConst): JS_BOOL; inline;
-begin
-  Result := Boolean(JS_VALUE_GET_TAG(v) = JS_TAG_BIG_DECIMAL);
+  tag := JS_VALUE_GET_TAG(v);
+  Result := (tag = JS_TAG_BIG_INT) or (tag = JS_TAG_SHORT_BIG_INT);
 end;
 
 function JS_IsBool(v : JSValueConst): JS_BOOL; inline;
@@ -1279,7 +1363,7 @@ end;
 
 function JS_SetProperty(ctx : JSContext; this_obj : JSValueConst; prop : JSAtom; val : JSValue): Integer; inline;
 begin
-  Result := JS_SetPropertyInternal(ctx, this_obj, prop, val, JS_PROP_THROW);
+  Result := JS_SetPropertyInternal(ctx, this_obj, prop, val, this_obj, JS_PROP_THROW);
 end;
 
 { C function definition }
@@ -1461,14 +1545,6 @@ begin
   Result.u.alias.name := from;
   Result.u.alias.base := base;
 end;
-
-{ bignum stuff :D }
-
-function c_udivti3(num,den:uint64):uint64; cdecl; public alias: {$ifdef darwin}'___udivti3'{$else} '__udivdi3'{$endif};
-begin
- result:=num div den;
-end;
-
 
 initialization
   // fix the Invalid floating point operation .
