@@ -149,16 +149,16 @@ function GetInfo()
 	table.insert(genres, term:match('([^:|]+):series:'))
 
 	MANGAINFO.Title     = info.title
-	MANGAINFO.AltTitles = info.alt_titles
+	MANGAINFO.AltTitles = info.alt_titles and info.alt_titles:gsub('|', ', ')
 	MANGAINFO.CoverLink = info.cover_url
 	MANGAINFO.Authors   = table.concat(authors, ', ')
 	MANGAINFO.Genres    = table.concat(genres, ', ')
 	MANGAINFO.Status    = MangaInfoStatusIfPos(info.status, 'ongoing|publishing', 'completed|finished')
 	MANGAINFO.Summary   = info.description
 
-	for _, chapters in ipairs(info.chapters or {}) do
-		MANGAINFO.ChapterLinks.Add(chapters.id)
-		MANGAINFO.ChapterNames.Add(chapters.title)
+	for _, chapter in ipairs(info.chapters or {}) do
+		MANGAINFO.ChapterLinks.Add(chapter.id)
+		MANGAINFO.ChapterNames.Add('Chapter ' .. chapter.chapter_number .. ' - ' .. chapter.title)
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
