@@ -354,8 +354,6 @@ end;
 
 function TImageMagickManager.FindMagickBinary: Boolean;
 var
-  Reg: TRegistry;
-  Paths: array of String;
   SearchPath: String;
   PathList: TStringList;
   DllName: String;
@@ -366,7 +364,7 @@ begin
   FLastError := '';
   DllName := 'CORE_RL_MagickWand_.dll';
 
-  SearchPath := ExtractFilePath(ParamStr(0)) + 'ImageMagick_dependency\';
+  SearchPath := ExtractFilePath(ParamStr(0)) + 'imagemagick\';
   if FileExists(SearchPath + DllName) then
   begin
     FMagickPath := SearchPath;
@@ -380,48 +378,6 @@ begin
     FMagickPath := SearchPath;
     Result := True;
     Exit;
-  end;
-
-  Paths := [
-    'C:\Program Files\ImageMagick-7.1.2-Q16',
-    'C:\Program Files\ImageMagick-7.1.1-Q16',
-    'C:\Program Files\ImageMagick-7.1.0-Q16',
-    'C:\Program Files\ImageMagick-7.0.11-Q16',
-    'C:\Program Files\ImageMagick-7.0.10-Q16',
-    'C:\Program Files\ImageMagick-6.9.12-Q16',
-    'C:\Program Files (x86)\ImageMagick-7.1.2-Q16',
-    'C:\Program Files (x86)\ImageMagick-7.1.1-Q16'
-  ];
-
-  for SearchPath in Paths do
-  begin
-    if FileExists(SearchPath + '\' + DllName) then
-    begin
-      FMagickPath := SearchPath + '\';
-      Result := True;
-      Exit;
-    end;
-  end;
-
-  Reg := TRegistry.Create(KEY_READ);
-  try
-    Reg.RootKey := HKEY_LOCAL_MACHINE;
-    if Reg.OpenKeyReadOnly('SOFTWARE\Imagemagick\7') or Reg.OpenKeyReadOnly('SOFTWARE\Wow6432Node\Imagemagick\7') then
-    begin
-      try
-        SearchPath := Reg.ReadString('LibPath');
-        if (SearchPath <> '') and FileExists(SearchPath + '\' + DllName) then
-        begin
-          if SearchPath[Length(SearchPath)] <> '\' then SearchPath := SearchPath + '\';
-          FMagickPath := SearchPath;
-          Result := True;
-          Exit;
-        end;
-      except
-      end;
-    end;
-  finally
-    Reg.Free;
   end;
 
   PathList := TStringList.Create;
@@ -477,7 +433,6 @@ begin
   SetEnvironmentVariable('MAGICK_HOME', PChar(FMagickPath));
   SetEnvironmentVariable('MAGICK_CONFIGURE_PATH', PChar(FMagickPath));
   SetEnvironmentVariable('MAGICK_CODER_MODULE_PATH', PChar(FMagickPath + 'modules\coders'));
-  SetEnvironmentVariable('MAGICK_FILTER_MODULE_PATH', PChar(FMagickPath + 'modules\filters'));
 
   // Cache CPU count once here; UpdateMagickThreadLimit uses it on every call.
   GetSystemInfo(SysInfo);
@@ -1002,7 +957,7 @@ begin
   FSupportedFormats.Clear;
   FSupportedFormats.Delimiter := ',';
   FSupportedFormats.StrictDelimiter := True;
-  FSupportedFormats.DelimitedText := 'bmp,gif,jpeg,jpg,png,tiff,webp,avif,heic,heif,jxl,ico,psd,svg,tga,jp2,raw,xcf,pcx,pgm,pbm,ppm,xpm,fax,g3,gif87';
+  FSupportedFormats.DelimitedText := 'bmp,gif,jpeg,jpg,png,tif,webp,avif,jxl';
 end;
 
 procedure TImageMagickManager.CacheCompressionTypes;

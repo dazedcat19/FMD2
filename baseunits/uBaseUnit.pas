@@ -2401,19 +2401,12 @@ begin
   if ct = '' then Exit;
   if Pos('image/avif', ct) > 0 then Exit('avif');
   if Pos('image/jxl', ct) > 0 then Exit('jxl');
-  if Pos('image/heic', ct) > 0 then Exit('heic');
-  if Pos('image/heif', ct) > 0 then Exit('heif');
   if Pos('image/webp', ct) > 0 then Exit('webp');
   if Pos('image/png', ct) > 0 then Exit('png');
   if Pos('image/jpeg', ct) > 0 then Exit('jpg');
   if Pos('image/gif', ct) > 0 then Exit('gif');
   if Pos('image/bmp', ct) > 0 then Exit('bmp');
   if Pos('image/tiff', ct) > 0 then Exit('tif');
-  if Pos('image/svg', ct) > 0 then Exit('svg');
-  if Pos('image/x-tga', ct) > 0 then Exit('tga');
-  if Pos('image/x-icon', ct) > 0 then Exit('ico');
-  if Pos('image/', ct) = 1 then
-    Result := Copy(ct, 7, Length(ct) - 6);
 end;
 
 function SaveImageStreamToFile(Stream: TMemoryStream; Path, FileName: String; Age: LongInt; const ContentType: String = ''): String;
@@ -2677,7 +2670,6 @@ begin
     s := AFileName + '.jxl'; if FileExists(s) then Exit(s);
     s := AFileName + '.avif'; if FileExists(s) then Exit(s);
     s := AFileName + '.webp'; if FileExists(s) then Exit(s);
-    s := AFileName + '.tiff'; if FileExists(s) then Exit(s);
     s := AFileName + '.tif'; if FileExists(s) then Exit(s);
   end;
 
@@ -2814,14 +2806,7 @@ begin
     '.tif', '.tiff': Result := 'image/tiff';
     '.avif': Result := 'image/avif';
     '.jxl': Result := 'image/jxl';
-    '.heic', '.heif': Result := 'image/heic';
-    '.j2k', '.jp2': Result := 'image/jp2';
-    '.svg': Result := 'image/svg+xml';
-    '.ico': Result := 'image/x-icon';
-    '.tga': Result := 'image/x-tga';
-    '.pcx': Result := 'image/x-pcx';
-    '.psd': Result := 'image/vnd.adobe.photoshop';
-    else Result := 'image/' + Copy(ext, 2, Length(ext) - 1);
+    else Result := '';
   end;
 end;
 

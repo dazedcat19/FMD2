@@ -599,7 +599,6 @@ msgid "Valid"
 msgstr ""
 
 #: imagemagickmanager.rs_imagemagicknotfoundhint
-msgctxt "imagemagickmanager.rs_imagemagicknotfoundhint"
 msgid ""
 "Failed to detect an install of ImageMagick!\n"
 "Please install ImageMagick from www.imagemagick.org if you haven't already."
@@ -2909,5 +2908,10 @@ msgstr ""
 
 #: uupdatethread.rs_updatinglist
 msgid "Updating list"
+msgstr ""
+
+#: webp.serrloadfailed
+#, object-pascal-format
+msgid "Can not load WebP codec library \"%s\". Check your installation."
 msgstr ""
 
