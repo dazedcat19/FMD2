@@ -291,9 +291,11 @@ begin
 
   with MangaInfo do
   begin
-    ADataProcess.UpdateData(Title, AltTitles, Link, Authors, Artists, Genres, Status, Summary,
-      NumChapter, ModuleID);
+    ADataProcess.UpdateData(Title, AltTitles, Link, Authors, Artists, Genres,
+      Status, Summary, NumChapter);
   end;
+
+  ADataProcess.Transaction.CommitRetaining;
 end;
 
 procedure TMangaInformation.AddInfoToData(const ATitle, ALink: String; const ADataProcess: TDBDataProcess);

@@ -52,7 +52,6 @@ type
     cbOptionAutoCheckFavRemoveCompletedManga: TCheckBox;
     cbOptionAutoOpenFavStartup: TCheckBox;
     cbOptionDeleteCompletedTasksOnClose: TCheckBox;
-    cbOptionMangaLoadAddToList: TCheckBox;
     cbOptionSortDownloadsOnNewTasks: TCheckBox;
     cbOptionShowFavoritesTabOnNewManga: TCheckBox;
     cbOptionShowDownloadsTabOnNewTasks: TCheckBox;
@@ -65,12 +64,10 @@ type
     cbOptionShowDownloadToolbar: TCheckBox;
     cbOptionShowDownloadToolbarLeft: TCheckBox;
     cbOptionShowDownloadToolbarDeleteAll: TCheckBox;
-    cbOptionVacuumDatabasesOnExit: TCheckBox;
     cbOptionEnableLongNamePaths: TCheckBox;
     cbOptionUpdateListNoMangaInfo: TCheckBox;
     cbOptionDigitVolume: TCheckBox;
     cbOptionDigitChapter: TCheckBox;
-    cbOptionLiveSearch: TCheckBox;
     cbOptionUpdateListRemoveDuplicateLocalData : TCheckBox;
     cbUseRegExpr: TCheckBox;
     cbOptionProxyType: TComboBox;
@@ -710,7 +707,8 @@ type
       Column: TColumnIndex; TextType: TVSTTextType; var CellText: String);
     procedure vtMangaListInitNode(Sender: TBaseVirtualTree; ParentNode,
       Node: PVirtualNode; var InitialStates: TVirtualNodeInitStates);
-    procedure vtMangaListResetList(ANodeIndex: Integer; ALink, AModuleID: String);
+    procedure vtMangaListRefresh;
+    procedure vtMangaListUpdate(ANode: PVirtualNode);
     procedure vtOptionMangaSiteSelectionFreeNode(Sender : TBaseVirtualTree;
       Node : PVirtualNode);
     procedure vtOptionMangaSiteSelectionGetText(Sender: TBaseVirtualTree;
@@ -856,6 +854,11 @@ type
 
     // search db with thread
     procedure SearchDataDB(const ATitle: String);
+                
+    // filter db with thread
+    procedure FilterDataDB(const ACheckGenres, AUnCheckGenres: TStringList;
+      const ATitle, AAuthors, AArtists, AStatus, ASummary: String;
+      AMangaDaysNew: Integer; AAllGenres, AOnlyNew, AUseRegExpr: Boolean);
 
     // change all filter genre checkbox state
     procedure FilterGenreChangeAllState(const AState: TCheckBoxState);
@@ -873,11 +876,13 @@ type
   TOpenDBThread = class(TThread)
   private
     FWebsite: String;
+
   protected
     procedure SetControlEnabled(const Value: Boolean);
     procedure SyncOpenStart;
     procedure SyncOpenFinish;
     procedure Execute; override;
+
   public
     constructor Create(const AWebsite: String);
     destructor Destroy; override;
@@ -889,14 +894,50 @@ type
   private
     FSearchStr: String;
     FNewSearch: Boolean;
+
   protected
     procedure SyncBeforeSearch;
     procedure SyncAfterSearch;
     procedure Execute; override;
+
   public
     constructor Create(const ASearchStr: String);
     destructor Destroy; override;
     procedure NewSearch(const ASearchStr: String);
+  end;
+
+  { TFilterDBThread }
+
+  TFilterDBThread = class(TThread)
+  private
+    FAllSitesItems,
+    FCheckGenres,
+    FUnCheckGenres: TStringList;
+
+    FTitle,
+    FAuthors,
+    FArtists,
+    FStatus,
+    FSummary: String;
+
+    FMangaDaysNew: Integer;
+
+    FAllSites,
+    FAllGenres,
+    FOnlyNew,
+    FUseRegExpr: Boolean;
+
+  protected
+    procedure SetControlEnabled(const Value: Boolean);
+    procedure SyncBeforeFilter;
+    procedure SyncAfterFilter;
+    procedure Execute; override;
+
+  public
+    constructor Create(const ACheckGenres, AUnCheckGenres: TStringList;
+      const ATitle, AAuthors, AArtists, AStatus, ASummary: String;
+      AMangaDaysNew: Integer; AAllGenres, AOnlyNew, AUseRegExpr: Boolean);
+    destructor Destroy; override;
   end;
 
 var                
@@ -1007,6 +1048,7 @@ resourcestring
   RS_FMDAlreadyRunning = 'Free Manga Downloader already running!';
   RS_FMDUnicodePathError = 'UnicodePathError: Application can''t run in a folder path with unicode characters.';
   RS_ModeSearching = 'Mode: Searching...';
+  RS_ModeFiltering = 'Mode: Filtering...';
   RS_FavoritesShowAll = 'All';
   RS_FavoritesShowEnabled = 'Enabled';
   RS_FavoritesShowDisabled = 'Disabled';
@@ -1039,6 +1081,9 @@ var
 
   // thread for search db
   SearchDBThread: TSearchDBThread;
+   
+  // thread for filter db
+  FilterDBThread: TFilterDBThread;
 
   END_SESSION: Boolean = False;
 
@@ -1089,6 +1134,129 @@ begin
   end;
 end;
 
+
+{ TFilterDBThread }           
+
+procedure TFilterDBThread.SetControlEnabled(const Value: Boolean);
+begin
+  with MainForm do
+  begin
+    cbSelectManga.Enabled := Value;
+    btUpdateList.Enabled := Value;  
+    edMangaListSearch.Enabled := Value;
+    btMangaListSearchClear.Enabled := Value;
+    btRemoveFilter.Enabled := Value; 
+    btFilter.Enabled := Value;
+    btRemoveFilterLarge.Enabled := Value;
+  end;
+end;
+
+procedure TFilterDBThread.SyncBeforeFilter;
+begin
+  with MainForm do
+  begin
+    ChangeAllCursor(pssInfoList, crHourGlass);
+
+    lbMode.Caption := RS_ModeFiltering;
+    vtMangaList.RootNodeCount := 0;
+
+    SetControlEnabled(False);
+    edMangaListSearch.Tag := -1;
+    edMangaListSearch.Clear;
+    vtMangaList.Clear;
+                                 
+    FAllSites := MainForm.cbSearchFromAllSites.Checked;
+    FAllSitesItems := TStringList.Create;
+    if MainForm.cbSelectManga.Items <> nil then
+    begin
+      FAllSitesItems.Assign(MainForm.cbSelectManga.Items);
+    end;
+  end;
+end;
+
+procedure TFilterDBThread.SyncAfterFilter;
+begin
+  with MainForm do
+  begin          
+    ChangeAllCursor(pssInfoList, crDefault);
+                                                         
+    SetControlEnabled(True);
+    vtMangaList.RootNodeCount := dataProcess.RecordCount;
+                       
+    UpdateVtMangaListFilterStatus;
+  end;
+end;
+
+procedure TFilterDBThread.Execute;
+begin
+  if dataProcess = nil then
+  begin
+    Exit;
+  end;
+
+  Synchronize(@SyncBeforeFilter);
+
+  dataProcess.FilterAllSites := FAllSites;
+  if dataProcess.FilterAllSites then
+  begin
+    dataProcess.SitesList.Assign(FAllSitesItems);
+  end;
+
+  dataProcess.Filter(FCheckGenres,
+    FUnCheckGenres,
+    FTitle,
+    FAuthors,
+    FArtists,
+    FStatus,
+    FSummary,
+    FMangaDaysNew,
+    FAllGenres,
+    FOnlyNew,
+    FUseRegExpr);
+
+  Synchronize(@SyncAfterFilter);
+end;
+
+constructor TFilterDBThread.Create(const ACheckGenres, AUnCheckGenres: TStringList;
+  const ATitle, AAuthors, AArtists, AStatus, ASummary: String;
+  AMangaDaysNew: Integer; AAllGenres, AOnlyNew, AUseRegExpr: Boolean);
+begin
+  inherited Create(True);
+
+  FCheckGenres := TStringList.Create;
+  if (ACheckGenres <> nil) and (ACheckGenres.Count > 0) then
+  begin
+    FCheckGenres.Assign(ACheckGenres);
+  end;
+
+  FUnCheckGenres := TStringList.Create;
+  if (AUnCheckGenres <> nil) and (AUnCheckGenres.Count > 0) then
+  begin
+    FUnCheckGenres.Assign(AUnCheckGenres);
+  end;
+
+  FTitle := ATitle;
+  FAuthors := AAuthors;
+  FArtists := AArtists;
+  FStatus := AStatus;
+  FSummary := ASummary;
+  FMangaDaysNew := AMangaDaysNew;
+  FAllGenres := AAllGenres;
+  FOnlyNew := AOnlyNew;
+  FUseRegExpr := AUseRegExpr;
+
+  FreeOnTerminate := True;
+
+  Start;
+end;
+
+destructor TFilterDBThread.Destroy;
+begin
+  FilterDBThread := nil;
+
+  inherited Destroy;
+end;
+
 { TSearchDBThread }
 
 procedure TSearchDBThread.SyncBeforeSearch;
@@ -1104,32 +1272,32 @@ end;
 procedure TSearchDBThread.SyncAfterSearch;
 begin
   with MainForm do
-  begin
-    vtMangaList.RootNodeCount := dataProcess.RecordCount;
-    UpdateVtMangaListFilterStatus;
+  begin   
     LastSearchWeb := currentWebsite;
     LastSearchStr := UpCase(FSearchStr);
     vtMangaList.Cursor := crDefault;
+
+    vtMangaList.RootNodeCount := dataProcess.RecordCount;
+    UpdateVtMangaListFilterStatus;
   end;
 end;
 
 procedure TSearchDBThread.Execute;
 begin
-  if dataProcess <> nil then
+  if dataProcess = nil then
   begin
-    Synchronize(@SyncBeforeSearch);
-
-    while FNewSearch do
-    begin
-      FNewSearch := False;
-      dataProcess.Search(FSearchStr);
-    end;
-
-    if not Terminated then
-    begin
-      Synchronize(@SyncAfterSearch);
-    end;
+    Exit;
   end;
+
+  Synchronize(@SyncBeforeSearch);
+
+  while FNewSearch do
+  begin
+    FNewSearch := False;
+    dataProcess.Search(FSearchStr);
+  end;
+
+  Synchronize(@SyncAfterSearch);
 end;
 
 constructor TSearchDBThread.Create(const ASearchStr: String);
@@ -1137,12 +1305,14 @@ begin
   FreeOnTerminate := True;
   FSearchStr := ASearchStr;
   FNewSearch := True;
+
   inherited Create(False);
 end;
 
 destructor TSearchDBThread.Destroy;
 begin
   SearchDBThread := nil;
+
   inherited Destroy;
 end;
 
@@ -1174,6 +1344,7 @@ begin
   with MainForm do
   begin
     ChangeAllCursor(pssInfoList, crHourGlass);
+
     SetControlEnabled(False);
     lbMode.Caption := RS_Loading;
     vtMangaList.Clear;
@@ -1183,22 +1354,15 @@ end;
 procedure TOpenDBThread.SyncOpenFinish;
 begin
   with MainForm do
-  begin
+  begin      
+    ChangeAllCursor(pssInfoList, crDefault);
+
     LastSearchStr := upcase(edMangaListSearch.Text);
     LastSearchWeb := currentWebsite;
-
-    if dataProcess.Filtered then
-    begin
-      lbMode.Caption := Format(RS_ModeFiltered, [dataProcess.RecordCount]);
-    end
-    else
-    begin
-      lbMode.Caption := Format(RS_ModeAll, [dataProcess.RecordCount]);
-    end;
-
     SetControlEnabled(True);
-    vtMangaList.RootNodeCount := dataProcess.RecordCount;
-    ChangeAllCursor(pssInfoList, crDefault);
+
+    vtMangaList.RootNodeCount := dataProcess.RecordCount; 
+    UpdateVtMangaListFilterStatus;
   end;
 end;
 
@@ -1219,6 +1383,10 @@ begin
   begin
     dataProcess.Connect(dataProcess.Website);
     dataProcess.Refresh(True);
+  end
+  else
+  begin
+    dataProcess.Refresh(True);
   end;
 
   if MainForm.edMangaListSearch.Text <> '' then
@@ -1226,22 +1394,21 @@ begin
     dataProcess.Search(MainForm.edMangaListSearch.Text);
   end;
 
-  if not Terminated then
-  begin
-    Synchronize(@SyncOpenFinish);
-  end;
+  Synchronize(@SyncOpenFinish);
 end;
 
 constructor TOpenDBThread.Create(const AWebsite: String);
 begin
   FreeOnTerminate := True;
   FWebsite := AWebsite;
+
   inherited Create(False);
 end;
 
 destructor TOpenDBThread.Destroy;
 begin
   OpenDBThread := nil;
+
   inherited Destroy;
 end;
 
@@ -2141,6 +2308,20 @@ begin
   begin
     SearchDBThread.NewSearch(ATitle);
   end;
+end; 
+
+procedure TMainForm.FilterDataDB(const ACheckGenres, AUnCheckGenres: TStringList;
+  const ATitle, AAuthors, AArtists, AStatus, ASummary: String;
+  AMangaDaysNew: Integer; AAllGenres, AOnlyNew, AUseRegExpr: Boolean);
+begin
+  if FilterDBThread <> nil then
+  begin
+    Exit;
+  end;
+
+  FilterDBThread := TFilterDBThread.Create(ACheckGenres, AUnCheckGenres, ATitle,
+    AAuthors, AArtists, AStatus, ASummary, AMangaDaysNew, AAllGenres, AOnlyNew,
+    AUseRegExpr);
 end;
 
 procedure TMainForm.FilterGenreChangeAllState(const AState: TCheckBoxState);
@@ -3706,108 +3887,79 @@ end;
 
 procedure TMainForm.btRemoveFilterClick(Sender: TObject);
 begin
-  if dataProcess.Filtered then
+  if not dataProcess.Filtered then
   begin
-    vtMangaList.Clear;
-    Screen.Cursor := crHourGlass;
-
-    try
-      dataProcess.RemoveFilter;
-      vtMangaList.RootNodeCount := dataProcess.RecordCount;
-      lbMode.Caption := Format(RS_ModeAll, [dataProcess.RecordCount]);
-      edMangaListSearch.Tag := -1;
-      edMangaListSearch.Clear;
-    except
-      on E: Exception do
-        ExceptionHandler(Self, E);
-    end;
-
-    Screen.Cursor := crDefault;
+    Exit;
   end;
+
+  vtMangaList.Clear; 
+  lbMode.Caption := Format(RS_ModeAll, [0]);
+
+  dataProcess.RemoveFilter;
+
+  OpenDataDB(TModuleContainer(currentWebsite).ID);
 end;
 
 // -----
 
-procedure TMainForm.btFilterClick(Sender: TObject);
+procedure TMainForm.btFilterClick(Sender: TObject); 
 var
   checkGenres,
   uncheckGenres: TStringList;
   i: Integer;
   s: String;
 begin
-  Screen.Cursor := crHourGlass;
-  checkGenres := TStringList.Create;
-  uncheckGenres := TStringList.Create;
-
   try
-    edCustomGenres.Text := Trim(edCustomGenres.Text);
-    if cbUseRegExpr.Checked and (edCustomGenres.Text <> '') then
-    begin
-      checkGenres.Add(edCustomGenres.Text);
-    end
-    else
-    begin
-      ExtractStrings([','], [], PChar(edCustomGenres.Text), checkGenres);
-      TrimStrings(checkGenres);
+    checkGenres := TStringList.Create;
+    uncheckGenres := TStringList.Create;
 
-      i := 0;
-      while i < checkGenres.Count do
+    try
+      edCustomGenres.Text := Trim(edCustomGenres.Text);
+      if cbUseRegExpr.Checked and (edCustomGenres.Text <> '') then
       begin
-        s := Trim(checkGenres.Strings[i]);
-        if (s <> '') and (s[1] = '-') or (s[1] = '!') then
-        begin
-          Delete(s, 1, 1);
-          uncheckGenres.Add(s);
-          checkGenres.Delete(i);
-        end
-        else
-        begin
-          Inc(i);
-        end;
-      end;
-    end;
+        checkGenres.Add(edCustomGenres.Text);
+      end
+      else
+      begin
+        ExtractStrings([','], [], PChar(edCustomGenres.Text), checkGenres);
+        TrimStrings(checkGenres);
 
-    if pnGenres.ControlCount > 0 then
-    begin
-      for i := 0 to pnGenres.ControlCount - 1 do
-      begin
-        if pnGenres.Controls[i] is TCheckBox then
+        i := 0;
+        while i < checkGenres.Count do
         begin
-          if TCheckBox(pnGenres.Controls[i]).State = cbChecked then
+          s := Trim(checkGenres.Strings[i]);
+          if (s <> '') and (s[1] = '-') or (s[1] = '!') then
           begin
-            checkGenres.Add(TCheckBox(pnGenres.Controls[i]).Caption);
+            Delete(s, 1, 1);
+            uncheckGenres.Add(s);
+            checkGenres.Delete(i);
           end
-          else if TCheckBox(pnGenres.Controls[i]).State = cbUnchecked then
+          else
           begin
-            uncheckGenres.Add(TCheckBox(pnGenres.Controls[i]).Caption);
+            Inc(i);
           end;
         end;
       end;
-    end;
 
-    if dataProcess.CanFilter(
-      checkGenres,
-      uncheckGenres,
-      edFilterTitle.Text,
-      edFilterAuthors.Text,
-      edFilterArtists.Text,
-      IntToStr(cbFilterStatus.ItemIndex),
-      edFilterSummary.Text,
-      FMDOptions.General.MangaDaysNew,
-      rbAll.Checked,
-      cbOnlyNew.Checked) then
-    begin
-      dataProcess.FilterAllSites := cbSearchFromAllSites.Checked;
-      if cbSearchFromAllSites.Checked then
+      if pnGenres.ControlCount > 0 then
       begin
-        dataProcess.SitesList.Assign(cbSelectManga.Items);
+        for i := 0 to pnGenres.ControlCount - 1 do
+        begin
+          if pnGenres.Controls[i] is TCheckBox then
+          begin
+            if TCheckBox(pnGenres.Controls[i]).State = cbChecked then
+            begin
+              checkGenres.Add(TCheckBox(pnGenres.Controls[i]).Caption);
+            end
+            else if TCheckBox(pnGenres.Controls[i]).State = cbUnchecked then
+            begin
+              uncheckGenres.Add(TCheckBox(pnGenres.Controls[i]).Caption);
+            end;
+          end;
+        end;
       end;
 
-      edMangaListSearch.Tag := -1;
-      edMangaListSearch.Clear;
-      vtMangaList.Clear;
-
-      dataProcess.Filter(
+      if dataProcess.CanFilter(
         checkGenres,
         uncheckGenres,
         edFilterTitle.Text,
@@ -3817,25 +3969,27 @@ begin
         edFilterSummary.Text,
         FMDOptions.General.MangaDaysNew,
         rbAll.Checked,
-        cbOnlyNew.Checked,
-        cbUseRegExpr.Checked);
+        cbOnlyNew.Checked) then
+      begin
+        FilterDataDB(checkGenres,
+          uncheckGenres,
+          edFilterTitle.Text,
+          edFilterAuthors.Text,
+          edFilterArtists.Text,
+          IntToStr(cbFilterStatus.ItemIndex),
+          edFilterSummary.Text,
+          FMDOptions.General.MangaDaysNew,
+          rbAll.Checked,
+          cbOnlyNew.Checked,
+          cbUseRegExpr.Checked);
+      end;
+    except
+      on E: Exception do
+        ExceptionHandler(Self, E);
     end;
-  except
-    on E: Exception do
-      ExceptionHandler(Self, E);
-  end;
-  uncheckGenres.Free;
-  checkGenres.Free;
-  Screen.Cursor := crDefault;
-
-  vtMangaList.RootNodeCount := dataProcess.RecordCount;
-  if dataProcess.Filtered then
-  begin
-    lbMode.Caption := Format(RS_ModeFiltered, [vtMangaList.RootNodeCount]);
-  end
-  else
-  begin
-    lbMode.Caption := Format(RS_ModeAll, [vtMangaList.RootNodeCount]);
+  finally
+    uncheckGenres.Free;
+    checkGenres.Free;
   end;
 end;
 
@@ -4395,8 +4549,9 @@ end;
 
 procedure TMainForm.miMangaListDeleteClick(Sender: TObject);
 var
-  xNode, deleteNode: PVirtualNode;
-  deleteCount: Integer;
+  SelectedNodes: TNodeArray;
+  i, DeleteCount: Integer;
+  NodeIdx: Cardinal;
 begin
   if vtMangaList.SelectedCount = 0 then
   begin
@@ -4416,35 +4571,33 @@ begin
     end;
   end;
 
-  try
-    vtMangaList.BeginUpdate;
-    deleteCount := 0;
-    xNode := vtMangaList.GetPreviousSelected(nil);
-    while Assigned(xNode) do
-    begin
-      if dataProcess.DeleteData(xNode^.Index) then
-      begin
-        deleteNode := xNode;
-      end
-      else
-      begin
-        deleteNode := nil;
-      end;
+  SelectedNodes := vtMangaList.GetSortedSelection(True);
+  if Length(SelectedNodes) = 0 then
+  begin
+    Exit;
+  end;
 
-      xNode := vtMangaList.GetPreviousSelected(xNode);
-      if Assigned(deleteNode) then
+  vtMangaList.BeginUpdate;
+  try
+    DeleteCount := 0;
+
+    for i := High(SelectedNodes) downto Low(SelectedNodes) do
+    begin
+      NodeIdx := SelectedNodes[i]^.Index;
+
+      if dataProcess.DeleteData(NodeIdx) then
       begin
-        vtMangaList.DeleteNode(deleteNode);
-        Inc(deleteCount);
+        //vtMangaList.DeleteNode(SelectedNodes[i]);
+        Inc(DeleteCount);
       end;
     end;
 
-    if deleteCount > 0 then
+    if DeleteCount > 0 then
     begin
       dataProcess.Table.ApplyUpdates;
       dataProcess.Table.SQLTransaction.CommitRetaining;
-      vtMangaList.ClearSelection;
-      UpdateVtMangaListFilterStatus;
+
+      vtMangaListRefresh;
     end;
   finally
     vtMangaList.EndUpdate;
@@ -6491,8 +6644,6 @@ begin
     cbOptionMinimizeOnStart.Checked := SaveReadBool(SaveGeneral, General.SaveMinOnStart, General.MinOnStart);
     cbOptionMinimizeToTray.Checked := SaveReadBool(SaveGeneral, General.SaveMinToTray, General.MinToTray);
     cbOptionOneInstanceOnly.Checked := SaveReadBool(SaveGeneral, General.SaveOneFMDInstance, General.OneFMDInstance);
-    cbOptionLiveSearch.Checked := SaveReadBool(SaveGeneral, General.SaveListLiveSearch, General.ListLiveSearch);
-    cbOptionMangaLoadAddToList.Checked := SaveReadBool(SaveGeneral, General.SaveMangaLoadAddToList, General.MangaLoadAddToList);
     miHighLightNewManga.Checked := SaveReadBool(SaveGeneral, General.SaveHghlghtNewManga, General.HghlghtNewManga);
     miChapterListAscending.Checked := SaveReadBool(SaveGeneral, General.SaveSortChptrListAsc, General.SortChptrListAsc);
     miChapterListHideDownloaded.Checked := SaveReadBool(SaveGeneral, General.SaveChptrListHideDwnlded, General.ChptrListHideDwnlded);
@@ -6500,7 +6651,6 @@ begin
     cbOptionDeleteCompletedTasksOnClose.Checked := SaveReadBool(SaveGeneral, General.SaveDelCompltdDLOnClose, General.DelCompltdDLOnClose);
     cbAddAsStopped.Checked := SaveReadBool(SaveGeneral, General.SaveAddNewDLAsStopped, General.AddNewDLAsStopped);
     cbOptionSortDownloadsOnNewTasks.Checked := SaveReadBool(SaveGeneral, General.SaveSortDLAddNew, General.SortDLAddNew);
-    cbOptionVacuumDatabasesOnExit.Checked := SaveReadBool(SaveGeneral, General.SaveDBVacuumExit, General.DBVacuumExit);
     cbOptionEnableLongNamePaths.Checked := SaveReadBool(SaveGeneral, General.SaveLongNamePaths, General.LongNamePaths);
 
     miChapterListDescending.Checked := not miChapterListAscending.Checked;
@@ -6688,8 +6838,6 @@ begin
     SaveWriteBool(SaveGeneral, General.SaveMinOnStart, General.MinOnStart);
     SaveWriteBool(SaveGeneral, General.SaveMinToTray, General.MinToTray);
     SaveWriteBool(SaveGeneral, General.SaveOneFMDInstance, General.OneFMDInstance);
-    SaveWriteBool(SaveGeneral, General.SaveListLiveSearch, General.ListLiveSearch);
-    SaveWriteBool(SaveGeneral, General.SaveMangaLoadAddToList, General.MangaLoadAddToList);
     SaveWriteBool(SaveGeneral, General.SaveHghlghtNewManga, General.HghlghtNewManga);
     SaveWriteBool(SaveGeneral, General.SaveSortChptrListAsc, General.SortChptrListAsc);
     SaveWriteBool(SaveGeneral, General.SaveChptrListHideDwnlded, General.ChptrListHideDwnlded);
@@ -6697,7 +6845,6 @@ begin
     SaveWriteBool(SaveGeneral, General.SaveDelCompltdDLOnClose, General.DelCompltdDLOnClose);
     SaveWriteBool(SaveGeneral, General.SaveAddNewDLAsStopped, General.AddNewDLAsStopped);
     SaveWriteBool(SaveGeneral, General.SaveSortDLAddNew, General.SortDLAddNew);
-    SaveWriteBool(SaveGeneral, General.SaveDBVacuumExit, General.DBVacuumExit);
     SaveWriteBool(SaveGeneral, General.SaveLongNamePaths, General.LongNamePaths);
 
     // view
@@ -6909,8 +7056,6 @@ begin
       MinOnStart := cbOptionMinimizeOnStart.Checked;
       MinToTray := cbOptionMinimizeToTray.Checked;
       OneFMDInstance := cbOptionOneInstanceOnly.Checked;
-      ListLiveSearch := cbOptionLiveSearch.Checked;
-      MangaLoadAddToList := cbOptionMangaLoadAddToList.Checked;
       HghlghtNewManga := miHighlightNewManga.Checked;
       SortChptrListAsc := miChapterListAscending.Checked;
       ChptrListHideDwnlded := miChapterListHideDownloaded.Checked;
@@ -6918,11 +7063,10 @@ begin
       DelCompltdDLOnClose := cbOptionDeleteCompletedTasksOnClose.Checked;
       AddNewDLAsStopped := cbAddAsStopped.Checked;
       SortDLAddNew := cbOptionSortDownloadsOnNewTasks.Checked;
-      DBVacuumExit := cbOptionVacuumDatabasesOnExit.Checked;
       LongNamePaths := cbOptionEnableLongNamePaths.Checked;
 
-      DLManager.DB.AutoVacuum := DBVacuumExit;
-      FavoriteManager.DB.AutoVacuum := DBVacuumExit;
+      DLManager.DB.AutoVacuum := True;
+      FavoriteManager.DB.AutoVacuum := True;
     end;
 
     //FMDInstace 
@@ -7191,7 +7335,7 @@ begin
     Exit;
   end;
 
-  if (not FMDOptions.General.ListLiveSearch) and (edMangaListSearch.Tag = 0) then
+  if edMangaListSearch.Tag = 0 then
   begin
     Exit;
   end;
@@ -7207,14 +7351,6 @@ begin
   end;
 
   SearchDataDB(edMangaListSearch.Text);
-
-  //vtMangaList.Clear;
-  //dataProcess.Search(edMangaListSearch.Text);
-  //vtMangaList.RootNodeCount := dataProcess.RecordCount;
-  //if dataProcess.Filtered then
-  //  lbMode.Caption := Format(RS_ModeFiltered, [vtMangaList.RootNodeCount])
-  //else
-  //  lbMode.Caption := Format(RS_ModeAll, [vtMangaList.RootNodeCount]);
 end;
 
 procedure TMainForm.edMangaListSearchKeyDown(Sender: TObject; var Key: Word;
@@ -7905,104 +8041,36 @@ procedure TMainForm.vtMangaListInitNode(Sender: TBaseVirtualTree; ParentNode,
   Node: PVirtualNode; var InitialStates: TVirtualNodeInitStates);
 var
   data: PMangaInfoData;
-  nodeRecIndex: Integer;
 begin
   data := Sender.GetNodeData(Node);
-  nodeRecIndex := Node^.Index;
 
-  if not dataProcess.GoToRecNo(nodeRecIndex) then
-  begin
-    Exit;
-  end;
-
-  dataprocess.GetCurrentRecordValues(data^);
+  dataprocess.GetCurrentRecordValues(Node^.Index, data^);
 end;
 
-procedure TMainForm.vtMangaListResetList(ANodeIndex: Integer; ALink, AModuleID: String);
-var
-  i, totalNodes: Integer;
-  nextNode, newNode: PVirtualNode;
-
-  procedure CheckNode(var AOldNode, ANewNode: PVirtualNode; ALink: String);
-  var
-    newData: PMangaInfoData;
-  begin
-    newData := vtMangaList.GetNodeData(AOldNode);
-
-    if ALink = newData^.Link then
-    begin
-      ANewNode := AOldNode;
-    end;
-  end;
-
+procedure TMainForm.vtMangaListRefresh;
 begin
-  newNode := nil;
-  CloseOpenDataDB;
-  OpenDataDB(AModuleID);
-
-  WaitForOpenDataDB;
-  UpdateVtMangaListFilterStatus;
-
   vtMangaList.BeginUpdate;
+
   try
-    totalNodes := vtMangaList.RootNodeCount;
-    if totalNodes = 0 then
+    vtMangaList.RootNodeCount := dataProcess.RecordCount;
+    vtMangaList.ReinitChildren(nil, True);
+    vtMangaList.ClearSelection;
+    vtMangaList.Invalidate;
+
+    UpdateVtMangaListFilterStatus;
+  finally
+    vtMangaList.EndUpdate;
+  end;
+end; 
+
+procedure TMainForm.vtMangaListUpdate(ANode: PVirtualNode);
+begin
+  vtMangaList.BeginUpdate;
+
+  try
+    if ANode <> nil then
     begin
-      Exit;
-    end;
-
-    if (ANodeIndex < 0) or (ALink = '') then
-    begin
-      newNode := vtMangaList.GetFirst;
-    end
-    else if (ANodeIndex < totalNodes) then
-    begin
-      // Smart traversal
-      if ANodeIndex < totalNodes div 2 then
-      begin
-        // Near beginning - go forward
-        nextNode := vtMangaList.GetFirst;
-        CheckNode(nextNode, newNode, ALink);
-
-        for i := 0 to Min(totalNodes - 1, ANodeIndex) do
-        begin
-          if not Assigned(nextNode) then
-          begin
-            Break;
-          end;
-
-          nextNode := vtMangaList.GetNext(nextNode);
-          CheckNode(nextNode, newNode, ALink);
-        end;
-      end
-      else
-      begin
-        // Near end - go backward
-        nextNode := vtMangaList.GetLast;
-        CheckNode(nextNode, newNode, ALink);
-
-        for i := 0 to (totalNodes - ANodeIndex) do
-        begin
-          if not Assigned(nextNode) then
-          begin
-            Break;
-          end;
-
-          nextNode := vtMangaList.GetPrevious(nextNode);
-          CheckNode(nextNode, newNode, ALink);
-        end;
-      end;
-    end
-    else
-    begin
-      newNode := vtMangaList.GetLast
-    end;
-
-    if Assigned(newNode) then
-    begin
-      vtMangaList.Selected[newNode] := True;
-      vtMangaList.FocusedNode := newNode;
-      vtMangaList.ScrollIntoView(newNode, True);
+      vtMangaList.ReinitNode(ANode, False);
     end;
   finally
     vtMangaList.EndUpdate;

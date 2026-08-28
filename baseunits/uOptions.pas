@@ -38,8 +38,6 @@ type
       FSaveMinOnStart,
       FSaveMinToTray,
       FSaveOneFMDInstance,
-      FSaveListLiveSearch,
-      FSaveMangaLoadAddToList,
       FSaveHghlghtNewManga,
       FSaveSortChptrListAsc,
       FSaveChptrListHideDwnlded,
@@ -47,7 +45,6 @@ type
       FSaveDelCompltdDLOnClose,
       FSaveAddNewDLAsStopped,
       FSaveSortDLAddNew,
-      FSaveDBVacuumExit,
       FSaveLongNamePaths: String;
 
       // Option
@@ -66,8 +63,6 @@ type
       FMinOnStart,
       FMinToTray,
       FOneFMDInstance,
-      FListLiveSearch,
-      FMangaLoadAddToList,
       FHghlghtNewManga,
       FSortChptrListAsc,
       FChptrListHideDwnlded,
@@ -75,7 +70,6 @@ type
       FDelCompltdDLOnClose,
       FAddNewDLAsStopped,
       FSortDLAddNew,
-      FDBVacuumExit,
       FLongNamePaths: Boolean;
 
     // Get/Set Method
@@ -105,8 +99,6 @@ type
     property SaveMinOnStart: String read FSaveMinOnStart;
     property SaveMinToTray: String read FSaveMinToTray;
     property SaveOneFMDInstance: String read FSaveOneFMDInstance;
-    property SaveListLiveSearch: String read FSaveListLiveSearch;
-    property SaveMangaLoadAddToList: String read FSaveMangaLoadAddToList;
     property SaveHghlghtNewManga: String read FSaveHghlghtNewManga;
     property SaveSortChptrListAsc: String read FSaveSortChptrListAsc;
     property SaveChptrListHideDwnlded: String read FSaveChptrListHideDwnlded;
@@ -114,7 +106,6 @@ type
     property SaveDelCompltdDLOnClose: String read FSaveDelCompltdDLOnClose;
     property SaveAddNewDLAsStopped: String read FSaveAddNewDLAsStopped;
     property SaveSortDLAddNew: String read FSaveSortDLAddNew;
-    property SaveDBVacuumExit: String read FSaveDBVacuumExit;
     property SaveLongNamePaths: String read FSaveLongNamePaths;
 
     // TGeneral Option
@@ -133,8 +124,6 @@ type
     property MinOnStart: Boolean read FMinOnStart write FMinOnStart;
     property MinToTray: Boolean read FMinToTray write FMinToTray;
     property OneFMDInstance: Boolean read FOneFMDInstance write FOneFMDInstance;
-    property ListLiveSearch: Boolean read FListLiveSearch write FListLiveSearch;
-    property MangaLoadAddToList: Boolean read FMangaLoadAddToList write FMangaLoadAddToList;
     property HghlghtNewManga: Boolean read FHghlghtNewManga write FHghlghtNewManga;
     property SortChptrListAsc: Boolean read FSortChptrListAsc write FSortChptrListAsc;
     property ChptrListHideDwnlded: Boolean read FChptrListHideDwnlded write FChptrListHideDwnlded;
@@ -142,7 +131,6 @@ type
     property DelCompltdDLOnClose: Boolean read FDelCompltdDLOnClose write FDelCompltdDLOnClose;
     property AddNewDLAsStopped: Boolean read FAddNewDLAsStopped write FAddNewDLAsStopped;
     property SortDLAddNew: Boolean read FSortDLAddNew write FSortDLAddNew;
-    property DBVacuumExit: Boolean read FDBVacuumExit write FDBVacuumExit;
     property LongNamePaths: Boolean read FLongNamePaths write FLongNamePaths;
 
     constructor Create;
@@ -601,8 +589,6 @@ begin
   FSaveMinOnStart := 'MinimizeOnStart';
   FSaveMinToTray := 'MinimizeToTray';
   FSaveOneFMDInstance := 'OneInstanceOnly';
-  FSaveListLiveSearch := 'LiveSearch';
-  FSaveMangaLoadAddToList := 'MangaLoadAddToList';
   FSaveHghlghtNewManga := 'HighlightNewManga';
   FSaveSortChptrListAsc := 'SortChapterListAscending';
   FSaveChptrListHideDwnlded := 'ChapterListHideDownloaded';
@@ -610,7 +596,6 @@ begin
   FSaveDelCompltdDLOnClose := 'DeleteCompletedTasksOnClose';
   FSaveAddNewDLAsStopped := 'AddAsStopped';
   FSaveSortDLAddNew := 'SortDownloadsOnNewTasks';
-  FSaveDBVacuumExit := 'VacuumDatabasesOnExit';
   FSaveLongNamePaths := 'EnableLongNamePaths';
 
   // Option
@@ -628,9 +613,7 @@ begin
 
   FMinOnStart := False;
   FMinToTray := False;
-  FOneFMDInstance := True;  
-  FListLiveSearch := True;
-  FMangaLoadAddToList := False;
+  FOneFMDInstance := True;
   FHghlghtNewManga := True;
   FSortChptrListAsc := True;
   FChptrListHideDwnlded := False;
@@ -638,7 +621,6 @@ begin
   FDelCompltdDLOnClose := False;
   FAddNewDLAsStopped := False;
   FSortDLAddNew := False;
-  FDBVacuumExit := False;  
   FLongNamePaths := False;
 end;
 

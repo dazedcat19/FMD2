@@ -3003,40 +3003,16 @@ object MainForm: TMainForm
               ParentFont = False
               TabOrder = 7
             end
-            object cbOptionLiveSearch: TCheckBox
+            object cbOptionDeleteCompletedTasksOnClose: TCheckBox
               AnchorSideLeft.Control = cbOptionOneInstanceOnly
               AnchorSideTop.Control = cbOptionOneInstanceOnly
               AnchorSideTop.Side = asrBottom
               Left = 4
               Height = 19
               Top = 274
-              Width = 208
-              Caption = 'Enable live search (slow on long list)'
-              ParentFont = False
-              TabOrder = 8
-            end
-            object cbOptionMangaLoadAddToList: TCheckBox
-              AnchorSideLeft.Control = cbOptionLiveSearch
-              AnchorSideTop.Control = cbOptionLiveSearch
-              AnchorSideTop.Side = asrBottom
-              Left = 4
-              Height = 19
-              Top = 297
-              Width = 265
-              Caption = 'Enable add manga to manga list after info load'
-              ParentFont = False
-              TabOrder = 9
-            end
-            object cbOptionDeleteCompletedTasksOnClose: TCheckBox
-              AnchorSideLeft.Control = cbOptionMangaLoadAddToList
-              AnchorSideTop.Control = cbOptionMangaLoadAddToList
-              AnchorSideTop.Side = asrBottom
-              Left = 4
-              Height = 19
-              Top = 320
               Width = 187
               Caption = 'Delete completed tasks on close'
-              TabOrder = 10
+              TabOrder = 8
             end
             object cbOptionSortDownloadsOnNewTasks: TCheckBox
               AnchorSideLeft.Control = cbOptionDeleteCompletedTasksOnClose
@@ -3044,32 +3020,21 @@ object MainForm: TMainForm
               AnchorSideTop.Side = asrBottom
               Left = 4
               Height = 19
-              Top = 320
+              Top = 297
               Width = 283
               Caption = 'Sort Downloads when adding new download tasks'
-              TabOrder = 11
+              TabOrder = 9
             end
-            object cbOptionVacuumDatabasesOnExit: TCheckBox
+            object cbOptionEnableLongNamePaths: TCheckBox
               AnchorSideLeft.Control = cbOptionSortDownloadsOnNewTasks
               AnchorSideTop.Control = cbOptionSortDownloadsOnNewTasks
               AnchorSideTop.Side = asrBottom
               Left = 4
               Height = 19
-              Top = 343
-              Width = 155
-              Caption = 'Vacuum databases on exit'
-              TabOrder = 12
-            end
-            object cbOptionEnableLongNamePaths: TCheckBox
-              AnchorSideLeft.Control = cbOptionVacuumDatabasesOnExit
-              AnchorSideTop.Control = cbOptionVacuumDatabasesOnExit
-              AnchorSideTop.Side = asrBottom
-              Left = 4
-              Height = 19
-              Top = 366
+              Top = 320
               Width = 526
               Caption = 'Enable long name paths (can break most/all interaction with the file in Windows and other apps)'
-              TabOrder = 13
+              TabOrder = 10
             end
             object gbOptionExternal: TGroupBox
               AnchorSideLeft.Control = sbGeneralSettings

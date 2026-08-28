@@ -82,7 +82,7 @@ type
     procedure MainThreadEndGetting;
     procedure MainThreadRemoveFilter;
     procedure ExtractFile;
-    procedure RefreshList;
+    procedure RefreshVTMangaList;
     procedure DlgReport;
     procedure CheckOut(const alimit: Integer; const acs: TCheckStyleType);
     procedure Execute; override;
@@ -282,6 +282,7 @@ begin
                 FOwner.tempDataProcess.AddData(names[i], '', links[i], '', '', '', '', '', 0, 0);
               end;
             end;
+
             FOwner.tempDataProcess.Commit;
           finally
             FOwner.tempDataProcess.Unlock;
@@ -443,17 +444,20 @@ end;
 procedure TUpdateListManagerThread.CheckCommit(const CommitCount: Integer);
 begin
   Inc(FCommitCount);
-  if FCommitCount >= CommitCount then
+
+  if FCommitCount < CommitCount then
   begin
-    FCommitCount := 0;
-    if Assigned(mainDataProcess) then
-    begin
-      mainDataProcess.Commit;
-    end;
+    Exit;
+  end;
+
+  FCommitCount := 0;
+  if Assigned(mainDataProcess) then
+  begin
+    mainDataProcess.Commit;
   end;
 end;
 
-procedure TUpdateListManagerThread.RefreshList;
+procedure TUpdateListManagerThread.RefreshVTMangaList;
 begin
   try
     with MainForm do
@@ -492,7 +496,7 @@ end;
 
 procedure TUpdateListManagerThread.DlgReport;
 begin
-  CenteredMessageDlg(MainForm, Format(RS_DlgHasNewManga, [module.Name, tempDataProcess.RecordCount]),
+  CenteredMessageDlg(MainForm, Format(RS_DlgHasNewManga, [module.Name, tempDataProcess.DBRecordCount]),
     mtInformation, [mbOK], 0);
 end;
 
@@ -781,7 +785,7 @@ begin
           end;
 
           mainDataProcess.OpenTable('', True);
-          FIsPreListAvailable := mainDataProcess.RecordCount > 0;
+          FIsPreListAvailable := mainDataProcess.DBRecordCount > 0;
           mainDataProcess.CloseTable;
 
           // get names and links
@@ -820,7 +824,7 @@ begin
 
           tempDataProcess.OpenTable('', True);
           // get manga info
-          if tempDataProcess.RecordCount > 0 then
+          if tempDataProcess.DBRecordCount > 0 then
           begin
             workPtr := 0;
             FCommitCount := 0;
@@ -830,7 +834,7 @@ begin
             begin
               Inc(workPtr);
 
-              for k := 0 to tempDataProcess.RecordCount - 1 do
+              for k := 0 to tempDataProcess.DBRecordCount - 1 do
               begin
                 mainDataProcess.AddData(
                   tempDataProcess.Value[k,DATA_PARAM_TITLE],
@@ -850,8 +854,9 @@ begin
             end
             else
             begin
-              CheckOut(tempDataProcess.RecordCount, CS_INFO);
+              CheckOut(tempDataProcess.DBRecordCount, CS_INFO);
             end;
+
             mainDataProcess.Commit;
 
             if (workPtr > 0) and (not (Terminated and module.SortedList)) then
@@ -859,7 +864,7 @@ begin
               UpdateStatusText(RS_UpdatingList + Format(' [%d/%d] %s',
                 [websitePtr, websites.Count, Module.Name]) + ' | ' + RS_SavingData + '...');
               mainDataProcess.Close;
-              Synchronize(@RefreshList);
+              Synchronize(@RefreshVTMangaList);
             end;
           end;
         except

@@ -57,58 +57,47 @@ uses
 procedure TGetMangaInfosThread.MainThreadAddInfos;
 var
   tempDataProcess: TDBDataProcess;
-  data: PMangaInfoData;
-  oldModuleID, dataLink: String;
-  nodeIndex: Integer;
+  activeList: Boolean;
+  Node: PVirtualNode;
 begin
   if (FInfo.MangaInfo.Title = '') or (FInfo.MangaInfo.Link = '') then
   begin
     Exit;
   end;
 
-  tempDataProcess := dataProcess;
-  oldModuleID := dataProcess.Website;
-  if oldModuleID <> FModule.ID then
+  activeList := dataProcess.Website = FModule.ID;
+  if activeList then
+  begin
+    tempDataProcess := dataProcess;
+  end
+  else
   begin
     tempDataProcess := TDBDataProcess.Create;
   end;
 
   try
-    if not tempDataProcess.Connect(FModule.ID) then
-    begin
-      Exit;
-    end;
-
-    if not Assigned(FNode) then
-    begin
-      FNode := MainForm.vtMangaList.FocusedNode;
-    end;
-
-    data := MainForm.vtMangaList.GetNodeData(FNode);
-    dataLink := '';
-    if Assigned(data) then
-    begin
-      dataLink := data^.Link;
-    end;
-    nodeIndex := MainForm.vtMangaList.AbsoluteIndex(FNode);
-
     if FInfo.DataExists(tempDataProcess) then
     begin
       FInfo.SyncInfoToData(tempDataProcess);
-      tempDataProcess.Commit;
-    end
-    else if FMDOptions.General.MangaLoadAddToList then
-    begin
-      FInfo.AddInfoToData(FInfo.MangaInfo.Title, FInfo.MangaInfo.Link, tempDataProcess);
-    end;
-  finally
-    if oldModuleID = FModule.ID then
-    begin
-      MainForm.vtMangaList.Clear;
-      tempDataProcess.Refresh(tempDataProcess.Filtered);
-      MainForm.vtMangaListResetList(nodeIndex, dataLink, FModule.ID);
+
+      if activeList then
+      begin
+        Node := tempDataProcess.GetCacheNode(MainForm.vtMangaList, FInfo.MangaInfo.Link);
+        MainForm.vtMangaListUpdate(Node);
+      end;
     end
     else
+    begin
+      FInfo.AddInfoToData(FInfo.MangaInfo.Title, FInfo.MangaInfo.Link, tempDataProcess);
+      tempDataProcess.Transaction.CommitRetaining;
+
+      if activeList then
+      begin
+        MainForm.vtMangaListRefresh;
+      end;
+    end;
+  finally
+    if not activeList then
     begin
       tempDataProcess.Free;
     end;
