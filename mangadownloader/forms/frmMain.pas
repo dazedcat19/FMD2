@@ -7335,11 +7335,6 @@ begin
     Exit;
   end;
 
-  if edMangaListSearch.Tag = 0 then
-  begin
-    Exit;
-  end;
-
   if edMangaListSearch.Tag <> 0 then
   begin
     edMangaListSearch.Tag := 0;

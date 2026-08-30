@@ -621,6 +621,7 @@ end;
 
 procedure TDBDataProcess.CreateFTSTable;
 var
+  TableQuery: String;
   FTSTableExists: Boolean;
 begin
   if not FConn.Connected then
@@ -632,10 +633,20 @@ begin
   try
     try
       FTSTableExists := TableExist(FTableName + '_fts');
+      if FTSTableExists then
+      begin
+        TableQuery := FConn.ExecuteQuery('SELECT sql FROM sqlite_master WHERE type = ''table'' AND name = ''' + FTableName + '_fts''');
+        TableQuery := LowerCase(TableQuery);
+        if Pos('trigram', TableQuery) = 0 then
+        begin
+          FConn.ExecuteDirect('DROP TABLE IF EXISTS "' + FTableName + '_fts";');
+          FTSTableExists := False;
+        end;
+      end;
 
       // Create virtual fts table for faster filtering
       FConn.ExecuteDirect('CREATE VIRTUAL TABLE IF NOT EXISTS "' + FTableName +
-        '_fts" USING fts5(' + DBDataProcessParamFTS + ', content="' + FTableName + '", content_rowid="_rowid_");');
+        '_fts" USING fts5(' + DBDataProcessParamFTS + ', content="' + FTableName + '", content_rowid="_rowid_", tokenize="trigram");');
 
       // Create insert fts trigger for table inserts
       FConn.ExecuteDirect('CREATE TRIGGER IF NOT EXISTS "' + FTableName + '_ai" AFTER INSERT ON "' +
@@ -2203,9 +2214,9 @@ var
   i: Integer;
   CheckedStr, UncheckedStr, OpStr: String;
 
-  function Clean(const AText: String): String;
+  function DoubleQuotedStr(const AText: String): String;
   begin
-    Result := StringReplace(AText, '"', '""', [rfReplaceAll]);
+    Result := '"' + StringReplace(AText, '"', '""', [rfReplaceAll]) + '"';
   end;
 
 begin
@@ -2213,24 +2224,24 @@ begin
   FTSClauses := TStringList.Create;
 
   try
-    if Trim(stTitle) <> '' then
+    if Length(stTitle) >= 3 then
     begin
-      FTSClauses.Add('(title : "' + Clean(stTitle) + '"* OR alttitles : "' + Clean(stTitle) + '"*)');
+      FTSClauses.Add('(title : ' + DoubleQuotedStr(stTitle) + ' OR alttitles : ' + DoubleQuotedStr(stTitle) + ')');
     end;
 
-    if Trim(stAuthors) <> '' then
+    if Length(stAuthors) >= 3 then
     begin
-      FTSClauses.Add('authors : "' + Clean(stAuthors) + '"*');
+      FTSClauses.Add('authors : ' + DoubleQuotedStr(stAuthors));
     end;
 
-    if Trim(stArtists) <> '' then
+    if Length(stArtists) >= 3 then
     begin
-      FTSClauses.Add('artists : "' + Clean(stArtists) + '"*');
+      FTSClauses.Add('artists : ' + DoubleQuotedStr(stArtists));
     end;
 
-    if Trim(stSummary) <> '' then
+    if Length(stSummary) >= 3 then
     begin
-      FTSClauses.Add('summary : "' + Clean(stSummary) + '"*');
+      FTSClauses.Add('summary : ' + DoubleQuotedStr(stSummary));
     end;
 
     if checkedGenres.Count > 0 then
@@ -2252,7 +2263,7 @@ begin
           CheckedStr := CheckedStr + OpStr;
         end;
 
-        CheckedStr := CheckedStr + '"' + Clean(checkedGenres[i]) + '"';
+        CheckedStr := CheckedStr + DoubleQuotedStr(checkedGenres[i]);
       end;
 
       FTSClauses.Add('genres : (' + CheckedStr + ')');
@@ -2268,7 +2279,7 @@ begin
           UncheckedStr := UncheckedStr + ' OR ';
         end;
 
-        UncheckedStr := UncheckedStr + '"' + Clean(uncheckedGenres[i]) + '"';
+        UncheckedStr := UncheckedStr + DoubleQuotedStr(uncheckedGenres[i]);
       end;
 
       FTSClauses.Add('NOT genres : (' + UncheckedStr + ')');
@@ -2305,11 +2316,17 @@ procedure TDBDataProcess.GenerateSQLFilterFTS(const checkedGenres,
   searchNewManga: Boolean);
 var
   FTSMatchStr: String;
+  TTitle, TAuthors, TArtists, TSummary: String;
   WhereClauses: TStringList;
   i: Integer;
 begin
-  FTSMatchStr := BuildFTSMatchString(checkedGenres, uncheckedGenres, stTitle, stAuthors,
-    stArtists, stSummary, haveAllChecked);
+  TTitle := Trim(stTitle);
+  TAuthors := Trim(stAuthors);
+  TArtists := Trim(stArtists);
+  TSummary := Trim(stSummary);
+
+  FTSMatchStr := BuildFTSMatchString(checkedGenres, uncheckedGenres, TTitle, TAuthors,
+    TArtists, TSummary, haveAllChecked);
 
   FReadQuery.SQL.Add('SELECT m.* FROM "' + FTableName + '" m');
 
@@ -2323,6 +2340,27 @@ begin
     if FTSMatchStr <> '' then
     begin
       WhereClauses.Add('fts."' + FTableName + '_fts" MATCH ' + QuotedStr(FTSMatchStr));
+    end;
+
+    if (Length(TTitle) > 0) and (Length(TTitle) < 3) then
+    begin
+      WhereClauses.Add('(m.title LIKE ' + QuotedStr('%' + TTitle + '%') +
+        ' OR m.alttitles LIKE ' + QuotedStr('%' + TTitle + '%') + ')');
+    end;
+
+    if (Length(TAuthors) > 0) and (Length(TAuthors) < 3) then
+    begin
+      WhereClauses.Add('m.authors LIKE ' + QuotedStr('%' + TAuthors + '%'));
+    end;
+
+    if (Length(TArtists) > 0) and (Length(TArtists) < 3) then
+    begin
+      WhereClauses.Add('m.artists LIKE ' + QuotedStr('%' + TArtists + '%'));
+    end;
+
+    if (Length(TSummary) > 0) and (Length(TSummary) < 3) then
+    begin
+      WhereClauses.Add('m.summary LIKE ' + QuotedStr('%' + TSummary + '%'));
     end;
 
     if searchNewManga then
