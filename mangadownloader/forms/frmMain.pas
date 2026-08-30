@@ -1336,6 +1336,8 @@ begin
     edMangaListSearch.Enabled := Value;
     btMangaListSearchClear.Enabled := Value;
     btRemoveFilter.Enabled := Value;
+    btRemoveFilterLarge.Enabled := Value;
+    btFilter.Enabled := Value;
   end;
 end;
 
