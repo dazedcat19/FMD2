@@ -2,15 +2,15 @@
 -- Template Configuration
 ----------------------------------------------------------------------------------------------------
 
-local Template = require 'templates.VTheme'
+local Template = require 'templates.NovelsHub'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
--- Sign in to the current website.
-function Login()
-	Template.Login()
+-- Get the page count of the manga list of the current website.
+function GetDirectoryPageNumber()
+	Template.GetDirectoryPageNumber()
 
 	return no_error
 end
@@ -44,13 +44,12 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'a631c777b09a4e5095dfe28819743d48'
 	m.Name                     = 'Kayn Scans'
-	m.RootURL                  = 'https://kaynscan.org'
+	m.RootURL                  = 'https://kaynscans.com'
 	m.Category                 = 'English-Scanlation'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnLogin                  = 'Login'
-	m.AccountSupport           = true
 
 	local slang = require 'fmd.env'.SelectedLanguage
 	local translations = {
