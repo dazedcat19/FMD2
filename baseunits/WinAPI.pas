@@ -5,7 +5,7 @@ unit WinAPI;
 interface
 
 uses
-  SysUtils, windows, dynlibs;
+  SysUtils, Classes, windows, dynlibs;
 
 const
   ES_SYSTEM_REQUIRED = DWORD($00000001);

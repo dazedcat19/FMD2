@@ -5,7 +5,7 @@ unit httpcookiemanager;
 interface
 
 uses
-  Classes, SysUtils, fgl, StrUtils, DateUtils, syncobjs, synautil, httpsend;
+  SysUtils, Classes, fgl, StrUtils, DateUtils, syncobjs, synautil, httpsend;
 
 type
 

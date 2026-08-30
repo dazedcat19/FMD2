@@ -5,8 +5,8 @@ unit LuaWebsiteModuleHandler;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif},
-  LuaHandler, LuaBase;
+  SysUtils, Classes, LuaHandler,
+  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 type
 

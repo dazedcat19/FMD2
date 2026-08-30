@@ -5,12 +5,13 @@ unit LuaPCRE2;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
+  SysUtils, Classes, LuaPackage,
+  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 implementation
 
 uses
-  pcre2, pcre2lib, MultiLog, LuaUtils, LuaPackage;
+  pcre2, pcre2lib, MultiLog, LuaUtils;
 
 {/* directly pass the pointer by lua stack to pcre2 lib to save memory /*}
 

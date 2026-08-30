@@ -5,8 +5,8 @@ unit frmTransferFavorites;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, Buttons, Menus, ExtCtrls,
-  VirtualTrees, uFavoritesManager, DBDataProcess;
+  SysUtils, Classes, Forms, Controls, Graphics, Dialogs, StdCtrls, Buttons,
+  Menus, ExtCtrls, VirtualTrees, uFavoritesManager;
 
 type
 
@@ -83,7 +83,7 @@ resourcestring
 implementation
 
 uses
-  FMDVars, FMDOptions, WebsiteModules, db, frmCustomColor;
+  frmMain, frmCustomColor, uVars, uOptions, WebsiteModules, DB, DBDataProcess;
 
 {$R *.lfm}
 
@@ -180,7 +180,7 @@ end;
 procedure TTransferFavoritesForm.FormCreate(Sender: TObject);
 begin
   frmCustomColor.AddVT(vtFavs);
-  cbWebsites.Items.Assign(FormMain.cbSelectManga.Items);
+  cbWebsites.Items.Assign(MainForm.cbSelectManga.Items);
   FLastFilter := 0;
   FAllCount := 0;
   FValidCount := 0;

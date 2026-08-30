@@ -11,8 +11,7 @@ unit frmNewChapter;
 interface
 
 uses
-  Classes, Forms, StdCtrls,
-  Buttons, DefaultTranslator, ExtCtrls;
+  Classes, Forms, StdCtrls, Buttons, DefaultTranslator, ExtCtrls;
 
 type
 

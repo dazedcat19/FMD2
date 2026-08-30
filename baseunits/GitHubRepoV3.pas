@@ -5,7 +5,7 @@ unit GitHubRepoV3;
 interface
 
 uses
-  Classes, SysUtils, fgl, httpsendthread, BaseThread, fpjson, MultiLog, DateUtils;
+  SysUtils, Classes, fgl, httpsendthread, BaseThread, fpjson, DateUtils;
 
 type
 { TGitHubRepo }
@@ -39,6 +39,7 @@ type
     tree_sha,
     tree_etag: String;
 
+    APIResetTime: TDateTime;
     Tree: TTreeItems;
   public
     constructor Create(const AConfigFile, AWorkFile: String; const AThread: TBaseThread = nil);
@@ -47,13 +48,15 @@ type
     function GetLastCommitMessage(const FRepoPath: String): String;
     function GetTree: Boolean;
     function GetUpdate: Boolean;
-    function CheckRateLimited: Boolean;
+    function CheckConnection: Boolean;
+    procedure CheckRateLimited(AThread: TBaseThread);
     function GetDownloadURL(const AName: String): String;
   end;
 
 implementation
 
-uses jsonConf, jsonini, uBaseUnit, frmLuaModulesUpdater;
+uses
+  frmLuaModulesUpdater, jsonConf, jsonini, uBaseUnit, MultiLog;
 
 function AppendURLDelim(const URL: String): String;
 begin
@@ -68,19 +71,22 @@ end;
 
 procedure TGitHubRepo.ReadWorkFile;
 begin
-  if FileExists(WorkFile) then
+  if not FileExists(WorkFile) then
   begin
-    with TJSONConfig.Create(nil) do
-    begin
-      try
-        Filename := WorkFile;
-        last_commit_sha := GetValue('last_commit_sha', '');
-        last_commit_etag := GetValue('last_commit_etag', '');
-        FDirty := False;
-      except
-      end;
-      Free;
+    Exit;
+  end;
+
+  with TJSONConfig.Create(nil) do
+  begin
+    try
+      Filename := WorkFile;
+      last_commit_sha := GetValue('last_commit_sha', '');
+      last_commit_etag := GetValue('last_commit_etag', '');
+      FDirty := False;
+    except
     end;
+
+    Free;
   end;
 end;
 
@@ -264,6 +270,7 @@ begin
       try
         a := TJSONArray(d.GetPath('tree'));
         Tree.Clear;
+
         for i := 0 to a.Count-1 do
         begin
           with TJSONObject(a.Items[i]) do
@@ -281,10 +288,12 @@ begin
         end;
       except
       end;
+
       d.Free;
     end;
+
     Result := Tree.Count <> 0;
-  end
+  end;
 end;
 
 function TGitHubRepo.GetUpdate: Boolean;
@@ -303,39 +312,89 @@ begin
   FDirty := Result;
 end;
 
-function TGitHubRepo.CheckRateLimited: Boolean;
-var
-  s: String;
-  d: TJSONData;
-  coreLimit, coreRemaining, coreReset, coreUsed: Integer;
-  convertedLocalTime: TDateTime;
+
+function TGitHubRepo.CheckConnection: Boolean;
 begin
-  Result := True;
+  Result := False; 
   HTTP.ResetBasic;
-  s := AppendURLDelim(api_url) + 'rate_limit';
 
-  if HTTP.GET(s) then
+  if HTTP.GET(api_url) then
   begin
-    d := GetJSON(HTTP.Document);
-    if Assigned(d) then
+    Result := True;
+  end;
+end;
+
+procedure TGitHubRepo.CheckRateLimited(AThread: TBaseThread);
+var
+  AUpdateThread: TCheckUpdateThread;
+  url, apiMessage: String;
+  jsonData, jsonCoreData: TJSONData;
+  coreLimit, coreRemaining, coreReset, coreUsed: Integer;
+begin
+  HTTP.ResetBasic;
+  url := AppendURLDelim(api_url) + 'rate_limit';
+  
+  if not (AThread is TCheckUpdateThread) then
+  begin
+    Exit;
+  end;
+
+  AUpdateThread := TCheckUpdateThread(AThread);
+
+  if not HTTP.GET(url) then
+  begin
+    AUpdateThread.DoSyncGitHubConnectFail;
+    Exit;
+  end;
+
+  jsonData := GetJSON(HTTP.Document);
+
+  if not Assigned(jsonData) then
+  begin
+    AUpdateThread.DoSyncGitHubErrorMessage(False);
+    Exit;
+  end;
+
+  try
+    if jsonData.JSONType <> jtObject then
     begin
-      try
-        if d.JSONType = jtObject then
-        begin
-          coreLimit := TJSONObject(d).FindPath('resources.core.limit').AsInteger;
-          coreRemaining := TJSONObject(d).FindPath('resources.core.remaining').AsInteger;
-          coreReset := TJSONObject(d).FindPath('resources.core.reset').AsInteger;
-          coreUsed := TJSONObject(d).FindPath('resources.core.used').AsInteger;
-
-          convertedLocalTime := UniversalTimeToLocal(UnixToDateTime(coreReset));
-          Logger.Send(Self.ClassName + ': ' + Format(RS_GitHubRateStats, [coreLimit, coreRemaining, coreUsed, DateTimeToStr(convertedLocalTime)]));
-
-          Result := coreRemaining = 0;
-        end;
-      except
-      end;
-      d.Free;
+      AUpdateThread.DoSyncGitHubErrorMessage(False);
+      Exit;
     end;
+
+    jsonCoreData := TJSONObject(jsonData).FindPath('resources.core');
+    if not Assigned(jsonCoreData) then
+    begin
+      apiMessage := TJSONObject(jsonData).Get('message', '');
+
+      if apiMessage <> '' then
+      begin
+        AUpdateThread.DoSyncGitHubErrorMessage;
+        Logger.SendWarning(Self.ClassName + ': ' + apiMessage);
+      end
+      else
+      begin
+        AUpdateThread.DoSyncGitHubErrorMessage(False);
+      end;
+
+      Exit;
+    end;
+
+    coreLimit := TJSONObject(jsonCoreData).Get('limit', 0);
+    coreRemaining := TJSONObject(jsonCoreData).Get('remaining', 0);
+    coreReset := TJSONObject(jsonCoreData).Get('reset', 0);
+    coreUsed := TJSONObject(jsonCoreData).Get('used', 0);
+
+    APIResetTime := UniversalTimeToLocal(UnixToDateTime(coreReset));
+    Logger.Send(Self.ClassName + ': ' + Format(RS_GitHubRateStats, [coreLimit, coreRemaining, coreUsed, DateTimeToStr(APIResetTime)]));
+
+    if coreRemaining = 0 then
+    begin
+      AUpdateThread.DoSyncGitHubRateLimited;
+    end;
+
+  finally
+    jsonData.Free;
   end;
 end;
 
@@ -348,6 +407,7 @@ begin
   begin
     lpath := lpath + '/';
   end;
+
   Result := AppendURLDelim(download_url) + owner + '/' + name + '/' + ref + '/' + lpath + AName;
 end;
 

@@ -11,9 +11,9 @@ unit uDownloadsManager;
 interface
 
 uses
-  LazFileUtils, Classes, SysUtils, ExtCtrls, typinfo, fgl, FileUtil, synautil,
-  blcksock, MultiLog, uBaseUnit, uPacker, uMisc, DownloadedChaptersDB, FMDOptions, ImgInfos,
-  httpsendthread, DownloadsDB, BaseThread, SQLiteData, dateutils, strutils, ImageMagickManager;
+  SysUtils, Classes, ExtCtrls, typinfo, fgl, FileUtil, LazFileUtils, synautil,
+  blcksock, httpsendthread, dateutils, strutils, BaseThread, uBaseUnit,
+  DownloadsDB, DownloadedChaptersDB;
 
 type
   TDownloadStatusType = (
@@ -291,7 +291,8 @@ resourcestring
 implementation
 
 uses
-  frmMain, WebsiteModules, SimpleException;
+  frmMain, uVars, WebsiteModules, SimpleException, MultiLog, uPacker,
+  uOptions, ImgInfos, SQLiteData, ImageMagickManager;
 
 function IntToStr(Value: Cardinal): String;
 begin
@@ -501,7 +502,7 @@ begin
            (CurrentDownloadChapterPtr >= ChapterLinks.Count) and
            (not FailedChaptersExist) then
         begin
-          DownloadInfo.Status := Format('[%d/%d] %s',[Container.ChapterLinks.Count,Container.ChapterLinks.Count,RS_Finish]);
+          DownloadInfo.Status := Format('[%d/%d] %s', [Container.ChapterLinks.Count, Container.ChapterLinks.Count, RS_Finish]);
           DownloadInfo.Progress := '';
           Status := STATUS_FINISH;
         end
@@ -536,9 +537,15 @@ begin
   Result := '';
   if (Container.FileNames.Count = Container.PageLinks.Count) and
     (AWorkId < Container.FileNames.Count) then
+  begin
     Result := Container.FileNames[AWorkId];
+  end;
+
   if Result = '' then
+  begin
     Result := Format('%.3d', [AWorkId + 1]);
+  end;
+
   Result := StringReplace(CurrentCustomFileName, CR_FILENAME, Result, [rfReplaceAll]);
   {$IFDEF WINDOWS}
   s := UTF8Decode(Result);
@@ -667,7 +674,7 @@ begin
       end
       else
       begin
-        FilePath := AppendPathDelim(ExpandFileName(TempPath)) + '*' + ExtractFileExt(FilePath);
+        FilePath := AppendPathDelim(ExpandFileName(TempPath)) + '*';
       end;
 
       Result := ImageMagick.ConvertImage(FilePath, CurrentWorkingDir);
@@ -762,12 +769,18 @@ var
 begin
   if FCurrentWorkingDir = AValue then Exit;
   FCurrentWorkingDir := CorrectPathSys(AValue);
+
   {$IFDEF Windows}
   s := UTF8Decode(FCurrentWorkingDir);
-  if MainForm.cbOptionEnableLongNamePaths.Checked then
-    FCurrentMaxFileNameLength := FMDMaxImageFilePath + Length(s)
+
+  if FMDOptions.General.LongNamePaths then
+  begin
+    FCurrentMaxFileNameLength := FMDMaxImageFilePath + Length(s);
+  end
   else
+  begin
     FCurrentMaxFileNameLength := FMDMaxImageFilePath - Length(s);
+  end;
   {$ENDIF}
 end;
 
@@ -1375,35 +1388,54 @@ end;
 
 procedure TTaskContainer.SetStatus(AValue: TDownloadStatusType);
 begin
-  if FStatus = AValue then Exit;
+  if FStatus = AValue then
+  begin
+    Exit;
+  end;
+
   if Assigned(Manager) then
+  begin
     Manager.ChangeStatusCount(FStatus, AValue);
+  end;
+
   FStatus := AValue;
 end;
 
 procedure TTaskContainer.SetEnabled(AValue: Boolean);
 begin
-  if FEnabled = AValue then Exit;
+  if FEnabled = AValue then
+  begin
+    Exit;
+  end;
+
   FEnabled := AValue;
   if Assigned(Manager) then
   begin
     if not Manager.isRunningRestore then
+    begin
       DBupdateEnabled;
+    end;
+
     if Enabled then
-      Dec(Manager.DisabledCount)
+    begin
+      Dec(Manager.DisabledCount);
+    end
     else
+    begin
       Inc(Manager.DisabledCount);
+    end;
   end;
 end;
 
 function TTaskContainer.GetRunnning: Boolean;
 begin
-  Result:=TaskThread<>nil;
+  Result := TaskThread <> nil;
 end;
 
 constructor TTaskContainer.Create;
 begin
   inherited Create;
+
   Order := -1;
   FDirty := False;
   DlId := '';
@@ -1432,8 +1464,12 @@ begin
   ChapterLinks.Free;
   ChaptersStatus.Free;
   DoneCriticalsection(CS_Container);
+
   if Assigned(Manager) then
+  begin
     Manager.DecStatusCount(Status);
+  end;
+
   inherited Destroy;
 end;
 
@@ -1444,7 +1480,7 @@ end;
 
 procedure TTaskContainer.DBInsert;
 begin
-  DlId:=Manager.FDownloadsDB.Add(
+  DlId := Manager.FDownloadsDB.Add(
     FEnabled,
     Order,
     Integer(Status),
@@ -1592,6 +1628,7 @@ var
   ds: TDownloadStatusType;
 begin
   inherited Create;
+
   InitCriticalSection(CS_Task);
   InitCriticalSection(CS_ItemsActiveTask);
   InitCriticalSection(CS_StatusCount);
@@ -1623,8 +1660,11 @@ destructor TDownloadManager.Destroy;
 var
   i: Integer;
 begin
-  for i:=0 to Items.Count-1 do
+  for i := 0 to Items.Count - 1 do
+  begin
     Items[i].Free;
+  end;
+
   Items.Free;
   ItemsActiveTask.Free;
   DownloadedChapters.Free;
@@ -1639,20 +1679,33 @@ procedure TDownloadManager.Restore;
 var
   t: TTaskContainer;
 begin
-  if not FDownloadsDB.Connection.Connected then Exit;
-  if FDownloadsDB.OpenTable(False) then
+  if not FDownloadsDB.Connection.Connected then
+  begin
+    Exit;
+  end;
+
+  if not FDownloadsDB.OpenTable(False) then
+  begin
+    Exit;
+  end;
+
   try
-    isRunningRestore:=True;
-    if FDownloadsDB.RecordCount = 0 then Exit;
+    isRunningRestore := True;
+
+    if FDownloadsDB.RecordCount = 0 then
+    begin
+      Exit;
+    end;
+
     EnterCriticalsection(CS_Task);
     try
       //FDownloadsDB.Table.Last; //load all to memory
       FDownloadsDB.Table.First;
       while not FDownloadsDB.Table.EOF do
       begin
-        t:=TTaskContainer.Create;
-        t.Order:=Items.Add(t);
-        t.Manager:=Self;
+        t := TTaskContainer.Create;
+        t.Order := Items.Add(t);
+        t.Manager := Self;
         with t, FDownloadsDB.Table do
         begin
           DlId                            := Fields[f_id].AsString;
@@ -1667,12 +1720,14 @@ begin
           DownloadInfo.Status             := Fields[f_status].AsString;
           DownloadInfo.Progress           := Fields[f_progress].AsString;
           if Pos('/', DownloadInfo.Progress) <> 0 then
+          begin
             DownCounter := StrToIntDef(Trim(ExtractWord(1, DownloadInfo.Progress, ['/'])), 0);
+          end;
           DownloadInfo.SaveTo             := Fields[f_saveto].AsString;
           DownloadInfo.DateAdded          := Fields[f_dateadded].AsDateTime;
-          DownloadInfo.DateLastDownloaded   := Fields[f_datelastdownloaded].AsDateTime;
+          DownloadInfo.DateLastDownloaded := Fields[f_datelastdownloaded].AsDateTime;
           ChapterLinks.Text               := Fields[f_chapterslinks].AsString;
-          ChapterNames.Text                := Fields[f_chaptersnames].AsString;
+          ChapterNames.Text               := Fields[f_chaptersnames].AsString;
           PageLinks.Text                  := Fields[f_pagelinks].AsString;
           PageContainerLinks.Text         := Fields[f_pagecontainerlinks].AsString;
           FileNames.Text                  := Fields[f_filenames].AsString;
@@ -1684,7 +1739,8 @@ begin
     finally
       LeaveCriticalsection(CS_Task);
     end;
-    isRunningRestore:=False;
+
+    isRunningRestore := False;
   finally
     FDownloadsDB.CloseTable;
   end;
@@ -1696,7 +1752,7 @@ begin
   try
     //Logger.Send('TDownloadManager.Backup');
     DBUpdateOrder;
-    FDownloadsDB.Commit(False);
+    FDownloadsDB.Commit;
     DownloadedChapters.Commit;
     DownloadedChapters.Refresh;
   finally
@@ -1707,16 +1763,12 @@ end;
 procedure TDownloadManager.Lock;
 begin
   EnterCriticalSection(CS_Task);
-  EnterCriticalSection(FDownloadsDB.Guardian);
-  FDownloadsDB.BeginUpdate;
   isRunningBackup := True;
 end;
 
 procedure TDownloadManager.UnLock;
 begin
   isRunningBackup := False;
-  FDownloadsDB.EndUpdate;
-  LeaveCriticalSection(FDownloadsDB.Guardian);
   LeaveCriticalSection(CS_Task);
 end;
 
@@ -1724,19 +1776,31 @@ procedure TDownloadManager.DBUpdateOrder;
 var
   i: Integer;
 begin
-  if FUpdateOrderCount=0 then Exit;
-  for i := 0 to Items.Count-1 do
-  with Items[i] do begin
-    if i<>Order then
-    begin
-      Order:=i;
-      FDownloadsDB.tempSQL+='UPDATE "downloads" SET "order"='+PrepSQLValue(Order)+' WHERE "id"='''+DlId+''';';
-      Inc(FDownloadsDB.tempSQLcount);
-      if FDownloadsDB.tempSQLcount>=MAX_BIG_SQL_FLUSH_QUEUE then
-        FDownloadsDB.FlushSQL(False);
-    end;
+  if FUpdateOrderCount = 0 then
+  begin
+    Exit;
   end;
-  FUpdateOrderCount:=0;
+
+  FDownloadsDB.BeginUpdate;
+  try
+    for i := 0 to Items.Count - 1 do
+    begin
+      with Items[i] do
+      begin
+        if i <> Order then
+        begin
+          Order := i;
+          FDownloadsDB.AddSQL('UPDATE "downloads" SET "order"=' + PrepSQLValue(Order) + ' WHERE "id"=''' + DlId + ''';');
+        end;
+      end;
+    end;
+
+    FDownloadsDB.EndUpdate;
+  except
+    FDownloadsDB.RollbackUpdate;
+  end;
+
+  FUpdateOrderCount := 0;
 end;
 
 procedure TDownloadManager.UpdateOrder;
@@ -1818,11 +1882,12 @@ begin
     end
     else
     begin
-      FDownloadsDB.Commit(False);
+      FDownloadsDB.Commit;
       MainForm.tmRefreshDownloadsInfo.Enabled := False;
       MainForm.UpdateVtDownload;
-      if isCheckForFMDDo and (OptionLetFMDDo <> DO_NOTHING) then begin
-        DoAfterFMD := OptionLetFMDDo;
+
+      if isCheckForFMDDo and (not FMDOptions.General.CheckLetFMDDoAfterFinish(DO_NOTHING)) then begin
+        FMDOptions.General.AfterFMDDo := FMDOptions.General.LetFMDDoAfterFinish;
         MainForm.DoExitWaitCounter;
       end;
     end;

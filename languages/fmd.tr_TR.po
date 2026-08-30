@@ -109,6 +109,58 @@ msgstr "Tamam"
 msgid "Username or password can't be empty!"
 msgstr "Kullanıcı adı veya şifre boş olamaz!"
 
+#: frmcustommessagedlg.rs_dialogbuttonabort
+#, fuzzy
+msgctxt "frmcustommessagedlg.rs_dialogbuttonabort"
+msgid "Abort"
+msgstr "İptal"
+
+#: frmcustommessagedlg.rs_dialogbuttonall
+#, fuzzy
+msgctxt "frmcustommessagedlg.rs_dialogbuttonall"
+msgid "All"
+msgstr "Tümü"
+
+#: frmcustommessagedlg.rs_dialogbuttoncancel
+#, fuzzy
+msgctxt "frmcustommessagedlg.rs_dialogbuttoncancel"
+msgid "Cancel"
+msgstr "İptal"
+
+#: frmcustommessagedlg.rs_dialogbuttonclose
+msgid "Close"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonignore
+msgid "Ignore"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonno
+msgid "No"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonnoall
+msgid "No to All"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonok
+#, fuzzy
+msgctxt "frmcustommessagedlg.rs_dialogbuttonok"
+msgid "OK"
+msgstr "Tamam"
+
+#: frmcustommessagedlg.rs_dialogbuttonretry
+msgid "Retry"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonyes
+msgid "Yes"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonyesall
+msgid "Yes to All"
+msgstr ""
+
 #: frmcustommessagedlg.rs_dialogconfirmation
 msgctxt "frmcustommessagedlg.rs_dialogconfirmation"
 msgid "Confirmation"
@@ -188,12 +240,38 @@ msgstr "İndirmeyi durdur"
 
 #: frmluamodulesupdater.rs_githubconnectfail
 msgid ""
-"Failed to connect to GitHub API for latest module updates.\n"
-"Please try again later."
+"Failed to connect to GitHub API.\n"
+"Please check your internet connection or try again later."
 msgstr ""
 
 #: frmluamodulesupdater.rs_githubconnecting
 msgid "Connecting to GitHub..."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubdownloadfailed
+msgid ""
+"Modules update failed to download modules from GitHub.\n"
+"Please try update again."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githuberrormessage
+msgid ""
+"GitHub returned an error.\n"
+"Check log for more information."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubnoerrormessage
+#, object-pascal-format
+msgid ""
+"GitHub API didn't return a valid response.\n"
+"Try checking %s in your browser."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubratelimited
+#, object-pascal-format
+msgid ""
+"GitHub API is rate limited.\n"
+"Change the network or try again after %d minute(s)"
 msgstr ""
 
 #: frmluamodulesupdater.rs_githubratestats
@@ -254,6 +332,10 @@ msgstr "%s GÜNCELLENDİ*"
 #: frmmain.rs_alldownloads
 msgid "All downloads"
 msgstr "Tüm indirmeler"
+
+#: frmmain.rs_applybuttonsaved
+msgid "Saved!"
+msgstr ""
 
 #: frmmain.rs_btnok
 msgctxt "frmmain.rs_btnok"
@@ -401,6 +483,10 @@ msgstr ""
 #: frmmain.rs_fmdalreadyrunning
 msgid "Free Manga Downloader already running!"
 msgstr "Free Manga Downloader zaten çalışıyor!"
+
+#: frmmain.rs_fmdunicodepatherror
+msgid "UnicodePathError: Application can't run in a folder path with unicode characters."
+msgstr ""
 
 #: frmmain.rs_hintfavoriteproblem
 msgid ""
@@ -1124,6 +1210,11 @@ msgstr "Klasörü manga adına göre otomatik oluştur"
 msgid "Enable live search (slow on long list)"
 msgstr "Canlı taramayı etkinleştir (kalabalık listelerde yavaş)"
 
+#: tmainform.cboptionmangaloadaddtolist.caption
+msgctxt "tmainform.cboptionmangaloadaddtolist.caption"
+msgid "Enable add manga to manga list after info load"
+msgstr ""
+
 #: tmainform.cboptionminimizeonstart.caption
 msgid "Minimize on start"
 msgstr "Başlangıça küçült"
@@ -1214,6 +1305,10 @@ msgstr "Tüm manga sitelerinde ara"
 #: tmainform.cbselectmanga.hint
 msgid "For more manga sites, please go to Options->Manga sites"
 msgstr "Daha fazla manga sitesi için, lütfen Ayarlar->Manga siteleri'ne gidin"
+
+#: tmainform.cbservercreationtime.caption
+msgid "Use server creation time over local time"
+msgstr ""
 
 #: tmainform.cbuseregexpr.caption
 msgid "Regular Expression"
@@ -1682,6 +1777,10 @@ msgstr "Resim Dönüştürme"
 
 #: tmainform.gbimagemagick.caption
 msgid "Image Magick"
+msgstr ""
+
+#: tmainform.gbimageproperties.caption
+msgid "Image Properties"
 msgstr ""
 
 #: tmainform.gboptionexternal.caption

@@ -5,7 +5,7 @@ unit FileCache;
 interface
 
 uses
-  Classes, SysUtils;
+  SysUtils, Classes;
 
 type
 
@@ -17,10 +17,14 @@ type
   private
     FGuardian: TRTLCriticalSection;
     FCachedFiles: TStringList;
+
   public
     OnLoadFile: TOnLoadFile;
+
     constructor Create(const AOnLoadFile: TOnLoadFile = nil);
     destructor Destroy; override;
+
+    procedure InitCachedList;
     procedure Add(const AName: String; var AObject: TObject);
     function Find(const AName: String): TObject;
     procedure Clear; inline;
@@ -32,21 +36,35 @@ implementation
 
 { TFileCache }
 
-constructor TFileCache.Create(const AOnLoadFile: TOnLoadFile);
+procedure TFileCache.InitCachedList;
 begin
-  InitCriticalSection(FGuardian);
+  if FCachedFiles <> nil then
+  begin
+    Exit;
+  end;
+
   FCachedFiles := TStringList.Create;
   FCachedFiles.OwnsObjects := True;
   FCachedFiles.Sorted := True;
   FCachedFiles.Duplicates := dupIgnore;
-  if AOnLoadFile<>nil then
+end;
+
+constructor TFileCache.Create(const AOnLoadFile: TOnLoadFile);
+begin
+  InitCriticalSection(FGuardian);
+  InitCachedList;
+
+  if AOnLoadFile <> nil then
+  begin
     OnLoadFile := AOnLoadFile;
+  end;
 end;
 
 destructor TFileCache.Destroy;
 begin
   FCachedFiles.Free;
   DoneCriticalSection(FGuardian);
+
   inherited Destroy;
 end;
 
@@ -54,9 +72,14 @@ procedure TFileCache.Add(const AName: String; var AObject: TObject);
 var
   i: Integer;
 begin
+  InitCachedList;
+
   i := FCachedFiles.Add(AName);
+
   if FCachedFiles.Objects[i] = nil then
+  begin
     FCachedFiles.Objects[i] := AObject
+  end
   else
   begin
     AObject.Free;
@@ -69,16 +92,21 @@ var
   i: Integer;
 begin
   Result := nil;
+
   if FCachedFiles.Find(AName, i) then
-    Result := FCachedFiles.Objects[i]
-  else
-  if Assigned(OnLoadFile) then
+  begin
+    Result := FCachedFiles.Objects[i];
+  end
+  else if Assigned(OnLoadFile) then
   begin
     EnterCriticalSection(FGuardian);
+
     try
       Result := OnLoadFile(AName);
       if Result <> nil then
+      begin
         Add(AName, Result);
+      end;
     finally
       LeaveCriticalSection(FGuardian);
     end;

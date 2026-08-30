@@ -5,7 +5,8 @@ unit LuaDownloadTask;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
+  SysUtils, Classes, LuaClass, uDownloadsManager,
+  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 procedure luaDownloadTaskMetaTable(const L: Plua_State; const Obj: Pointer;
   const MetaTable, UserData: Integer);
@@ -13,7 +14,7 @@ procedure luaDownloadTaskMetaTable(const L: Plua_State; const Obj: Pointer;
 implementation
 
 uses
-  LuaClass, LuaStrings, uDownloadsManager;
+  LuaStrings;
 
 procedure luaDownloadTaskMetaTable(const L: Plua_State; const Obj: Pointer;
   const MetaTable, UserData: Integer);

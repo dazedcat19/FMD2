@@ -107,6 +107,58 @@ msgstr "OK"
 msgid "Username or password can't be empty!"
 msgstr "Username or password can't be empty!"
 
+#: frmcustommessagedlg.rs_dialogbuttonabort
+#, fuzzy
+msgctxt "frmcustommessagedlg.rs_dialogbuttonabort"
+msgid "Abort"
+msgstr "Abort"
+
+#: frmcustommessagedlg.rs_dialogbuttonall
+#, fuzzy
+msgctxt "frmcustommessagedlg.rs_dialogbuttonall"
+msgid "All"
+msgstr "All"
+
+#: frmcustommessagedlg.rs_dialogbuttoncancel
+#, fuzzy
+msgctxt "frmcustommessagedlg.rs_dialogbuttoncancel"
+msgid "Cancel"
+msgstr "Cancel"
+
+#: frmcustommessagedlg.rs_dialogbuttonclose
+msgid "Close"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonignore
+msgid "Ignore"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonno
+msgid "No"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonnoall
+msgid "No to All"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonok
+#, fuzzy
+msgctxt "frmcustommessagedlg.rs_dialogbuttonok"
+msgid "OK"
+msgstr "OK"
+
+#: frmcustommessagedlg.rs_dialogbuttonretry
+msgid "Retry"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonyes
+msgid "Yes"
+msgstr ""
+
+#: frmcustommessagedlg.rs_dialogbuttonyesall
+msgid "Yes to All"
+msgstr ""
+
 #: frmcustommessagedlg.rs_dialogconfirmation
 msgctxt "frmcustommessagedlg.rs_dialogconfirmation"
 msgid "Confirmation"
@@ -185,9 +237,13 @@ msgid "Finish download"
 msgstr "Finish download"
 
 #: frmluamodulesupdater.rs_githubconnectfail
+#, fuzzy
+#| msgid ""
+#| "Failed to connect to GitHub API for latest module updates.\n"
+#| "Please try again later."
 msgid ""
-"Failed to connect to GitHub API for latest module updates.\n"
-"Please try again later."
+"Failed to connect to GitHub API.\n"
+"Please check your internet connection or try again later."
 msgstr ""
 "Failed to connect to GitHub API for latest module updates.\n"
 "Please try again later."
@@ -195,6 +251,32 @@ msgstr ""
 #: frmluamodulesupdater.rs_githubconnecting
 msgid "Connecting to GitHub..."
 msgstr "Connecting to GitHub..."
+
+#: frmluamodulesupdater.rs_githubdownloadfailed
+msgid ""
+"Modules update failed to download modules from GitHub.\n"
+"Please try update again."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githuberrormessage
+msgid ""
+"GitHub returned an error.\n"
+"Check log for more information."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubnoerrormessage
+#, object-pascal-format
+msgid ""
+"GitHub API didn't return a valid response.\n"
+"Try checking %s in your browser."
+msgstr ""
+
+#: frmluamodulesupdater.rs_githubratelimited
+#, object-pascal-format
+msgid ""
+"GitHub API is rate limited.\n"
+"Change the network or try again after %d minute(s)"
+msgstr ""
 
 #: frmluamodulesupdater.rs_githubratestats
 #, object-pascal-format
@@ -254,6 +336,10 @@ msgstr "%s UPDATE*"
 #: frmmain.rs_alldownloads
 msgid "All downloads"
 msgstr "All downloads"
+
+#: frmmain.rs_applybuttonsaved
+msgid "Saved!"
+msgstr ""
 
 #: frmmain.rs_btnok
 msgctxt "frmmain.rs_btnok"
@@ -401,6 +487,10 @@ msgstr ""
 #: frmmain.rs_fmdalreadyrunning
 msgid "Free Manga Downloader already running!"
 msgstr "Free Manga Downloader already running!"
+
+#: frmmain.rs_fmdunicodepatherror
+msgid "UnicodePathError: Application can't run in a folder path with unicode characters."
+msgstr ""
 
 #: frmmain.rs_hintfavoriteproblem
 msgid ""
@@ -1127,6 +1217,11 @@ msgstr "Auto generate folder based on manga's name"
 msgid "Enable live search (slow on long list)"
 msgstr "Enable live search (slow on long list)"
 
+#: tmainform.cboptionmangaloadaddtolist.caption
+msgctxt "tmainform.cboptionmangaloadaddtolist.caption"
+msgid "Enable add manga to manga list after info load"
+msgstr ""
+
 #: tmainform.cboptionminimizeonstart.caption
 msgid "Minimize on start"
 msgstr "Minimize on start"
@@ -1217,6 +1312,10 @@ msgstr "Search in all manga sites"
 #: tmainform.cbselectmanga.hint
 msgid "For more manga sites, please go to Options->Manga sites"
 msgstr "For more manga sites, please go to Options->Manga sites"
+
+#: tmainform.cbservercreationtime.caption
+msgid "Use server creation time over local time"
+msgstr ""
 
 #: tmainform.cbuseregexpr.caption
 msgid "Regular Expression"
@@ -1687,6 +1786,10 @@ msgstr "Image Conversion"
 #: tmainform.gbimagemagick.caption
 msgid "Image Magick"
 msgstr "Image Magick"
+
+#: tmainform.gbimageproperties.caption
+msgid "Image Properties"
+msgstr ""
 
 #: tmainform.gboptionexternal.caption
 msgid "External program"

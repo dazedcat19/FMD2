@@ -5,7 +5,7 @@ unit frmAccountSet;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
+  SysUtils, Classes, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
   ExtCtrls, Buttons, uCustomControls;
 
 type

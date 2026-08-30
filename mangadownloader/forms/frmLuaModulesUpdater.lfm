@@ -9,9 +9,9 @@ object LuaModulesUpdaterForm: TLuaModulesUpdaterForm
   ChildSizing.VerticalSpacing = 6
   ClientHeight = 394
   ClientWidth = 580
+  LCLVersion = '4.0.0.2'
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  LCLVersion = '3.8.0.0'
   object vtLuaModulesRepos: TVirtualStringTree
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = btCheckUpdate
@@ -104,8 +104,8 @@ object LuaModulesUpdaterForm: TLuaModulesUpdaterForm
       FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
       FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00
     }
-    OnClick = btCheckUpdateClick
     TabOrder = 0
+    OnClick = btCheckUpdateClick
   end
   object btCheckUpdateTerminate: TSpeedButton
     AnchorSideLeft.Control = btCheckUpdate

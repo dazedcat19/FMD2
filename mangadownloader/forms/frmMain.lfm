@@ -3003,58 +3003,38 @@ object MainForm: TMainForm
               ParentFont = False
               TabOrder = 7
             end
-            object cbOptionLiveSearch: TCheckBox
+            object cbOptionDeleteCompletedTasksOnClose: TCheckBox
               AnchorSideLeft.Control = cbOptionOneInstanceOnly
               AnchorSideTop.Control = cbOptionOneInstanceOnly
               AnchorSideTop.Side = asrBottom
               Left = 4
               Height = 19
               Top = 274
-              Width = 208
-              Caption = 'Enable live search (slow on long list)'
-              ParentFont = False
-              TabOrder = 8
-            end
-            object cbOptionDeleteCompletedTasksOnClose: TCheckBox
-              AnchorSideTop.Control = cbOptionLiveSearch
-              AnchorSideTop.Side = asrBottom
-              Left = 4
-              Height = 19
-              Top = 297
               Width = 187
               Caption = 'Delete completed tasks on close'
-              TabOrder = 9
+              TabOrder = 8
             end
             object cbOptionSortDownloadsOnNewTasks: TCheckBox
+              AnchorSideLeft.Control = cbOptionDeleteCompletedTasksOnClose
               AnchorSideTop.Control = cbOptionDeleteCompletedTasksOnClose
               AnchorSideTop.Side = asrBottom
               Left = 4
               Height = 19
-              Top = 320
+              Top = 297
               Width = 283
               Caption = 'Sort Downloads when adding new download tasks'
-              TabOrder = 10
+              TabOrder = 9
             end
-            object cbOptionVacuumDatabasesOnExit: TCheckBox
+            object cbOptionEnableLongNamePaths: TCheckBox
+              AnchorSideLeft.Control = cbOptionSortDownloadsOnNewTasks
               AnchorSideTop.Control = cbOptionSortDownloadsOnNewTasks
               AnchorSideTop.Side = asrBottom
               Left = 4
               Height = 19
-              Top = 343
-              Width = 155
-              Caption = 'Vacuum databases on exit'
-              TabOrder = 11
-            end
-            object cbOptionEnableLongNamePaths: TCheckBox
-              AnchorSideLeft.Control = sbGeneralSettings
-              AnchorSideTop.Control = cbOptionVacuumDatabasesOnExit
-              AnchorSideTop.Side = asrBottom
-              Left = 4
-              Height = 19
-              Top = 366
+              Top = 320
               Width = 526
               Caption = 'Enable long name paths (can break most/all interaction with the file in Windows and other apps)'
-              TabOrder = 12
+              TabOrder = 10
             end
             object gbOptionExternal: TGroupBox
               AnchorSideLeft.Control = sbGeneralSettings
@@ -3923,7 +3903,7 @@ object MainForm: TMainForm
             end
             object gbOptionRenaming: TGroupBox
               AnchorSideLeft.Control = lbDefaultDownloadPath
-              AnchorSideTop.Control = gbImageConversion
+              AnchorSideTop.Control = gbImageProperties
               AnchorSideTop.Side = asrBottom
               AnchorSideRight.Control = lbDefaultDownloadPath
               AnchorSideRight.Side = asrBottom
@@ -4588,6 +4568,35 @@ object MainForm: TMainForm
               ParentShowHint = False
               ShowHint = True
               Visible = False
+            end
+            object gbImageProperties: TGroupBox
+              AnchorSideLeft.Control = sbSaveTo
+              AnchorSideTop.Control = gbImageConversion
+              AnchorSideTop.Side = asrBottom
+              AnchorSideRight.Control = sbSaveTo
+              AnchorSideRight.Side = asrBottom
+              AnchorSideBottom.Control = gbOptionRenaming
+              Left = 4
+              Height = 39
+              Top = 271
+              Width = 812
+              Anchors = [akTop, akLeft, akRight]
+              AutoSize = True
+              BorderSpacing.Top = 4
+              Caption = 'Image Properties'
+              ClientHeight = 19
+              ClientWidth = 808
+              ParentBackground = False
+              TabOrder = 7
+              object cbServerCreationTime: TCheckBox
+                Left = 4
+                Height = 19
+                Top = 0
+                Width = 225
+                BorderSpacing.Left = 4
+                Caption = 'Use server creation time over local time'
+                TabOrder = 0
+              end
             end
           end
         end

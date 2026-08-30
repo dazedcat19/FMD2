@@ -5,7 +5,7 @@ unit StatusBarDownload;
 interface
 
 uses
-  Classes, SysUtils, BaseThread, httpsendthread, blcksock, ExtCtrls, Forms,
+  SysUtils, Classes, BaseThread, httpsendthread, blcksock, ExtCtrls, Forms,
   Controls, Buttons, Graphics, ComCtrls;
 
 type
@@ -62,7 +62,8 @@ type
 
 implementation
 
-uses uBaseUnit, Math;
+uses
+  uBaseUnit, Math;
 
 const
   CL_ProgressBarBaseLine = clBtnFace;
@@ -233,11 +234,19 @@ begin
   begin
     Exit;
   end;
+     
+  FNeedRepaint := True;
+  FLoading := False;
+
+  if Reason = HR_Connect then
+  begin
+    FCurrentSize := 0;
+    FTotalSize := 0;
+    Exit;
+  end;
 
   if Reason = HR_ReadCount then
   begin
-    FNeedRepaint := True;
-    FLoading := False;
     if FTotalSize = 0 then
     begin
       FTotalSize := StrToIntDef(Trim(FHTTP.Headers.Values['Content-Length']), 0);
@@ -247,7 +256,7 @@ begin
     Inc(FCurrentSize, StrToInt(Value));
     if (FCurrentSize <> 0) then
     begin
-      if FTotalSize < FCurrentSize then
+      if (FTotalSize < FCurrentSize) or (FTotalSize = 0)then
       begin
         FPercents := 1;
       end
@@ -256,18 +265,12 @@ begin
         FPercents := FCurrentSize / FTotalSize;
       end;
     end;
+
     FProgressText := FormatByteSize(FCurrentSize);
     if FTotalSize <> 0 then
     begin
      FProgressText := FProgressText + '/' + FormatByteSize(FTotalSize);
     end;
-  end
-  else if Reason = HR_Connect then
-  begin
-    FNeedRepaint := True;
-    FLoading := False;
-    FCurrentSize := 0;
-    FTotalSize := 0;
   end;
 end;
 

@@ -3,10 +3,11 @@ program converter;
 {$mode objfpc}{$H+}
 
 uses
+  SysUtils, Classes, jsonini, SQLite3Dyn, SQLite3Conn, SQLDB
   {$IFDEF UNIX}
-  cthreads,
+  , cthreads
   {$ENDIF}
-  Classes, SysUtils, jsonini, SQLite3Dyn, SQLite3Conn, SQLDB;
+  ;
 
 var
   modules: TStringList;

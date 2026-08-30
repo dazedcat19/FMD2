@@ -16,7 +16,8 @@ unit GZIPUtils;
 
 interface
 
-uses Classes, SysUtils, PasZLib, zbase;
+uses
+  SysUtils, Classes, PasZLib, zbase;
 
 type
   TZCompressionLevel = (zcNone, zcFastest, zcDefault, zcMax);

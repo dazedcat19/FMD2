@@ -5,7 +5,7 @@ unit ImagePuzzle;
 interface
 
 uses
-  Classes, SysUtils, Graphics, Types;
+  SysUtils, Classes, Graphics, Types;
 
 type
   TImagePuzzle = class

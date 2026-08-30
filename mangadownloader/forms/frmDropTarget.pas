@@ -5,8 +5,8 @@ unit frmDropTarget;
 interface
 
 uses
-  Classes, Windows, SysUtils, ActiveX, comobj, Forms, Controls, uDarkStyleParams,
-  ExtCtrls, Menus, LCLType, DefaultTranslator, uBaseUnit, XQueryEngineHTML;
+  SysUtils, Classes, Windows, ActiveX, comobj, Forms, Controls, ExtCtrls, Menus,
+  LCLType, DefaultTranslator;
 
 type
 
@@ -72,7 +72,7 @@ var
 implementation
 
 uses
-  frmMain;
+  frmMain, XQueryEngineHTML, uBaseUnit;
 
 var
   CF_HTML: TCLIPFORMAT;

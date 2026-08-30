@@ -5,7 +5,7 @@ unit WebsiteModulesSettings;
 interface
 
 uses
-  Classes, SysUtils, httpsendthread;
+  SysUtils, Classes, httpsendthread;
 
 type
     TProxyType = (ptDefault, ptDirect, ptHTTP, ptSOCKS4, ptSOCKS5);

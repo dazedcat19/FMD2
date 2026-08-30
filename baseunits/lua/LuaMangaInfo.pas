@@ -5,7 +5,8 @@ unit LuaMangaInfo;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
+  SysUtils, Classes, uBaseUnit, LuaClass,
+  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
 
 procedure luaMangaInfoAddMetaTable(const L: Plua_State; const Obj: Pointer;
   const MetaTable, UserData: Integer);
@@ -13,7 +14,7 @@ procedure luaMangaInfoAddMetaTable(const L: Plua_State; const Obj: Pointer;
 implementation
 
 uses
-  uBaseUnit, LuaClass, LuaStrings;
+  LuaStrings;
 
 procedure luaMangaInfoAddMetaTable(const L: Plua_State; const Obj: Pointer;
   const MetaTable, UserData: Integer);

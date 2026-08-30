@@ -5,7 +5,7 @@ unit frmWebsiteOptionCustom;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, StdCtrls, Spin, WebsiteModules, Graphics;
+  SysUtils, Classes, Forms, Controls, StdCtrls, Spin, Graphics, WebsiteModules;
 
 type
 

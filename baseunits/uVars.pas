@@ -1,13 +1,13 @@
-unit FMDVars;
+unit uVars;
 
 {$mode objfpc}{$H+}
 
 interface
 
 uses
-  frmMain, uDownloadsManager, uFavoritesManager, uUpdateThread, DBDataProcess,
-  uSilentThread, uBaseUnit, uGetMangaInfosThread, CheckUpdate,
-  DBUpdater, SelfUpdater, FileChannel, simpleipc;
+  SysUtils, Classes, frmMain, uDownloadsManager, uFavoritesManager,
+  uUpdateThread, DBDataProcess, uSilentThread, uBaseUnit, uGetMangaInfosThread,
+  CheckUpdate, uOptions, DBUpdater, SelfUpdater, FileChannel, simpleipc;
 
 var
   FormMain: TMainForm;
@@ -54,6 +54,9 @@ var
 
   // self updater thread
   SelfUpdaterThread: TSelfUpdaterThread;
+
+  // options
+  FMDOptions: TOptions;
 
 implementation
 
