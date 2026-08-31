@@ -1,22 +1,4 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = 'c280ce32f36843fbba73dcc891e979af'
-	m.Name                     = 'Philia Scans'
-	m.RootURL                  = 'https://philiascans.org'
-	m.Category                 = 'English-Scanlation'
-	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnDownloadImage          = 'DownloadImage'
-	m.SortedList               = true
-end
-
-----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
@@ -146,11 +128,12 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
+	local NextJs = require 'utils.nextjs'
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	local s = HTTP.Document.ToString():gsub('\\"', '"'):gsub('\\\\', '\\'):gsub('"%]%)</script><script>self%.__next_f%.push%(%[1,"', '')
+	local s = HTTP.Document.ToString()
 	local x = CreateTXQuery(s)
 	MANGAINFO.Title     = x.XPathString('//h1')
 	MANGAINFO.CoverLink = x.XPathString('//meta[@property="og:image"]/@content')
@@ -160,17 +143,34 @@ function GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[span="Status"]/span[2]'), 'On Going', 'Completed', 'On Hold', 'Canceled')
 	MANGAINFO.Summary   = x.XPathString('//div[@class="synopsis-text"]/p')
 
-	local slug = URL:match('/([^/]+)$')
-	for v in x.XPath('parse-json(//script[contains(., "langChapters")]/substring-before(substring-after(., "langChapters"":"), ",""hasVolumes"))()[coinPrice=0]').Get() do
-		local number = v.GetProperty('number').ToString()
-		local title = v.GetProperty('title').ToString()
+	local roots = NextJs.GetRootObjects(s)
+	local data
+	for _, root in ipairs(roots) do
+		data = NextJs.FindObject(root, function(v)
+			return type(v) == 'table' and v.langChapters
+		end)
 
-		title = (title ~= '') and (' - ' .. title) or ''
-
-		MANGAINFO.ChapterLinks.Add('manga/' .. slug .. '/chapters/' .. v.GetProperty('slug').ToString())
-		MANGAINFO.ChapterNames.Add('Chapter ' .. number .. title)
+		if data then
+			break
+		end
 	end
-	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
+
+	if not data then return no_error end
+
+	local slug = URL:match('/([^/]+)$')
+	local chapters = data.langChapters
+	for i = #chapters, 1, -1 do
+		local ch = chapters[i]
+		if ch.coinPrice == 0 then
+			local number = ch.number
+			local title = ch.title
+
+			title = title and (' - ' .. title) or ''
+
+			MANGAINFO.ChapterLinks.Add('manga/' .. slug .. '/chapters/' .. ch.slug)
+			MANGAINFO.ChapterNames.Add('Chapter ' .. number .. title)
+		end
+	end
 
 	return no_error
 end
@@ -308,4 +308,22 @@ function DownloadImage()
 	puzzle.DeScramble(HTTP.Document, HTTP.Document)
 
 	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = 'c280ce32f36843fbba73dcc891e979af'
+	m.Name                     = 'Philia Scans'
+	m.RootURL                  = 'https://philiascans.org'
+	m.Category                 = 'English-Scanlation'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnDownloadImage          = 'DownloadImage'
+	m.SortedList               = true
 end
