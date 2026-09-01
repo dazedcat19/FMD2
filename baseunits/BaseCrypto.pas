@@ -1062,84 +1062,475 @@ begin
   end;
 end;
 
+const
+  EVP_PKEY_X25519 = 1034;
+
+  {$IFDEF MSWINDOWS}
+    {$IFDEF WIN64}
+    LIBCRYPTO_DLL = 'libcrypto-3-x64.dll';
+    {$ELSE}
+    LIBCRYPTO_DLL = 'libcrypto-3.dll';
+    {$ENDIF}
+  {$ELSE}
+    LIBCRYPTO_DLL = 'libcrypto.so.3';
+  {$ENDIF}
+
+function EVP_PKEY_new_raw_private_key(pkey_type: Integer; e: Pointer;
+  key: PByte; keylen: SizeUInt): Pointer; cdecl; external LIBCRYPTO_DLL;
+function EVP_PKEY_new_raw_public_key(pkey_type: Integer; e: Pointer;
+  key: PByte; keylen: SizeUInt): Pointer; cdecl; external LIBCRYPTO_DLL;
+function EVP_PKEY_get_raw_public_key(pkey: Pointer; pub: PByte;
+  var len: SizeUInt): Integer; cdecl; external LIBCRYPTO_DLL;
+procedure EVP_PKEY_free(pkey: Pointer); cdecl; external LIBCRYPTO_DLL;
+function EVP_PKEY_CTX_new(pkey: Pointer; e: Pointer): Pointer; cdecl; external LIBCRYPTO_DLL;
+procedure EVP_PKEY_CTX_free(ctx: Pointer); cdecl; external LIBCRYPTO_DLL;
+function EVP_PKEY_derive_init(ctx: Pointer): Integer; cdecl; external LIBCRYPTO_DLL;
+function EVP_PKEY_derive_set_peer(ctx: Pointer; peer: Pointer): Integer; cdecl; external LIBCRYPTO_DLL;
+function EVP_PKEY_derive(ctx: Pointer; secret: PByte;
+  var secretlen: SizeUInt): Integer; cdecl; external LIBCRYPTO_DLL;
+
+function LoadLE32(const b: array of Byte; ofs: Integer): Cardinal;
+begin
+  Result := b[ofs] or (b[ofs + 1] shl 8) or (b[ofs + 2] shl 16) or
+    (Cardinal(b[ofs + 3]) shl 24);
+end;
+
+function LoadLE32P(p: PByte): Cardinal; inline;
+begin
+  Result := p[0] or (p[1] shl 8) or (p[2] shl 16) or (Cardinal(p[3]) shl 24);
+end;
+
+procedure StoreLE32(var b: array of Byte; ofs: Integer; v: Cardinal);
+begin
+  b[ofs] := v and $FF;
+  b[ofs + 1] := (v shr 8) and $FF;
+  b[ofs + 2] := (v shr 16) and $FF;
+  b[ofs + 3] := (v shr 24) and $FF;
+end;
+
+function Rol32(v: Cardinal; n: Integer): Cardinal; inline;
+begin
+  Result := (v shl n) or (v shr (32 - n));
+end;
+
+procedure ChaChaQR(var a, b, c, d: Cardinal); inline;
+begin
+  a := a + b; d := d xor a; d := Rol32(d, 16);
+  c := c + d; b := b xor c; b := Rol32(b, 12);
+  a := a + b; d := d xor a; d := Rol32(d, 8);
+  c := c + d; b := b xor c; b := Rol32(b, 7);
+end;
+
 type
-  TSecretStreamState = array[0..63] of Byte; 
+  TBytes16 = array[0..15] of Byte;
+  TBytes12 = array[0..11] of Byte;
+  TBytes32 = array[0..31] of Byte;
+  TBytes64 = array[0..63] of Byte;
 
-function crypto_scalarmult_curve25519(q, n, p: PByte): Integer; cdecl; external 'libsodium.dll';
-function crypto_scalarmult_curve25519_base(q, n: PByte): Integer; cdecl; external 'libsodium.dll';
+  TPoly1305State = record
+    r: array[0..4] of Cardinal;
+    h: array[0..4] of Cardinal;
+    pad: array[0..3] of Cardinal;
+    buf: array[0..15] of Byte;
+    leftover: Integer;
+  end;
 
-function crypto_secretstream_xchacha20poly1305_init_pull(
-  var state: TSecretStreamState;
-  header: PByte;
-  key: PByte): Integer; cdecl; external 'libsodium.dll';
+  TSecretStreamState = record
+    k: TBytes32;
+    nonce: TBytes12;
+    pad: array[0..19] of Byte;
+  end;
 
-function crypto_secretstream_xchacha20poly1305_pull(
-  var state: TSecretStreamState;
-  m: PByte;
-  var mlen_p: UInt64;
-  var tag_p: Byte;
-  c: PByte;
-  clen: UInt64;
-  ad: PByte;
-  adlen: UInt64): Integer; cdecl; external 'libsodium.dll';
+procedure HChaCha20(var o: TBytes32; const k: TBytes32; const n: TBytes16);
+var
+  st, x: array[0..15] of Cardinal;
+  i: Integer;
+begin
+  st[0] := $61707865; st[1] := $3320646E;
+  st[2] := $79622D32; st[3] := $6B206574;
+  for i := 0 to 7 do
+    st[4 + i] := LoadLE32(k, i * 4);
+  for i := 0 to 3 do
+    st[12 + i] := LoadLE32(n, i * 4);
+  Move(st[0], x[0], SizeOf(st));
+  for i := 1 to 10 do
+  begin
+    ChaChaQR(x[0], x[4], x[8], x[12]);
+    ChaChaQR(x[1], x[5], x[9], x[13]);
+    ChaChaQR(x[2], x[6], x[10], x[14]);
+    ChaChaQR(x[3], x[7], x[11], x[15]);
+    ChaChaQR(x[0], x[5], x[10], x[15]);
+    ChaChaQR(x[1], x[6], x[11], x[12]);
+    ChaChaQR(x[2], x[7], x[8], x[13]);
+    ChaChaQR(x[3], x[4], x[9], x[14]);
+  end;
+  for i := 0 to 3 do
+  begin
+    StoreLE32(o, i * 4, x[i]);
+    StoreLE32(o, 16 + i * 4, x[12 + i]);
+  end;
+end;
+
+procedure ChaCha20Block(var o: TBytes64; const k: TBytes32; counter: Cardinal;
+  const n: TBytes12);
+var
+  st, x: array[0..15] of Cardinal;
+  i: Integer;
+begin
+  st[0] := $61707865; st[1] := $3320646E;
+  st[2] := $79622D32; st[3] := $6B206574;
+  for i := 0 to 7 do
+    st[4 + i] := LoadLE32(k, i * 4);
+  st[12] := counter;
+  st[13] := LoadLE32(n, 0);
+  st[14] := LoadLE32(n, 4);
+  st[15] := LoadLE32(n, 8);
+  Move(st[0], x[0], SizeOf(st));
+  for i := 1 to 10 do
+  begin
+    ChaChaQR(x[0], x[4], x[8], x[12]);
+    ChaChaQR(x[1], x[5], x[9], x[13]);
+    ChaChaQR(x[2], x[6], x[10], x[14]);
+    ChaChaQR(x[3], x[7], x[11], x[15]);
+    ChaChaQR(x[0], x[5], x[10], x[15]);
+    ChaChaQR(x[1], x[6], x[11], x[12]);
+    ChaChaQR(x[2], x[7], x[8], x[13]);
+    ChaChaQR(x[3], x[4], x[9], x[14]);
+  end;
+  for i := 0 to 15 do
+    StoreLE32(o, i * 4, x[i] + st[i]);
+end;
+
+procedure ChaCha20Xor(dst, src: PByte; len: PtrUInt; const k: TBytes32;
+  const n: TBytes12; ic: Cardinal);
+var
+  blk: TBytes64;
+  n64, i: PtrUInt;
+begin
+  while len > 0 do
+  begin
+    ChaCha20Block(blk, k, ic, n);
+    if len >= 64 then
+      n64 := 64
+    else
+      n64 := len;
+    for i := 0 to n64 - 1 do
+      dst[i] := src[i] xor blk[i];
+    Inc(dst, n64);
+    Inc(src, n64);
+    Dec(len, n64);
+    Inc(ic);
+  end;
+end;
+
+procedure Poly1305Init(var ps: TPoly1305State; key: PByte);
+var
+  t0, t1, t2, t3: Cardinal;
+begin
+  t0 := LoadLE32P(key);
+  t1 := LoadLE32P(key + 4);
+  t2 := LoadLE32P(key + 8);
+  t3 := LoadLE32P(key + 12);
+  ps.r[0] := t0 and $03FFFFFF;
+  ps.r[1] := ((t0 shr 26) or (t1 shl 6)) and $03FFFF03;
+  ps.r[2] := ((t1 shr 20) or (t2 shl 12)) and $03FFC0FF;
+  ps.r[3] := ((t2 shr 14) or (t3 shl 18)) and $03F03FFF;
+  ps.r[4] := (t3 shr 8) and $000FFFFF;
+  FillChar(ps.h[0], SizeOf(ps.h), 0);
+  ps.pad[0] := LoadLE32P(key + 16);
+  ps.pad[1] := LoadLE32P(key + 20);
+  ps.pad[2] := LoadLE32P(key + 24);
+  ps.pad[3] := LoadLE32P(key + 28);
+  ps.leftover := 0;
+end;
+
+procedure Poly1305Blocks(var ps: TPoly1305State; m: PByte; bytes: PtrUInt;
+  hibit: Cardinal);
+var
+  h0, h1, h2, h3, h4: Cardinal;
+  r0, r1, r2, r3, r4, s1, s2, s3, s4: Cardinal;
+  d0, d1, d2, d3, d4, c: QWord;
+  t: Cardinal;
+begin
+  h0 := ps.h[0]; h1 := ps.h[1]; h2 := ps.h[2]; h3 := ps.h[3]; h4 := ps.h[4];
+  r0 := ps.r[0]; r1 := ps.r[1]; r2 := ps.r[2]; r3 := ps.r[3]; r4 := ps.r[4];
+  s1 := r1 * 5; s2 := r2 * 5; s3 := r3 * 5; s4 := r4 * 5;
+
+  while bytes >= 16 do
+  begin
+    t := LoadLE32P(m);      h0 := h0 + (t and $03FFFFFF);
+    t := LoadLE32P(m + 3);  h1 := h1 + ((t shr 2) and $03FFFFFF);
+    t := LoadLE32P(m + 6);  h2 := h2 + ((t shr 4) and $03FFFFFF);
+    t := LoadLE32P(m + 9);  h3 := h3 + ((t shr 6) and $03FFFFFF);
+    t := LoadLE32P(m + 12); h4 := h4 + ((t shr 8) or hibit);
+
+    d0 := QWord(h0) * r0 + QWord(h1) * s4 + QWord(h2) * s3 + QWord(h3) * s2 + QWord(h4) * s1;
+    d1 := QWord(h0) * r1 + QWord(h1) * r0 + QWord(h2) * s4 + QWord(h3) * s3 + QWord(h4) * s2;
+    d2 := QWord(h0) * r2 + QWord(h1) * r1 + QWord(h2) * r0 + QWord(h3) * s4 + QWord(h4) * s3;
+    d3 := QWord(h0) * r3 + QWord(h1) * r2 + QWord(h2) * r1 + QWord(h3) * r0 + QWord(h4) * s4;
+    d4 := QWord(h0) * r4 + QWord(h1) * r3 + QWord(h2) * r2 + QWord(h3) * r1 + QWord(h4) * r0;
+
+    c := d0 shr 26; h0 := Cardinal(d0 and $03FFFFFF);
+    d1 := d1 + c; c := d1 shr 26; h1 := Cardinal(d1 and $03FFFFFF);
+    d2 := d2 + c; c := d2 shr 26; h2 := Cardinal(d2 and $03FFFFFF);
+    d3 := d3 + c; c := d3 shr 26; h3 := Cardinal(d3 and $03FFFFFF);
+    d4 := d4 + c; c := d4 shr 26; h4 := Cardinal(d4 and $03FFFFFF);
+    h0 := h0 + Cardinal(c) * Cardinal(5); c := h0 shr 26; h0 := h0 and $03FFFFFF;
+    h1 := h1 + Cardinal(c);
+
+    Inc(m, 16);
+    Dec(bytes, 16);
+  end;
+
+  ps.h[0] := h0; ps.h[1] := h1; ps.h[2] := h2; ps.h[3] := h3; ps.h[4] := h4;
+end;
+
+procedure Poly1305Update(var ps: TPoly1305State; m: PByte; bytes: PtrUInt);
+var
+  want: PtrUInt;
+  i: Integer;
+begin
+  if ps.leftover > 0 then
+  begin
+    want := 16 - PtrUInt(ps.leftover);
+    if want > bytes then
+      want := bytes;
+    Move(m^, ps.buf[ps.leftover], want);
+    Inc(ps.leftover, Integer(want));
+    Inc(m, want);
+    Dec(bytes, want);
+    if ps.leftover < 16 then
+      Exit;
+    Poly1305Blocks(ps, @ps.buf[0], 16, 1 shl 24);
+    ps.leftover := 0;
+  end;
+
+  if bytes >= 16 then
+  begin
+    want := (bytes div 16) * 16;
+    Poly1305Blocks(ps, m, want, 1 shl 24);
+    Inc(m, want);
+    Dec(bytes, want);
+  end;
+
+  if bytes > 0 then
+  begin
+    for i := 0 to Integer(bytes) - 1 do
+      ps.buf[i] := m[i];
+    ps.leftover := Integer(bytes);
+  end;
+end;
+
+procedure Poly1305Finish(var ps: TPoly1305State; var mac: TBytes16);
+var
+  h0, h1, h2, h3, h4: Cardinal;
+  g0, g1, g2, g3, g4, mask: Cardinal;
+  c, f: QWord;
+  i: Integer;
+begin
+  if ps.leftover > 0 then
+  begin
+    ps.buf[ps.leftover] := 1;
+    for i := ps.leftover + 1 to 15 do
+      ps.buf[i] := 0;
+    Poly1305Blocks(ps, @ps.buf[0], 16, 0);
+    ps.leftover := 0;
+  end;
+
+  h0 := ps.h[0]; h1 := ps.h[1]; h2 := ps.h[2]; h3 := ps.h[3]; h4 := ps.h[4];
+
+  c := h1 shr 26; h1 := h1 and $03FFFFFF;
+  h2 := h2 + Cardinal(c); c := h2 shr 26; h2 := h2 and $03FFFFFF;
+  h3 := h3 + Cardinal(c); c := h3 shr 26; h3 := h3 and $03FFFFFF;
+  h4 := h4 + Cardinal(c); c := h4 shr 26; h4 := h4 and $03FFFFFF;
+  h0 := h0 + Cardinal(c) * Cardinal(5); c := h0 shr 26; h0 := h0 and $03FFFFFF;
+  h1 := h1 + Cardinal(c);
+
+  g0 := h0 + Cardinal(5); c := g0 shr 26; g0 := g0 and $03FFFFFF;
+  g1 := h1 + Cardinal(c); c := g1 shr 26; g1 := g1 and $03FFFFFF;
+  g2 := h2 + Cardinal(c); c := g2 shr 26; g2 := g2 and $03FFFFFF;
+  g3 := h3 + Cardinal(c); c := g3 shr 26; g3 := g3 and $03FFFFFF;
+  g4 := h4 + Cardinal(c) - Cardinal(1 shl 26);
+
+  mask := (g4 shr 31) - Cardinal(1);
+  g0 := g0 and mask; g1 := g1 and mask; g2 := g2 and mask;
+  g3 := g3 and mask; g4 := g4 and mask;
+  mask := not mask;
+  h0 := (h0 and mask) or g0;
+  h1 := (h1 and mask) or g1;
+  h2 := (h2 and mask) or g2;
+  h3 := (h3 and mask) or g3;
+  h4 := (h4 and mask) or g4;
+
+  h0 := h0 or (h1 shl 26);
+  h1 := (h1 shr 6) or (h2 shl 20);
+  h2 := (h2 shr 12) or (h3 shl 14);
+  h3 := (h3 shr 18) or (h4 shl 8);
+
+  f := QWord(h0) + ps.pad[0];
+  StoreLE32(mac, 0, Cardinal(f));
+  f := QWord(h1) + ps.pad[1] + (f shr 32);
+  StoreLE32(mac, 4, Cardinal(f));
+  f := QWord(h2) + ps.pad[2] + (f shr 32);
+  StoreLE32(mac, 8, Cardinal(f));
+  f := QWord(h3) + ps.pad[3] + (f shr 32);
+  StoreLE32(mac, 12, Cardinal(f));
+end;
 
 function X25519_PublicKey(const privKey: String): String;
 var
+  pkey: Pointer;
+  len: SizeUInt;
   q: array[0..31] of Byte;
 begin
   Result := '';
   if Length(privKey) = 32 then
   begin
-    if crypto_scalarmult_curve25519_base(@q[0], PByte(@privKey[1])) = 0 then
-      SetString(Result, PChar(@q[0]), 32);
+    pkey := EVP_PKEY_new_raw_private_key(EVP_PKEY_X25519, nil, PByte(@privKey[1]), 32);
+    if pkey <> nil then
+    begin
+      len := 32;
+      if (EVP_PKEY_get_raw_public_key(pkey, @q[0], len) = 1) and (len = 32) then
+        SetString(Result, PChar(@q[0]), 32);
+      EVP_PKEY_free(pkey);
+    end;
   end;
 end;
 
 function X25519_SharedSecret(const privKey, pubKey: String): String;
 var
+  priv, peer, ctx: Pointer;
+  len: SizeUInt;
   q: array[0..31] of Byte;
 begin
   Result := '';
   if (Length(privKey) = 32) and (Length(pubKey) = 32) then
   begin
-    if crypto_scalarmult_curve25519(@q[0], PByte(@privKey[1]), PByte(@pubKey[1])) = 0 then
-      SetString(Result, PChar(@q[0]), 32);
+    priv := EVP_PKEY_new_raw_private_key(EVP_PKEY_X25519, nil, PByte(@privKey[1]), 32);
+    peer := EVP_PKEY_new_raw_public_key(EVP_PKEY_X25519, nil, PByte(@pubKey[1]), 32);
+    ctx := nil;
+    try
+      if (priv <> nil) and (peer <> nil) then
+        ctx := EVP_PKEY_CTX_new(priv, nil);
+      if ctx <> nil then
+      begin
+        if (EVP_PKEY_derive_init(ctx) = 1) and
+           (EVP_PKEY_derive_set_peer(ctx, peer) = 1) then
+        begin
+          len := 32;
+          if EVP_PKEY_derive(ctx, @q[0], len) = 1 then
+            SetString(Result, PChar(@q[0]), 32);
+        end;
+      end;
+    finally
+      if ctx <> nil then
+        EVP_PKEY_CTX_free(ctx);
+      if priv <> nil then
+        EVP_PKEY_free(priv);
+      if peer <> nil then
+        EVP_PKEY_free(peer);
+    end;
   end;
+end;
+
+procedure SecretStreamCounterReset(var st: TSecretStreamState);
+begin
+  FillChar(st.nonce[0], 4, 0);
+  st.nonce[0] := 1;
+end;
+
+procedure SecretStreamRekey(var st: TSecretStreamState);
+var
+  buf: array[0..39] of Byte;
+begin
+  Move(st.k[0], buf[0], 32);
+  Move(st.nonce[4], buf[32], 8);
+  ChaCha20Xor(@buf[0], @buf[0], 40, st.k, st.nonce, 0);
+  Move(buf[0], st.k[0], 32);
+  Move(buf[32], st.nonce[4], 8);
+  SecretStreamCounterReset(st);
 end;
 
 function SecretStream_InitPull(const header, key: String; var state: String): Boolean;
 var
   st: TSecretStreamState;
+  k: TBytes32;
+  in16: TBytes16;
 begin
   Result := False;
   if (Length(header) = 24) and (Length(key) = 32) then
   begin
-    if crypto_secretstream_xchacha20poly1305_init_pull(st, PByte(@header[1]), PByte(@key[1])) = 0 then
-    begin
-      SetString(state, PChar(@st[0]), SizeOf(st));
-      Result := True;
-    end;
+    Move(key[1], k[0], 32);
+    Move(header[1], in16[0], 16);
+    HChaCha20(st.k, k, in16);
+    SecretStreamCounterReset(st);
+    Move(header[17], st.nonce[4], 8);
+    FillChar(st.pad[0], SizeOf(st.pad), 0);
+    SetLength(state, SizeOf(st));
+    Move(st, state[1], SizeOf(st));
+    Result := True;
   end;
 end;
 
-function SecretStream_Pull(var state: String; const chunk: String; var msg: String; var tag: Byte): Boolean;
+function SecretStream_Pull(var state: String; const chunk: String;
+  var msg: String; var tag: Byte): Boolean;
 var
   st: TSecretStreamState;
-  mlen: UInt64;
+  mlen, padn, i: Integer;
+  ks1, block64: TBytes64;
+  poly: TPoly1305State;
+  mac, stored: TBytes16;
+  lenfield: array[0..7] of Byte;
+  zeros: array[0..15] of Byte;
+  diff, c: Cardinal;
 begin
   Result := False;
-  if (Length(state) = SizeOf(st)) and (Length(chunk) > 0) then
-  begin
-    Move(state[1], st[0], SizeOf(st));
-    SetLength(msg, Length(chunk));
-    
-    if crypto_secretstream_xchacha20poly1305_pull(st, PByte(@msg[1]), mlen, tag, PByte(@chunk[1]), Length(chunk), nil, 0) = 0 then
-    begin
-      SetLength(msg, mlen);
-      Move(st[0], state[1], SizeOf(st));
-      Result := True;
-    end;
-  end;
+  if (Length(state) <> SizeOf(st)) or (Length(chunk) < 17) then
+    Exit;
+  Move(state[1], st, SizeOf(st));
+  mlen := Length(chunk) - 17;
+  FillChar(zeros[0], SizeOf(zeros), 0);
+
+  ChaCha20Block(block64, st.k, 0, st.nonce);
+  Poly1305Init(poly, @block64[0]);
+
+  ChaCha20Block(ks1, st.k, 1, st.nonce);
+
+  block64[0] := Byte(chunk[1]);
+  Move(ks1[1], block64[1], 63);
+  Poly1305Update(poly, @block64[0], 64);
+  if mlen > 0 then
+    Poly1305Update(poly, @chunk[2], PtrUInt(mlen));
+  padn := mlen and 15;
+  if padn > 0 then
+    Poly1305Update(poly, @zeros[0], PtrUInt(padn));
+  Poly1305Update(poly, @zeros[0], 8);
+  FillChar(lenfield[0], 8, 0);
+  StoreLE32(lenfield, 0, Cardinal(64 + mlen));
+  Poly1305Update(poly, @lenfield[0], 8);
+  Poly1305Finish(poly, mac);
+
+  Move(chunk[Length(chunk) - 15], stored[0], 16);
+  diff := 0;
+  for i := 0 to 15 do
+    diff := diff or (mac[i] xor stored[i]);
+  if diff <> 0 then
+    Exit;
+
+  tag := Byte(chunk[1]) xor ks1[0];
+  SetLength(msg, mlen);
+  if mlen > 0 then
+    ChaCha20Xor(@msg[1], @chunk[2], PtrUInt(mlen), st.k, st.nonce, 2);
+
+  for i := 0 to 7 do
+    st.nonce[4 + i] := st.nonce[4 + i] xor mac[i];
+  c := LoadLE32(st.nonce, 0) + 1;
+  StoreLE32(st.nonce, 0, c);
+  if ((tag and $02) <> 0) or (c = 0) then
+    SecretStreamRekey(st);
+
+  Move(st, state[1], SizeOf(st));
+  Result := True;
 end;
 
 end.
