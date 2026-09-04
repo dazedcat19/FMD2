@@ -436,7 +436,6 @@
 | NiAddRU | [![https://ru.niadd.com](https://img.shields.io/website?url=https://ru.niadd.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://ru.niadd.com)](https://ru.niadd.com) | OK | 14.02.2025 | - |
 | NicoManga | [![https://nicomanga.com](https://img.shields.io/website?url=https://nicomanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://nicomanga.com)](https://nicomanga.com) | OK | 09.08.2026 | - |
 | NightComic | [![https://nightcomic.com](https://img.shields.io/website?url=https://nightcomic.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://nightcomic.com)](https://nightcomic.com) | - | - | - |
-| NightScans | [![https://nightscans.net](https://img.shields.io/website?url=https://nightscans.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://nightscans.net)](https://nightscans.net) | - | - | - |
 | NihonKuni | [![https://nihonkuni.com](https://img.shields.io/website?url=https://nihonkuni.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://nihonkuni.com)](https://nihonkuni.com) | OK | 29.10.2025 | - |
 | Niji Translations | [![https://niji-translations.com](https://img.shields.io/website?url=https://niji-translations.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://niji-translations.com)](https://niji-translations.com) | OK | 25.07.2025 | - |
 | NineManga | [![https://www.ninemanga.com](https://img.shields.io/website?url=https://www.ninemanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.ninemanga.com)](https://www.ninemanga.com) | OK | 09.02.2025 | - |
@@ -809,6 +808,7 @@
 | ~NeoxScanlator~ | ~https://neoxscans.net~ | Removed | 03.08.2025 | - |
 | ~Ney5~ | ~https://ney5.xyz~ | Removed | 07.02.2025 | - |
 | ~Nightow~ | ~http://nightow.net~ | Removed | 06.08.2025 | - |
+| ~NightScans~ | ~https://nightscans.net~ | Removed | 04.09.2026 | Redirected to Qi Manhwa |
 | ~NinjaScans~ | ~https://ninjascans.com~ | Removed | 03.08.2025 | - |
 | ~NovelFrance~ | ~http://novel-france.fr~ | Removed | 03.08.2025 | - |
 | ~OneTimeScans~ | ~https://reader.otscans.com~ | Removed | 06.08.2025 | - |
