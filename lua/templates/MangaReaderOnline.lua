@@ -69,8 +69,7 @@ function _M.GetPageNumber()
 		x.XPathStringAll('//div[@id="all"]//img/@src', TASK.PageLinks)
 	end
 	for i = 0, TASK.PageLinks.Count - 1 do
-		TASK.PageLinks[i] = TASK.PageLinks[i]:gsub("i%d.wp.com/", "")
-		i = i + 1
+		TASK.PageLinks[i] = TASK.PageLinks[i]:gsub('i%d.wp.com/', '')
 	end
 
 	return no_error
