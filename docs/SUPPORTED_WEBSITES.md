@@ -211,7 +211,6 @@
 | LeeMiau | [![https://leemiau.com](https://img.shields.io/website?url=https://leemiau.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://leemiau.com)](https://leemiau.com) | OK | 14.08.2026 | - |
 | LeerCapitulo | [![https://www.leercapitulo.co](https://img.shields.io/website?url=https://www.leercapitulo.co%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.leercapitulo.co)](https://www.leercapitulo.co) | OK | 18.06.2026 | - |
 | LeerManga | [![https://leermanga.net](https://img.shields.io/website?url=https://leermanga.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://leermanga.net)](https://leermanga.net) | - | - | - |
-| LeitorNet | [![https://leitor.net](https://img.shields.io/website?url=https://leitor.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://leitor.net)](https://leitor.net) | - | - | - |
 | LelscanFR | [![https://lelscanfr.com](https://img.shields.io/website?url=https://lelscanfr.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lelscanfr.com)](https://lelscanfr.com) | - | - | - |
 | Ler Toons | [![https://lertoons.com](https://img.shields.io/website?url=https://lertoons.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lertoons.com)](https://lertoons.com) | OK | 14.07.2025 | - |
 | LerHentais | [![https://lerhentais.com](https://img.shields.io/website?url=https://lerhentais.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lerhentais.com)](https://lerhentais.com) | OK | 17.07.2026 | - |
@@ -721,6 +720,7 @@
 | ~KumaScans~ | ~https://kumascans.com~ | Removed | 20.07.2025 | - |
 | ~LazyBoysScan~ | ~https://lazyboysscan.com~ | Removed | 03.08.2025 | - |
 | ~LeerManhua~ | ~https://leermanhua.com~ | Removed | 03.08.2025 | - |
+| ~LeitorNet~ | ~https://leitor.net~ | Removed | 04.09.2026 | - |
 | ~LevelerScans~ | ~https://levelerscans.xyz~ | Removed | 03.08.2025 | - |
 | ~LeviatanScans~ | ~https://es.leviatanscans.com~ | Removed | 03.08.2025 | - |
 | ~LHTranslationArchive~ | ~https://archive.lhtranslation.net~ | Removed | 07.02.2025 | - |
