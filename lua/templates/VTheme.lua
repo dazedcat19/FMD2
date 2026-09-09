@@ -61,7 +61,7 @@ function _M.GetInfo()
 	if not HTTP.GET(u) then return net_problem end
 
 	local s = HTTP.Document.ToString()
-	local mid = s:match('&quot;postId&quot;:%[0,(%d+)%]') or s:match('{\\"postId\\":(%d+)}')
+	local mid = s:match('id:(%d+)') or s:match('&quot;postId&quot;:%[0,(%d+)%]') or s:match('{\\"postId\\":(%d+)}')
 
 	if not HTTP.GET(MODULE.RootURL:gsub('://', '://api.') .. '/api/post?postId=' .. mid) then return net_problem end
 
