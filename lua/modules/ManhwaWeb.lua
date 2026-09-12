@@ -52,9 +52,17 @@ function GetInfo()
 	MANGAINFO.Summary   = x.XPathString('_sinopsis', info)
 
 	for v in x.XPath('chapters?*', info).Get() do
-		MANGAINFO.ChapterLinks.Add(v.GetProperty('link').ToString())
-		MANGAINFO.ChapterNames.Add('Capítulo ' .. v.GetProperty('chapter').ToString())
-	end  
+		local link = v.GetProperty('link').ToString()
+
+		if link == '' then
+			link = x.XPathString('versions?*?link', v)
+		end
+
+		if link ~= '' then
+			MANGAINFO.ChapterLinks.Add(link)
+			MANGAINFO.ChapterNames.Add('Capítulo ' .. v.GetProperty('chapter').ToString())
+		end
+	end   
 
 	HTTP.Reset()
 	HTTP.Headers.Values['Referer'] = MANGAINFO.URL
