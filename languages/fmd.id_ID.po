@@ -631,13 +631,10 @@ msgid "Valid"
 msgstr "Valid"
 
 #: imagemagickmanager.rs_imagemagicknotfoundhint
-msgctxt "imagemagickmanager.rs_imagemagicknotfoundhint"
 msgid ""
 "Failed to detect an install of ImageMagick!\n"
 "Please install ImageMagick from www.imagemagick.org if you haven't already."
 msgstr ""
-"Gagal mendeteksi instalasi ImageMagick!\n"
-"Silakan instal ImageMagick dari www.imagemagick.org jika Anda belum melakukannya."
 
 #: imagemagickmanager.rs_imagemagickpreferencehint
 msgctxt "imagemagickmanager.rs_imagemagickpreferencehint"
@@ -2967,5 +2964,5 @@ msgstr "Memutakhirkan daftar"
 #: webp.serrloadfailed
 #, object-pascal-format
 msgid "Can not load WebP codec library \"%s\". Check your installation."
-msgstr "Tidak dapat memuat pustaka kodek WebP \"%s\". Periksa instalasi Anda."
+msgstr ""
 

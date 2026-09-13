@@ -16,8 +16,9 @@ unit uGetMangaInfosThread;
 interface
 
 uses
-  SysUtils, Graphics, Dialogs, uBaseUnit, uData, FMDOptions, BaseThread,
-  ImgInfos, webp, MultiLog, MemBitmap, VirtualTrees;
+  SysUtils, Graphics, Dialogs, Classes, Windows, uBaseUnit, uData, FMDOptions, BaseThread,
+  ImgInfos, webp, MultiLog, MemBitmap, VirtualTrees, BGRAAnimatedGif,
+  BGRABitmap, BGRABitmapTypes, ImageMagickManager;
 
 type
 
@@ -167,26 +168,91 @@ end;
 
 procedure TGetMangaInfosThread.LoadCover;
 var
-  bmp:TMemBitmap;
+  bmp: TMemBitmap;
+  ext: String;
+  animGif: TBGRAAnimatedGif;
+  tempFile: String;
+  imgMagick: TImageMagickManager;
+  Output: TMemoryStream;
+  identifyResult: String;
+  fmtPos, commaPos: Integer;
 begin
-  FIsHasMangaCover:=false;
+  FIsHasMangaCover := False;
   with FInfo.HTTP do
-  if GetImageStreamExt(Document)='webp' then
   begin
-    bmp:=nil;
-    bmp:=WebPToMemBitmap(Document);
-    if Assigned(bmp) then
-     try
-       FCover.Bitmap:=bmp.Bitmap;
-     finally
-       FreeAndNil(bmp);
-     end
+    ext := GetImageStreamExt(Document);
+    
+    if (ext = '') and TImageMagickManager.Instance.PathFound then
+    begin
+      Document.Position := 0;
+      imgMagick := TImageMagickManager.Instance;
+      identifyResult := imgMagick.Identify(Document);
+      if identifyResult <> '' then
+      begin
+        fmtPos := Pos('Format: ', identifyResult);
+        if fmtPos > 0 then
+        begin
+          ext := Copy(identifyResult, fmtPos + Length('Format: '), Length(identifyResult));
+          commaPos := Pos(',', ext);
+          if commaPos > 0 then
+            ext := Copy(ext, 1, commaPos - 1);
+          ext := LowerCase(Trim(ext));
+        end;
+      end;
+    end;
+    
+    if (ext = 'gif') or (ext = 'png') then
+    begin
+      Document.Position := 0;
+      animGif := TBGRAAnimatedGif.Create;
+      try
+        animGif.LoadFromStream(Document);
+        FCover.Graphic := animGif;
+        FIsHasMangaCover := True;
+      except
+        animGif.Free;
+        Document.Position := 0;
+        FCover.LoadFromStream(Document);
+        FIsHasMangaCover := True;
+      end;
+    end
+    else if (ext = 'tif') or (ext = 'tiff') or (ext = 'webp') or (ext = 'avif') or (ext = 'jxl') then
+    begin
+      Document.Position := 0;
+      imgMagick := TImageMagickManager.Instance;
+      if imgMagick.PathFound then
+      begin
+        Output := imgMagick.ConvertStream(Document, 'gif', True, ext);
+        if Assigned(Output) and (Output.Size > 0) then
+        begin
+          Output.Position := 0;
+          animGif := TBGRAAnimatedGif.Create;
+          try
+            animGif.LoadFromStream(Output);
+            FCover.Graphic := animGif;
+            FIsHasMangaCover := True;
+          except
+            on E: Exception do
+            begin
+              animGif.Free;
+              raise;
+            end;
+          end;
+        end;
+        Output.Free;
+      end;
+    end
     else
-      Exit;
-  end
-  else
-    FCover.LoadFromStream(FInfo.HTTP.Document);
-  FIsHasMangaCover:=True;
+    begin
+      try
+        Document.Position := 0;
+        FCover.LoadFromStream(Document);
+        FIsHasMangaCover := True;
+      except
+        
+      end;
+    end;
+  end;
 end;
 
 procedure TGetMangaInfosThread.MainThreadShowInfos;

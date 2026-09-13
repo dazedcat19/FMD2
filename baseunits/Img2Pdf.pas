@@ -36,7 +36,7 @@ interface
 uses
   Classes, SysUtils, LazFileUtils, FPimage, ImgInfos, MemBitmap,
   FPReadJPEG, FPWriteJPEG, FPReadPNG, JPEGLib, JdAPImin, JDataSrc, Jerror,
-  zstream, AnimatedGif, MultiLog;
+  zstream, AnimatedGif, MultiLog, Process, ImageMagickManager;
 
 type
   TCompressionQuality = 0..100;
@@ -458,6 +458,9 @@ begin
 end;
 
 procedure TPageInfo.LoadImageData;
+var
+  tmpFile, tmpDir: String;
+  proc: TProcess;
 begin
   if Assigned(Stream) then Exit;
   if Ext = '' then Exit;
@@ -480,6 +483,42 @@ begin
     else
       ImageToPageInfo(Self);
   except
+    on E: Exception do
+    begin
+      FreeAndNil(Stream);
+      if TImageMagickManager.Instance.Enabled then
+      begin
+        tmpDir := ExtractFilePath(FileName);
+        tmpFile := tmpDir + 'pdf_tmp_' + ChangeFileExt(ExtractFileName(FileName), '.jpg');
+        proc := TProcess.Create(nil);
+        try
+          if TImageMagickManager.Instance.PathFound then
+            proc.Executable := TImageMagickManager.Instance.MagickPath + 'magick'
+          else
+            proc.Executable := 'magick';
+          proc.Parameters.Add(FileName);
+          proc.Parameters.Add('-quality');
+          proc.Parameters.Add(IntToStr(Owner.CompressionQuality));
+          proc.Parameters.Add(tmpFile);
+          proc.Options := [poUsePipes, poStderrToOutPut, poNoConsole];
+          proc.ShowWindow := swoHIDE;
+          proc.Execute;
+          proc.WaitOnExit;
+          if FileExists(tmpFile) then
+          begin
+            Ext := 'jpg';
+            Width := 0;
+            Height := 0;
+            GetImageInfos;
+            Stream := TMemoryStream.Create;
+            JPEGToPageInfo(Self);
+            DeleteFile(tmpFile);
+          end;
+        finally
+          proc.Free;
+        end;
+      end;
+    end;
   end;
 end;
 
