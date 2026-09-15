@@ -26,7 +26,6 @@
 | Arc-Relight | [![https://arc-relight.com](https://img.shields.io/website?url=https://arc-relight.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://arc-relight.com)](https://arc-relight.com) | OK | 05.08.2025 | - |
 | Arcane Scans | [![https://arcanescans.org](https://img.shields.io/website?url=https://arcanescans.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://arcanescans.org)](https://arcanescans.org) | OK | 15.06.2025 | - |
 | ARESManga | [![https://fl-ares.com](https://img.shields.io/website?url=https://fl-ares.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://fl-ares.com)](https://fl-ares.com) | OK | 02.04.2025 | - |
-| Armageddon | [![https://www.silentquill.net](https://img.shields.io/website?url=https://www.silentquill.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.silentquill.net)](https://www.silentquill.net) | OK | 16.03.2026 | - |
 | Art Lapsa | [![https://artlapsa.com](https://img.shields.io/website?url=https://artlapsa.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://artlapsa.com)](https://artlapsa.com) | OK | 16.03.2026 | - |
 | Arven Comic | [![https://arvencomics.com](https://img.shields.io/website?url=https://arvencomics.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://arvencomics.com)](https://arvencomics.com) | OK | 12.09.2025 | Paid chapters are hidden |
 | AsmHentai | [![https://asmhentai.com](https://img.shields.io/website?url=https://asmhentai.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://asmhentai.com)](https://asmhentai.com) | - | - | - |
@@ -542,6 +541,7 @@
 | ShonenJumpPlus | [![https://shonenjumpplus.com](https://img.shields.io/website?url=https://shonenjumpplus.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://shonenjumpplus.com)](https://shonenjumpplus.com) | - | - | - |
 | Shqqaa | [![https://www.shqqaa.com](https://img.shields.io/website?url=https://www.shqqaa.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.shqqaa.com)](https://www.shqqaa.com) | - | - | - |
 | SiberOwl | [![http://siberowl.com](https://img.shields.io/website?url=http://siberowl.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://siberowl.com)](http://siberowl.com) | - | - | - |
+| SilentQuill | [![https://silentquill.net](https://img.shields.io/website?url=https://silentquill.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://silentquill.net)](https://silentquill.net) | OK | 15.09.2026 | - |
 | Siren Scans | [![https://sirenscans.com](https://img.shields.io/website?url=https://sirenscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://sirenscans.com)](https://sirenscans.com) | OK | 20.09.2025 | - |
 | SirenKomik | [![https://sirenkomik.my.id](https://img.shields.io/website?url=https://sirenkomik.my.id%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://sirenkomik.my.id)](https://sirenkomik.my.id) | - | - | - |
 | SKSubs | [![http://sksubs.com](https://img.shields.io/website?url=http://sksubs.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=http://sksubs.com)](http://sksubs.com) | - | - | - |
