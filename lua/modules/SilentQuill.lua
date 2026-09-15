@@ -44,7 +44,11 @@ function GetInfo()
 	local data
 	for _, root in ipairs(roots) do
 		data = NextJs.FindObject(root, function(v)
-			return type(v) == 'table' and v.chapters and v.chapters[1].slug
+			if type(v) ~= 'table' or type(v.chapters) ~= 'table' then
+				return false
+			end
+			local first = v.chapters[1]
+			return type(first) == 'table' and first.slug ~= nil
 		end)
 
 		if data then
