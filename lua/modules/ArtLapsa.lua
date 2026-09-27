@@ -1,32 +1,5 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = 'ff66216635184bdbb7630155b51764d1'
-	m.Name                     = 'Art Lapsa'
-	m.RootURL                  = 'https://artlapsa.com'
-	m.Category                 = 'English-Scanlation'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-
-	local slang = require 'fmd.env'.SelectedLanguage
-	local translations = {
-		['en'] = {
-			['showpaidchapters'] = 'Show paid chapters'
-		},
-		['id_ID'] = {
-			['showpaidchapters'] = 'Tampilkan bab berbayar'
-		}
-	}
-	local lang = translations[slang] or translations.en
-	m.AddOptionCheckBox('showpaidchapters', lang.showpaidchapters, false)
-end
-
-----------------------------------------------------------------------------------------------------
--- Local Constants
+-- Template Configuration
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.KeyoApp'
@@ -62,12 +35,37 @@ function GetPageNumber()
 
 	if not HTTP.GET(u) then return false end
 
-	local x = CreateTXQuery(HTTP.Document)
-	local json = x.XPath('json(//div[contains(@x-data, "immersiveReader")]/@x-data ! substring-before(substring-after(., "immersiveReader("), ")"))')
-	local base = x.XPathString('baseLink', json)
-	for v in x.XPath('pages?*?path', json).Get() do
-		TASK.PageLinks.Add(base .. v.ToString())
+	local s = CreateTXQuery(HTTP.Document).XPathString('//div[contains(@x-data, "immersiveReader")]/@x-data'):gsub('\\u0022', '"'):gsub('\\/', '/'):gsub('\\', '')
+	for v in s:gmatch('"path"%s*:%s*"([^"]+)"') do
+		TASK.PageLinks.Add(v)
 	end
 
-	return no_error
+	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = 'ff66216635184bdbb7630155b51764d1'
+	m.Name                     = 'Art Lapsa'
+	m.RootURL                  = 'https://artlapsa.com'
+	m.Category                 = 'English-Scanlation'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+
+	local slang = require 'fmd.env'.SelectedLanguage
+	local translations = {
+		['en'] = {
+			['showpaidchapters'] = 'Show paid chapters'
+		},
+		['id_ID'] = {
+			['showpaidchapters'] = 'Tampilkan bab berbayar'
+		}
+	}
+	local lang = translations[slang] or translations.en
+	m.AddOptionCheckBox('showpaidchapters', lang.showpaidchapters, false)
 end
