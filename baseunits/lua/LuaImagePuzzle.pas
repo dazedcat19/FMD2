@@ -45,6 +45,18 @@ begin
   TUserData(luaClassGetObject(L)).Matrix[lua_tointeger(L, 1)] := lua_tointeger(L, 2);
 end;
 
+function imagepuzzle_flipsget(L: Plua_State): Integer; cdecl;
+begin
+  lua_pushinteger(L, TUserData(luaClassGetObject(L)).Flips[lua_tointeger(L, 1)]);
+  Result := 1;
+end;
+
+function imagepuzzle_flipsset(L: Plua_State): Integer; cdecl;
+begin
+  Result := 0;
+  TUserData(luaClassGetObject(L)).Flips[lua_tointeger(L, 1)] := lua_tointeger(L, 2);
+end;
+
 function imagepuzzle_gethorblock(L: Plua_State): Integer; cdecl;
 begin
   lua_pushinteger(L, TUserData(luaClassGetObject(L)).HorBlock);
@@ -68,8 +80,9 @@ const
     (name: 'VerBlock'; funcget: @imagepuzzle_getverblock; funcset: nil),
     (name: nil; funcget: nil; funcset: nil)
     );
-  arrprops: packed array[0..1] of luaL_Reg_prop = (
+  arrprops: packed array[0..2] of luaL_Reg_prop = (
     (name: 'Matrix'; funcget: @imagepuzzle_matrixget; funcset: @imagepuzzle_matrixset),
+    (name: 'Flips'; funcget: @imagepuzzle_flipsget; funcset: @imagepuzzle_flipsset),
     (name: nil; funcget: nil; funcset: nil)
     );
   methods: packed array [0..1] of luaL_Reg = (
@@ -96,4 +109,3 @@ initialization
   LuaPackage.AddLib('imagepuzzle', @luaopen_imagepuzzle);
 
 end.
-
