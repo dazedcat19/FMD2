@@ -51,7 +51,7 @@ function _M.GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//span[@class="book-status"]'), StatusOngoing, StatusCompleted)
 	MANGAINFO.Summary   = x.XPathString('//section[contains(@class, "detail-synopsis")]/text()[not(a)]')
 
-	local u = MANGAINFO.URL:gsub('(.-/manga/.-)/.-', '%1'):gsub('(.-/original/.-)/.-', '%1'):gsub('%.html', '') .. '/chapters.html'
+	u = MANGAINFO.URL:gsub('(.-/manga/.-)/.-', '%1'):gsub('(.-/original/.-)/.-', '%1'):gsub('%.html', '') .. '/chapters.html'
 
 	if not HTTP.GET(u) then return net_problem end
 
