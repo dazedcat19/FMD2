@@ -1,27 +1,13 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = '9a6c199307064d85b5da627b1ea99c87'
-	m.Name                     = 'NiAddBR'
-	m.RootURL                  = 'https://br.niadd.com'
-	m.Category                 = 'Portuguese'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnGetImageURL            = 'GetImageURL'
-	m.TotalDirectory           = #DirectoryPages
-end
-
-----------------------------------------------------------------------------------------------------
--- Local Constants
+-- Template Configuration
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.NiAdd'
-StatusOngoing   = 'em progresso'
-StatusCompleted = 'Concluído'
+StatusOngoing       = 'em progresso'
+StatusCompleted     = 'Concluído'
+XPathTokenAltTitles = 'Alternativa(s)'
+XPathTokenAuthors   = 'Autor (es)'
+XPathTokenArtists   = 'Artista'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -38,19 +24,14 @@ end
 function GetInfo()
 	Template.GetInfo()
 
-	MANGAINFO.AltTitles = CreateTXQuery(HTTP.Document).XPathString('//td[@class="bookside-general-type"]//div[./span="Alternativa(s):"]/text()')
-
-	HTTP.Reset()
-	HTTP.Headers.Values['Referer'] = MANGAINFO.URL
-
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
 end
 
 -- Extract/Build/Repair image urls before downloading them.
@@ -58,4 +39,21 @@ function GetImageURL()
 	Template.GetImageURL()
 
 	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = '9a6c199307064d85b5da627b1ea99c87'
+	m.Name                     = 'NiAddBR'
+	m.RootURL                  = 'https://br.niadd.com'
+	m.Category                 = 'Portuguese'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnGetImageURL            = 'GetImageURL'
+	m.TotalDirectory           = AlphaList:len()
 end
