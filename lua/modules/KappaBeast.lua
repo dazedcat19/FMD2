@@ -1,20 +1,4 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = '6ac92a5cdf034857a066c9e0145cef31'
-	m.Name                     = 'KappaBeast'
-	m.RootURL                  = 'https://kappabeast.com'
-	m.Category                 = 'English-Scanlation'
-	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-end
-
-----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
@@ -108,7 +92,7 @@ function GetPageNumber()
 
 	if not HTTP.GET(u) then return false end
 
-	local x = CreateTXQuery(HTTP.Document)
+	local x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
 	x.ParseHTML(x.XPathString('json(*).data().htmlContent'))
 	x.XPathStringAll('//a/@href', TASK.PageLinks)
 
@@ -117,4 +101,20 @@ function GetPageNumber()
 	end
 
 	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = '6ac92a5cdf034857a066c9e0145cef31'
+	m.Name                     = 'KappaBeast'
+	m.RootURL                  = 'https://kappabeast.com'
+	m.Category                 = 'English-Scanlation'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
 end
