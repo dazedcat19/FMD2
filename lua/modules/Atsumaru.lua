@@ -1,37 +1,10 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = '2da79eaeb73d4539ad47d4eeb9549415'
-	m.Name                     = 'Atsumaru'
-	m.RootURL                  = 'https://atsu.moe'
-	m.Category                 = 'English'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-	m.OnCheckSite              = 'CheckSite'
-
-	local fmd = require 'fmd.env'
-	local slang = fmd.SelectedLanguage
-	local translations = {
-		['en'] = {
-			['showscangroup'] = 'Show scanlation group'
-		},
-		['id_ID'] = {
-			['showscangroup'] = 'Tampilkan grup scanlation'
-		}
-	}
-	local lang = translations[slang] or translations['en']
-	m.AddOptionCheckBox('showscangroup', lang.showscangroup, false)
-end
-
-----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local API_URL = 'https://atsu.moe/api'
+local domain = 'atsu.moe'
+local API_URL = 'https://' .. domain .. '/api'
+local CDN_URL = 'https://cdn.' .. domain
 local DirectoryPagination = '/explore/filteredView'
 
 ----------------------------------------------------------------------------------------------------
@@ -116,7 +89,7 @@ function GetPageNumber()
 	if not HTTP.GET(u) then return false end
 
 	for v in CreateTXQuery(HTTP.Document).XPath('json(*).readChapter.pages()').Get() do
-		TASK.PageLinks.Add(MaybeFillHost(MODULE.RootURL, v.GetProperty('image').ToString()))
+		TASK.PageLinks.Add(CDN_URL .. v.GetProperty('image').ToString())
 	end
 
 	return true
@@ -129,4 +102,33 @@ function CheckSite()
 	MANGACHECK.ChapterURL   = '/6rUzU/pIEtz'
 	MANGACHECK.ChapterTitle = 'Episode 74'
 	MANGACHECK.ChapterURLAddRootHost = false
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = '2da79eaeb73d4539ad47d4eeb9549415'
+	m.Name                     = 'Atsumaru'
+	m.RootURL                  = 'https://' .. domain
+	m.Category                 = 'English'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnCheckSite              = 'CheckSite'
+
+	local fmd = require 'fmd.env'
+	local slang = fmd.SelectedLanguage
+	local translations = {
+		['en'] = {
+			['showscangroup'] = 'Show scanlation group'
+		},
+		['id_ID'] = {
+			['showscangroup'] = 'Tampilkan grup scanlation'
+		}
+	}
+	local lang = translations[slang] or translations['en']
+	m.AddOptionCheckBox('showscangroup', lang.showscangroup, false)
 end
