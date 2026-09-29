@@ -1,42 +1,10 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = '0b6ee312575e4f3583a89c62ce2ed18f'
-	m.Name                     = 'MangaBall'
-	m.RootURL                  = 'https://mangaball.net'
-	m.Category                 = 'English'
-	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-	m.SortedList               = true
-
-	local slang = require 'fmd.env'.SelectedLanguage
-	local translations = {
-		['en'] = {
-			['showgroup'] = 'Show group name',
-			['lang'] = 'Language:'
-		},
-		['id_ID'] = {
-			['showgroup'] = 'Tampilkan nama grup',
-			['lang'] = 'Bahasa:'
-		}
-	}
-	local lang = translations[slang] or translations.en
-	local items = table.concat(GetLangList(), '\r\n')
-	m.AddOptionComboBox('lang', lang.lang, items, 11)
-	m.AddOptionCheckBox('showgroup', lang.showgroup, true)
-end
-
-----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local API_URL = 'https://mangaball.net/api/v1'
-local DirectoryPagination = 'filters[sort]=created_at_desc&filters[page]='
+local domain = 'mangaball.com'
+local API_URL = 'https://api.' .. domain .. '/api/v1'
+local DirectoryPagination = '/title/search-advanced?sort_by=created_at&sort_order=desc&adult_mode=all&limit=10000&page='
 local Langs = {
     {  nil, 'All' },
     { 'sq', 'Albanian' },
@@ -91,15 +59,6 @@ local Langs = {
 -- Helper Functions
 ----------------------------------------------------------------------------------------------------
 
--- Set the required http headers for making a request
-local function SetRequestHeaders(x)
-	HTTP.Reset()
-	HTTP.Headers.Values['X-Requested-With'] = 'XMLHttpRequest'
-	HTTP.Headers.Values['X-CSRF-TOKEN'] = x.XPathString('//meta[@name="csrf-token"]/@content')
-	HTTP.Cookies.Values['show18PlusContent'] = 'true'
-	HTTP.MimeType = 'application/x-www-form-urlencoded; charset=UTF-8'
-end
-
 -- Return language names in defined order
 function GetLangList()
 	local t = {}
@@ -120,33 +79,23 @@ end
 
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
-	local s = DirectoryPagination .. 1
+	local u = API_URL .. DirectoryPagination .. 1
 
-	if not HTTP.GET(MODULE.RootURL) then return net_problem end
+	if not HTTP.GET(u) then return net_problem end
 
-	local x = CreateTXQuery(HTTP.Document)
-	SetRequestHeaders(x)
-
-	if not HTTP.POST(API_URL .. '/title/search-advanced/', s) then return net_problem end
-
-	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('json(*).pagination.last_page')) or 1
+	PAGENUMBER = tonumber(CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString())).XPathString('json(*).pagination.total_pages')) or 1
 
 	return no_error
 end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local s = DirectoryPagination .. (URL + 1)
+	local u = API_URL .. DirectoryPagination .. (URL + 1)
 
-	if not HTTP.GET(MODULE.RootURL) then return net_problem end
+	if not HTTP.GET(u) then return net_problem end
 
-	local x = CreateTXQuery(HTTP.Document)
-	SetRequestHeaders(x)
-
-	if not HTTP.POST(API_URL .. '/title/search-advanced/', s) then return net_problem end
-
-	for v in CreateTXQuery(HTTP.Document).XPath('json(*).data()').Get() do
-		LINKS.Add(v.GetProperty('url').ToString())
+	for v in CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString())).XPath('json(*).data()').Get() do
+		LINKS.Add('title-detail/' .. v.GetProperty('id').ToString())
 		NAMES.Add(v.GetProperty('name').ToString())
 	end
 
@@ -155,44 +104,46 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local u = MaybeFillHost(MODULE.RootURL, URL)
+	local crypto = require 'fmd.crypto'
+	local mid = URL:match('(%x+)/?$')
+	local u = API_URL .. '/title/detail/' .. mid
 
 	if not HTTP.GET(u) then return net_problem end
 
-	local x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//div[@class="mb-2"]/h6')
-	MANGAINFO.AltTitles = x.XPathStringAll('//div[contains(@class, "alternate-name-container")]/text()')
-	MANGAINFO.CoverLink = x.XPathString('//img[contains(@class, "featured-cover")]/@src')
-	MANGAINFO.Authors   = x.XPathStringAll('//span[@data-person-id]')
-	MANGAINFO.Genres    = x.XPathStringAll('//span[@data-tag-id]')
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//span[contains(@class, "badge-status")]/text()'))
-	MANGAINFO.Summary   = x.XPathString('//div[@class="description-text"]/p')
-
-	local s = 'title_id=' .. URL:match('%-(%x+)/?$')
-	SetRequestHeaders(x)
-
-	if not HTTP.POST(API_URL .. '/chapter/chapter-listing-by-title-id/', s) then return net_problem end
+	local x = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString()))
+	local info = x.XPath('json(*).data')
+	MANGAINFO.Title     = x.XPathString('name', info)
+	MANGAINFO.AltTitles = x.XPathString('string-join(alternateName?*, ", ")', info)
+	MANGAINFO.CoverLink = 'https://bulbasaur.poke-black-and-white.net/covers/' .. x.XPathString('image?cover?path', info)
+	MANGAINFO.Authors   = x.XPathString('string-join(author?*?name, ", ")', info)
+	MANGAINFO.Genres    = x.XPathString('string-join(tags?*?name, ", ")', info)
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status', info))
+	MANGAINFO.Summary   = x.XPathString('description', info)
 
 	local optgroup  = MODULE.GetOption('showgroup')
 	local optlang   = MODULE.GetOption('lang')
 	local optlangid = FindLanguage(optlang)
+	local langparam = optlangid and '&language=' .. optlangid or ''
+	local page      = 1
+	local pages     = nil
 
-	local x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
-	for ch in x.XPath('json(*).ALL_CHAPTERS()').Get() do
-		local chapter = ch.GetProperty('number').ToString()
-		local number  = ch.GetProperty('number_float').ToString()
+	while true do
+		u = API_URL .. '/title/chapter-listing?title_id=' .. mid .. '&page=' .. page .. '&limit=100&group_by=chapter_number' .. langparam
 
-		for tr in x.XPath('translations?*', ch).Get() do
-			local language = tr.GetProperty('language').ToString()
+		if not HTTP.GET(u) then return net_problem end
 
+		x = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString()))
+		for v in x.XPath('parse-json(.)?data?*').Get() do
+			local language = v.GetProperty('lang').ToString()
 			if not optlangid or language == optlangid then
-				local id     = tr.GetProperty('id').ToString()
-				local volume = tr.GetProperty('volume').ToString()
-				local title  = tr.GetProperty('name').ToString():gsub(':', ' -')
-				local group  = tr.GetProperty('group').GetProperty('_id').ToString()
+				local number = v.GetProperty('number').ToString()
+				local id     = v.GetProperty('id').ToString()
+				local volume = v.GetProperty('volume').ToString()
+				local title  = v.GetProperty('name').ToString()
+				local group  = v.GetProperty('group_name').ToString()
 
-				volume = (volume ~= '0' and not title:find('Vol. ' .. volume, 1, true)) and ('Vol. ' .. volume .. ' ') or ''
-				title = title:find(number, 1, true) and title or chapter .. ' - ' .. title
+				volume = volume ~= '0' and ('Vol. ' .. volume .. ' ') or ''
+				title = (title == '' or title:find(number, 1, true)) and 'Ch. ' .. number or 'Ch. ' .. number .. ' - ' .. title
 				local scanlators = optgroup and (' [' .. group .. ']') or ''
 				local lang = (optlang == 0) and (' [' .. language .. ']') or ''
 
@@ -200,19 +151,70 @@ function GetInfo()
 				MANGAINFO.ChapterNames.Add(volume .. title .. scanlators .. string.upper(lang))
 			end
 		end
+		if not pages then
+			pages = tonumber(x.XPathString('json(*).pagination.total_pages')) or 1
+		end
+		if page >= pages then break end
+		page = page + 1
 	end
-	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
+	if optlang == 0 then
+		MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
+	end
+
+	HTTP.Reset()
+	HTTP.Headers.Values['Referer'] = MANGAINFO.URL
 
 	return no_error
 end
 
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local u = MaybeFillHost(MODULE.RootURL, URL)
+	local u = API_URL .. '/chapter-detail?chapter_id=' .. URL:match('[^/]+$')
 
 	if not HTTP.GET(u) then return false end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('json(//script[contains(., "chapterImages")]/substring-before(substring-after(., "parse(`"), "`"))()', TASK.PageLinks)
+	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).data.chapter.pages()', TASK.PageLinks)
 
 	return true
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+
+	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = '0b6ee312575e4f3583a89c62ce2ed18f'
+	m.Name                     = 'MangaBall'
+	m.RootURL                  = 'https://' .. domain
+	m.Category                 = 'English'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
+	m.SortedList               = true
+
+	local slang = require 'fmd.env'.SelectedLanguage
+	local translations = {
+		['en'] = {
+			['showgroup'] = 'Show group name',
+			['lang'] = 'Language:'
+		},
+		['id_ID'] = {
+			['showgroup'] = 'Tampilkan nama grup',
+			['lang'] = 'Bahasa:'
+		}
+	}
+	local lang = translations[slang] or translations.en
+	local items = table.concat(GetLangList(), '\r\n')
+	m.AddOptionComboBox('lang', lang.lang, items, 11)
+	m.AddOptionCheckBox('showgroup', lang.showgroup, true)
 end

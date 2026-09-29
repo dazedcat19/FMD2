@@ -250,7 +250,7 @@
 | Manga1st | [![https://manga1st.online](https://img.shields.io/website?url=https://manga1st.online%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga1st.online)](https://manga1st.online) | OK | 23.07.2025 | - |
 | MangaAe | [![https://manga.ae](https://img.shields.io/website?url=https://manga.ae%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga.ae)](https://manga.ae) | - | - | - |
 | MangaAy | [![https://manga-ay.com](https://img.shields.io/website?url=https://manga-ay.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://manga-ay.com)](https://manga-ay.com) | - | - | - |
-| MangaBall | [![https://mangaball.net](https://img.shields.io/website?url=https://mangaball.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangaball.net)](https://mangaball.net) | OK | 26.05.2026 | - |
+| MangaBall | [![https://mangaball.com](https://img.shields.io/website?url=https://mangaball.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangaball.com)](https://mangaball.com) | OK | 29.09.2026 | - |
 | MangaBat | [![https://h.mangabat.com](https://img.shields.io/website?url=https://h.mangabat.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://h.mangabat.com)](https://h.mangabat.com) | - | - | - |
 | MangaBin | [![https://mangabin.com](https://img.shields.io/website?url=https://mangabin.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangabin.com)](https://mangabin.com) | OK | 23.07.2025 | - |
 | Mangacan | [![https://mangacanblog.com](https://img.shields.io/website?url=https://mangacanblog.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangacanblog.com)](https://mangacanblog.com) | - | - | - |
