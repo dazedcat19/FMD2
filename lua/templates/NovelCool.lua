@@ -39,7 +39,7 @@ function _M.GetNameAndLink()
 
 	local x = CreateTXQuery(HTTP.Document)
 	x.XPathHREFTitleAll('//div[@class="book-info"]/a', LINKS, NAMES)
-	UPDATELIST.CurrentDirectoryPageNumber = tonumber(x.XPathString('//div[@class="dis-inline-block para-h8"]'))
+	UPDATELIST.CurrentDirectoryPageNumber = tonumber(x.XPathString('//div[@class="page-nav-center-num hidden-pm"]'):match('/(%d+)')) or 1
 
 	return no_error
 end
