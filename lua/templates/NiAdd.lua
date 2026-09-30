@@ -29,8 +29,7 @@ function _M.GetNameAndLink()
 
 	local x = CreateTXQuery(HTTP.Document)
 	x.XPathHREFAll('//div[@class="manga-part-inner-info"]/a[1]', LINKS, NAMES)
-	UPDATELIST.CurrentDirectoryPageNumber = tonumber(x.XPathString('//div[@class="page-all-num"]'):match('%d+'))
-		or tonumber(x.XPathString('//div[@class="page-nav"]/a[last()-1]')) or 1
+	UPDATELIST.CurrentDirectoryPageNumber = tonumber(x.XPathString('//script[contains(., "all_pages")] ! substring-before(substring-after(., "all_pages = """), """")')) or 1
 
 	return no_error
 end
