@@ -61,18 +61,30 @@ function GetInfo()
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
+	HTTP.Reset()
+	HTTP.Headers.Values['Sec-Fetch-Dest'] = 'image'
+
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	local u = MODULE.RootURL .. '/capitulo' .. URL .. '/'
-	HTTP.Reset()
-	HTTP.Headers.Values['X-Add-Nsfw-Cookie'] = 1
 
 	if not HTTP.GET(u) then return false end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('//div[contains(@class, "img")]/img/@src', TASK.PageLinks)
+	for v in CreateTXQuery(HTTP.Document).XPath('//div[@class="w-full"]/img/@src').Get() do
+		if not v.ToString():find('banner', 1, true) then
+			TASK.PageLinks.Add(v.ToString())
+		end
+	end
+
+	return true
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	HTTP.Headers.Values['Sec-Fetch-Dest'] = 'image'
 
 	return true
 end
@@ -85,11 +97,12 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'ds42a85566244b7e836679491ce679e8'
 	m.Name                     = 'Ikigai Mangas'
-	m.RootURL                  = 'https://viralikigai.milkchoco.online'
+	m.RootURL                  = 'https://visualikigai.cmpunjabrashancard.pk'
 	m.Category                 = 'Spanish'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 	m.SortedList               = true
 end
