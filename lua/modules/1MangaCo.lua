@@ -1,25 +1,9 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = '56473ae447f04cee93683d7404b32e60'
-	m.Name                     = '1MangaCo'
-	m.RootURL                  = 'https://1manga.co'
-	m.Category                 = 'English'
-	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-end
-
-----------------------------------------------------------------------------------------------------
--- Local Constants
+-- Template Configuration
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.MangaHub'
-Variables = 'mn03'
+source = 'mn03'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -39,16 +23,32 @@ function GetNameAndLink()
 	return no_error
 end
 
--- Get info and chapter list for current manga.
+-- Get info and chapter list for the current manga.
 function GetInfo()
 	Template.GetInfo()
 
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	Template.GetPageNumber()
 
-	return no_error
+	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = '56473ae447f04cee93683d7404b32e60'
+	m.Name                     = '1MangaCo'
+	m.RootURL                  = 'https://1manga.co'
+	m.Category                 = 'English'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
 end

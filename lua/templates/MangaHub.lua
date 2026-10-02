@@ -9,8 +9,9 @@ local _M = {}
 ----------------------------------------------------------------------------------------------------
 
 local API_URL = 'https://api.mghcdn.com/graphql'
+local CRYPTO_URL = '/api/chapter-crypto'
 local CDN_URL = 'https://imgx.mghcdn.com/'
-local MangaPerPage = 30
+local MangaPerPage = 50
 local json = require 'utils.json'
 
 ----------------------------------------------------------------------------------------------------
@@ -20,18 +21,35 @@ local json = require 'utils.json'
 math.randomseed(os.time())
 
 local function RandomHex()
-    local hex = ''
-    for i = 1, 16 do
-        hex = hex .. string.format('%02x', math.random(0, 255))
-    end
-    return hex
+	local hex = ''
+	for i = 1, 16 do
+		hex = hex .. string.format('%02x', math.random(0, 255))
+	end
+	return hex
 end
 
--- Set the required http header for making a request.
-local function SetRequestHeaders()
-	HTTP.Headers.Values['Origin'] = MODULE.RootURL
-	HTTP.Headers.Values['X-Mhub-Access'] = RandomHex()
+-- Set the required http headers for making a request.
+local function SetRequestHeaders(token)
+	HTTP.Headers.Values['X-Mhub-Access'] = token
+	HTTP.Cookies.Values['mhub_access'] = token
 	HTTP.MimeType = 'application/json'
+end
+
+-- Decode the encrypted chapter pages field.
+local function DecryptPages(enc, key)
+	local crypto = require 'fmd.crypto'
+	if enc:sub(1, 7) ~= 'enc:v1:' then
+		return enc
+	end
+	local parts = {}
+	for v in enc:gmatch('[^:]+') do
+		parts[#parts + 1] = v
+	end
+	local iv = crypto.DecodeBase64URL(parts[4])
+	local tag = crypto.DecodeBase64URL(parts[5])
+	local cip = crypto.DecodeBase64URL(parts[6])
+	local key_bytes = crypto.DecodeBase64URL(key)
+	return crypto.AESDecryptGCM(cip .. tag, key_bytes, iv)
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -40,8 +58,8 @@ end
 
 -- Get the page count of the manga list of the current website.
 function _M.GetDirectoryPageNumber()
-	local s = '{"query":"{search(x:' .. Variables .. ',q:\\"\\",genre:\\"all\\",mod:ALPHABET,count:true,offset:0){count}}"}'
-	SetRequestHeaders()
+	local s = '{"query":"{search(x:' .. source .. ',q:\\"\\",genre:\\"all\\",mod:ALPHABET,limit:' .. MangaPerPage .. ',count:true,offset:0){count}}"}'
+	SetRequestHeaders(RandomHex())
 
 	if not HTTP.POST(API_URL, s) then return net_problem end
 
@@ -53,8 +71,8 @@ end
 -- Get links and names from the manga list of the current website.
 function _M.GetNameAndLink()
 	local offset = MangaPerPage * URL
-	local s = '{"query":"{search(x:' .. Variables .. ',q:\\"\\",genre:\\"all\\",mod:ALPHABET,count:true,offset:' .. offset .. '){rows{title,slug}}}"}'
-	SetRequestHeaders()
+	local s = '{"query":"{search(x:' .. source .. ',q:\\"\\",genre:\\"all\\",mod:ALPHABET,limit:' .. MangaPerPage .. ',count:true,offset:' .. offset .. '){rows{title,slug}}}"}'
+	SetRequestHeaders(RandomHex())
 
 	if not HTTP.POST(API_URL, s) then return net_problem end
 
@@ -69,8 +87,8 @@ end
 
 -- Get info and chapter list for the current manga.
 function _M.GetInfo()
-	local s = '{"query":"{manga(x:' .. Variables .. ',slug:\\"' .. URL:match('manga/(.-)$') .. '\\"){title,slug,status,image,author,artist,genres,description,alternativeTitle,chapters{number,title}}}"}'
-	SetRequestHeaders()
+	local s = '{"query":"{manga(x:' .. source .. ',slug:\\"' .. URL:match('manga/(.-)$') .. '\\"){title,slug,status,image,author,artist,genres,description,alternativeTitle,chapters{number,title}}}"}'
+	SetRequestHeaders(RandomHex())
 
 	if not HTTP.POST(API_URL, s) then return net_problem end
 
@@ -101,16 +119,37 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function _M.GetPageNumber()
+	if tonumber(require 'fmd.env'.Revision) < 6920 then
+		print('Require unreleased FMD2 build')
+		return false
+	end
 	local slug, chapter = URL:match('/([^/]+)/chapter%-([%d.]+)$')
-	local s = '{"query":"{chapter(x:' .. Variables .. ',slug:\\"' .. slug ..'\\",number:' .. chapter .. '){pages}}"}'
+	local token = RandomHex()
+
 	HTTP.Reset()
-	SetRequestHeaders()
+	SetRequestHeaders(token)
+	if not HTTP.GET(MODULE.RootURL .. CRYPTO_URL) then return false end
+
+	local crypto = json.decode(HTTP.Document.ToString())
+	if not crypto or not crypto.key then
+		print('MangaHub: could not obtain chapter crypto key')
+		return false
+	end
+
+	local s = '{"query":"{chapter(x:' .. source .. ',slug:\\"' .. slug .. '\\",number:' .. chapter .. '){pages}}"}'
+	HTTP.Reset()
+	SetRequestHeaders(token)
 
 	if not HTTP.POST(API_URL, s) then return false end
 
 	local x = json.decode(HTTP.Document.ToString())
-	if x.errors then print('Error: ' .. x.errors[1].message) return true end
-	local w = json.decode(x.data.chapter.pages)
+	if x.errors then 
+		print('Error: ' .. x.errors[1].message)
+		return false
+	end
+
+	local plain = DecryptPages(x.data.chapter.pages, crypto.key)
+	local w = json.decode(plain)
 	local p = w.p
 	for _, v in ipairs(w.i) do
 		TASK.PageLinks.Add(CDN_URL .. p .. v)
