@@ -1,27 +1,19 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
+-- Template Configuration
 ----------------------------------------------------------------------------------------------------
 
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = '278a4bda217a4d73ba5145f64222f816'
-	m.Name                     = 'Elf Toon'
-	m.RootURL                  = 'https://elftoon.com'
-	m.Category                 = 'English-Scanlation'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-end
-
-----------------------------------------------------------------------------------------------------
--- Local Constants
-----------------------------------------------------------------------------------------------------
-
-local Template = require 'templates.MangaThemesia'
+local Template = require 'templates.NovelsHub'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
+
+-- Get the page count of the manga list of the current website.
+function GetDirectoryPageNumber()
+	Template.GetDirectoryPageNumber()
+
+	return no_error
+end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
@@ -42,4 +34,32 @@ function GetPageNumber()
 	Template.GetPageNumber()
 
 	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = '278a4bda217a4d73ba5145f64222f816'
+	m.Name                     = 'Elf Toon'
+	m.RootURL                  = 'https://elftoon.net'
+	m.Category                 = 'English-Scanlation'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+
+	local slang = require 'fmd.env'.SelectedLanguage
+	local translations = {
+		['en'] = {
+			['showpaidchapters'] = 'Show paid chapters'
+		},
+		['id_ID'] = {
+			['showpaidchapters'] = 'Tampilkan bab berbayar'
+		}
+	}
+	local lang = translations[slang] or translations.en
+	m.AddOptionCheckBox('showpaidchapters', lang.showpaidchapters, false)
 end
