@@ -656,6 +656,7 @@
 | 包子漫画 (Baozi) | [![https://www.baozimh.com](https://img.shields.io/website?url=https://www.baozimh.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.baozimh.com)](https://www.baozimh.com) | OK | 28.10.2025 | - |
 | 包子漫畫 (BaozimhOrg) | [![https://baozimh.org](https://img.shields.io/website?url=https://baozimh.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://baozimh.org)](https://baozimh.org) | OK | 16.11.2025 | - |
 | 古风漫画网 | [![https://www.gufengmh.com](https://img.shields.io/website?url=https://www.gufengmh.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.gufengmh.com)](https://www.gufengmh.com) | OK | 06.01.2025 | - |
+| 嬉皮漫畫 (HipMH) | [![https://m.hipmh.com](https://img.shields.io/website?url=https://m.hipmh.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://m.hipmh.com)](https://m.hipmh.com) | OK | 03.10.2026 | - |
 | 漫画RAW (mangajp) | [![https://mangajp.top](https://img.shields.io/website?url=https://mangajp.top%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangajp.top)](https://mangajp.top) | OK | 03.04.2025 | - |
 | ~365Manga~ | ~https://365manga.com~ | Removed | 03.08.2025 | - |
 | ~AGR Comics~ | ~https://agrcomics.org~ | Removed | 11.06.2026 | - |
