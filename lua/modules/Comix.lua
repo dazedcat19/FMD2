@@ -546,7 +546,6 @@ function DownloadImage()
 	local is_legacy_scramble = URL:find('#scrambled', 1, true)
 	local is_comix = URL:find('comix.to', 1, true)
 
-	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
 	if is_comix or is_legacy_scramble then
 		HTTP.Headers.Values['Origin'] = MODULE.RootURL
 	end
