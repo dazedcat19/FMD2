@@ -1,12 +1,4 @@
 ----------------------------------------------------------------------------------------------------
--- Local Constants
-----------------------------------------------------------------------------------------------------
-
-local API_URL = 'https://comix.to/api/v1'
-local DirectoryPagination = '/manga?order[created_at]=desc&limit=100&page='
-local crypto = require 'fmd.crypto'
-
-----------------------------------------------------------------------------------------------------
 -- Helper Functions
 ----------------------------------------------------------------------------------------------------
 
@@ -88,6 +80,72 @@ local function GetChapterFetchScript(mid)
 
 	console.log(JSON.stringify(resultJSON));
 	]]
+end
+
+local function GetMangaListFetchScript(page)
+	return [[
+	const resultJSON = await page.evaluate(async (pageNumber) => {
+		try {
+			const mainScript = document.querySelector('script[type="module"][src*="/dist/main-"]');
+			if (!mainScript) return { error: 'Could not find main bundle script tag' };
+
+			const mainScriptUrl = mainScript.src;
+			const mainResponse = await fetch(mainScriptUrl);
+			if (!mainResponse.ok) return { error: 'Could not load main bundle' };
+			const mainJavaScript = await mainResponse.text();
+
+			const environmentFile = mainJavaScript.match(/from\s*["']\.\/(env-[^"]+\.js)["']/);
+			if (!environmentFile) return { error: 'Could not find environment bundle' };
+
+			const envModule = await import(new URL(environmentFile[1], mainScriptUrl).href);
+			const mangaApi = Object.values(envModule).find(
+				v => v && typeof v === 'object' && typeof v.chapters === 'function'
+			);
+			if (!mangaApi) return { error: 'Could not find manga API' };
+
+			const response = await mangaApi.list({
+				page: pageNumber,
+				limit: 100,
+				order: { created_at: 'desc' }
+			});
+
+			const items = response && response.items;
+			if (!Array.isArray(items)) return { error: 'Unexpected manga list response' };
+
+			return {
+				items: items.map(m => ({
+					url: m.url,
+					title: m.title
+				})),
+				lastPage: response.meta && response.meta.lastPage
+			};
+		} catch (e) {
+			return { error: e.message || String(e) };
+		}
+	}, ]] .. page .. [[);
+
+	console.log(JSON.stringify(resultJSON));
+	]]
+end
+
+local function GetDirectoryPage(page)
+	local json = require 'utils.json'
+	local now = os.time()
+	local key = 'directory_' .. page
+	local output = MODULE.Storage[key]
+	local timestamp = tonumber(MODULE.Storage[key .. '_time']) or 0
+
+	if output == '' or (now - timestamp) >= 900 then
+		local js_code = GetMangaListFetchScript(page)
+		output = require 'utils.nodejs'.run_html_load_with_js(MODULE.RootURL .. '/browse', js_code)
+
+		if not json.decode(output).error then
+			MODULE.Storage[key] = output
+			MODULE.Storage[key .. '_time'] = now
+		end
+	end
+
+	return output
 end
 
 local function GetPermutationMatrixLcg(seed, n)
@@ -228,24 +286,32 @@ end
 
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
-	local u = API_URL .. DirectoryPagination .. 1
+	local json = require 'utils.json'
+	local data = json.decode(GetDirectoryPage(1))
 
-	if not HTTP.GET(u) then return net_problem end
+	if data.error then
+		print('Error: ' .. data.error)
+		return net_problem
+	end
 
-	PAGENUMBER = tonumber(CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString())).XPathString('json(*).result.meta.lastPage')) or 1
+	PAGENUMBER = tonumber(data.lastPage) or 1
 
 	return no_error
 end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local u = API_URL .. DirectoryPagination .. (URL + 1)
+	local json = require 'utils.json'
+	local data = json.decode(GetDirectoryPage(URL + 1))
 
-	if not HTTP.GET(u) then return net_problem end
+	if data.error then
+		print('Error: ' .. data.error)
+		return net_problem
+	end
 
-	for v in CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString())).XPath('json(*).result.items()').Get() do
-		LINKS.Add('title/' .. v.GetProperty('hid').ToString() .. '-' .. v.GetProperty('slug').ToString())
-		NAMES.Add(v.GetProperty('title').ToString())
+	for _, v in ipairs(data.items or {}) do
+		LINKS.Add(v.url)
+		NAMES.Add(v.title)
 	end
 
 	return no_error
@@ -263,6 +329,7 @@ function GetInfo()
 	if (rc == 403) or (rc == 429) or (rc == 503) then MANGAINFO.Title = 'Cloudflare workaround is required' return no_error end
 	local x = CreateTXQuery(HTTP.Document)
 	local info = json.decode(x.XPathString('//script[@id="initial-data"]')).queries['["manga","detail","' .. mid .. '"]']
+	if not info then return no_error end
 
 	local authors = {}
 	for _, author in ipairs(info.authors or {}) do
@@ -291,7 +358,7 @@ function GetInfo()
 
 	MANGAINFO.Title     = info.title
 	MANGAINFO.AltTitles = table.concat(info.altTitles or {}, ', ')
-	MANGAINFO.CoverLink = info.poster.medium
+	MANGAINFO.CoverLink = info.poster and info.poster.medium
 	MANGAINFO.Authors   = table.concat(authors, ', ')
 	MANGAINFO.Artists   = table.concat(artists, ', ')
 	MANGAINFO.Genres    = table.concat(genres, ', ')
@@ -310,7 +377,7 @@ function GetInfo()
 
 		if not json.decode(output).error then
 			MODULE.Storage[mid] = output
-			MODULE.Storage[mid .. '_time'] = tostring(now)
+			MODULE.Storage[mid .. '_time'] = now
 		end
 	end
 
