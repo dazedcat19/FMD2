@@ -43,7 +43,6 @@ local function DecodeImagesPayload(raw)
 	if body:sub(first_len + 1, marker_end) ~= MARKER then return nil end
 	if body:sub(middle_end + 1, separator_end) ~= SEPARATOR then return nil end
 
-	-- reorder as p5+p1+p3 and flip every odd 7-char block
 	local reordered = body:sub(separator_end + 1) .. body:sub(1, first_len) .. body:sub(marker_end + 1, middle_end)
 	local buf, block = {}, 0
 	for i = 1, #reordered, BLOCK_SIZE do
@@ -53,7 +52,6 @@ local function DecodeImagesPayload(raw)
 		block = block + 1
 	end
 
-	-- remap to standard base64, pad and decode
 	local encoded = table.concat(buf)
 	if not encoded:match('^[%w%-_]+$') then return nil end
 	encoded = encoded:gsub('[%w%-_]', REMAP) .. string.rep('=', (4 - #encoded % 4) % 4)
@@ -98,11 +96,6 @@ local function RemoveDecoyImage(paths, order_id, sid)
 	end
 end
 
--- URL-safe base64
-local function B64Url(s)
-	return (s:gsub('%+', '-'):gsub('/', '_'):gsub('=+$', ''))
-end
-
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
@@ -140,7 +133,7 @@ function GetInfo()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	local x = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString()))
+	local x = CreateTXQuery(HTTP.Document)
 	local info = x.XPath('json(*).data')
 	MANGAINFO.Title     = x.XPathString('title', info)
 	MANGAINFO.AltTitles = x.XPathString('string-join(alt_titles?*, ", ")', info)
@@ -160,8 +153,7 @@ function GetInfo()
 		x = CreateTXQuery(HTTP.Document)
 		for v in x.XPath('json(*).data.items()').Get() do
 			local first, second = v.GetProperty('hid').ToString():match('^(.-)%-(.+)$')
-			local hid = B64Url(crypto.EncodeBase64(crypto.DecodeBase64(first):match('%-(.+)$')))
-				.. '-' .. B64Url(crypto.EncodeBase64(crypto.DecodeBase64(second)))
+			local hid = crypto.EncodeBase64(crypto.DecodeBase64(first):match('%-(.+)$')):gsub('%+', '-'):gsub('/', '_'):gsub('=+$', '') .. '-' .. second
 
 			MANGAINFO.ChapterLinks.Add(hid)
 			MANGAINFO.ChapterNames.Add(v.GetProperty('title').ToString())
