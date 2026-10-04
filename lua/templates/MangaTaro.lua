@@ -76,17 +76,18 @@ function _M.GetInfo()
 		-- Regenerate token per request; timestamp must be fresh each time
 		local timestamp = os.time()
 		local token = md5_hex(timestamp .. 'mng_ch_' .. formatted):sub(1, 16)
-
-		if not HTTP.GET(MODULE.RootURL .. '/auth/manga-chapters?manga_id=' .. mid ..
+		u = MODULE.RootURL .. '/auth/manga-chapters?manga_id=' .. mid ..
 			'&offset=' .. offset .. '&limit=' .. limit ..
-			'&order=ASC&_t=' .. token .. '&_ts=' .. timestamp) then return net_problem end
+			'&order=ASC&_t=' .. token .. '&_ts=' .. timestamp
+
+		if not HTTP.GET(u) then return net_problem end
 
 		local count = 0
 		for v in CreateTXQuery(HTTP.Document).XPath('json(*).chapters()').Get() do
 			local chapter = v.GetProperty('chapter').ToString()
 			local title   = v.GetProperty('title').ToString()
 
-			title = (title ~= 'N/A' and title ~= '—' and title ~= '') and (' - ' .. title) or ''
+			title = (title ~= 'N/A' and title ~= '—' and title ~= '' and title ~= ' ') and (' - ' .. title) or ''
 
 			MANGAINFO.ChapterLinks.Add(v.GetProperty('url').ToString())
 			MANGAINFO.ChapterNames.Add('Chapter ' .. chapter .. title)
@@ -102,7 +103,7 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function _M.GetPageNumber()
-	local u = MODULE.RootURL .. '/auth/chapter-content?chapter_id=' .. URL:match('(%d+)$')
+	local u = MODULE.RootURL .. '/auth/chapter-content?chapter_id=' .. URL:match('-(%d+)/?$')
 
 	if not HTTP.GET(u) then return false end
 
