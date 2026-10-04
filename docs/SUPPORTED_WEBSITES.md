@@ -514,6 +514,7 @@
 | RizzFables | [![https://rizzfables.com](https://img.shields.io/website?url=https://rizzfables.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://rizzfables.com)](https://rizzfables.com) | OK | 19.02.2025 | - |
 | Rokari Comics | [![https://rokaricomics.com](https://img.shields.io/website?url=https://rokaricomics.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://rokaricomics.com)](https://rokaricomics.com) | OK | 26.08.2025 | - |
 | RoliaScan | [![https://roliascan.com](https://img.shields.io/website?url=https://roliascan.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://roliascan.com)](https://roliascan.com) | OK | 04.10.2026 | - |
+| MangaSusuSpace | [![https://mangasusu.space](https://img.shields.io/website?url=https://mangasusu.space%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangasusu.space)](https://mangasusu.space) | OK | 04.10.2026 | - |
 | Roseveil | [![https://roseveil.org](https://img.shields.io/website?url=https://roseveil.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://roseveil.org)](https://roseveil.org) | OK | 12.03.2026 | - |
 | RuMIX | [![https://rumix.me](https://img.shields.io/website?url=https://rumix.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://rumix.me)](https://rumix.me) | OK | 02.11.2025 | An account is required |
 | S2Manga | [![https://s2manga.com](https://img.shields.io/website?url=https://s2manga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://s2manga.com)](https://s2manga.com) | OK | 25.07.2025 | - |
