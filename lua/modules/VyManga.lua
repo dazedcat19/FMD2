@@ -5,6 +5,20 @@
 local DirectoryPagination = '/search?sort=created_at&sort_type=desc&page='
 
 ----------------------------------------------------------------------------------------------------
+-- Helper Functions
+----------------------------------------------------------------------------------------------------
+
+local function ChapterStableId(title, occurrence)
+	local key = title
+	if occurrence > 1 then
+		key = string.format('%s\x01%d', title, occurrence)
+	end
+	local hash = require 'fmd.crypto'.MD5(key)
+	hash = hash:gsub('.', function(c) return string.format('%02x', c:byte()) end)
+	return hash:lower():sub(-10)
+end
+
+----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
@@ -50,14 +64,23 @@ function GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//p[span="Status"]'))
 	MANGAINFO.Summary   = x.XPathString('//div[@class="summary"]/p[@class="content"]')
 
+	local seen = {}
 	for v in x.XPath('//div[@class="list-group"]/a').Get() do
-		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
-		MANGAINFO.ChapterNames.Add(x.XPathString('span', v))
+		local title = x.XPathString('span[1]', v)
+		local occurrence = (seen[title] or 0) + 1
+		seen[title] = occurrence
+		local id = ChapterStableId(title, occurrence)
+		MANGAINFO.ChapterLinks.Add(id)
+		MANGAINFO.ChapterNames.Add(title)
+		MODULE.Storage[id] = v.GetAttribute('href')
 	end
 
 	if MANGAINFO.ChapterLinks.Count == 0 then
-		MANGAINFO.ChapterLinks.Add(x.XPathString('//div[contains(@class, "div-chapter")]//a/@href'))
-		MANGAINFO.ChapterNames.Add(x.XPathString('//div[contains(@class, "div-chapter")]//a/span'))
+		local title = x.XPathString('//div[contains(@class, "div-chapter")]//a/span')
+		local id = ChapterStableId(title, 1)
+		MANGAINFO.ChapterLinks.Add(id)
+		MANGAINFO.ChapterNames.Add(title)
+		MODULE.Storage[id] = x.XPathString('//div[contains(@class, "div-chapter")]//a/@href')
 	end
 
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
@@ -67,9 +90,17 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local u = MaybeFillHost(MODULE.RootURL, URL)
+	local u = MODULE.Storage[URL:match('[^/]+$')]
+	if u == '' then
+		if URL:sub(1, 4) == 'http' then
+			u = URL
+		else
+			require 'fmd.logger'.SendWarning('VyManga: chapter URL is not cached, refresh the manga info and try again')
+			return false
+		end
+	end
 
-	if not HTTP.GET(u) then return false end
+	if not HTTP.GET(MaybeFillHost(MODULE.RootURL, u)) then return false end
 
 	CreateTXQuery(HTTP.Document).XPathStringAll('//img[contains(@class, "d-block")]/@data-src', TASK.PageLinks)
 
@@ -100,4 +131,3 @@ function Init()
 	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 	m.SortedList               = true
 end
-
