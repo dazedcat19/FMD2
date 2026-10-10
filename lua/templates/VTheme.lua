@@ -8,7 +8,7 @@ local _M = {}
 -- Template Configuration
 ----------------------------------------------------------------------------------------------------
 
-local DirectoryPagination = '/api/query?perPage=9999'
+local DirectoryPagination = '/api/query?perPage=100&orderBy=createdAt&page='
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -38,9 +38,20 @@ function _M.Login()
 	end
 end
 
+-- Get the page count of the manga list of the current website.
+function _M.GetDirectoryPageNumber()
+	local u = MODULE.RootURL:gsub('://', '://api.') .. DirectoryPagination .. 1
+
+	if not HTTP.GET(u) then return net_problem end
+
+	PAGENUMBER = math.ceil(CreateTXQuery(HTTP.Document).XPathString('json(*).totalCount') / 100) or 1
+
+	return no_error
+end
+
 -- Get links and names from the manga list of the current website.
 function _M.GetNameAndLink()
-	local u = MODULE.RootURL:gsub('://', '://api.') .. DirectoryPagination
+	local u = MODULE.RootURL:gsub('://', '://api.') .. DirectoryPagination .. (URL + 1)
 
 	if not HTTP.GET(u) then return net_problem end
 

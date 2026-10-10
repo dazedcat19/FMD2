@@ -15,6 +15,13 @@ function Login()
 	return no_error
 end
 
+-- Get the page count of the manga list of the current website.
+function GetDirectoryPageNumber()
+	Template.GetDirectoryPageNumber()
+
+	return no_error
+end
+
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
 	Template.GetNameAndLink()
@@ -46,11 +53,13 @@ function Init()
 	m.Name                     = 'Hijala Scans'
 	m.RootURL                  = 'https://en-hijala.com'
 	m.Category                 = 'English-Scanlation'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
 	m.OnLogin                  = 'Login'
 	m.AccountSupport           = true
+	m.SortedList               = true
 
 	local slang = require 'fmd.env'.SelectedLanguage
 	local translations = {

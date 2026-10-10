@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------------------------------
--- Template Configuration
+-- Local Constants
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.VTheme'
@@ -49,10 +49,10 @@ end
 
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                       = 'e1bb1dd018ff498382dba79d28c401d5'
-	m.Name                     = 'Vortex Scans'
-	m.RootURL                  = 'https://vortexscans.org'
-	m.Category                 = 'English-Scanlation'
+	m.ID                       = '582a678d967e4d2eaf69d14270e064bd'
+	m.Name                     = 'EternalMangas'
+	m.RootURL                  = 'https://eternalmangas.org'
+	m.Category                 = 'Spanish'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
