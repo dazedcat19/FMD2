@@ -2,7 +2,7 @@
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local Directory = '/changeMangaList?type=text'
+local DirectoryPage = '/changeMangaList?type=text'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -10,7 +10,7 @@ local Directory = '/changeMangaList?type=text'
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local u = MODULE.RootURL .. Directory
+	local u = MODULE.RootURL .. DirectoryPage
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -35,7 +35,7 @@ function GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[dt="Status"]/dd'))
 	MANGAINFO.Summary   = x.XPathString('//section[@class="ms-detail-panel ms-detail-synopsis"]/p')
 
-	for v in x.XPath('//ul[@class="ms-chapter-list"]/li/a').Get() do
+	for v in x.XPath('//ul[@id="ms-chapter-list"]/li/a').Get() do
 		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
 		MANGAINFO.ChapterNames.Add(x.XPathString('.//strong', v))
 	end
