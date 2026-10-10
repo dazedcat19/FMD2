@@ -97,7 +97,7 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function _M.GetPageNumber()
-	if not MODULE.Storage[URL:match('[^/]+$')]:find('/chapter/', 1, true) then
+	if MODULE.Storage[URL:match('[^/]+$')] ~= '' then
 		local u = MODULE.Storage[URL:match('[^/]+$')]
 
 		SetRequestHeaders()
