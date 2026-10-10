@@ -20,6 +20,16 @@ local function SetRequestHeaders()
 	HTTP.Headers.Values['Referer'] = MODULE.RootURL
 end
 
+local function ChapterStableId(title, occurrence)
+	local key = title
+	if occurrence > 1 then
+		key = string.format('%s\x01%d', title, occurrence)
+	end
+	local hash = require 'fmd.crypto'.MD5(key)
+	hash = hash:gsub('.', function(c) return string.format('%02x', c:byte()) end)
+	return hash:lower():sub(-10)
+end
+
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
@@ -58,7 +68,21 @@ function _M.GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('//div[contains(@class, "bk-cate-type1")]/a'), StatusOngoing, StatusCompleted)
 	MANGAINFO.Summary   = x.XPathString('(//div[@class="bk-summary-txt"])[1]')
 
-	x.XPathHREFTitleAll('//div[@class="chp-item"]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+	local seen = {}
+	for v in x.XPath('//div[@class="chp-item"]/a').Get() do
+		local href = v.GetAttribute('href')
+		local title = v.GetAttribute('title')
+
+		if not href:find('/chapter/', 1, true) then
+			seen[title] = (seen[title] or 0) + 1
+			local id = ChapterStableId(title, seen[title])
+			MODULE.Storage[id] = href
+			href = id
+		end
+
+		MANGAINFO.ChapterLinks.Add(href)
+		MANGAINFO.ChapterNames.Add(title)
+	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
@@ -66,8 +90,8 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function _M.GetPageNumber()
-	if URL:find('/rds/', 1, true) then
-		local u = 'https://workexplained.com' .. URL
+	if MODULE.Storage[URL:match('[^/]+$')] ~= '' then
+		local u = MODULE.Storage[URL:match('[^/]+$')]
 
 		SetRequestHeaders()
 		if not HTTP.GET(u) then return false end
