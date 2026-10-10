@@ -11,6 +11,26 @@ local _M = {}
 AlphaList = '#ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 ----------------------------------------------------------------------------------------------------
+-- Helper Functions
+----------------------------------------------------------------------------------------------------
+
+-- Set the required http headers for making a request.
+local function SetRequestHeaders()
+	HTTP.Reset()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+end
+
+local function ChapterStableId(title, occurrence)
+	local key = title
+	if occurrence > 1 then
+		key = string.format('%s\x01%d', title, occurrence)
+	end
+	local hash = require 'fmd.crypto'.MD5(key)
+	hash = hash:gsub('.', function(c) return string.format('%02x', c:byte()) end)
+	return hash:lower():sub(-10)
+end
+
+----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
@@ -54,9 +74,21 @@ function _M.GetInfo()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	for v in CreateTXQuery(HTTP.Document).XPath('//ul[contains(@class, "chapter-list")]/a').Get() do
-		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
-		MANGAINFO.ChapterNames.Add(x.XPathString('li/div/span[@class="chp-title"]', v))
+	x = CreateTXQuery(HTTP.Document)
+	local seen = {}
+	for v in x.XPath('//ul[contains(@class, "chapter-list")]/a').Get() do
+		local href = v.GetAttribute('href')
+		local title = x.XPathString('li/div/span[@class="chp-title"]', v)
+
+		if not href:find('/chapter/', 1, true) then
+			seen[title] = (seen[title] or 0) + 1
+			local id = ChapterStableId(title, seen[title])
+			MODULE.Storage[id] = href
+			href = id
+		end
+
+		MANGAINFO.ChapterLinks.Add(href)
+		MANGAINFO.ChapterNames.Add(title)
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
@@ -65,12 +97,26 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function _M.GetPageNumber()
-	local u = MaybeFillHost(MODULE.RootURL, URL)
+	if not MODULE.Storage[URL:match('[^/]+$')]:find('/chapter/', 1, true) then
+		local u = MODULE.Storage[URL:match('[^/]+$')]
 
-	if not HTTP.GET(u) then return false end
+		SetRequestHeaders()
+		if not HTTP.GET(u) then return false end
+	
+		u = HTTP.Document.ToString():match('document%.location%s*=%s*["\'](.-)["\']')
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('(//select[@class="sl-page"])[last()]/option/@value', TASK.PageContainerLinks)
-	TASK.PageNumber = TASK.PageContainerLinks.Count
+		SetRequestHeaders()
+		if not HTTP.GET(u) then return false end
+
+		CreateTXQuery(HTTP.Document).XPathStringAll('json("[" || //script[contains(., "all_imgs_url")] ! substring-before(substring-after(., "all_imgs_url: ["), "]") || "]")()', TASK.PageLinks)
+	else
+		local u = MaybeFillHost(MODULE.RootURL, URL)
+
+		if not HTTP.GET(u) then return false end
+
+		CreateTXQuery(HTTP.Document).XPathStringAll('(//select[@class="sl-page"])[last()]/option/@value', TASK.PageContainerLinks)
+		TASK.PageNumber = TASK.PageContainerLinks.Count
+	end
 
 	return true
 end
