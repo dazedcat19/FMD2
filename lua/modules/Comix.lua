@@ -44,13 +44,19 @@ local function GetChapterFetchScript(mid)
 			if (!mainResponse.ok) return { error: 'Could not load main bundle' };
 			const mainJavaScript = await mainResponse.text();
 
-			const environmentFile = mainJavaScript.match(/from\s*["']\.\/(env-[^"']+\.js)["']/);
-			if (!environmentFile) return { error: 'Could not find environment bundle' };
-
-			const envModule = await import(new URL(environmentFile[1], mainScriptUrl).href);
-			const mangaApi = Object.values(envModule).find(
-				v => v && typeof v === 'object' && typeof v.chapters === 'function'
+			const bundleFiles = Array.from(
+				mainJavaScript.matchAll(/from\s*["']\.\/([^"']+\.js)["']/g),
+				match => match[1]
 			);
+
+			let mangaApi = null;
+			for (const bundleFile of bundleFiles) {
+				const bundle = await import(new URL(bundleFile, mainScriptUrl).href);
+				mangaApi = Object.values(bundle).find(
+					v => v && typeof v === 'object' && typeof v.chapters === 'function'
+				);
+				if (mangaApi) break;
+			}
 			if (!mangaApi) return { error: 'Could not find manga API' };
 
 			const items = [];
@@ -94,13 +100,19 @@ local function GetMangaListFetchScript(page)
 			if (!mainResponse.ok) return { error: 'Could not load main bundle' };
 			const mainJavaScript = await mainResponse.text();
 
-			const environmentFile = mainJavaScript.match(/from\s*["']\.\/(env-[^"]+\.js)["']/);
-			if (!environmentFile) return { error: 'Could not find environment bundle' };
-
-			const envModule = await import(new URL(environmentFile[1], mainScriptUrl).href);
-			const mangaApi = Object.values(envModule).find(
-				v => v && typeof v === 'object' && typeof v.chapters === 'function'
+			const bundleFiles = Array.from(
+				mainJavaScript.matchAll(/from\s*["']\.\/([^"']+\.js)["']/g),
+				match => match[1]
 			);
+
+			let mangaApi = null;
+			for (const bundleFile of bundleFiles) {
+				const bundle = await import(new URL(bundleFile, mainScriptUrl).href);
+				mangaApi = Object.values(bundle).find(
+					v => v && typeof v === 'object' && typeof v.chapters === 'function'
+				);
+				if (mangaApi) break;
+			}
 			if (!mangaApi) return { error: 'Could not find manga API' };
 
 			const response = await mangaApi.list({
