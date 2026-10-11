@@ -4,6 +4,7 @@
 
 local DirectoryPagination = '/all-mangas?m_orderby=new-manga&page='
 local crypto = require 'fmd.crypto'
+local json = require 'utils.json'
 
 ----------------------------------------------------------------------------------------------------
 -- Helper Functions
@@ -96,6 +97,50 @@ local function BuildPermutation(chapter_key, page_index, grid_size)
 	return w
 end
 
+-- Get a reader access token.
+local function GetReaderAccessToken(force_refresh)
+	if not force_refresh then
+		local cached_token = MODULE.Storage['ReaderAccessToken']
+		local cached_expires_at = tonumber(MODULE.Storage['ReaderAccessTokenExpiresAt']) or 0
+		if cached_token ~= '' and (cached_expires_at - os.time()) > 60 then
+			return cached_token
+		end
+	end
+
+	HTTP.Reset()
+	HTTP.Headers.Values['X-Requested-With'] = 'XMLHttpRequest'
+	if not HTTP.POST(MODULE.RootURL .. '/api/reader/access-token') then return nil end
+	if HTTP.ResultCode < 200 or HTTP.ResultCode >= 300 then return nil end
+
+	local result = json.decode(HTTP.Document.ToString())
+	if not result.token then return nil end
+
+	MODULE.Storage['ReaderAccessToken'] = result.token
+	MODULE.Storage['ReaderAccessTokenExpiresAt'] = result.expiresAt or 0
+
+	return result.token
+end
+
+-- Get the page keys for the current chapter.
+local function FetchPageKeys(chapter_id, token)
+	HTTP.Reset()
+	HTTP.Headers.Values['X-Reader-Access-Token'] = token
+	if not HTTP.GET(MODULE.RootURL .. '/api/chapters/' .. chapter_id .. '/page-keys') then return nil end
+
+	if HTTP.ResultCode == 404 then
+		token = GetReaderAccessToken(true)
+		if not token then return nil end
+
+		HTTP.Reset()
+		HTTP.Headers.Values['X-Reader-Access-Token'] = token
+		if not HTTP.GET(MODULE.RootURL .. '/api/chapters/' .. chapter_id .. '/page-keys') then return nil end
+	end
+
+	if HTTP.ResultCode < 200 or HTTP.ResultCode >= 300 then return nil end
+
+	return token, json.decode(HTTP.Document.ToString())
+end
+
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
@@ -177,7 +222,6 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local json = require 'utils.json'
 	local u = MODULE.RootURL .. '/api' .. URL
 
 	if not HTTP.GET(u) then return false end
@@ -187,20 +231,14 @@ function GetPageNumber()
 
 	-- access token
 
-	HTTP.Reset()
-	HTTP.Headers.Values['X-Requested-With'] = 'XMLHttpRequest'
-	if not HTTP.POST(MODULE.RootURL .. '/api/reader/access-token') then return false end
-
-	local token = json.decode(HTTP.Document.ToString()).token
+	local token = GetReaderAccessToken(false)
+	if not token then return false end
 
 	-- page keys
 
-	HTTP.Reset()
-	HTTP.Headers.Values['X-Reader-Access-Token'] = token
-
-	if not HTTP.GET(MODULE.RootURL .. '/api/chapters/' .. chapter_id .. '/page-keys') then return false end
-
-	local page_keys = json.decode(HTTP.Document.ToString())
+	local page_keys
+	token, page_keys = FetchPageKeys(chapter_id, token)
+	if not page_keys then return false end
 
 	-- open
 
