@@ -2,83 +2,216 @@
 -- Helper Functions
 ----------------------------------------------------------------------------------------------------
 
-local function GetNodejsScript(interceptor)
+local function GetMangaListFetchScript(page)
 	return [[
-	const resultJSON = await page.evaluate(async () => {
-		return new Promise((resolve) => {
+	const hookCode = `
+		window.__comixBrowsePayloads = [];
+		(() => {
 			const originalParse = JSON.parse;
-			let submitted = false;
-			
-			const submit = (data) => {
-				if (submitted) return;
-				submitted = true;
-				resolve(data);
-			};
-
 			JSON.parse = new Proxy(originalParse, {
 				apply(target, thisArg, args) {
 					const parsed = Reflect.apply(target, thisArg, args);
 					try {
-						]] .. interceptor .. [[
+						if (parsed && typeof parsed === 'object') {
+							const result = parsed.result || parsed;
+							if (result && Array.isArray(result.items)) window.__comixBrowsePayloads.push(result);
+						}
 					} catch (e) {}
 					return parsed;
 				}
 			});
-
-			setTimeout(() => submit({ error: 'Timed out waiting for data' }), 60000);
-		});
+		})();
+	`;
+	page.on('request', (request) => {
+		let blocked = false;
+		try {
+			const path = new URL(request.url()).pathname;
+			blocked = ['/api/v1/client-errors', '/api/v1/threads/', '/assets/uploads/'].some((p) => path.startsWith(p));
+		} catch (e) {}
+		const act = blocked ? request.abort() : request.continue();
+		if (act && typeof act.catch === 'function') act.catch(() => {});
 	});
+	await page.setRequestInterception(true);
+	await page.evaluateOnNewDocument(hookCode);
+	await page.reload({ waitUntil: 'domcontentloaded', timeout: 90000 });
+
+	const resultJSON = await page.evaluate(async (pageNumber) => {
+		return await new Promise((resolve) => {
+			let submitted = false;
+			let watchdog = null;
+			const finish = (data) => {
+				if (submitted) return;
+				submitted = true;
+				if (watchdog) clearTimeout(watchdog);
+				clearInterval(poll);
+				resolve(data);
+			};
+			watchdog = setTimeout(() => finish({ error: 'Timed out waiting for browse data' }), 45000);
+			const isMangaItems = (items) => items.length > 0 && items.every((item) => item &&
+				typeof item.title === 'string' &&
+				(typeof item.hid === 'string' || typeof item.url === 'string'));
+			const poll = setInterval(() => {
+				const payloads = window.__comixBrowsePayloads || [];
+				for (const result of payloads) {
+					if (!isMangaItems(result.items)) continue;
+					const meta = result.meta || {};
+					if (typeof meta.page === 'number' && meta.page !== pageNumber) continue;
+					const lastPage = (typeof meta.lastPage === 'number' && meta.lastPage) ||
+						(typeof meta.last_page === 'number' && meta.last_page) || null;
+					finish({
+						items: result.items.map((m) => ({
+							url: (typeof m.url === 'string' && m.url) || ('/title/' + m.hid),
+							title: m.title
+						})),
+						lastPage: lastPage
+					});
+					return;
+				}
+			}, 100);
+		});
+	}, ]] .. page .. [[);
+
 	console.log(JSON.stringify(resultJSON));
 	]]
 end
 
 local function GetChapterFetchScript(mid)
 	return [[
-	const resultJSON = await page.evaluate(async (mangaId) => {
+	const hookCode = `
+		window.__comixChapterPages = [];
+		(() => {
+			const defineProperty = Object.defineProperty;
+			const consider = (holder) => setTimeout(() => {
+				try {
+					if (!holder.meta || !Array.isArray(holder.items)) return;
+					window.__comixChapterPages.push({ items: holder.items, meta: holder.meta });
+				} catch (e) {}
+			});
+			defineProperty(Object.prototype, 'items', {
+				configurable: true,
+				set(value) {
+					defineProperty(this, 'items', {
+						value: value,
+						writable: true,
+						enumerable: true,
+						configurable: true
+					});
+					consider(this);
+				}
+			});
+			Object.defineProperty = function (target, key, descriptor) {
+				const result = defineProperty.apply(this, arguments);
+				if (key === 'items' && descriptor && 'value' in descriptor) consider(target);
+				return result;
+			};
+		})();
+	`;
+	page.on('request', (request) => {
+		let blocked = false;
 		try {
-			const mainScript = document.querySelector('script[type="module"][src*="/dist/main-"]');
-			if (!mainScript) return { error: 'Could not find main bundle script tag' };
+			const path = new URL(request.url()).pathname;
+			blocked = ['/api/v1/client-errors', '/api/v1/threads/', '/assets/uploads/'].some((p) => path.startsWith(p));
+		} catch (e) {}
+		const act = blocked ? request.abort() : request.continue();
+		if (act && typeof act.catch === 'function') act.catch(() => {});
+	});
+	await page.setRequestInterception(true);
+	await page.evaluateOnNewDocument(hookCode);
+	await page.reload({ waitUntil: 'domcontentloaded', timeout: 90000 });
 
-			const mainScriptUrl = mainScript.src;
-			const mainResponse = await fetch(mainScriptUrl);
-			if (!mainResponse.ok) return { error: 'Could not load main bundle' };
-			const mainJavaScript = await mainResponse.text();
-
-			const bundleFiles = Array.from(
-				mainJavaScript.matchAll(/from\s*["']\.\/([^"']+\.js)["']/g),
-				match => match[1]
-			);
-
-			let mangaApi = null;
-			for (const bundleFile of bundleFiles) {
-				const bundle = await import(new URL(bundleFile, mainScriptUrl).href);
-				mangaApi = Object.values(bundle).find(
-					v => v && typeof v === 'object' && typeof v.chapters === 'function'
-				);
-				if (mangaApi) break;
+	const resultJSON = await page.evaluate(async (mangaId) => {
+		let info = null;
+		try {
+			const initialData = document.querySelector('script#initial-data');
+			if (initialData) {
+				const queries = JSON.parse(initialData.textContent).queries || {};
+				for (const key of Object.keys(queries)) {
+					if (key.includes('"detail"')) {
+						info = queries[key];
+						break;
+					}
+				}
 			}
-			if (!mangaApi) return { error: 'Could not find manga API' };
+		} catch (e) {}
 
-			const items = [];
-			let page = 1;
-			while (page <= 200) {
-				const response = await mangaApi.chapters(mangaId, {
-					page: page,
-					limit: 100,
-					order: { number: 'asc' }
-				});
-				
-				const pageItems = response && response.items;
-				if (!Array.isArray(pageItems) || pageItems.length === 0) break;
+		try {
+			return await new Promise((resolve) => {
+				let settled = false;
+				let watchdog = null;
+				const finish = (data) => {
+					if (settled) return;
+					settled = true;
+					if (watchdog) clearTimeout(watchdog);
+					clearInterval(poll);
+					resolve(data);
+				};
+				const fail = (message) => finish({ error: String(message) });
+				const resetWatchdog = () => {
+					if (watchdog) clearTimeout(watchdog);
+					watchdog = setTimeout(() => fail('Timed out waiting for chapter data'), 90000);
+				};
 
-				items.push(...pageItems);
+				const chapterPath = '/title/' + mangaId + '-';
+				const maxPages = 1000;
+				const pageDelayMs = 500;
+				const chapters = [];
+				const isChapter = (item) => item &&
+					typeof item.id === 'number' &&
+					typeof item.number === 'number' &&
+					typeof item.url === 'string' &&
+					item.url.includes(chapterPath);
+				let page = 1;
+				let done = false;
 
-				const meta = (response && (response.meta || response.pagination)) || {};
-				const lastPage = meta.lastPage || meta.last_page || page;
-				if (!(meta.hasNext || page < lastPage)) break;
-				page++;
-			}
-			return { items: items };
+				const navigateToPage = (page) => {
+					const url = new URL(location.href);
+					url.searchParams.set('page', String(page));
+					history.pushState(history.state, '', url);
+					dispatchEvent(new PopStateEvent('popstate', { state: history.state }));
+				};
+
+				const handle = (holder) => {
+					if (done) return;
+					const items = holder.items;
+					const meta = holder.meta;
+					if (!meta || !Array.isArray(items) || !items.every(isChapter)) return;
+					if (items.length === 0 && meta.total !== 0) return;
+					if (typeof meta.page !== 'number' || typeof meta.lastPage !== 'number') {
+						done = true;
+						fail('Chapter list has no page numbers');
+						return;
+					}
+					if (meta.page !== page) return;
+					chapters.push(...items);
+					resetWatchdog();
+					if (!meta.hasNext || page >= Math.min(meta.lastPage, maxPages)) {
+						done = true;
+						const count = new Set(chapters.map((item) => item.id)).size;
+						if (count === meta.total) {
+							chapters.sort((a, b) => (a.number || 0) - (b.number || 0) || (a.id || 0) - (b.id || 0));
+							finish({ items: chapters, info: info });
+						} else {
+							fail('Got ' + count + ' of ' + meta.total + ' chapters');
+						}
+						return;
+					}
+					page++;
+					setTimeout(() => { try { navigateToPage(page); } catch (e) {} }, pageDelayMs);
+				};
+
+				const poll = setInterval(() => {
+					const queue = window.__comixChapterPages;
+					while (queue.length > 0) {
+						handle(queue.shift());
+						if (settled) return;
+					}
+				}, 100);
+				resetWatchdog();
+
+				navigateToPage(1);
+				setTimeout(() => { if (chapters.length === 0 && !done) navigateToPage(2); }, 4000);
+				setTimeout(() => { if (chapters.length === 0 && !done) navigateToPage(1); }, 8000);
+			});
 		} catch (e) {
 			return { error: e.message || String(e) };
 		}
@@ -88,56 +221,118 @@ local function GetChapterFetchScript(mid)
 	]]
 end
 
-local function GetMangaListFetchScript(page)
+local function GetPageFetchScript()
 	return [[
-	const resultJSON = await page.evaluate(async (pageNumber) => {
-		try {
-			const mainScript = document.querySelector('script[type="module"][src*="/dist/main-"]');
-			if (!mainScript) return { error: 'Could not find main bundle script tag' };
-
-			const mainScriptUrl = mainScript.src;
-			const mainResponse = await fetch(mainScriptUrl);
-			if (!mainResponse.ok) return { error: 'Could not load main bundle' };
-			const mainJavaScript = await mainResponse.text();
-
-			const bundleFiles = Array.from(
-				mainJavaScript.matchAll(/from\s*["']\.\/([^"']+\.js)["']/g),
-				match => match[1]
-			);
-
-			let mangaApi = null;
-			for (const bundleFile of bundleFiles) {
-				const bundle = await import(new URL(bundleFile, mainScriptUrl).href);
-				mangaApi = Object.values(bundle).find(
-					v => v && typeof v === 'object' && typeof v.chapters === 'function'
-				);
-				if (mangaApi) break;
-			}
-			if (!mangaApi) return { error: 'Could not find manga API' };
-
-			const response = await mangaApi.list({
-				page: pageNumber,
-				limit: 100,
-				order: { created_at: 'desc' }
+	const hookCode = `
+		window.__comixPagesHolder = null;
+		(() => {
+			const defineProperty = Object.defineProperty;
+			const consider = (holder) => setTimeout(() => {
+				try {
+					const items = holder.items;
+					if (holder.meta || !Array.isArray(items) || items.length === 0) return;
+					if (!items.every((item) => item && typeof item.url === 'string')) return;
+					if (window.__comixPagesHolder) return;
+					window.__comixPagesHolder = { baseUrl: holder.baseUrl, alt: holder.alt, node: holder.node, items: items };
+				} catch (e) {}
 			});
-
-			const items = response && response.items;
-			if (!Array.isArray(items)) return { error: 'Unexpected manga list response' };
-
-			return {
-				items: items.map(m => ({
-					url: m.url,
-					title: m.title
-				})),
-				lastPage: response.meta && response.meta.lastPage
+			defineProperty(Object.prototype, 'items', {
+				configurable: true,
+				set(value) {
+					defineProperty(this, 'items', {
+						value: value,
+						writable: true,
+						enumerable: true,
+						configurable: true
+					});
+					consider(this);
+				}
+			});
+			Object.defineProperty = function (target, key, descriptor) {
+				const result = defineProperty.apply(this, arguments);
+				if (key === 'items' && descriptor && 'value' in descriptor) consider(target);
+				return result;
 			};
-		} catch (e) {
-			return { error: e.message || String(e) };
-		}
-	}, ]] .. page .. [[);
+		})();
+	`;
+	page.on('request', (request) => {
+		let blocked = false;
+		try {
+			const path = new URL(request.url()).pathname;
+			blocked = ['/api/v1/client-errors', '/api/v1/threads/', '/assets/uploads/'].some((p) => path.startsWith(p));
+		} catch (e) {}
+		const act = blocked ? request.abort() : request.continue();
+		if (act && typeof act.catch === 'function') act.catch(() => {});
+	});
+	await page.setRequestInterception(true);
+	await page.evaluateOnNewDocument(hookCode);
+	await page.reload({ waitUntil: 'domcontentloaded', timeout: 90000 });
 
+	const resultJSON = await page.evaluate(async () => {
+		return await new Promise((resolve) => {
+			let submitted = false;
+			let watchdog = null;
+			const finish = (data) => {
+				if (submitted) return;
+				submitted = true;
+				if (watchdog) clearTimeout(watchdog);
+				clearInterval(poll);
+				resolve(data);
+			};
+			watchdog = setTimeout(() => finish({ error: 'Timed out waiting for chapter pages' }), 60000);
+			const poll = setInterval(() => {
+				const holder = window.__comixPagesHolder;
+				if (!holder) return;
+				const base = String(holder.baseUrl || '').replace(/\/$/, '');
+				const links = [];
+				for (let i = 0; i < holder.items.length; i++) {
+					const item = holder.items[i];
+					let url = item.url.startsWith('http') ? item.url : base + '/' + item.url.replace(/^\//, '');
+					const isV3 = (item.s === 1) || url.includes('?v3') || url.includes('&v3');
+					const isLegacy = !isV3 && ((i + 1) % 4 === 0);
+					if (isV3) {
+						if (!url.includes('v3')) {
+							url += (url.includes('?') ? '&' : '?') + 'v3';
+						}
+					} else if (isLegacy) {
+						url += '#scrambled';
+					}
+					links.push(url);
+				}
+				finish({ links: links });
+			}, 100);
+		});
+	});
 	console.log(JSON.stringify(resultJSON));
 	]]
+end
+
+local function DecodeRunnerOutput(output)
+	local json = require 'utils.json'
+	local ok, decoded = pcall(json.decode, output)
+	if ok then return decoded end
+	local candidates = {}
+	for line in output:gmatch('[^\r\n]+') do
+		table.insert(candidates, line)
+	end
+	for i = #candidates, 1, -1 do
+		local ok2, decoded2 = pcall(json.decode, candidates[i])
+		if ok2 and type(decoded2) == 'table' then return decoded2 end
+	end
+	return nil
+end
+
+local function RunBrowserScript(url, js_code)
+	local json = require 'utils.json'
+	local nodejs = require 'utils.nodejs'
+	local output = nodejs.run_html_load_with_js(url, js_code)
+	local decoded = DecodeRunnerOutput(output)
+	if decoded and decoded.error and decoded.error:find('Execution context was destroyed', 1, true) then
+		output = nodejs.run_html_load_with_js(url, js_code)
+		decoded = DecodeRunnerOutput(output)
+	end
+	if decoded then return json.encode(decoded) end
+	return output
 end
 
 local function GetDirectoryPage(page)
@@ -149,7 +344,7 @@ local function GetDirectoryPage(page)
 
 	if output == '' or (now - timestamp) >= 900 then
 		local js_code = GetMangaListFetchScript(page)
-		output = require 'utils.nodejs'.run_html_load_with_js(MODULE.RootURL .. '/browse', js_code)
+		output = RunBrowserScript(MODULE.RootURL .. '/browse?order%5Bcreated_at%5D=desc&page=' .. page, js_code)
 
 		if not json.decode(output).error then
 			MODULE.Storage[key] = output
@@ -333,14 +528,29 @@ end
 function GetInfo()
 	local json = require 'utils.json'
 	local mid = URL:match('/title/([^%-]+)%-')
-	local u = MaybeFillHost(MODULE.RootURL, URL)
 
-	if not HTTP.GET(u) then return net_problem end
+	local now = os.time()
+	local output = MODULE.Storage[mid]
+	local timestamp = tonumber(MODULE.Storage[mid .. '_time']) or 0
 
-	local rc = HTTP.ResultCode
-	if (rc == 403) or (rc == 429) or (rc == 503) then MANGAINFO.Title = 'Cloudflare workaround is required' return no_error end
-	local x = CreateTXQuery(HTTP.Document)
-	local info = json.decode(x.XPathString('//script[@id="initial-data"]')).queries['["manga","detail","' .. mid .. '"]']
+	if output == '' or (now - timestamp) >= 900 then
+		local js_code = GetChapterFetchScript(mid)
+		output = RunBrowserScript(MODULE.RootURL .. URL, js_code)
+
+		if not json.decode(output).error then
+			MODULE.Storage[mid] = output
+			MODULE.Storage[mid .. '_time'] = now
+		end
+	end
+
+	local data = json.decode(output)
+	if data.error then
+		MANGAINFO.Title = 'Error: ' .. data.error
+		print('Error: ' .. data.error)
+		return no_error
+	end
+
+	local info = data.info
 	if not info then return no_error end
 
 	local authors = {}
@@ -376,30 +586,6 @@ function GetInfo()
 	MANGAINFO.Genres    = table.concat(genres, ', ')
 	MANGAINFO.Status    = MangaInfoStatusIfPos(info.status, 'releasing', 'finished', 'on_hiatus', 'discontinued')
 	MANGAINFO.Summary   = info.synopsis
-
-	if info.firstChapterUrl == '' then return no_error end
-
-	local now = os.time()
-	local output = MODULE.Storage[mid]
-	local timestamp = tonumber(MODULE.Storage[mid .. '_time']) or 0
-
-	if output == '' or (now - timestamp) >= 900 then
-		local js_code = GetChapterFetchScript(mid)
-		output = require 'utils.nodejs'.run_html_load_with_js(MODULE.RootURL .. URL, js_code)
-
-		if not json.decode(output).error then
-			MODULE.Storage[mid] = output
-			MODULE.Storage[mid .. '_time'] = now
-		end
-	end
-
-	local data = json.decode(output)
-	local error = data.error
-	if error then
-		MANGAINFO.Title = 'Error: ' .. error
-		print('Error: ' .. error)
-		return no_error
-	end
 
 	local deduplicate  = MODULE.GetOption('deduplicatechapters')
 	local optgroup     = MODULE.GetOption('showscangroup')
@@ -511,41 +697,22 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local interceptor = [[
-		if (parsed && parsed.result && parsed.result.pages) {
-			const res = parsed.result;
-			const links = [];
-			const pages = res.pages;
-			const items = pages.items || (Array.isArray(pages) ? pages : []);
-			let base = (pages.baseUrl || '').replace(/\/$/, '');
-
-			for (let i = 0; i < items.length; i++) {
-				let item = items[i];
-				let url = typeof item === 'string' ? item : item.url;
-				if (!url) continue;
-				let full = url.startsWith('http') ? url : base + '/' + url.replace(/^\//, '');
-				
-				let isV3 = (item.s === 1) || full.includes('?v3') || full.includes('&v3');
-				let isLegacy = !isV3 && ((i + 1) % 4 === 0);
-				
-				if (isV3) {
-					if (!full.includes('v3')) {
-						full += (full.includes('?') ? '&' : '?') + 'v3';
-					}
-				} else if (isLegacy) {
-					full += '#scrambled';
-				}
-				links.push(full);
-			}
-			submit({ links: links });
-		}
-	]]
-
+	local json = require 'utils.json'
 	local output = MODULE.Storage[URL]
 	if output == '' then
-		local js_code = GetNodejsScript(interceptor)
-		output = require 'utils.nodejs'.run_html_load_with_js(MODULE.RootURL .. URL, js_code)
-		MODULE.Storage[URL] = output
+		local js_code = GetPageFetchScript()
+		output = RunBrowserScript(MODULE.RootURL .. URL, js_code)
+
+		if not json.decode(output).error then
+			MODULE.Storage[URL] = output
+		end
+	end
+
+	local ok, decoded = pcall(json.decode, output)
+	if not ok or type(decoded) ~= 'table' or decoded.error then
+		local msg = (ok and type(decoded) == 'table' and decoded.error) or 'unexpected chapter page response'
+		print('Error: ' .. msg)
+		return false
 	end
 
 	CreateTXQuery(output).XPathStringAll('json(*).links()', TASK.PageLinks)
@@ -555,13 +722,6 @@ end
 
 -- Download, decrypt and/or descramble image given the image URL.
 function DownloadImage()
-	local is_legacy_scramble = URL:find('#scrambled', 1, true)
-	local is_comix = URL:find('comix.to', 1, true)
-
-	if is_comix or is_legacy_scramble then
-		HTTP.Headers.Values['Origin'] = MODULE.RootURL
-	end
-
 	if not HTTP.GET(URL) then return false end
 
 	local enc_seed = tonumber(HTTP.Headers.Values['X-Enc-Seed'])
