@@ -47,6 +47,12 @@ begin
   Result := 1;
 end;
 
+function crypto_hmac_md5hex(L: Plua_State): Integer; cdecl;
+begin
+  lua_pushstring(L, HMAC_MD5Hex(GetLuaString(L, 1), GetLuaString(L, 2)));
+  Result := 1;
+end;
+
 function crypto_sha256hex(L: Plua_State): Integer; cdecl;
 begin
   lua_pushstring(L, SHA256Hex(GetLuaString(L, 1)));
@@ -68,6 +74,18 @@ end;
 function crypto_hmac_sha512hex(L: Plua_State): Integer; cdecl;
 begin
   lua_pushstring(L, HMAC_SHA512Hex(GetLuaString(L, 1), GetLuaString(L, 2)));
+  Result := 1;
+end;
+
+function crypto_aesencryptcfb(L: Plua_State): Integer; cdecl;
+begin
+  PushLuaString(L, AESEncryptCFB(GetLuaString(L, 1), GetLuaString(L, 2), GetLuaString(L, 3)));
+  Result := 1;
+end;
+
+function crypto_aesdecryptcfb(L: Plua_State): Integer; cdecl;
+begin
+  PushLuaString(L, AESDecryptCFB(GetLuaString(L, 1), GetLuaString(L, 2), GetLuaString(L, 3)));
   Result := 1;
 end;
 
@@ -271,12 +289,6 @@ begin
   Result := 1;
 end;
 
-function crypto_aescfb(L: Plua_State): Integer; cdecl;
-begin
-  PushLuaString(L, AESCFB(GetLuaString(L, 1), GetLuaString(L, 2), GetLuaString(L, 3)));
-  Result := 1;
-end;
-
 function crypto_aesofb(L: Plua_State): Integer; cdecl;
 begin
   PushLuaString(L, AESOFB(GetLuaString(L, 1), GetLuaString(L, 2), GetLuaString(L, 3)));
@@ -388,7 +400,7 @@ begin
 end;
 
 const
-  cryptomethods: packed array [0..38] of luaL_Reg = (
+  cryptomethods: packed array [0..40] of luaL_Reg = (
     (name: 'EncryptString'; func: @lua_encryptstring),
     (name: 'DecryptString'; func: @lua_decryptstring),
     (name: 'HTMLDecode'; func: @lua_htmldecode),
@@ -396,6 +408,7 @@ const
     (name: 'HexToStr'; func: @crypto_hextostr),
     (name: 'StrToHexStr'; func: @crypto_strtohexstr),
     (name: 'MD5Hex'; func: @crypto_md5hex),
+    (name: 'HMAC_MD5Hex'; func: @crypto_hmac_md5hex),
     (name: 'SHA1Hex'; func: @crypto_sha1hex),
     (name: 'HMAC_SHA1Hex'; func: @crypto_hmac_sha1hex),
     (name: 'SHA256'; func: @crypto_sha256),
@@ -406,6 +419,8 @@ const
     (name: 'HMAC_SHA256Hex'; func: @crypto_hmac_sha256hex),
     (name: 'HMAC_SHA512'; func: @crypto_hmac_sha512),
     (name: 'HMAC_SHA512Hex'; func: @crypto_hmac_sha512hex),
+    (name: 'AESEncryptCFB'; func: @crypto_aesencryptcfb),
+    (name: 'AESDecryptCFB'; func: @crypto_aesdecryptcfb),
     (name: 'AESEncryptCBC'; func: @crypto_aesencryptcbc),
     (name: 'AESDecryptCBC'; func: @crypto_aesdecryptcbc),
     (name: 'AESEncryptCBCSHA256Base64Pkcs7'; func: @crypto_AESEncryptCBCSHA256Base64Pkcs7),
@@ -415,7 +430,6 @@ const
     (name: 'AESEncryptECBPkcs7'; func: @crypto_aesencryptecbpkcs7),
     (name: 'AESDecryptECBPkcs7'; func: @crypto_aesdecryptecbpkcs7),
     (name: 'AESCTR'; func: @crypto_aesctr),
-    (name: 'AESCFB'; func: @crypto_aescfb),
     (name: 'AESOFB'; func: @crypto_aesofb),
     (name: 'RC4'; func: @crypto_rc4),
     (name: 'PBKDF2SHA256'; func: @crypto_pbkdf2sha256),

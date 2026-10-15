@@ -20,14 +20,16 @@ function AESEncryptCBCSHA256Base64Pkcs7(const s, key, iv: String): string;
 function AESDecryptCBCSHA256Base64Pkcs7(const s, key, iv: String): string;
 function AESDecryptCBCMD5Base64ZerosPadding(const s, key, iv: String): String;
 function AESDecryptCBCHexBase64ZerosPadding(const s, key, iv: String): String;
+function AESEncryptCFB(const s, key, iv: String): String;
+function AESDecryptCFB(const s, key, iv: String): String;
 function AESEncryptCBC(const s, key, iv: String): String;
 function AESDecryptCBC(const s, key, iv: String): String;
 function AESEncryptECBPkcs7(const s, key: String): String;
 function AESDecryptECBPkcs7(const s, key: String): String;
 function AESCTR(const s, key, iv: String): String;
-function AESCFB(const s, key, iv: String): String;
 function AESOFB(const s, key, iv: String): String;
 function MD5Hex(const s: String): String;
+function HMAC_MD5Hex(const s, key: String): String;
 function RC4(const s, key: String): String;
 function PBKDF2SHA256(const password, salt: String; iterations, dkLen: Integer): String;
 function EncodeBase64URL(const s: String): String;
@@ -53,13 +55,30 @@ function SecretStream_Pull(var state: String; const chunk: String; var msg: Stri
 
 implementation
 
+function HexDigit(c: Char): Integer;
+begin
+  Result := 0;
+  case c of
+    '0'..'9': Result := Ord(c) - Ord('0');
+    'a'..'f': Result := Ord(c) - Ord('a') + 10;
+    'A'..'F': Result := Ord(c) - Ord('A') + 10;
+  end;
+end;
+
 function HexToStr(const h: String): String;
 var
-  i: Integer;
+  i, n: Integer;
 begin
-  SetLength(Result,Length(h) div 2);
-  for i:=1 to Length(Result) do
-    Result[i]:=Char(StrToInt('$'+Copy(h,(i*2)-1,2)));
+  Result := '';
+  n := Length(h);
+  if (n = 0) or ((n and 1) <> 0) then
+    Exit;
+  for i := 1 to n do
+    if not (h[i] in ['0'..'9', 'a'..'f', 'A'..'F']) then
+      Exit;
+  SetLength(Result, n div 2);
+  for i := 1 to Length(Result) do
+    Result[i] := Char((HexDigit(h[(i * 2) - 1]) shl 4) or HexDigit(h[i * 2]));
 end;
 
 procedure HexToBytes(const h: String; var o :TBytes);
@@ -125,6 +144,7 @@ var
 begin
   Result := '';
   if (s = '') or (key = '') or (iv = '') then Exit;
+  if Length(iv) <> 32 then Exit;
 
   with TDCP_rijndael.Create(nil) do
     try
@@ -152,6 +172,7 @@ var
 begin
   Result := '';
   if (s = '') or (key = '') or (iv = '') then Exit;
+  if Length(iv) <> 32 then Exit;
 
   with TDCP_rijndael.Create(nil) do
     try
@@ -164,6 +185,100 @@ begin
         DecryptCBC(data[1], Result[1], Length(data));
         Burn;
         Result := Pkcs7RemovePad(Result);
+      except
+        Result := '';
+      end;
+    finally
+      Free;
+    end;
+end;
+
+function AESEncryptCFB(const s, key, iv: String): String;
+var
+  keyBytes: TBytes;
+  ivBytes: array[0..15] of Byte;
+  Feedback: array[0..15] of Byte;
+  Keystream: array[0..15] of Byte;
+  i, j, n: Integer;
+begin
+  Result := '';
+  if (s = '') or (key = '') or (iv = '') then Exit;
+
+  SetLength(keyBytes, Length(key));
+  for i := 0 to Length(key) - 1 do
+    keyBytes[i] := Byte(key[i + 1]);
+
+  FillChar(ivBytes, SizeOf(ivBytes), 0);
+  for i := 0 to Min(15, Length(iv) - 1) do
+    ivBytes[i] := Byte(iv[i + 1]);
+
+  Move(ivBytes[0], Feedback[0], 16);
+  SetLength(Result, Length(s));
+
+  with TDCP_rijndael.Create(nil) do
+    try
+      try
+        Init(keyBytes[0], Length(keyBytes) * 8, nil);
+        i := 0;
+        while i < Length(s) do
+        begin
+          EncryptECB(Feedback, Keystream);
+          n := Min(16, Length(s) - i);
+          for j := 0 to n - 1 do
+          begin
+            Result[i + j + 1] := Char(Byte(s[i + j + 1]) xor Keystream[j]);
+            Feedback[j] := Byte(Result[i + j + 1]);
+          end;
+          Inc(i, n);
+        end;
+        Burn;
+      except
+        Result := '';
+      end;
+    finally
+      Free;
+    end;
+end;
+
+function AESDecryptCFB(const s, key, iv: String): String;
+var
+  keyBytes: TBytes;
+  ivBytes: array[0..15] of Byte;
+  Feedback: array[0..15] of Byte;
+  Keystream: array[0..15] of Byte;
+  i, j, n: Integer;
+begin
+  Result := '';
+  if (s = '') or (key = '') or (iv = '') then Exit;
+
+  SetLength(keyBytes, Length(key));
+  for i := 0 to Length(key) - 1 do
+    keyBytes[i] := Byte(key[i + 1]);
+
+  FillChar(ivBytes, SizeOf(ivBytes), 0);
+  for i := 0 to Min(15, Length(iv) - 1) do
+    ivBytes[i] := Byte(iv[i + 1]);
+
+  Move(ivBytes[0], Feedback[0], 16);
+  SetLength(Result, Length(s));
+
+  with TDCP_rijndael.Create(nil) do
+    try
+      try
+        Init(keyBytes[0], Length(keyBytes) * 8, nil);
+        i := 0;
+        while i < Length(s) do
+        begin
+          EncryptECB(Feedback, Keystream);
+          n := Min(16, Length(s) - i);
+          for j := 0 to n - 1 do
+          begin
+            Result[i + j + 1] := Char(Byte(s[i + j + 1]) xor Keystream[j]);
+            Feedback[j] := Byte(s[i + j + 1]);
+          end;
+          Inc(i, n);
+        end;
+        Burn;
       except
         Result := '';
       end;
@@ -238,9 +353,12 @@ end;
 
 function AESDecryptCBCMD5Base64ZerosPadding(const s, key, iv: String): String;
 begin
+  Result := '';
   if (s = '') or (key = '') or (iv = '') then Exit;
 
   Result := AESDecryptCBC(DecodeStringBase64(s), MD5Hex(key), iv);
+  while (Length(Result) > 0) and (Result[Length(Result)] = #0) do
+    SetLength(Result, Length(Result) - 1);
 end;
 
 function AESDecryptCBCHexBase64ZerosPadding(const s, key, iv: String): String;
@@ -250,6 +368,7 @@ var
 begin
   Result := '';
   if (s = '') or (key = '') or (iv = '') then Exit;
+  if Length(iv) <> 32 then Exit;
 
   HexToBytes(key, keyBytes);
   HexToBytes(iv, ivBytes);
@@ -272,7 +391,7 @@ begin
     end;
 end;
 
-function MD5Hex(const s: String): String;
+function MD5Raw(const s: String): String;
 var
   h: array[0..15] of Byte;
 begin
@@ -284,18 +403,81 @@ begin
     finally
       Free;
     end;
-  Result := LowerCase(StrToHexStr(BytesToString(h)));
+  SetString(Result, PChar(@h[0]), 16);
+end;
+
+function MD5Hex(const s: String): String;
+begin
+  Result := LowerCase(StrToHexStr(MD5Raw(s)));
+end;
+
+function HMAC_MD5Hex(const s, key: String): String;
+const
+  BLOCK_SIZE = 64;
+var
+  k: String;
+  ipad, opad: array[0..BLOCK_SIZE - 1] of Byte;
+  inner, outer: array[0..15] of Byte;
+  i: Integer;
+  mac: String;
+begin
+  if Length(key) > BLOCK_SIZE then
+    k := MD5Raw(key)
+  else
+    k := key;
+
+  for i := 0 to BLOCK_SIZE - 1 do
+  begin
+    if i < Length(k) then
+    begin
+      ipad[i] := Byte(k[i + 1]) xor $36;
+      opad[i] := Byte(k[i + 1]) xor $5C;
+    end
+    else
+    begin
+      ipad[i] := $36;
+      opad[i] := $5C;
+    end;
+  end;
+
+  with TDCP_md5.Create(nil) do
+    try
+      Init;
+      Update(ipad[0], BLOCK_SIZE);
+      Update(s[1], Length(s));
+      Final(inner);
+    finally
+      Free;
+    end;
+
+  with TDCP_md5.Create(nil) do
+    try
+      Init;
+      Update(opad[0], BLOCK_SIZE);
+      Update(inner[0], 16);
+      Final(outer);
+    finally
+      Free;
+    end;
+
+  SetString(mac, PChar(@outer[0]), 16);
+  Result := LowerCase(StrToHexStr(mac));
 end;
 
 function RC4(const s, key: String): String;
 begin
   Result := '';
-  if (s = '') or (key = '') then Exit;
+  if (s = '') or (key = '') or (Length(key) > 256) then Exit;
 
   SetLength(Result, Length(s));
   with TDCP_rc4.Create(nil) do
   try
-    Init(key[1], Length(key) * 8, nil);
+    try
+      Init(key[1], Length(key) * 8, nil);
+    except
+      Result := '';
+      Exit;
+    end;
     Encrypt(s[1], Result[1], Length(s));
     Burn;
   finally
@@ -303,12 +485,10 @@ begin
   end;
 end;
 
-function SHA1Hex(const s: String): String;
+function SHA1Raw(const s: String): String;
 var
   digest: array[0..19] of Byte;
 begin
-  Result := '';
-  if s = '' then Exit;
   with TDCP_sha1.Create(nil) do
     try
       Init;
@@ -317,7 +497,12 @@ begin
     finally
       Free;
     end;
-  Result := LowerCase(StrToHexStr(BytesToString(digest)));
+  SetString(Result, PChar(@digest[0]), 20);
+end;
+
+function SHA1Hex(const s: String): String;
+begin
+  Result := LowerCase(StrToHexStr(SHA1Raw(s)));
 end;
 
 function HMAC_SHA1Hex(const s, key: String): String;
@@ -330,11 +515,8 @@ var
   i: Integer;
   innerStr: String;
 begin
-  Result := '';
-  if (s = '') or (key = '') then Exit;
-
   if Length(key) > BLOCK_SIZE then
-    k := SHA1Hex(key)
+    k := SHA1Raw(key)
   else
     k := key;
 
@@ -402,12 +584,9 @@ const
 var
   k: String;
   ipad, opad: array[0..BLOCK_SIZE - 1] of Byte;
-  inner: array[0..31] of Byte;
-  outer: array[0..31] of Byte;
+  inner, outer: array[0..31] of Byte;
   i: Integer;
 begin
-  if (s = '') or (key = '') then Exit;
-
   if Length(key) > BLOCK_SIZE then
     k := SHA256(key)
   else
@@ -452,8 +631,6 @@ end;
 
 function HMAC_SHA256Hex(const s, key: String): String;
 begin
-  if (s = '') or (key = '') then Exit;
-
   Result := LowerCase(StrToHexStr(HMAC_SHA256(s, key)));
 end;
 
@@ -483,12 +660,9 @@ const
 var
   k: String;
   ipad, opad: array[0..BLOCK_SIZE - 1] of Byte;
-  inner: array[0..63] of Byte;
-  outer: array[0..63] of Byte;
+  inner, outer: array[0..63] of Byte;
   i: Integer;
 begin
-  if (s = '') or (key = '') then Exit;
-
   if Length(key) > BLOCK_SIZE then
     k := SHA512(key)
   else
@@ -533,15 +707,13 @@ end;
 
 function HMAC_SHA512Hex(const s, key: String): String;
 begin
-  if (s = '') or (key = '') then Exit;
-
   Result := LowerCase(StrToHexStr(HMAC_SHA512(s, key)));
 end;
 
 function AESEncryptECBPkcs7(const s, key: String): String;
 var
   keyBytes: TBytes;
-  i: Integer;
+  i, n: Integer;
   padded: String;
 begin
   Result := '';
@@ -557,7 +729,9 @@ begin
       try
         Init(keyBytes[0], Length(keyBytes) * 8, nil);
         SetLength(Result, Length(padded));
-        EncryptECB(padded[1], Result[1]);
+        n := Length(padded) div 16;
+        for i := 0 to n - 1 do
+          EncryptECB(padded[i * 16 + 1], Result[i * 16 + 1]);
         Burn;
       except
         Result := '';
@@ -570,10 +744,11 @@ end;
 function AESDecryptECBPkcs7(const s, key: String): String;
 var
   keyBytes: TBytes;
-  i: Integer;
+  i, n: Integer;
 begin
   Result := '';
   if (s = '') or (key = '') then Exit;
+  if (Length(s) mod 16) <> 0 then Exit;
 
   SetLength(keyBytes, Length(key));
   for i := 0 to Length(key) - 1 do
@@ -584,7 +759,9 @@ begin
       try
         Init(keyBytes[0], Length(keyBytes) * 8, nil);
         SetLength(Result, Length(s));
-        DecryptECB(s[1], Result[1]);
+        n := Length(s) div 16;
+        for i := 0 to n - 1 do
+          DecryptECB(s[i * 16 + 1], Result[i * 16 + 1]);
         Burn;
         Result := Pkcs7RemovePad(Result);
       except
@@ -643,53 +820,6 @@ begin
           end;
 
           Inc(i, 16);
-        end;
-        Burn;
-      except
-        Result := '';
-      end;
-    finally
-      Free;
-    end;
-end;
-
-function AESCFB(const s, key, iv: String): String;
-var
-  keyBytes: TBytes;
-  ivBytes: array[0..15] of Byte;
-  Feedback: array[0..15] of Byte;
-  Keystream: array[0..15] of Byte;
-  i, j, n: Integer;
-begin
-  Result := '';
-  if (s = '') or (key = '') or (iv = '') then Exit;
-
-  SetLength(keyBytes, Length(key));
-  for i := 0 to Length(key) - 1 do
-    keyBytes[i] := Byte(key[i + 1]);
-
-  FillChar(ivBytes, SizeOf(ivBytes), 0);
-  for i := 0 to Min(15, Length(iv) - 1) do
-    ivBytes[i] := Byte(iv[i + 1]);
-
-  Move(ivBytes[0], Feedback[0], 16);
-  SetLength(Result, Length(s));
-
-  with TDCP_rijndael.Create(nil) do
-    try
-      try
-        Init(keyBytes[0], Length(keyBytes) * 8, nil);
-        i := 0;
-        while i < Length(s) do
-        begin
-          EncryptECB(Feedback, Keystream);
-          n := Min(16, Length(s) - i);
-          for j := 0 to n - 1 do
-          begin
-            Result[i + j + 1] := Char(Byte(s[i + j + 1]) xor Keystream[j]);
-            Feedback[j] := Byte(Result[i + j + 1]);
-          end;
-          Inc(i, n);
         end;
         Burn;
       except
@@ -945,7 +1075,12 @@ begin
 
   Cipher := TDCP_rijndael.Create(nil);
   try
-    Cipher.Init(keyBytes[0], Length(keyBytes) * 8, nil);
+    try
+      Cipher.Init(keyBytes[0], Length(keyBytes) * 8, nil);
+    except
+      Result := '';
+      Exit;
+    end;
     Cipher.EncryptECB(ZeroBlock, H);
 
     if Length(iv) = 12 then
@@ -1014,7 +1149,12 @@ begin
 
   Cipher := TDCP_rijndael.Create(nil);
   try
-    Cipher.Init(keyBytes[0], Length(keyBytes) * 8, nil);
+    try
+      Cipher.Init(keyBytes[0], Length(keyBytes) * 8, nil);
+    except
+      Result := '';
+      Exit;
+    end;
     Cipher.EncryptECB(ZeroBlock, H);
 
     if Length(iv) = 12 then
