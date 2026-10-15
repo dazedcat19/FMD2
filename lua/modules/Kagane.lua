@@ -18,7 +18,7 @@ local function SetRequestHeaders()
 	if token == '' or now > expiry then
 		HTTP.Reset()
 
-		if not HTTP.POST(MODULE.RootURL .. '/api/integrity') then return net_problem end
+		if not HTTP.POST(MODULE.RootURL .. '/api/integrity') then return false end
 
 		local body = HTTP.Document.ToString()
 		MODULE.Storage['token'] = body:match('"token":"(.-)"')
@@ -95,7 +95,7 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local u = MODULE.RootURL .. API_URL .. URL
+	local u = MODULE.RootURL .. API_URL .. '/series/' .. URL:match('(%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x)$')
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -115,14 +115,29 @@ function GetInfo()
 		MANGAINFO.Title = MANGAINFO.Title .. ' (' .. edition .. ')'
 	end
 
+	u = u .. '/books/index?fields=List'
+
+	if not HTTP.GET(u) then return net_problem end
+
 	local optgroup = MODULE.GetOption('showscangroup')
 	local titlemode = MODULE.GetOption('chaptertitle')
+	local data = require 'utils.json'.decode(HTTP.Document.ToString())
+	table.sort(data.books or {}, function(a, b)
+		return (a[2] or 0) < (b[2] or 0)
+	end)
 
-	for v in x.XPath('series_books?*', info).Get() do
-		local vol   = v.GetProperty('volume_no').ToString()
-		local chap  = v.GetProperty('chapter_no').ToString()
-		local title = v.GetProperty('title').ToString()
-		local group = x.XPathString('string-join(groups?*?title, ", ")', v)
+	for _, v in ipairs(data.books or {}) do
+		local vol = v[4] or ''
+		local chap = v[3] or ''
+		local title = v[7] or ''
+
+		local group = ''
+		for _, ix in ipairs(v[5] or {}) do
+			local g = data.groups and data.groups[ix + 1]
+			if g then
+				group = group .. ((group ~= '') and ', ' or '') .. (g.title or '')
+			end
+		end
 
 		local volume  = (vol ~= '') and ('Vol. ' .. vol .. ' ') or ''
 		local chapter = (chap ~= '') and ('Ch. ' .. chap) or ''
@@ -138,14 +153,10 @@ function GetInfo()
 
 		local scanlator = ''
 		if optgroup then
-			if group and group ~= '' then
-				scanlator = ' [' .. group .. ']'
-			else
-				scanlator = ' [No Group]'
-			end
+			scanlator = (group ~= '') and (' [' .. group .. ']') or ' [No Group]'
 		end
 
-		MANGAINFO.ChapterLinks.Add(v.GetProperty('book_id').ToString())
+		MANGAINFO.ChapterLinks.Add(v[1] or '')
 		MANGAINFO.ChapterNames.Add(name .. scanlator)
 	end
 
@@ -164,11 +175,11 @@ function GetPageNumber()
 	if not HTTP.POST(u) then return false end
 
 	local x = CreateTXQuery(HTTP.Document)
-	local info = x.XPath('json(*)')
-	local CDN_URL = x.XPathString('cache_url', info)
-	local token = x.XPathString('access_token', info)
+	local data = x.XPath('json(*)')
+	local CDN_URL = x.XPathString('cache_url', data)
+	local token = x.XPathString('access_token', data)
 	local datasaver = MODULE.GetOption('datasaver')
-    for v in x.XPath('manifest?pages?*', info).Get() do
+    for v in x.XPath('manifest?pages?*', data).Get() do
 		TASK.PageLinks.Add(string.format('%s/api/v2/books/page%s/%s.%s?token=%s&is_datasaver=%s', 
 		CDN_URL, URL, v.GetProperty('page_id').ToString(), v.GetProperty('ext').ToString(), token, datasaver))
     end
@@ -191,7 +202,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '01528d6f798b4a07ac3f074a5441ec7f'
 	m.Name                     = 'Kagane'
-	m.RootURL                  = 'https://kagane.to'
+	m.RootURL                  = 'https://kagane.org'
 	m.Category                 = 'English'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
