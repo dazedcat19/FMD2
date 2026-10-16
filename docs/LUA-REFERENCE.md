@@ -11,6 +11,8 @@
 7. [Common Patterns](#common-patterns)
 8. [Examples](#examples)
 9. [Development Tips](#development-tips)
+10. [File Locations](#file-locations)
+11. [Additional Resources](#additional-resources)
 
 ---
 
@@ -18,7 +20,9 @@
 
 **Free Manga Downloader 2 (FMD2)** is a manga downloading application written in Object Pascal (Lazarus) that uses Lua scripts for website modules. The application supports 600+ manga websites through a modular Lua-based plugin system.
 
-**Lua Version:** 5.4.8 (also supports LuaJIT)  
+**Modules:** 600+ website modules
+**Templates:** 35+ reusable templates
+**Lua Version:** 5.4.8 (also supports LuaJIT)
 **JavaScript Engine:** Duktape 2.5.0 (embedded) + Node.js (optional)
 
 ---
@@ -30,6 +34,29 @@
 Every Lua module follows a consistent structure:
 
 ```lua
+----------------------------------------------------------------------------------------------------
+-- Local Constants (optional)
+----------------------------------------------------------------------------------------------------
+
+local API_URL = 'https://api.website.com'
+local Template = require 'templates.Madara'
+
+----------------------------------------------------------------------------------------------------
+-- Event Functions
+----------------------------------------------------------------------------------------------------
+
+function GetNameAndLink()
+    -- Fetch manga list and populate LINKS and NAMES
+end
+
+function GetInfo()
+    -- Fetch manga details and populate MANGAINFO
+end
+
+function GetPageNumber()
+    -- Fetch chapter pages and populate TASK.PageLinks
+end
+
 ----------------------------------------------------------------------------------------------------
 -- Module Initialization
 ----------------------------------------------------------------------------------------------------
@@ -53,52 +80,61 @@ function Init()
     -- m.AccountSupport           = true
     -- m.SortedList               = true
     -- m.TotalDirectory           = number_of_categories
-    return m
-end
-
-----------------------------------------------------------------------------------------------------
--- Local Constants (optional)
-----------------------------------------------------------------------------------------------------
-
-local API_URL = 'https://api.website.com'
-local Template = require 'templates.Madara'
-
-----------------------------------------------------------------------------------------------------
--- Event Functions
-----------------------------------------------------------------------------------------------------
-
-function GetNameAndLink()
-    -- Fetch manga list and populate LINKS and NAMES
-end
-
-function GetInfo()
-    -- Fetch manga details and populate MANGAINFO
-end
-
-function GetPageNumber()
-    -- Fetch chapter pages and populate TASK.PageLinks
 end
 ```
 
-### Required Event Handlers
+### Event Handler Reference
 
-| Handler | Purpose | Return Values |
-|---------|---------|---------------|
-| `GetNameAndLink` | Populate manga list | `no_error` (0), `net_problem` (1) |
-| `GetInfo` | Fetch manga details | `no_error` (0), `net_problem` (1), `information_not_found` (2) |
-| `GetPageNumber` | Fetch chapter pages | `true` (success), `false` (failure) |
+Register a handler in `Init()` by assigning the **function name as a string** to
+the matching `On...` property (for example `m.OnGetInfo = 'GetInfo'`). Each
+handler is explained in
+[Event Handlers - Complete Workflow](#event-handlers---complete-workflow).
 
-### Optional Event Handlers
+| Handler property | Required | Returns | Injected objects | Injected globals |
+|------------------|----------|---------|------------------|------------------|
+| `OnGetNameAndLink` | **Yes** | status code | `HTTP`, `LINKS`, `NAMES`, `UPDATELIST` | `URL` |
+| `OnGetInfo` | **Yes** | status code | `HTTP`, `MANGAINFO` | `URL` |
+| `OnGetPageNumber` | **Yes** | `true` / `false` | `HTTP`, `TASK` | `URL` |
+| `OnBeforeUpdateList` | No | `true` = continue, `false` = cancel | `UPDATELIST` | none |
+| `OnGetDirectoryPageNumber` | No | status code | `HTTP`, `UPDATELIST` | `PAGENUMBER`, `WORKPTR` |
+| `OnAfterUpdateList` | No | `true` / `false` | `UPDATELIST` | none |
+| `OnTaskStart` | No | `true` = continue, `false` = cancel | `TASK` | none |
+| `OnGetImageURL` | No | `true` / `false` | `HTTP`, `TASK` | `URL`, `WORKID` |
+| `OnBeforeDownloadImage` | No | `true` = continue, `false` = skip image | `HTTP`, `TASK` | `URL`, `WORKID` |
+| `OnDownloadImage` | No | `true` / `false` | `HTTP`, `TASK` | `URL`, `WORKID` |
+| `OnSaveImage` | No | filename (string) | `HTTP` | `PATH`, `FILENAME` |
+| `OnAfterImageSaved` | No | `true` / `false` | none | `FILENAME` |
+| `OnLogin` | No | `true` / `false` | `HTTP` | account status constants |
+| `OnAccountState` | No | `true` / `false` | none | account status constants |
+| `OnCheckSite` | No | `true` / `false` | none | account status constants |
 
-| Handler | Purpose | Return Values |
-|---------|---------|---------------|
-| `GetDirectoryPageNumber` | Get total pages in manga list | `no_error`, `net_problem` |
-| `BeforeDownloadImage` | Set headers before image download | `true`, `false` |
-| `DownloadImage` | Custom image download logic | `true`, `false` |
-| `AfterImageSaved` | Post-process saved images | `true`, `false` |
-| `GetImageURL` | Extract image URL from chapter page | `true`, `false` |
-| `Login` | Handle user authentication | `true`, `false` |
-| `TaskStart` | Initialize download task | `true`, `false` |
+"Status code" means one of the [status constants](#status-constants-and-return-values).
+`Init` has no injected objects; it creates the module with `NewWebsiteModule()`.
+
+> [!IMPORTANT]
+> - `MODULE` is **always available** in every handler except `Init`.
+> - `HTTP` is **not available** in `OnAccountState`, `OnCheckSite`, `OnAfterImageSaved` and `OnTaskStart`, so those handlers cannot make network requests.
+> - `URL` means different things in different handlers; see [URL](#url-global-variable).
+> - Status constants (`no_error`, `net_problem`, ...) are available wherever the table lists a status code or account status constants.
+
+### Status Constants and Return Values
+
+```lua
+-- Status codes (returned by GetNameAndLink, GetInfo, GetDirectoryPageNumber)
+no_error              = 0  -- Success
+net_problem           = 1  -- Network error
+information_not_found = 2  -- Content not found
+
+-- Boolean returns (all other handlers)
+true   -- Success / continue
+false  -- Failure / cancel
+
+-- Account status (MODULE.Account.Status)
+asUnknown  = -1  -- Unknown status
+asChecking = 0   -- Validating credentials
+asValid    = 1   -- Credentials valid
+asInvalid  = 2   -- Credentials invalid
+```
 
 ---
 
@@ -113,7 +149,7 @@ HTTP request handler for making web requests.
 ```lua
 -- Basic usage
 if HTTP.GET('https://example.com') then
-    local html = HTTP.Document
+    local html = HTTP.Document.ToString()
 end
 
 -- POST request
@@ -140,6 +176,8 @@ HTTP.XHR('https://example.com/ajax')
 | `HTTP.Headers` | TStringList | Request headers |
 | `HTTP.Cookies` | TStringList | Cookies |
 | `HTTP.EnabledCookies` | Boolean | Enable cookie handling |
+| `HTTP.ResultString` | String | HTTP status text ("OK", "Not Found", etc.) |
+| `HTTP.LastURL` | String | URL of the last completed request |
 
 #### Methods
 
@@ -149,11 +187,14 @@ HTTP.XHR('https://example.com/ajax')
 | `HTTP.POST(url, data)` | Perform HTTP POST request |
 | `HTTP.XHR(url)` | Perform XMLHttpRequest |
 | `HTTP.HEAD(url)` | Perform HTTP HEAD request |
+| `HTTP.Request(url, method)` | Perform a request with an arbitrary HTTP method |
 | `HTTP.Reset()` | Reset HTTP state |
 | `HTTP.ResetBasic()` | Reset basic settings |
 | `HTTP.ClearCookies()` | Clear all cookies |
 | `HTTP.GetCookies()` | Get cookies string |
-| `HTTP.AddServerCookies(domain, cookie_string)` | Add cookies |
+| `HTTP.AddServerCookies(url, cookie_string)` | Add cookies to persistent storage for the URL's domain (first argument may be omitted) |
+| `HTTP.ClearCookiesStorage()` | Clear the module's persistent cookie storage |
+| `HTTP.ParseServerCookies()` | Parse `Set-Cookie` headers from the last response into cookie storage |
 | `HTTP.SetProxy(host, port, username, password, proxyType)` | Configure proxy |
 
 ---
@@ -166,16 +207,16 @@ Current module information and settings. This is the central object for module c
 function Init()
     local m = NewWebsiteModule()
     m.ID = 'unique_hex_identifier'
-    
+
     -- Configure module properties
     m.Name = 'Website Name'
     m.RootURL = 'https://website.com'
     m.Category = 'English'
-    
+
     -- Add user options
     m.AddOptionSpinEdit('timeout', 'Timeout (seconds)', 60)
     m.AddOptionCheckBox('showgroup', 'Show group name', false)
-    
+
     return m
 end
 
@@ -183,12 +224,10 @@ function GetNameAndLink()
     -- Access module properties
     local timeout = MODULE.GetOption('timeout')
     local root = MODULE.RootURL
-    
-    if HTTP.GET(root .. '/manga') then
-        -- process
-        return no_error
-    end
-    return net_problem
+
+    if not HTTP.GET(root .. '/manga') then return net_problem end
+    -- process
+    return no_error
 end
 ```
 
@@ -220,25 +259,8 @@ end
 
 #### Event Handler Properties
 
-These properties are set in `Init()` to register event handler functions:
-
-| Property | Purpose | When Called |
-|----------|---------|-------------|
-| `OnBeforeUpdateList` | Before manga list update | Before updating manga list from website |
-| `OnAfterUpdateList` | After manga list update | After updating manga list from website |
-| `OnGetDirectoryPageNumber` | Get total pages | When determining manga list pagination |
-| `OnGetNameAndLink` | Get manga list | When fetching manga list for browsing |
-| `OnGetInfo` | Get manga details | When fetching manga information |
-| `OnTaskStart` | Start download task | When starting a chapter download |
-| `OnGetPageNumber` | Get chapter pages | When fetching chapter page count |
-| `OnGetImageURL` | Get image URL | When extracting image URL from page |
-| `OnBeforeDownloadImage` | Before image download | Before downloading each image |
-| `OnDownloadImage` | Download image | Custom image download logic |
-| `OnSaveImage` | Save image file | When saving image to disk |
-| `OnAfterImageSaved` | After image saved | After image is saved to disk |
-| `OnLogin` | User login | When authenticating user account |
-| `OnAccountState` | Check account | When verifying account status |
-| `OnCheckSite` | Check site | When checking if site is accessible |
+The `On...` properties that register event handlers are listed in the
+[Event Handler Reference](#event-handler-reference).
 
 #### Methods
 
@@ -265,11 +287,8 @@ These properties are set in `Init()` to register event handler functions:
 | `MODULE.Account.Cookies` | String | Read/Write | Account cookies |
 | `MODULE.Account.Guardian` | TCriticalSection | Read-only | Thread sync object |
 
-**Account Status Values:**
-- `asUnknown` (-1) - Unknown status
-- `asChecking` (0) - Validating credentials
-- `asValid` (1) - Credentials valid
-- `asInvalid` (2) - Credentials invalid
+For the `Status` values (`asUnknown`, `asChecking`, `asValid`, `asInvalid`) see
+[Status Constants and Return Values](#status-constants-and-return-values).
 
 ---
 
@@ -277,62 +296,18 @@ These properties are set in `Init()` to register event handler functions:
 
 This section explains how FMD2 calls your module's event handlers and in what order.
 
-#### Injected Objects Reference
-
-Each event handler has different objects and globals injected by FMD2. Here's a complete reference:
-
-| Event Handler | Injected Objects | Injected Globals |
-|--------------|------------------|------------------|
-| `Init` | None (use `NewWebsiteModule()`) | None |
-| `OnBeforeUpdateList` | `UPDATELIST` | None |
-| `OnAfterUpdateList` | `UPDATELIST` | None |
-| `OnGetDirectoryPageNumber` | `HTTP`, `UPDATELIST` | `PAGENUMBER`, `WORKPTR`, status constants |
-| `OnGetNameAndLink` | `HTTP`, `LINKS`, `NAMES`, `UPDATELIST` | `URL`, status constants |
-| `OnGetInfo` | `HTTP`, `MANGAINFO` | `URL`, status constants |
-| `OnTaskStart` | `TASK` | None |
-| `OnGetPageNumber` | `HTTP`, `TASK` | `URL` |
-| `OnGetImageURL` | `HTTP`, `TASK` | `URL`, `WORKID` |
-| `OnBeforeDownloadImage` | `HTTP`, `TASK` | `URL`, `WORKID` |
-| `OnDownloadImage` | `HTTP`, `TASK` | `URL`, `WORKID` |
-| `OnSaveImage` | `HTTP` | `PATH`, `FILENAME` |
-| `OnAfterImageSaved` | None | `FILENAME` |
-| `OnLogin` | `HTTP` | Account status constants |
-| `OnAccountState` | None | Account status constants |
-| `OnCheckSite` | None | Account status constants |
-
-**Status Constants:**
-- `no_error` (0), `net_problem` (1), `information_not_found` (2)
-- `asUnknown` (-1), `asChecking` (0), `asValid` (1), `asInvalid` (2)
-
-**Important Notes:**
-- `MODULE` object is **always available** in all event handlers (except `Init`)
-- `HTTP` is **NOT available** in: `OnAccountState`, `OnCheckSite`, `OnAfterImageSaved`, `OnTaskStart`
-- `URL` global contains different things depending on context (page number, manga URL, chapter URL, etc.)
+Which objects and globals each handler receives is listed in the
+[Event Handler Reference](#event-handler-reference).
 
 ---
 
 #### 1. Module Initialization (`Init`)
 
-**When:** When FMD2 starts and loads Lua modules  
-**Called by:** Module loader during application startup  
-**Purpose:** Register module metadata and event handlers  
+**When:** When FMD2 starts and loads Lua modules
+**Called by:** Module loader during application startup
+**Purpose:** Register module metadata and event handlers
 
-```lua
-function Init()
-    local m = NewWebsiteModule()
-    m.ID = 'unique_hex_id'
-    m.Name = 'Site Name'
-    m.RootURL = 'https://site.com'
-    m.Category = 'English'
-    
-    -- Register event handlers
-    m.OnGetNameAndLink = 'GetNameAndLink'
-    m.OnGetInfo = 'GetInfo'
-    m.OnGetPageNumber = 'GetPageNumber'
-    
-    return m
-end
-```
+See the [Basic Module Template](#basic-module-template) for a complete `Init()`.
 
 **Workflow:**
 1. FMD2 scans `lua/modules/` folder for `.lua` files
@@ -347,9 +322,8 @@ end
 
 #### 2. Before Update List (`OnBeforeUpdateList`)
 
-**When:** Before manga list update begins (optional)  
-**Called by:** UpdateListManagerThread  
-**Return:** `true` to continue, `false` to cancel  
+**When:** Before manga list update begins (optional)
+**Called by:** UpdateListManagerThread
 
 ```lua
 function BeforeUpdateList()
@@ -368,69 +342,59 @@ end
 
 #### 3. Get Directory Page Number (`OnGetDirectoryPageNumber`)
 
-**When:** Determining total pages in manga list  
-**Called by:** UpdateListManagerThread  
-**Return:** `no_error`, `net_problem`, or `information_not_found`  
-**Sets:** `PAGENUMBER` global variable  
+**When:** Determining total pages in manga list
+**Called by:** UpdateListManagerThread
+**Sets:** `PAGENUMBER` global variable
 
 ```lua
 function GetDirectoryPageNumber()
-    if HTTP.GET(MODULE.RootURL .. '/manga-list?page=1') then
-        local x = CreateTXQuery(HTTP.Document)
-        PAGENUMBER = tonumber(x.XPathString('//last-page')) or 1
-        return no_error
-    end
-    return net_problem
+    if not HTTP.GET(MODULE.RootURL .. '/manga-list?page=1') then return net_problem end
+    local x = CreateTXQuery(HTTP.Document)
+    PAGENUMBER = tonumber(x.XPathString('//last-page')) or 1
+    return no_error
 end
 ```
 
 **Workflow:**
 1. FMD2 needs to know total pages
 2. Calls `OnGetDirectoryPageNumber`
-3. Injected objects available: `HTTP`, `UPDATELIST`, `PAGENUMBER`, `WORKPTR`
-4. Module sets `PAGENUMBER` to total page count
-5. FMD2 uses this for pagination UI
+3. Module sets `PAGENUMBER` to total page count
+4. FMD2 uses this for pagination UI
 
 ---
 
 #### 4. Get Name And Link (`OnGetNameAndLink`)
 
-**When:** Fetching manga list from website  
-**Called by:** UpdateListManagerThread (repeatedly for each page)  
-**Return:** `no_error`, `net_problem`, or `information_not_found`  
-**Sets:** `LINKS` and `NAMES` global lists  
+**When:** Fetching manga list from website
+**Called by:** UpdateListManagerThread (repeatedly for each page)
+**Sets:** `LINKS` and `NAMES` global lists
 
 ```lua
 function GetNameAndLink()
     local page = URL  -- URL contains current page number (0-based)
     local u = MODULE.RootURL .. '/manga-list?page=' .. (page + 1)
-    
-    if HTTP.GET(u) then
-        local x = CreateTXQuery(HTTP.Document)
-        x.XPathHREFAll('//div[@class="manga"]/a', LINKS, NAMES)
-        return no_error
-    end
-    return net_problem
+
+    if not HTTP.GET(u) then return net_problem end
+    local x = CreateTXQuery(HTTP.Document)
+    x.XPathHREFAll('//div[@class="manga"]/a', LINKS, NAMES)
+    return no_error
 end
 ```
 
 **Workflow:**
 1. FMD2 iterates through pages (0 to PAGENUMBER-1)
 2. For each page, calls `OnGetNameAndLink`
-3. `URL` global contains current page number (0-based)
-4. Injected objects: `HTTP`, `LINKS`, `NAMES`, `UPDATELIST`, `URL`
-5. Module adds manga URLs to `LINKS` and names to `NAMES`
-6. FMD2 collects all LINKS/NAMES for display
-7. Can call `UPDATELIST.UpdateStatusText()` to show progress
-8. Can access `UPDATELIST.CurrentDirectoryPageNumber`
+3. Module adds manga URLs to `LINKS` and names to `NAMES`
+4. FMD2 collects all LINKS/NAMES for display
+5. Can call `UPDATELIST.UpdateStatusText()` to show progress
+6. Can access `UPDATELIST.CurrentDirectoryPageNumber`
 
 ---
 
 #### 5. After Update List (`OnAfterUpdateList`)
 
-**When:** After manga list update completes (optional)  
-**Called by:** UpdateListManagerThread  
-**Return:** `true` on success, `false` on failure  
+**When:** After manga list update completes (optional)
+**Called by:** UpdateListManagerThread
 
 ```lua
 function AfterUpdateList()
@@ -448,31 +412,26 @@ end
 
 #### 6. Get Info (`OnGetInfo`)
 
-**When:** Fetching manga details (title, chapters, etc.)  
-**Called by:** TMangaInformation thread  
-**Return:** `no_error`, `net_problem`, or `information_not_found`  
-**Sets:** `MANGAINFO` object properties  
+**When:** Fetching manga details (title, chapters, etc.)
+**Called by:** TMangaInformation thread
+**Sets:** `MANGAINFO` object properties
 
 ```lua
 function GetInfo()
     local u = MaybeFillHost(MODULE.RootURL, URL)
-    
-    if not HTTP.GET(u) then
-        return net_problem
-    end
-    
+
+    if not HTTP.GET(u) then return net_problem end
+
     local x = CreateTXQuery(HTTP.Document)
-    MANGAINFO.Title = x.XPathString('//h1')
+    MANGAINFO.Title     = x.XPathString('//h1')
     MANGAINFO.CoverLink = x.XPathString('//img/@src')
-    MANGAINFO.Genres = x.XPathStringAll('//div[@class="genres"]/a')
-    
+    MANGAINFO.Genres    = x.XPathStringAll('//div[@class="genres"]/a')
+
     -- Fetch chapters
-    x.XPathHREFAll('//ul[@class="chapters"]/a', 
-                   MANGAINFO.ChapterLinks, 
-                   MANGAINFO.ChapterNames)
-    MANGAINFO.ChapterLinks.Reverse()
-    MANGAINFO.ChapterNames.Reverse()
-    
+    x.XPathHREFAll('//ul[@class="chapters"]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+    -- Sites usually list the newest chapter first; reverse both lists
+    MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
+
     return no_error
 end
 ```
@@ -480,22 +439,19 @@ end
 **Workflow:**
 1. User clicks on manga or refreshes info
 2. FMD2 calls `OnGetInfo`
-3. `URL` global contains manga URL
-4. Injected objects: `HTTP`, `MANGAINFO`, `URL`
-5. Module fills `MANGAINFO` properties:
+3. Module fills `MANGAINFO` properties:
    - `Title`, `AltTitles`, `CoverLink`
    - `Authors`, `Artists`, `Genres`, `Status`, `Summary`
    - `ChapterLinks`, `ChapterNames` (TStringList)
-6. FMD2 displays manga information
-7. Chapters are shown in chapter list
+4. FMD2 displays manga information
+5. Chapters are shown in chapter list
 
 ---
 
 #### 7. Task Start (`OnTaskStart`)
 
-**When:** Before downloading a chapter (optional)  
-**Called by:** TTaskContainer  
-**Return:** `true` to continue, `false` to cancel  
+**When:** Before downloading a chapter (optional)
+**Called by:** TTaskContainer
 
 ```lua
 function TaskStart()
@@ -508,37 +464,31 @@ end
 **Workflow:**
 1. User starts downloading a chapter
 2. FMD2 calls `OnTaskStart` (if defined)
-3. Injected objects: `TASK`
-4. Module can set initial values or perform setup
-5. If returns `false`, download is cancelled
+3. Module can set initial values or perform setup
+4. If returns `false`, download is cancelled
 
 ---
 
 #### 8. Get Page Number (`OnGetPageNumber`)
 
-**When:** Fetching chapter pages (image URLs)  
-**Called by:** TTaskThread  
-**Return:** `true` on success, `false` on failure  
-**Sets:** `TASK.PageLinks` or `TASK.PageContainerLinks`  
+**When:** Fetching chapter pages (image URLs)
+**Called by:** TTaskThread
+**Sets:** `TASK.PageLinks` or `TASK.PageContainerLinks`
 
 ```lua
 function GetPageNumber()
     local u = MaybeFillHost(MODULE.RootURL, URL)
-    
-    if not HTTP.GET(u) then
-        return false
-    end
-    
+
+    if not HTTP.GET(u) then return false end
+
     local x = CreateTXQuery(HTTP.Document)
-    
+
     -- For single-page chapters (all images on one page)
     x.XPathStringAll('//div[@class="reader"]/img/@src', TASK.PageLinks)
-    
+
     -- OR for multi-page chapters (each image on separate page)
-    -- x.XPathHREFAll('//div[@class="pages"]/a', 
-    --                TASK.PageContainerLinks, 
-    --                TASK.PageContainerLinks)
-    
+    -- x.XPathHREFAll('//div[@class="pages"]/a', TASK.PageContainerLinks)
+
     return true
 end
 ```
@@ -546,62 +496,51 @@ end
 **Workflow:**
 1. FMD2 starts downloading a chapter
 2. Calls `OnGetPageNumber`
-3. `URL` global contains chapter URL
-4. Injected objects: `HTTP`, `TASK`, `URL`
-5. Module has two options:
+3. Module has two options:
    - **Single-page:** Add all image URLs to `TASK.PageLinks`
    - **Multi-page:** Add page URLs to `TASK.PageContainerLinks`, then `OnGetImageURL` will be called for each
-6. Can set `TASK.PageNumber` for progress tracking
-7. Can set `TASK.FileNames` for custom filenames
+4. Can set `TASK.PageNumber` for progress tracking
+5. Can set `TASK.FileNames` for custom filenames
 
 ---
 
 #### 9. Get Image URL (`OnGetImageURL`)
 
-**When:** Extracting image URL from chapter page (for multi-page chapters)  
-**Called by:** TDownloadThread (for each page in `TASK.PageContainerLinks`)  
-**Return:** `true` on success, `false` on failure  
-**Sets:** `TASK.PageLinks[WORKID]`  
+**When:** Extracting image URL from chapter page (for multi-page chapters)
+**Called by:** TDownloadThread (for each page in `TASK.PageContainerLinks`)
+**Sets:** `TASK.PageLinks[WORKID]`
 
 ```lua
 function GetImageURL()
-    if HTTP.GET(URL) then
-        local x = CreateTXQuery(HTTP.Document)
-        local img_url = x.XPathString('//img[@id="page"]/@src')
-        TASK.PageLinks[WORKID] = MaybeFillHost(MODULE.RootURL, img_url)
-        return true
-    end
-    return false
+    if not HTTP.GET(URL) then return false end
+    local x = CreateTXQuery(HTTP.Document)
+    local img_url = x.XPathString('//img[@id="page"]/@src')
+    TASK.PageLinks[WORKID] = MaybeFillHost(MODULE.RootURL, img_url)
+    return true
 end
 ```
 
 **Workflow:**
 1. Only called if `TASK.PageContainerLinks` has entries
 2. FMD2 calls `OnGetImageURL` for each page
-3. `URL` global contains current page URL
-4. `WORKID` global contains current work index
-5. Injected objects: `HTTP`, `TASK`, `URL`, `WORKID`
-6. Module must set `TASK.PageLinks[WORKID]` to image URL
-7. FMD2 then downloads the image
+3. `WORKID` global contains current work index
+4. Module must set `TASK.PageLinks[WORKID]` to image URL
+5. FMD2 then downloads the image
 
 ---
 
 #### 10. Before Download Image (`OnBeforeDownloadImage`)
 
-**When:** Before downloading each image  
-**Called by:** TDownloadThread  
-**Return:** `true` to continue, `false` to skip  
-**Can modify:** `URL` global (to change image URL)  
+**When:** Before downloading each image
+**Called by:** TDownloadThread
+**Purpose:** set request headers/cookies before the image download
 
 ```lua
 function BeforeDownloadImage()
     -- Set required headers
-    HTTP.Headers.Values['Referer'] = MODULE.RootURL
     HTTP.Headers.Values['Origin'] = MODULE.RootURL
-    
-    -- Optionally modify URL
-    -- URL = URL:gsub('thumb', 'full')
-    
+    HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
+
     return true
 end
 ```
@@ -609,47 +548,39 @@ end
 **Workflow:**
 1. FMD2 is about to download an image
 2. Calls `OnBeforeDownloadImage`
-3. `URL` global contains image URL (can be modified)
-4. `WORKID` global contains image index
-5. Injected objects: `HTTP`, `TASK`, `URL`, `WORKID`
-6. Module can set headers, cookies, modify URL
-7. If returns `false`, image download is skipped
+3. `WORKID` global contains image index
+4. Module can set headers and cookies; to change the URL itself, rewrite `TASK.PageLinks[WORKID + 1]` here, or handle the download in `OnDownloadImage`
+5. If returns `false`, image download is skipped
 
 ---
 
 #### 11. Download Image (`OnDownloadImage`)
 
-**When:** Custom image download logic (optional, replaces default)  
-**Called by:** TDownloadThread  
-**Return:** `true` on success, `false` on failure  
+**When:** Custom image download logic (optional, replaces default)
+**Called by:** TDownloadThread
 
 ```lua
 function DownloadImage()
     -- Custom download logic (e.g., decrypt, decode, etc.)
-    if HTTP.GET(URL) then
-        -- Image data is in HTTP.Document
-        return true
-    end
-    return false
+    if not HTTP.GET(URL) then return false end
+    -- Image data is in HTTP.Document
+    return true
 end
 ```
 
 **Workflow:**
 1. Only called if `OnDownloadImage` is defined
 2. Replaces default image download behavior
-3. `URL` global contains image URL
-4. `WORKID` global contains image index
-5. Injected objects: `HTTP`, `TASK`, `URL`, `WORKID`
-6. Module handles downloading image data
-7. Image data should be in `HTTP.Document` after GET
+3. `WORKID` global contains image index
+4. Module handles downloading image data
+5. Image data should be in `HTTP.Document` after GET
 
 ---
 
 #### 12. Save Image (`OnSaveImage`)
 
-**When:** Custom image save logic (optional)  
-**Called by:** TDownloadThread  
-**Return:** Filename to save (string)  
+**When:** Custom image save logic (optional)
+**Called by:** TDownloadThread
 
 ```lua
 function SaveImage()
@@ -664,17 +595,15 @@ end
 1. Only called if `OnSaveImage` is defined
 2. `PATH` global contains target directory
 3. `FILENAME` global contains default filename
-4. Injected objects: `HTTP`, `PATH`, `FILENAME`
-5. Module returns custom filename
-6. FMD2 saves image with returned filename
+4. Module returns custom filename
+5. FMD2 saves image with returned filename
 
 ---
 
 #### 13. After Image Saved (`OnAfterImageSaved`)
 
-**When:** After image is saved to disk  
-**Called by:** TDownloadThread  
-**Return:** `true` on success, `false` on failure  
+**When:** After image is saved to disk
+**Called by:** TDownloadThread
 
 ```lua
 function AfterImageSaved()
@@ -688,31 +617,29 @@ end
 1. Image has been saved to disk
 2. FMD2 calls `OnAfterImageSaved`
 3. `FILENAME` global contains saved file path
-4. Injected objects: `FILENAME`
-5. Module can process the saved file
-6. Common use: watermark removal
+4. Module can process the saved file
+5. Common use: watermark removal
 
 ---
 
 #### 14. Login (`OnLogin`)
 
-**When:** Authenticating user account  
-**Called by:** THTTPSendThread (when account is enabled)  
-**Return:** `true` on success, `false` on failure  
-**Sets:** `MODULE.Account.Status`  
+**When:** Authenticating user account
+**Called by:** THTTPSendThread (when account is enabled)
+**Sets:** `MODULE.Account.Status`
 
 ```lua
 function Login()
     if not MODULE.Account.Enabled then
         return false
     end
-    
+
     local crypto = require 'fmd.crypto'
     local data = 'username=' .. crypto.EncodeURLElement(MODULE.Account.Username) ..
                  '&password=' .. crypto.EncodeURLElement(MODULE.Account.Password)
-    
+
     MODULE.Account.Status = asChecking
-    
+
     if HTTP.POST(MODULE.RootURL .. '/login', data) then
         if HTTP.ResultCode == 200 then
             MODULE.Account.Status = asValid
@@ -722,7 +649,7 @@ function Login()
             return false
         end
     end
-    
+
     MODULE.Account.Status = asUnknown
     return false
 end
@@ -731,23 +658,20 @@ end
 **Workflow:**
 1. User enables account in FMD2 settings
 2. FMD2 calls `OnLogin` when needed
-3. Injected objects: `HTTP`, account status constants
-4. Module should:
+3. Module should:
    - Check `MODULE.Account.Enabled`
    - Access `MODULE.Account.Username` and `.Password`
    - Set `MODULE.Account.Status = asChecking`
    - Perform login request
    - Set status to `asValid`, `asInvalid`, or `asUnknown`
-5. Return `true` if login successful
+4. Return `true` if login successful
 
 ---
 
 #### 15. Account State (`OnAccountState`)
 
-**When:** Checking account status (optional)  
-**Called by:** FMD2 account verification  
-**Return:** `true` if account is valid, `false` otherwise  
-**Injected:** Account status constants only (`asUnknown`, `asChecking`, `asValid`, `asInvalid`)  
+**When:** Checking account status (optional)
+**Called by:** FMD2 account verification
 
 ```lua
 function AccountState()
@@ -761,19 +685,15 @@ end
 **Workflow:**
 1. FMD2 periodically checks account status
 2. Calls `OnAccountState` (if defined)
-3. Only account status constants are injected
-4. **No HTTP object available** - cannot make network requests
-5. Module should return `true` if account is still valid
-6. Use this for simple state checks only
+3. Module should return `true` if account is still valid
+4. Use this for simple state checks only
 
 ---
 
 #### 16. Check Site (`OnCheckSite`)
 
-**When:** Checking if website is accessible (optional)  
-**Called by:** FMD2 site availability check  
-**Return:** `true` if site is accessible, `false` otherwise  
-**Injected:** Account status constants only (`asUnknown`, `asChecking`, `asValid`, `asInvalid`)  
+**When:** Checking if website is accessible (optional)
+**Called by:** FMD2 site availability check
 
 ```lua
 function CheckSite()
@@ -787,10 +707,8 @@ end
 **Workflow:**
 1. FMD2 checks if website is online
 2. Calls `OnCheckSite` (if defined)
-3. Only account status constants are injected
-4. **No HTTP object available** - cannot make network requests
-5. Module should return `true` if site should be considered active
-6. Use this for module-specific state checks only
+3. Module should return `true` if site should be considered active
+4. Use this for module-specific state checks only
 
 ---
 
@@ -844,16 +762,14 @@ Manga information container.
 
 ```lua
 function GetInfo()
-    if HTTP.GET(url) then
-        local x = CreateTXQuery(HTTP.Document)
-        MANGAINFO.Title = x.XPathString('//h1')
-        MANGAINFO.ChapterLinks.Add(chapter_url)
-        MANGAINFO.ChapterNames.Add('Chapter 1')
-        return no_error
-    end
-    return net_problem
+    MANGAINFO.Title = 'My Manga'
+    MANGAINFO.ChapterLinks.Add('/chapter/1')
+    MANGAINFO.ChapterNames.Add('Chapter 1')
+    return no_error
 end
 ```
+
+A full example is in [Get Info](#6-get-info-ongetinfo).
 
 #### Properties
 
@@ -879,15 +795,13 @@ Current download task information.
 
 ```lua
 function GetPageNumber()
-    if HTTP.GET(chapter_url) then
-        local x = CreateTXQuery(HTTP.Document)
-        TASK.PageLinks.Add('https://example.com/image1.jpg')
-        TASK.PageLinks.Add('https://example.com/image2.jpg')
-        return true
-    end
-    return false
+    TASK.PageLinks.Add('https://example.com/image1.jpg')
+    TASK.PageLinks.Add('https://example.com/image2.jpg')
+    return true
 end
 ```
+
+A full example is in [Get Page Number](#8-get-page-number-ongetpagenumber).
 
 #### Properties
 
@@ -899,7 +813,8 @@ end
 | `TASK.PageContainerLinks` | TStringList | Chapter page URLs (multi-page chapters) |
 | `TASK.FileNames` | TStringList | Custom filenames for images |
 | `TASK.PageNumber` | Integer | Total page count |
-| `TASK.CurrentDownloadChapterPtr` | Integer | Current chapter index |
+| `TASK.CurrentDownloadChapterPtr` | Integer | 0-based index into `ChapterLinks` of the chapter being downloaded (useful for Referer headers) |
+| `TASK.CurrentMaxFileNameLength` | Integer | Maximum file name length enforced for this task |
 | `TASK.Link` | String | Current download link |
 
 ---
@@ -910,14 +825,14 @@ Global lists for manga URLs and names.
 
 ```lua
 function GetNameAndLink()
-    if HTTP.GET(url) then
-        local x = CreateTXQuery(HTTP.Document)
-        x.XPathHREFAll('//div[@class="manga"]/a', LINKS, NAMES)
-        return no_error
-    end
-    return net_problem
+    LINKS.Add('/manga/one')
+    NAMES.Add('Manga One')
+    return no_error
 end
 ```
+
+`x.XPathHREFAll(xpath, LINKS, NAMES)` fills both lists in one call; see
+[Get Name And Link](#4-get-name-and-link-ongetnameandlink).
 
 #### Methods
 
@@ -942,7 +857,7 @@ Manga list update manager.
 function GetNameAndLink()
     -- Update status message
     UPDATELIST.UpdateStatusText('Loading page ' .. (URL + 1))
-    
+
     -- Access current page number
     local page = UPDATELIST.CurrentDirectoryPageNumber
 end
@@ -967,24 +882,25 @@ end
 Total pages in manga list directory.
 
 ```lua
-function GetDirectoryPageNumber()
-    if HTTP.GET(url) then
-        local x = CreateTXQuery(HTTP.Document)
-        PAGENUMBER = tonumber(x.XPathString('//last-page')) or 1
-        return no_error
-    end
-    return net_problem
-end
+PAGENUMBER = tonumber(x.XPathString('//last-page')) or 1
 ```
+
+Set it in `OnGetDirectoryPageNumber`; see
+[Get Directory Page Number](#3-get-directory-page-number-ongetdirectorypagenumber).
 
 ---
 
 ### URL (Global Variable)
 
-Current URL being processed (varies by context):
-- In `GetNameAndLink`: Current page number (0-based)
-- In `GetInfo`: Manga URL
-- In `GetPageNumber`: Chapter URL
+The current URL being processed. What it holds depends on the handler:
+
+| Handler | `URL` contains |
+|---------|----------------|
+| `OnGetNameAndLink` | Current page number of the manga list (0-based) |
+| `OnGetInfo` | Manga URL |
+| `OnGetPageNumber` | Chapter URL |
+| `OnGetImageURL` | URL of the current chapter page |
+| `OnBeforeDownloadImage`, `OnDownloadImage` | Image URL (read-only in `OnBeforeDownloadImage`; the host does not read changes back) |
 
 ---
 
@@ -1001,42 +917,155 @@ local x = CreateTXQuery()
 x.ParseHTML(html_string)
 ```
 
-#### Methods
+There are **two distinct objects** involved: the **query object** `x` itself,
+and the **value/node object** returned by `x.XPath(...)` (and every item its
+iterator yields). They have different methods — mixing them up is the most
+common TXQuery mistake.
+
+#### Query Object Methods
 
 | Method | Description |
 |--------|-------------|
-| `x.ParseHTML(html)` | Parse HTML string or stream |
+| `x.ParseHTML(html)` | Parse HTML string or stream (replaces the previous tree) |
 | `x.XPathString(xpath)` | Get single string result |
+| `x.XPathString(xpath, context)` | Same, but evaluated against `context` (a value returned by `x.XPath(...)`, e.g. parsed JSON) instead of the whole document |
 | `x.XPathStringAll(xpath)` | Get all matching strings (comma-separated) |
-| `x.XPathStringAll(xpath, separator, context)` | Get all strings with custom separator |
+| `x.XPathStringAll(xpath, separator)` | Get all strings with custom separator |
+| `x.XPathStringAll(xpath, list)` | Append all matches to a `TStrings` list (`TASK.PageLinks`, `MANGAINFO.Genres`, a `fmd.strings` list, …) |
 | `x.XPathHREFAll(xpath, linksList, namesList)` | Extract href and text to lists |
 | `x.XPathHREFTitleAll(xpath, linksList, namesList)` | Extract href and title attribute |
-| `x.XPath(xpath)` | Get node list for iteration |
+| `x.XPath(xpath)` | Get node list / value object for iteration |
 | `x.XPathCount(xpath)` | Count matching nodes |
-| `x.GetProperty(name)` | Get JSON property value |
-| `x.ToString()` | Get node text content |
-| `x.GetAttribute(name)` | Get HTML attribute value |
-| `x.Get(i)` | Get node at index (1-based) |
-| `x.Count` | Number of nodes |
 
-#### XPath Extensions
+#### Value/Node Object Methods
 
-FMD2 extends XPath with special functions:
+Returned by `x.XPath(...)`; each item from an iteration is the same kind of
+object.
 
-**JSON Parsing:**
+| Member | Description |
+|--------|-------------|
+| `v.Count` | Number of items in the sequence |
+| `v.Get(i)` | Get item at index (1-based) |
+| `v.Get()` | Get iterator — `for v in x.XPath(...).Get() do ... end` |
+| `v.GetProperty(name)` | Get JSON property value (on JSON objects) |
+| `v.GetAttribute(name)` | Get HTML attribute value (on element nodes) |
+| `v.InnerHTML()` | Inner HTML of the node |
+| `v.OuterHTML()` | Outer HTML of the node |
+| `v.InnerText()` | Text content of the node |
+| `v.ToString()` | String conversion |
+
+Full pipeline example (from `lua/modules/HitomiLa.lua`):
+
 ```lua
--- Parse JSON content
-local json = x.XPath('json(*)')
-local value = x.XPathString('data.field', json)
-local all = x.XPathStringAll('results[*].name', json)
-
--- Iterate JSON array
-for v in x.XPath('json(*).items()').Get() do
-    print(v.GetProperty('name').ToString())
+for image in CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString())).XPath('json(substring-after(., "var galleryinfo = ")).files()').Get() do
+    local hash = image.GetProperty('hash').ToString()
+    ...
 end
 ```
 
-**String Functions:**
+#### XPath Extensions
+
+FMD2 uses the latest [internettools](https://github.com/benibela/internettools) as its query engine.
+It supports **XPath 3.1 and XQuery 3.1**, so everything from those standards works (maps, arrays, the `?` lookup operator,
+`let`/`for` expressions, `string-join`, `tokenize`, `matches`, `replace`, `parse-json`, and so on).
+On top of that, internettools adds its own shortcuts, mainly for JSON.
+
+##### Reading JSON
+
+There are three ways to read JSON that have been tested in FMD2. They all
+reach the same data, so pick whichever you find easiest to read.
+
+| Style | Example | Notes |
+|-------|---------|-------|
+| `json(*)` with dot syntax | `json(*).data.items()` | internettools shortcut. `.name` reads a property, `.items()` returns the array's members as a sequence. |
+| `json(*)` with `?` lookup | `json(*)?data?items?*` | Standard XPath 3.1 syntax. `?name` reads a key, `?*` returns every member of an array or map. |
+| `parse-json(.)` | `parse-json(.)?data?items?*` | Standard XPath 3.1. Parses the current text node, then uses the same `?` lookup. |
+
+All three examples above return the items of `data.items` in a JSON response
+like this:
+
+```json
+{ "data": { "items": [ { "name": "A" }, { "name": "B" } ] } }
+```
+
+What the pieces mean:
+
+| Piece | Meaning |
+|-------|---------|
+| `json(*)` | Parse the page content as JSON. `*` is the document's root element, because `CreateTXQuery` wraps the response as HTML. |
+| `parse-json(.)` | Same idea, but written in standard XPath 3.1 form. `.` is the current context item. |
+| `.name` | (dot style) Get the property `name`. |
+| `.items()` | (dot style) Get all members of the array `items`. |
+| `?name` | (lookup style) Get the key `name`. |
+| `?*` | (lookup style) Get all members of the array or map. |
+
+###### Examples
+
+```lua
+local x = CreateTXQuery(HTTP.Document)
+
+-- One value
+local title = x.XPathString('json(*)?data?title')
+
+-- All values of a field into a list (lookup style)
+x.XPathStringAll('json(*)?data?items?*?name', MANGAINFO.Genres)
+
+-- Same thing, dot style
+x.XPathStringAll('json(*).data.items().name', MANGAINFO.Genres)
+
+-- Using parse-json
+local title2 = x.XPathString('parse-json(.)?data?title')
+
+-- Combine with string functions
+local names = x.XPathString('string-join(json(*)?data?items?*?name, ", ")')
+```
+
+Iterating over a JSON array from Lua:
+
+```lua
+local x = CreateTXQuery(HTTP.Document)
+for v in x.XPath('json(*)?data?items?*').Get() do
+    local name = v.GetProperty('name').ToString()
+    local id   = v.GetProperty('id').ToString()
+    -- ...
+end
+
+-- Equivalent, dot style
+for v in x.XPath('json(*).data.items()').Get() do
+    local name = v.GetProperty('name').ToString()
+end
+```
+
+> **Tip:** if the JSON contains `<`, `&` and similar characters and
+> `json(*)` fails, escape the text first with `crypto.HTMLEncode` (see
+> [The `HTMLEncode` + TXQuery trick](#fmdcrypto)).
+
+##### Parsing once, querying many times
+
+Every `x.XPathString(...)` call that starts with `json(*)` parses the JSON
+again. If you need several values, parse once with `x.XPath('json(*)')` and
+pass the result as the second argument. The query is then evaluated **relative
+to that value**, so you leave out `json(*)` and start at the key name.
+
+```lua
+local x = CreateTXQuery(HTTP.Document)
+
+-- One call: parse and read together
+local s = x.XPathString('json(*).data.field')
+
+-- Two steps: parse once, then reuse the result
+local json = x.XPath('json(*)')
+local s1 = x.XPathString('data?field', json)
+local s2 = x.XPathString('data?other', json)
+```
+
+Both ways give the same result for `s`. In the two-step form, move down
+into the JSON with `?` or `/` (for example `data?field` or `data/field`).
+
+##### Standard string functions
+
+These are normal XPath functions and work on HTML and JSON alike:
+
 ```lua
 -- Join multiple strings
 x.XPathString('string-join(//title, ", ")')
@@ -1044,15 +1073,23 @@ x.XPathString('string-join(//title, ", ")')
 -- Substring operations
 x.XPathString('substring-before(//text, "delimiter")')
 x.XPathString('substring-after(//text, "prefix")')
+
+-- Parse JSON that is embedded in a script or a text node
+x.XPath('json(substring-after(., "var galleryinfo = "))')
 ```
 
-**JSON Navigation:**
+##### JSON navigation functions (`jn:`)
+
+The older JSONiq-style helpers from internettools can also be used. They are
+less common than the lookup styles above.
+
 ```lua
-jn:keys()      -- Get JSON object keys
-jn:members()   -- Get JSON array members
-```
+jn:keys($obj)      -- Get JSON object keys
+jn:members($arr)   -- Get JSON array members
 
----
+local count = x.XPathCount('jn:keys($obj)')
+for v in x.XPath('jn:members($arr)').Get() do ... end
+```
 
 ### Utility Functions
 
@@ -1079,7 +1116,7 @@ local full_url = MaybeFillHost('https://example.com', '/page')
 | `GetBetween(left, right, text)` | Extract text between delimiters |
 | `SeparateLeft(text, delimiter)` | Get left part of split string |
 | `SeparateRight(text, delimiter)` | Get right part of split string |
-| `Trim(text)` | Remove whitespace |
+| `Trim(text[, chars])` | Remove whitespace (or the given characters) |
 | `MaybeFillHost(rootURL, url)` | Ensure URL has full host prefix |
 
 #### Status Helper
@@ -1094,6 +1131,9 @@ MANGAINFO.Status = MangaInfoStatusIfPos(
     'Canceled|Dropped'        -- Dropped keywords
 )
 ```
+
+The keyword lists are optional — `MangaInfoStatusIfPos` accepts 1 to 5
+arguments (later lists default to none).
 
 #### Other Functions
 
@@ -1110,50 +1150,444 @@ print('Debug message')  -- Output to log
 
 #### fmd.crypto
 
-Crypto and encoding functions.
+Crypto, hashing, and encoding functions, exposed natively (Pascal/Delphi) and
+loaded with:
+
+```lua
+local crypto = require 'fmd.crypto'
+```
+
+The library merges two registration tables from `baseunits/lua/LuaCrypto.pas`
+(40 methods from `BaseCrypto.pas` and 16 methods from the Synapse `synacode`
+unit), so all **56 functions** below live on the same `crypto` table.
+
+**Conventions**
+
+- Lua strings are 8-bit clean — raw binary digests, keys, IVs and ciphertexts
+  can be stored in ordinary Lua strings. Use `StrToHexStr` to *inspect* binary
+  values with `print()` (raw bytes are displayed as garbage).
+- **`...Hex` functions return lowercase** hex; `StrToHexStr` returns
+  **UPPERCASE** hex; `HexToStr` accepts both. Compare with `:lower()` /
+  `:upper()` as needed.
+- Crypto functions return an **empty string `''`** on invalid input (empty
+  argument, wrong key length, failed Base64/hex validation, failed
+  authentication) instead of raising — check `if result == '' then` when the
+  input can be malformed. The one partial exception:
+  `AESDecryptCBCHexBase64ZerosPadding` passes its hex key/IV through an
+  internal converter that expects only hex characters — non-hex input there
+  can raise an internal error, so validate scraped values first.
+
+**Quick reference (56 functions)**
+
+| Category | Functions |
+|----------|-----------|
+| Hashing | `MD4` `MD5` `MD5Hex` `MD5LongHash` `SHA1` `SHA1Hex` `SHA1LongHash` `SHA256` `SHA256Hex` `SHA512` `SHA512Hex` |
+| HMAC | `HMAC_MD5` `HMAC_MD5Hex` `HMAC_SHA1` `HMAC_SHA1Hex` `HMAC_SHA256` `HMAC_SHA256Hex` `HMAC_SHA512` `HMAC_SHA512Hex` |
+| AES (raw modes) | `AESEncryptCBC` `AESDecryptCBC` `AESEncryptECBPkcs7` `AESDecryptECBPkcs7` `AESEncryptCFB` `AESDecryptCFB` `AESCTR` `AESOFB` `AESEncryptGCM` `AESDecryptGCM` |
+| AES (composite) | `AESEncryptCBCSHA256Base64Pkcs7` `AESDecryptCBCSHA256Base64Pkcs7` `AESDecryptCBCMD5Base64ZerosPadding` `AESDecryptCBCHexBase64ZerosPadding` |
+| Other ciphers | `RC4` |
+| KDF / key exchange | `PBKDF2SHA256` `X25519_PublicKey` `X25519_SharedSecret` |
+| Authenticated streaming | `SecretStream_InitPull` `SecretStream_Pull` |
+| Encoding / decoding | `EncodeBase64` `DecodeBase64` `EncodeBase64URL` `DecodeBase64URL` `EncodeURL` `DecodeURL` `EncodeURLElement` `HTMLEncode` `HTMLDecode` `EncodeUU` `DecodeUU` `HexToStr` `StrToHexStr` |
+| Checksums | `CRC16` `CRC32` |
+| FMD2-internal | `EncryptString` `DecryptString` |
+
+##### Hash functions
+
+With the exception of the `...Hex` variants, all hash functions return the
+**raw binary digest** as a Lua string (16 bytes for MD4/MD5, 20 for SHA-1,
+32 for SHA-256, 64 for SHA-512). Hash values you want to compare against the
+site's JavaScript should be produced with the `Hex` variants or converted
+with `StrToHexStr`.
+
+| Function | Signature | Returns |
+|----------|-----------|---------|
+| `MD4` | `MD4(s)` | raw 16-byte digest (legacy hash, some old image hosts) |
+| `MD5` | `MD5(s)` | raw 16-byte digest |
+| `MD5Hex` | `MD5Hex(s)` | 32-char **lowercase** hex |
+| `SHA1` | `SHA1(s)` | raw 20-byte digest |
+| `SHA1Hex` | `SHA1Hex(s)` | 40-char **lowercase** hex |
+| `SHA256` | `SHA256(s)` | raw 32-byte digest |
+| `SHA256Hex` | `SHA256Hex(s)` | 64-char **lowercase** hex |
+| `SHA512` | `SHA512(s)` | raw 64-byte digest |
+| `SHA512Hex` | `SHA512Hex(s)` | 128-char **lowercase** hex |
+| `MD5LongHash` | `MD5LongHash(s, len)` | raw 16 bytes; MD5 of `s` repeated to exactly `len` bytes |
+| `SHA1LongHash` | `SHA1LongHash(s, len)` | raw 20 bytes; SHA-1 of `s` repeated to exactly `len` bytes |
+
+The `LongHash` variants are legacy helpers used by a few image hosts: the
+input string is concatenated with itself until it reaches exactly `len`
+bytes (a partial copy at the end), and that extended string is hashed.
 
 ```lua
 local crypto = require 'fmd.crypto'
 
--- URL encoding
-local encoded = crypto.EncodeURLElement('hello world')
-local decoded = crypto.DecodeURL(encoded)
+print(crypto.MD5Hex('data'))     -- 8d777f385d3dfec8815d20f7496026dc
+print(crypto.SHA1Hex('data'))    -- a17c9aaa61e80a1bf71d0d850af4e5baa9800bbd
+print(crypto.SHA256Hex('data'))  -- 3a6eb0790f39ac87c94f3856b2dd2c5d110e6811602261a9a923d3bb23adc8b7
 
--- Base64
-local b64 = crypto.EncodeBase64('data')
-local raw = crypto.DecodeBase64(b64)
+-- raw digest -> hex by hand (StrToHexStr is UPPERCASE!)
+print(crypto.StrToHexStr(crypto.MD5('data')))          -- 8D777F385D3DFEC8815D20F7496026DC
+print(crypto.StrToHexStr(crypto.MD5('data')):lower())  -- 8d777f385d3dfec8815d20f7496026dc
 
--- HTML encoding
-local html = crypto.HTMLEncode('<script>')
-local plain = crypto.HTMLDecode('&lt;script&gt;')
-
--- Hash functions
-local md5 = crypto.MD5('data')
-local md5hex = crypto.MD5Hex('data')
-local sha1 = crypto.SHA1('data')
-local hmac = crypto.HMAC_MD5('data', 'key')
-
--- Encryption
-local encrypted = crypto.AESDecryptCBC(base64_data, key, iv)
+-- MD5LongHash('abc', 10) == MD5('abcabcabca')
+print(crypto.StrToHexStr(crypto.MD5LongHash('abc', 10)):lower())
+-- 4ec647ce99227abb788106c127320f96
 ```
+
+> [!NOTE]
+> The hash functions hash the empty string normally
+> (e.g. `MD5Hex('')` → `d41d8cd98f00b204e9800998ecf8427e`, `SHA1Hex('')` →
+> `da39a3ee5e6b4b0d3255bfef95601890afd80709`), so an empty result means the
+> argument itself was empty or invalid, never "hash of nothing".
+
+##### HMAC functions
+
+All HMAC functions take the arguments in the order **`(data, key)`** — data
+first, key second. The non-`Hex` variants return the **raw binary** MAC;
+`Hex` variants return lowercase hex. HMAC keys longer than the block size
+are hashed first (per RFC 2104); keys of any other length work as-is.
+
+| Function | Signature | Returns |
+|----------|-----------|---------|
+| `HMAC_MD5` | `HMAC_MD5(data, key)` | raw 16 bytes |
+| `HMAC_MD5Hex` | `HMAC_MD5Hex(data, key)` | 32-char lowercase hex |
+| `HMAC_SHA1` | `HMAC_SHA1(data, key)` | raw 20 bytes |
+| `HMAC_SHA1Hex` | `HMAC_SHA1Hex(data, key)` | 40-char lowercase hex |
+| `HMAC_SHA256` | `HMAC_SHA256(data, key)` | raw 32 bytes |
+| `HMAC_SHA256Hex` | `HMAC_SHA256Hex(data, key)` | 64-char lowercase hex |
+| `HMAC_SHA512` | `HMAC_SHA512(data, key)` | raw 64 bytes |
+| `HMAC_SHA512Hex` | `HMAC_SHA512Hex(data, key)` | 128-char lowercase hex |
+
+```lua
+local crypto = require 'fmd.crypto'
+
+print(crypto.HMAC_SHA256Hex('data', 'key'))
+-- 5031fe3d989c6d1537a013fa6e739da23463fdaec3b70137d828e36ace221bd0
+
+print(crypto.HMAC_MD5Hex('data', 'key'))
+-- 9d5c73ef85594d34ec4438b7c97e51d8
+```
+
+##### AES — raw modes (CBC, ECB, CTR, CFB, OFB, GCM)
+
+These are the low-level primitives. **Key and IV are raw byte strings**, and
+the **key length selects the AES variant**: 16 bytes → AES-128, 24 bytes →
+AES-192, 32 bytes → AES-256. Any other key length makes the function return
+`''`. If the site's JavaScript carries hex strings, convert them first:
+
+```lua
+local key = crypto.HexToStr('000102030405060708090a0b0c0d0e0f')  -- 16 raw bytes -> AES-128
+local iv  = crypto.HexToStr('101112131415161718191a1b1c1d1e1f')  -- 16 raw bytes
+```
+
+The IV for CBC/CTR/CFB/OFB is also raw bytes: if it is shorter than 16
+bytes it is padded with zeros at the end; if longer than 16 bytes it is
+truncated to 16.
+
+| Function | Signature | Notes |
+|----------|-----------|-------|
+| `AESEncryptCBC` | `AESEncryptCBC(s, key, iv)` | Raw in/out. Standard CBC on full 16-byte blocks. |
+| `AESDecryptCBC` | `AESDecryptCBC(s, key, iv)` | Inverse of `AESEncryptCBC`. |
+| `AESEncryptECBPkcs7` | `AESEncryptECBPkcs7(s, key)` | ECB + PKCS7; any plaintext length (padded to a 16-byte multiple, all blocks encrypted). |
+| `AESDecryptECBPkcs7` | `AESDecryptECBPkcs7(s, key)` | Inverse; ciphertext length must be a multiple of 16 (otherwise `''`). |
+| `AESCTR` | `AESCTR(s, key, iv)` | CTR keystream XOR; symmetric (the same call encrypts and decrypts); IV = initial 128-bit counter, big-endian increment of the whole block. |
+| `AESEncryptCFB` | `AESEncryptCFB(s, key, iv)` | CFB-128 (ciphertext feedback), full multi-block support, any input length. |
+| `AESDecryptCFB` | `AESDecryptCFB(s, key, iv)` | Inverse of `AESEncryptCFB`. |
+| `AESOFB` | `AESOFB(s, key, iv)` | OFB keystream XOR; symmetric, any length. |
+| `AESEncryptGCM` | `AESEncryptGCM(s, key, iv[, aad])` | Returns `ciphertext ‖ 16-byte tag` concatenated. |
+| `AESDecryptGCM` | `AESDecryptGCM(s, key, iv[, aad])` | Input `ciphertext ‖ tag`; verifies the tag (constant-time) and returns plaintext, or `''` if the tag or length is wrong. |
+
+> [!NOTE]
+> - **CBC and non-block-aligned input:** the underlying DCPcrypt processes
+>   full 16-byte blocks in standard CBC, then handles a trailing partial block
+>   by XOR-ing it with the encrypted chaining value. Round-trips inside FMD2
+>   work for any length, but the partial-block tail is *not* standard CBC and
+>   will not match CryptoJS/OpenSSL output. For cross-platform interop, feed
+>   CBC only block-aligned data (site ciphertext normally is).
+> - **CTR compatibility:** the whole 128-bit counter block is incremented
+>   big-endian, matching CryptoJS `mode.CTR`. (GCM internally uses the NIST
+>   32-bit counter — different, but that is internal and standard.)
+> - **GCM IV:** 12 raw bytes is the standard/recommended size; other IV
+>   lengths are supported through the GHASH path. The optional 4th `aad`
+>   argument is additional authenticated data — it is authenticated but not
+>   encrypted, and must be passed identically to both calls.
+
+```lua
+local crypto = require 'fmd.crypto'
+
+-- CBC round-trip with raw 16-byte key/IV
+local key = '0123456789abcdef'          -- 16 bytes -> AES-128
+local iv  = 'abcdef9876543210'
+local pt  = 'sixteen-byte!!'            -- exactly 16 bytes
+local ct  = crypto.AESEncryptCBC(pt, key, iv)
+print(crypto.AESDecryptCBC(ct, key, iv) == pt)      -- true
+
+-- The typical "decrypt what the page gave us" pattern
+local b64 = 'bXlzdGVyeWRhdGE='
+local ct2 = crypto.DecodeBase64(b64)                -- decode FIRST
+-- local key2 = crypto.HexToStr(site_key_hex)       -- hex keys likewise
+-- local pt2  = crypto.AESDecryptCBC(ct2, key2, iv2)
+
+-- GCM round-trip
+local gkey = '0123456789abcdef'
+local giv  = '000000000002'              -- 12 raw bytes
+local blob = crypto.AESEncryptGCM('secret', gkey, giv)      -- ciphertext+tag
+print(crypto.AESDecryptGCM(blob, gkey, giv))                -- secret
+print(#blob)                                               -- 6 + 16 tag = 22
+```
+
+##### AES — composite decryptors (Base64 in, site-friendly)
+
+These wrap CBC with the exact key-derivation, IV format, transport encoding
+and padding combinations used by common website JavaScript. Pick the one that
+matches the site's JS — the names encode the recipe.
+
+| Function | Signature | Key | IV | Input | Padding |
+|----------|-----------|-----|----|-------|---------|
+| `AESEncryptCBCSHA256Base64Pkcs7` | `(s, key, iv)` | passphrase, internally SHA-256-hashed → always AES-256 | **hex string** (exactly 32 hex chars = 16 bytes) | plaintext (encrypt) | PKCS7, Base64 out |
+| `AESDecryptCBCSHA256Base64Pkcs7` | `(s, key, iv)` | same derivation | same hex IV | **Base64** ciphertext | PKCS7 stripped |
+| `AESDecryptCBCMD5Base64ZerosPadding` | `(s, key, iv)` | passphrase → `MD5Hex(key)` (32-char *hex text*) used as raw key bytes → AES-256 | **raw** bytes (zero-padded to 16) | **Base64** ciphertext | trailing NUL bytes stripped |
+| `AESDecryptCBCHexBase64ZerosPadding` | `(s, key, iv)` | **hex string** (32/48/64 hex chars → AES-128/192/256) | **hex string** (exactly 32 hex chars) | **Base64** ciphertext | trailing NUL bytes stripped |
+
+```lua
+local crypto = require 'fmd.crypto'
+
+-- matches CryptoJS-style "AES.encrypt(text, passphrase)" with fixed IV
+local key = 'my site passphrase'
+local ivhex = '000102030405060708090a0b0c0d0e0f'   -- 32 hex chars = 16 bytes
+local b64 = crypto.AESEncryptCBCSHA256Base64Pkcs7('hello', key, ivhex)
+print(crypto.AESDecryptCBCSHA256Base64Pkcs7(b64, key, ivhex))  -- hello
+
+-- hex-key variant (key + IV as hex, Base64 payload)
+-- local pt = crypto.AESDecryptCBCHexBase64ZerosPadding(b64ct, keyhex, ivhex)
+```
+
+> [!NOTE]
+> The two *ZerosPadding* functions are **decrypt-only** (there are no encrypt
+> counterparts). All four functions return `''` on empty/malformed input; the
+> hex-IV functions require an IV of exactly 32 hex characters. For
+> `AESDecryptCBCHexBase64ZerosPadding` the key and IV must consist of hex
+> characters only — validate scraped values (`key:match('^%x+$')`) before
+> calling it, since non-hex input is not caught as a normal `''` return.
+
+##### RC4
+
+`RC4(data, key)` — note the order: **data first, key second**. RC4 is a
+symmetric stream cipher, so the same call encrypts and decrypts. Key length
+must be 1–256 bytes (longer keys return `''`); `data` of any length works.
+The output is raw binary — hex/base64 it yourself if you need text.
+
+```lua
+local crypto = require 'fmd.crypto'
+local ct = crypto.RC4('secret data', 'key123')
+print(crypto.RC4(ct, 'key123') == 'secret data')   -- true
+```
+
+##### Key derivation and key exchange
+
+**`PBKDF2SHA256(password, salt, iterations, dkLen)`** — standard
+PBKDF2-HMAC-SHA256 (RFC 2898/8018). `iterations` and `dkLen` are integers.
+Returns the derived key as **raw binary** (`dkLen` bytes); hex it with
+`StrToHexStr` when the site expects text. Returns `''` if `password` or
+`salt` is empty or the integers are < 1.
+
+```lua
+local crypto = require 'fmd.crypto'
+-- matches hashlib.pbkdf2_hmac('sha256', b'data', b'salt', 1000, 16)
+print(crypto.StrToHexStr(crypto.PBKDF2SHA256('data', 'salt', 1000, 16)))
+-- D204735BDB5BD30638F3A45B5CDE2A84
+```
+
+**`X25519_PublicKey(privKey)`** — derives the 32-byte public key from a
+32-byte raw private key.
+**`X25519_SharedSecret(privKey, pubKey)`** — X25519 ECDH: combines your
+32-byte raw private key with the peer's 32-byte raw public key and returns
+the 32-byte raw shared secret. Both return `''` unless the inputs are
+exactly 32 bytes.
+
+> [!IMPORTANT]
+> Keys must be raw bytes — convert hex keys with `HexToStr` first.
+> The shared secret is typically hashed (e.g. `SHA256`) before use as a symmetric key.
+
+##### SecretStream (libsodium-style authenticated stream, receive side)
+
+`SecretStream_InitPull` / `SecretStream_Pull` implement the *decrypting*
+half of libsodium's `crypto_secretstream_*` API (ChaCha20-Poly1305 based,
+with automatic rekeying). There is no push/encrypt side exposed to Lua —
+these are for consuming streams produced by libsodium (or compatible code).
+
+- **`SecretStream_InitPull(header, key)`** — `header` is the 24-byte stream
+  header, `key` the 32-byte raw key. Returns an opaque `state` string, or
+  **`nil`** if the sizes are wrong.
+- **`SecretStream_Pull(state, chunk)`** — `chunk` is one encrypted chunk
+  (minimum 17 bytes: 1 encrypted tag byte + ciphertext + 16-byte MAC).
+  Returns **three values** — the *updated* `state` (pass it to the next
+  call!), the decrypted `message`, and the integer `tag` — or **no values**
+  (all `nil`) if authentication fails.
+
+The `tag` follows libsodium's constants:
+
+| Tag | Value | Meaning |
+|-----|-------|---------|
+| `MESSAGE` | 0 | normal chunk |
+| `FINAL` | 1 | last chunk of the stream |
+| `PUSH` | 2 | logical boundary (end of a multi-part message) |
+| `REKEY` | 3 | stream rekeyed after this chunk |
+
+```lua
+local crypto = require 'fmd.crypto'
+
+local state = crypto.SecretStream_InitPull(header24, key32)
+if not state then return false end
+
+for _, chunk in ipairs(chunks) do
+    state, msg, tag = crypto.SecretStream_Pull(state, chunk)
+    if not state then return false end  -- MAC failure
+    TASK.PageLinks.Add(msg)             -- or accumulate / write to disk
+    if tag == 1 then break end          -- FINAL
+end
+```
+
+##### Encoding and decoding
+
+| Function | Signature | Description |
+|----------|-----------|-------------|
+| `EncodeBase64` | `EncodeBase64(s)` | raw → standard Base64 (`+`, `/`, `=` padding, no line breaks) |
+| `DecodeBase64` | `DecodeBase64(s)` | standard Base64 → raw |
+| `EncodeBase64URL` | `EncodeBase64URL(s)` | raw → URL-safe Base64 (`-`, `_`, **no padding**) |
+| `DecodeBase64URL` | `DecodeBase64URL(s)` | URL-safe Base64 → raw (re-adds padding as needed) |
+| `EncodeURL` | `EncodeURL(s)` | percent-encode only *unsafe* chars (controls, space, `<>"%{}\|^[]`, DEL, non-ASCII); keeps `/ ? & = #` etc. — use for **whole URLs/paths** |
+| `EncodeURLElement` | `EncodeURLElement(s)` | additionally encodes `; / ? : @ = & # +` — use for **query values / form fields** |
+| `DecodeURL` | `DecodeURL(s)` | `%XX` sequences → raw |
+| `HTMLEncode` | `HTMLEncode(s)` | escape HTML-special characters (`<` → `&lt;`, `&` → `&amp;`, …) |
+| `HTMLDecode` | `HTMLDecode(s)` | decode HTML entities (named and numeric) back to text |
+| `EncodeUU` | `EncodeUU(s)` | UUencode **data only** (no `begin`/`end` lines) |
+| `DecodeUU` | `DecodeUU(s)` | UUdecode data only |
+| `HexToStr` | `HexToStr(h)` | hex string → raw bytes (case-insensitive); returns `''` on empty, odd-length or non-hex input |
+| `StrToHexStr` | `StrToHexStr(s)` | raw bytes → **UPPERCASE** hex |
+
+```lua
+local crypto = require 'fmd.crypto'
+
+print(crypto.EncodeBase64('data'))      -- ZGF0YQ==
+print(crypto.DecodeBase64('ZGF0YQ=='))  -- data
+print(crypto.EncodeBase64URL('data'))   -- ZGF0YQ
+
+print(crypto.EncodeURLElement('hello world'))  -- hello%20world
+print(crypto.DecodeURL('hello%20world'))       -- hello world
+
+print(crypto.HTMLEncode('<script>'))           -- &lt;script&gt;
+print(crypto.HTMLDecode('&lt;script&gt;'))     -- <script>
+
+print(crypto.StrToHexStr('AB'))                -- 4142
+print(crypto.HexToStr('41424344'))             -- ABCD
+```
+
+**The `HTMLEncode` + TXQuery trick** (used by the MangaDex and BiliBili
+Comics modules): `CreateTXQuery` expects HTML; feeding it raw JSON can break
+the parser when JSON strings contain `<`, `&`, etc. Escaping first makes the
+`json(*)` XPath parser reliable:
+
+```lua
+local x = CreateTXQuery(crypto.HTMLEncode(HTTP.Document.ToString()))
+local data = x.XPath('json(*)')
+```
+
+**Hex-obfuscated HTML** (NewToki pattern): some sites ship page fragments as
+hex strings inside JavaScript:
+
+```lua
+x.ParseHTML(crypto.HexToStr(hex_string_from_the_page))
+```
+
+##### Checksums
+
+| Function | Signature | Returns |
+|----------|-----------|---------|
+| `CRC16` | `CRC16(s)` | integer — Synapse variant (init `$FFFF`, **no final inversion**); differs from many JS `crc16` libs — verify against the site's values |
+| `CRC32` | `CRC32(s)` | integer — standard CRC-32 (same as zlib/PNG) |
+
+```lua
+local crypto = require 'fmd.crypto'
+print(crypto.CRC32('data'))   -- 2918445923  (0xADF3F363)
+```
+
+##### FMD2-internal string obfuscation
+
+`EncryptString(s)` / `DecryptString(s)` — FMD2's own reversible obfuscation
+(AES under an internal SHA-512-derived key, Base64-style output). It exists
+for storing account passwords in FMD2's own databases; it is **not** a
+general-purpose cipher and round-trips only inside FMD2. Modules almost never
+need these — mentioned here only because they appear in the function list.
+
+##### Common patterns from real modules
+
+```lua
+-- 1) Login form data (EHentai and many others)
+local crypto = require 'fmd.crypto'
+local data = 'username=' .. crypto.EncodeURLElement(MODULE.Account.Username) ..
+             '&password=' .. crypto.EncodeURLElement(MODULE.Account.Password)
+
+-- 2) Base64-encoded image URLs hidden in <script> (MangaTV)
+for url in s:gmatch('|Ly9pbWc[^%s]+') do
+    TASK.PageLinks.Add('https:' .. crypto.DecodeBase64(url .. '=='))
+end
+
+-- 3) Hex-obfuscated page fragments (NewToki)
+x.ParseHTML(crypto.HexToStr(s:match("html_data%+='(.*)';")))
+
+-- 4) AES-CBC image/link decryptors on key-and-IV sites
+local key = crypto.HexToStr(key_hex)                  -- hex key from site JS
+local iv  = crypto.HexToStr(iv_hex)                   -- hex IV from site JS
+local pt  = crypto.AESDecryptCBC(                     -- raw decrypt
+    crypto.DecodeBase64(b64_ciphertext), key, iv)
+
+-- 5) HMAC-signed API request (conceptual)
+local sign = crypto.HMAC_SHA256Hex(path .. params, secret_key)
+HTTP.GET(base .. path .. '?' .. params .. '&sign=' .. sign)
+```
+
+##### Notes
+
+- Decode **before** decrypting: `AESDecryptCBC` takes raw bytes — Base64
+  first (`DecodeBase64`), hex keys/IVs first (`HexToStr`).
+- Raw digests print as garbage; use the `...Hex` variants or `StrToHexStr`
+  (uppercase — lowercase it for comparisons).
+- Key length must be exactly 16/24/32 bytes; anything else → `''`. Hex keys
+  are 32/48/64 characters.
+- CBC with a non-multiple-of-16 length uses a non-standard partial tail —
+  fine for internal round-trips, not for cross-library interop.
+- `AESDecryptECBPkcs7` rejects ciphertext that is not a multiple of 16
+  bytes (returns `''`).
+- Check `''` returns — they signal malformed input, wrong key size, failed
+  Base64/hex validation, or a failed GCM/SecretStream authentication, not
+  "empty plaintext".
+- `HexToStr` returns `''` (not an error) on invalid hex — validate scraped
+  values with `s:match('^%x+$')` when you need to tell bad input apart.
+- `SecretStream_Pull` returns three values — always keep the new `state`.
+- `X25519_*` requires OpenSSL 3 on the system and exact 32-byte raw keys.
 
 #### fmd.duktape
 
-JavaScript execution engine.
+JavaScript execution engine (Duktape 2.5, ES5.1+ parts of ES6).
 
 ```lua
 local duktape = require 'fmd.duktape'
 
--- Execute JavaScript
-local script = [[
-    var result = someFunction();
-    result;
-]]
+-- returns the value of the script's LAST expression,
+-- or nil on a JS error (the error is logged)
 local result = duktape.ExecJS(script)
+if not result then return net_problem end
 
 -- Common pattern for obfuscated JS
 local script = x.XPathString('//script[contains(., "eval")]')
 local decrypted = duktape.ExecJS(script .. ';decryptedVariable;')
+
+-- scripts can require() the JS utilities shipped in lua/utils/:
+local out = duktape.ExecJS([[
+    var CryptoJS = require("utils/crypto-js.min.js");
+    CryptoJS.AES.encrypt('data', 'pass').toString();
+]])
 ```
 
 #### fmd.env
@@ -1163,8 +1597,12 @@ Environment information.
 ```lua
 local fmd = require 'fmd.env'
 
-print(fmd.SelectedLanguage)  -- Current language
-print(fmd.LuaDirectory)      -- Lua files directory
+fmd.Directory         -- FMD2 program directory
+fmd.ExeName           -- executable name
+fmd.Version           -- FMD2 version string
+fmd.Revision          -- revision number
+fmd.LuaDirectory      -- lua scripts directory
+fmd.SelectedLanguage  -- selected UI language
 ```
 
 #### fmd.fileutil
@@ -1174,10 +1612,12 @@ File utilities.
 ```lua
 local fileutil = require 'fmd.fileutil'
 
-local name = fileutil.ExtractFileNameOnly('/path/to/file.txt')
--- returns 'file'
+fileutil.ExtractFileName('/path/file.txt')      -- 'file.txt'
+fileutil.ExtractFileNameOnly('/path/file.txt')  -- 'file'
 
-fileutil.SerializeAndMaintainNames(list1, list2)
+-- takes ONE TStrings argument (NAMES, LINKS, a fmd.strings list, ...);
+-- prefixes numeric-looking names so sort order is preserved on reload
+fileutil.SerializeAndMaintainNames(NAMES)
 ```
 
 #### fmd.logger
@@ -1188,30 +1628,244 @@ Logging functionality.
 local logger = require 'fmd.logger'
 
 logger.Send('Info message')
+logger.SendWarning('Warning message')
 logger.SendError('Error message')
 ```
 
 #### fmd.subprocess
 
-Run external commands.
+Run external commands. There is no `run` function — use:
 
 ```lua
 local subprocess = require 'fmd.subprocess'
 
-local result = subprocess.run({'node', 'script.js'})
+-- varargs: executable + arguments (all strings);
+-- returns four values: ok, stdout, stderr, exitcode
+local ok, out, err, code = subprocess.RunCommandHide('node', 'script.js', '--opt', 'value')
+if not ok then print(err) end
 ```
+
+`RunCommand` shows the console window while running; `RunCommandHide`
+doesn't (use it for helper executables on Windows so no console flashes).
+`ok` is `false` when the process exits with a non-zero status.
+(`subprocess.New()` / `subprocess.Create()` also exist — a raw `TProcess`
+object with no bound methods; rarely useful from Lua.)
 
 #### fmd.mangafoxwatermark
 
 Watermark removal for FanFox/MangaHere.
 
 ```lua
-local watermark = require 'fmd.mangafoxwatermark'
+local mf = require 'fmd.mangafoxwatermark'
 
 function AfterImageSaved()
-    watermark.RemoveWatermark(FILENAME, true)
+    mf.RemoveWatermark(FILENAME, true)  -- true = re-save as PNG
     return true
 end
+
+mf.LoadTemplate(filename)               -- optional: load an alternate template
+```
+
+#### fmd.gzip
+
+GZip/zlib decompression. One function:
+
+**`gzip.Inflate(data)`** — decompresses a binary string and returns the
+decompressed string, or **`nil`** if the data is not valid deflate/gzip/zlib
+(detection is automatic by magic header; gzip members with filename/comment
+extra fields are handled). Errors are logged, not raised.
+
+```lua
+local gzip = require 'fmd.gzip'
+
+local raw = gzip.Inflate(compressed_data)
+if not raw then return net_problem end
+```
+
+Real usage — `lua/modules/Happymh.lua` (the site returns an encrypted gzip
+blob with a 4-byte `SC01` magic; after the module's custom decryption it
+inflates the remainder):
+
+```lua
+local plain = table.concat(out)                  -- decrypted bytes
+if plain:sub(1, 4) ~= 'SC01' then error('Decrypting scans failed') end
+return require 'fmd.gzip'.Inflate(plain:sub(5))
+```
+
+There is no deflate/compress counterpart — modules only ever *decompress*.
+
+#### fmd.pcre2
+
+Full **PCRE2** regular expressions (8-bit), compiled with the `PCRE2_UTF`
+flag. Use it whenever a site's regex needs look-arounds, backreferences,
+non-greedy control, possessive quantifiers, or Unicode classes that Lua
+patterns don't have.
+
+All functions take the **subject first, pattern second** (like Lua's
+`string.find`, not like `re.exec` in JS):
+
+| Function | Signature | Returns |
+|----------|-----------|---------|
+| `exec` | `re.exec(subject, pattern[, init])` | `true`/`false` — does the pattern match anywhere |
+| `find` | `re.find(subject, pattern[, init])` | `start, end` (1-based, inclusive, like `string.find`) or nothing when no match |
+| `match` | `re.match(subject, pattern[, init])` | with capture groups: all groups; without: the whole match; nothing when no match (like `string.match`) |
+| `gmatch` | `re.gmatch(subject, pattern[, init])` | iterator over successive matches (like `string.gmatch`) |
+| `gsub` | `re.gsub(subject, pattern, replacement[, init])` | string with **all** matches replaced (global) |
+
+`init` is an optional 1-based start offset. Patterns are compiled fresh on
+every call — for hot loops prefer one `gmatch` over repeated `match` calls.
+
+**Replacement syntax is PCRE2, not Lua:** use `$1`, `$2`, `${name}`, `$0`
+(whole match), `$$` (a literal `$`). Lua's `%1` does **not** work here. (The
+`PCRE2_SUBSTITUTE_EXTENDED` option is not enabled, so `\n`-style escapes are
+not interpreted in the replacement.)
+
+```lua
+local re = require 'fmd.pcre2'
+
+-- lookbehind — impossible with Lua patterns
+if re.exec(s, '(?<=//cdn)[\\w./-]+\\.(?:jpg|png)') then ... end
+
+-- capture groups, find positions
+local start, fin = re.find(s, 'chapter[_-]?(\\d+)')
+local num = re.match(s, 'chapter[_-]?(\\d+)')          -- group 1 only
+
+-- replace all, PCRE2 syntax
+local clean = re.gsub(s, '\\s{2,}', ' ')               -- collapse whitespace
+
+-- iteration
+for url in re.gmatch(s, 'https?://[^"\\s]+') do
+    TASK.PageLinks.Add(url)
+end
+```
+
+> [!WARNING]
+> - A pattern that can match the **empty string** makes `gmatch` loop forever
+>   (the iterator does not advance past zero-width matches, unlike Lua's
+>   `string.gmatch`).
+> - Breaking out of a `gmatch` loop early leaks the internal engine object —
+>   avoid `break` in long loops over huge subjects, or let the loop run out.
+> - A compile error logs a message and makes the call fail *softly*: `exec`
+>   returns `false`, `find`/`match` return nothing, `gsub` returns the subject
+>   unchanged, `gmatch` returns an iterator that yields nothing.
+> - The engine holds a pointer to the subject string — keep the subject alive
+>   (a local variable) for the whole iteration.
+
+#### fmd.imagepuzzle
+
+Native image tile **descrambler** for sites that cut pages into a grid and
+shuffle the tiles (plus optional flips). It decodes the image (JPG/PNG/WebP
+are handled natively), rearranges the blocks, and writes the fixed image —
+no external tool needed.
+
+**Constructor:**
+
+```lua
+local imagepuzzle = require 'fmd.imagepuzzle'
+local puzzle = imagepuzzle.Create(hblocks, vblocks)   -- or .New(...)
+```
+
+`hblocks`/`vblocks` are the grid size (columns × rows of tiles). New puzzles
+start **unscrambled** — `Matrix[i] = i`, `Flips[i] = 0`.
+
+**Members:**
+
+| Member | Access | Description |
+|--------|--------|-------------|
+| `puzzle.HorBlock` | read | number of horizontal blocks (columns) |
+| `puzzle.VerBlock` | read | number of vertical blocks (rows) |
+| `puzzle.Matrix[i]` | read/write | destination tile index for source tile `i` — **0-based**, range `0 .. hblocks*vblocks-1` |
+| `puzzle.Flips[i]` | read/write | flip flags for tile `i` (0 = none) — 0-based |
+| `puzzle.Multiply` | read/write | scaling multiplier, default 1 (used when the scrambled image is scaled up/down) |
+| `puzzle:DeScramble(input, output)` | method | descrambles a `TStream` into another `TStream` (`input` = scrambled, `output` = fixed) |
+
+`HTTP.Document` is a `TMemoryStream`, so the usual pattern is to descramble
+**in place** during `OnDownloadImage`.
+
+Real usage — `lua/modules/Comix.lua` (the site sends an `X-Scramble-Grid`
+response header and a seed; the module computes the permutation matrix with
+a small LCG/xorshift in Lua, then fixes the image):
+
+```lua
+function DownloadImage()
+    if not HTTP.GET(URL) then return false end
+    local grid_header = HTTP.Headers.Values['X-Scramble-Grid']
+    local cols, rows = ParseGrid(grid_header)
+    local grid_size = cols * rows
+
+    local puzzle = require 'fmd.imagepuzzle'.Create(cols, rows)
+    local matrix = GetPermutationMatrixLcg(seed, grid_size)   -- module-side math
+
+    for src_idx = 0, grid_size - 1 do          -- 0-based!
+        puzzle.Matrix[src_idx] = matrix[src_idx]
+    end
+
+    puzzle.DeScramble(HTTP.Document, HTTP.Document)  -- in place
+    return true
+end
+```
+
+> [!NOTE]
+> - `Matrix` mapping semantics: `Matrix[src] = dst` — source tile `src` is
+>   moved to position `dst`.
+> - The streams can be the same object (in-place) or two different streams
+>   (both are `TStream` userdata — in practice `HTTP.Document`).
+> - The output format follows the input image (JPG/PNG/WebP all supported).
+> - This is CPU-bound native code — keep grids modest and expect a short
+>   delay per image.
+
+#### fmd.strings
+
+A full `TStringList` binding — create extra string lists beyond the injected
+`NAMES` / `LINKS` / `TASK.PageLinks` etc. Its main value: `TStrings` objects
+can be passed **directly** to `XPathStringAll` / `XPathHREFAll` / XPath
+list-filling methods (they append in place, no Lua table conversion needed),
+and they can be sorted and reversed natively.
+
+```lua
+local strings = require 'fmd.strings'
+local list = strings.New()      -- or strings.Create()
+```
+
+| Member | Description |
+|--------|-------------|
+| `list.Add(s)` | append a line |
+| `list.AddText(s)` | append multi-line text (splits on line breaks) |
+| `list.Text` | get/set the whole content (lines joined with `\r\n`) |
+| `list.CommaText` | get/set as comma-separated values (CSV quoting rules) |
+| `list.DelimitedText` | get/set using `Delimiter` + `StrictDelimiter`-style CSV |
+| `list.Delimiter` | delimiter char for `DelimitedText` (one character) |
+| `list.NameValueSeparator` | the `name=value` separator char (default `=`) |
+| `list[i]` | 1-based line access (read/write) — the default indexer |
+| `list.Strings[i]` | same as `list[i]` |
+| `list.Values['name']` | 1-based `name=value` pair access (read/write) |
+| `list.Count` | number of lines |
+| `list.Sort()` | sort ascending (case-sensitive) |
+| `list.Reverse()` | reverse the order |
+| `list.IndexOf(s)` | first index of `s` (1-based) or `0` if absent |
+| `list.IndexOfName(name)` | first index whose `name=` prefix matches, or `0` |
+| `list.Delete(i)` | delete 1-based line `i` |
+| `list.Clear()` | empty the list |
+| `list.LoadFromFile(path)` / `list.SaveToFile(path)` | file I/O |
+| `list.LoadFromStream(stream)` / `list.SaveToStream(stream)` | stream I/O |
+| `list.Get(i)` / `list.Set(i, s)` | 1-based accessor methods behind `list[i]` |
+
+Typical use with XPath list-filling:
+
+```lua
+local strings = require 'fmd.strings'
+local genres = strings.New()
+CreateTXQuery(HTTP.Document).XPathStringAll('//div[@class="genre"]/a', genres)
+MANGAINFO.Genres = genres.Text
+```
+
+Note that the injected objects (`NAMES`, `LINKS`, `HTTP.Headers`,
+`HTTP.Cookies`, `TASK.PageLinks`, `MANGAINFO.ChapterNames`, …) are **the same
+kind of object** — everything in this table works on them too. The classic
+chapter-list reversal pattern:
+
+```lua
+MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 ```
 
 ---
@@ -1245,27 +1899,176 @@ local decompressed = lz.decompressFromBase64(compressed_base64)
 
 #### utils.jsunpack
 
-JavaScript unpacker for obfuscated code.
+Unpacker for `p,a,c,k,e,d` *string-table* obfuscation (NOT the classic
+eval-packer — for that use `fmd.duktape`). Three functions:
+
+| Function | Signature | Description |
+|----------|-----------|-------------|
+| `unpack36` | `unpack36(text, a, c, words)` | Substitutes the base-36 words of the `p,a,c,k,e,d` dictionary back into the source. `words` is the decoded word table (array of strings). |
+| `replacehex` | `replacehex(text)` | Replaces `\xNN`-style escapes with characters |
+| `splitstr` | `splitstr(str, delimiter)` | Splits a string into a Lua table by a single-character delimiter |
+
+Real usage — `lua/modules/ManHuaGui.lua` (the site ships the word table
+LZ-String-compressed):
 
 ```lua
-local jsunpack = require 'utils.jsunpack'
+local js = require 'utils.jsunpack'
+local lz = require 'utils.lzstring'
 
-local unpacked = jsunpack.unpack(packed_js)
+local w = js.splitstr(lz.decompressFromBase64(GetBetween(",'", "'", s)), '|')
+s = js.unpack36(text, a, c, w)
 ```
 
 #### utils.nodejs
 
-Node.js integration for JS-heavy sites (requires Puppeteer).
+Node.js integration for JS-heavy sites (requires Node.js + Puppeteer, see
+`lua/utils/nodejs.lua`).
 
 ```lua
 local nodejs = require 'utils.nodejs'
 
--- Load page with JavaScript execution
-local html = nodejs.run_html_load(url)
-
--- Execute custom script
-local result = nodejs.run_js_load(url, 'document.body.innerHTML')
+local html = nodejs.run_html_load(url)                     -- render page with JS
+local result = nodejs.run_html_load_with_js(url, js_code)  -- render, then run JS
+local out = nodejs.run_js(js_code)                         -- run JS in page context
 ```
+
+#### utils.nextjs
+
+Helpers for **Next.js sites** — extracts and parses the `self.__next_f.push`
+flight-data payloads that embed the page's real JSON data in `<script>` tags.
+
+```lua
+local NextJs = require 'utils.nextjs'
+```
+
+| Function | Returns | Description |
+|----------|---------|-------------|
+| `NextJs.ExtractFlightText(html)` | string | all flight payloads, JSON-unescaped and joined with `\n` |
+| `NextJs.ParseFlightRecords(html)` | table | map of `id → decoded JSON value` for each `id: {...}` / `id: [...]` record in the flight data |
+| `NextJs.GetRootObjects(html)` | array | all decoded record values (for scanning with `FindObject`) |
+| `NextJs.FindKey(obj, key)` | value | recursive search for the first `key` in a nested table |
+| `NextJs.FindObject(obj, predicate)` | table | recursive search for the first table for which `predicate(t)` is truthy |
+
+Real usage — `lua/modules/Wurmz.lua` and `lua/modules/PhiliaScans.lua`:
+
+```lua
+local NextJs = require 'utils.nextjs'
+
+local roots = NextJs.GetRootObjects(HTTP.Document.ToString())
+for _, root in ipairs(roots) do
+    local data = NextJs.FindObject(root, function(v)
+        return v.images ~= nil            -- locate the object that has the images
+    end)
+    if data then
+        for _, img in ipairs(data.images) do ... end
+    end
+end
+```
+
+For single values deep in an unknown structure, `FindKey` is the shortcut:
+
+```lua
+local images = NextJs.FindKey(NextJs.ParseFlightRecords(html), 'images')
+```
+
+#### utils.sha256
+
+> [!WARNING]
+> **Temporary module.** `utils.sha256` exists only because the **current public
+> release of FMD2 has no native SHA-256**. A native implementation is now on
+> the `master` branch and will ship in the **next release** as
+> `fmd.crypto.SHA256` / `SHA256Hex`. When that happens, `utils.sha256` will be
+> **removed**, so use it only in modules that must run on the current release,
+> and plan to migrate them.
+
+Pure-Lua SHA-256 and HMAC-SHA256 (no native dependency).
+
+```lua
+local sha256 = require 'utils.sha256'
+```
+
+| Function | Returns | Description |
+|----------|---------|-------------|
+| `sha256.sha256(msg)` | hex string (lowercase) | SHA-256 digest |
+| `sha256.sha256_binary(msg)` | raw 32 bytes | binary digest |
+| `sha256.hmac_sha256(key, text)` | hex string | HMAC. Note the order: **key first, text second** (opposite of `fmd.crypto.HMAC_SHA256(data, key)`) |
+
+Real usage, `lua/modules/KLManga.lua` (request signing):
+
+```lua
+local function SetRequestHeaders()
+    local key = 'KL9K40zaSyC9K40vOMLLbEcepIFBhUKXwELqxlwTEF'
+    local timestamp = os.time()
+    local payload = timestamp .. '.' .. key
+    local signature = require('utils.sha256').sha256(payload)
+    HTTP.Headers.Values['x-client-ts']  = timestamp
+    HTTP.Headers.Values['x-client-sig'] = signature
+end
+```
+
+##### Migrating to the native functions
+
+Once the release that includes native SHA-256 is out, switch to `fmd.crypto`:
+
+| `utils.sha256` (old) | `fmd.crypto` (new) | Notes |
+|----------------------|--------------------|-------|
+| `sha256.sha256(msg)` | `crypto.SHA256Hex(msg)` | Both return lowercase hex |
+| `sha256.sha256_binary(msg)` | `crypto.SHA256(msg)` | Both return the raw 32 bytes |
+| `sha256.hmac_sha256(key, text)` | `crypto.HMAC_SHA256Hex(text, key)` | **Argument order is swapped** (data first, key second) |
+
+```lua
+-- Before (current release)
+local signature = require('utils.sha256').sha256(payload)
+
+-- After (next release)
+local crypto = require 'fmd.crypto'
+local signature = crypto.SHA256Hex(payload)
+```
+
+#### utils.protoc (with the `pb` runtime)
+
+Protocol Buffers support for sites with binary APIs (e.g. MangaPlus).
+Two parts:
+
+1. **`utils.protoc`** — pure-Lua `.proto` parser/`protoc` (it compiles
+   message definitions into the runtime). Ships in `lua/utils/protoc.lua`.
+2. **`pb`** — the compiled protobuf runtime (`pb.dll` in the FMD2 install
+   directory; from starwing/lua-protobuf). It provides `pb.decode`,
+   `pb.encode`, `pb.load`, etc.
+
+The typical pairing: the module file sits next to a `.proto` file, and
+`protoc` feeds it to the `pb` runtime at load time. Real usage —
+`lua/modules/MangaPlus.lua` (+ `lua/modules/MangaPlus.proto`):
+
+```lua
+local protoc = require 'utils.protoc'
+local pb = require 'pb'
+
+protoc.proto3_optional = true
+protoc:load(ReadFile(target_file))          -- compile MangaPlus.proto into pb
+
+local manga = pb.decode('Response', HTTP.Document.ToString()).success.allTitlesViewV2.AllTitlesGroup
+```
+
+Common `protoc` API (call on the module table or an instance from
+`protoc.new()`):
+
+| Call | Description |
+|------|-------------|
+| `protoc.new()` | fresh parser instance |
+| `protoc:load(source[, name])` | parse `.proto` **source text** and register types into `pb` |
+| `protoc:loadfile(filename)` | parse a `.proto` file |
+| `protoc:compile(source[, name])` | like `load`, but returns the compiled type table instead |
+| `protoc:addpath(path)` | extra include path for `import` statements |
+| `protoc.reload()` | clear all loaded types |
+
+And the essential `pb` runtime calls:
+
+| Call | Description |
+|------|-------------|
+| `pb.decode(msgtype, data)` | decode binary `data` into a Lua table |
+| `pb.encode(msgtype, table)` | encode a Lua table to binary |
+| `pb.load(data)` / `pb.loadfile(fn)` | load pre-compiled type descriptors |
 
 ---
 
@@ -1280,16 +2083,19 @@ local Template = require 'templates.Madara'
 
 function GetNameAndLink()
     Template.GetNameAndLink()
+
     return no_error
 end
 
 function GetInfo()
     Template.GetInfo()
+
     return no_error
 end
 
 function GetPageNumber()
     Template.GetPageNumber()
+
     return true
 end
 ```
@@ -1300,7 +2106,7 @@ end
 |----------|-------------|-------------|
 | `templates.Madara` | WordPress Madara theme | 100+ sites |
 | `templates.FoOlSlide` | FoOlSlide reader | Common |
-| `templates.SPA` | Single Page Applications | Common |
+| `templates.VTheme` | VTheme template | Common |
 | `templates.MangaHub` | MangaHub API | Common |
 | `templates.Guya` | Guya.moe reader | Few sites |
 | `templates.GroupLe` | Grouple.co based sites | Few sites |
@@ -1362,30 +2168,10 @@ function Init()
     m.OnLogin = 'Login'
     return m
 end
-
-function Login()
-    if not MODULE.Account.Enabled then return false end
-    
-    local crypto = require 'fmd.crypto'
-    local data = 'username=' .. crypto.EncodeURLElement(MODULE.Account.Username) ..
-                 '&password=' .. crypto.EncodeURLElement(MODULE.Account.Password)
-    
-    MODULE.Account.Status = asChecking
-    
-    if HTTP.POST(login_url, data) then
-        if HTTP.ResultCode == 200 then
-            MODULE.Account.Status = asValid
-            return true
-        else
-            MODULE.Account.Status = asInvalid
-            return false
-        end
-    end
-    
-    MODULE.Account.Status = asUnknown
-    return false
-end
 ```
+
+The `Login` handler itself is described in [Login](#14-login-onlogin), and
+Example 3 below is a complete module with login.
 
 ### User Options
 
@@ -1401,8 +2187,8 @@ end
 
 -- Get option values
 local timeout = tonumber(MODULE.GetOption('timeout') or '60')
-local showGroup = MODULE.GetOption('showgroup')
-local imageSize = MODULE.GetOption('imagesize')
+local show_group = MODULE.GetOption('showgroup')
+local image_size = MODULE.GetOption('imagesize')
 ```
 
 ### JSON API Handling
@@ -1410,18 +2196,21 @@ local imageSize = MODULE.GetOption('imagesize')
 ```lua
 local json = require 'utils.json'
 
--- POST with JSON
+-- POST a JSON body
 HTTP.MimeType = 'application/json'
 if HTTP.POST(api_url, json.encode({query = '...'})) then
     local x = CreateTXQuery(HTTP.Document)
-    local data = x.XPath('json(*)')
-    local value = x.XPathString('data.field', data)
-end
 
--- Or using XPath directly
-local x = CreateTXQuery(HTTP.Document)
-local value = x.XPathString('json(*).results.data.field')
+    -- Query the response with XPath
+    local value = x.XPathString('json(*).results.data.field')
+
+    -- Or decode it into a Lua table
+    local data = json.decode(HTTP.Document.ToString())
+end
 ```
+
+All the JSON query styles (dot, `?` lookup, `parse-json`) are described in
+[XPath Extensions](#xpath-extensions).
 
 ### Multi-Category Sites
 
@@ -1441,50 +2230,6 @@ function GetNameAndLink()
     -- process
     return no_error
 end
-```
-
-### Image Download Handlers
-
-```lua
--- Set headers before download
-function BeforeDownloadImage()
-    HTTP.Headers.Values['Referer'] = MODULE.RootURL
-    HTTP.Headers.Values['Origin'] = MODULE.RootURL
-    return true
-end
-
--- Custom image download
-function DownloadImage()
-    if HTTP.GET(url) then
-        -- process image data in HTTP.Document
-        return true
-    end
-    return false
-end
-
--- Post-process saved image
-function AfterImageSaved()
-    require('fmd.mangafoxwatermark').RemoveWatermark(FILENAME, true)
-    return true
-end
-
--- Get image URL from chapter page
-function GetImageURL()
-    if HTTP.GET(page_url) then
-        local x = CreateTXQuery(HTTP.Document)
-        TASK.PageLinks[WORKID] = x.XPathString('//img/@src')
-        return true
-    end
-    return false
-end
-```
-
-### Reversing Chapter Lists
-
-```lua
--- Reverse if chapters are in wrong order
-MANGAINFO.ChapterLinks.Reverse()
-MANGAINFO.ChapterNames.Reverse()
 ```
 
 ### Iterating Over Nodes
@@ -1516,6 +2261,48 @@ end
 
 ```lua
 ----------------------------------------------------------------------------------------------------
+-- Event Functions
+----------------------------------------------------------------------------------------------------
+
+function GetNameAndLink()
+    local u = MODULE.RootURL .. '/manga-list?page=' .. (URL + 1)
+
+    if not HTTP.GET(u) then return net_problem end
+
+    CreateTXQuery(HTTP.Document).XPathHREFAll('//div[@class="manga-item"]/a', LINKS, NAMES)
+
+    return no_error
+end
+
+function GetInfo()
+    local u = MaybeFillHost(MODULE.RootURL, URL)
+
+    if not HTTP.GET(u) then return net_problem end
+
+    local x = CreateTXQuery(HTTP.Document)
+    MANGAINFO.Title     = x.XPathString('//h1[@class="title"]')
+    MANGAINFO.CoverLink = x.XPathString('//img[@class="cover"]/@src')
+    MANGAINFO.Genres    = x.XPathStringAll('//div[@class="genres"]/a')
+    MANGAINFO.Summary   = x.XPathString('//div[@class="summary"]')
+
+    x.XPathHREFAll('//ul[@class="chapters"]/li/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+    MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
+
+    return no_error
+end
+
+function GetPageNumber()
+    local u = MaybeFillHost(MODULE.RootURL, URL)
+
+    if not HTTP.GET(u) then return false end
+
+    CreateTXQuery(HTTP.Document).XPathStringAll('//div[@class="reader"]/img/@src', TASK.PageLinks)
+
+    return true
+end
+
+
+----------------------------------------------------------------------------------------------------
 -- Module Initialization
 ----------------------------------------------------------------------------------------------------
 
@@ -1528,57 +2315,74 @@ function Init()
     m.OnGetNameAndLink         = 'GetNameAndLink'
     m.OnGetInfo                = 'GetInfo'
     m.OnGetPageNumber          = 'GetPageNumber'
-    return m
-end
-
-----------------------------------------------------------------------------------------------------
--- Event Functions
-----------------------------------------------------------------------------------------------------
-
-function GetNameAndLink()
-    local u = MODULE.RootURL .. '/manga-list?page=' .. (URL + 1)
-    
-    if not HTTP.GET(u) then return net_problem end
-    
-    local x = CreateTXQuery(HTTP.Document)
-    x.XPathHREFAll('//div[@class="manga-item"]/a', LINKS, NAMES)
-    
-    return no_error
-end
-
-function GetInfo()
-    local u = MaybeFillHost(MODULE.RootURL, URL)
-    
-    if not HTTP.GET(u) then return net_problem end
-    
-    local x = CreateTXQuery(HTTP.Document)
-    MANGAINFO.Title     = x.XPathString('//h1[@class="title"]')
-    MANGAINFO.CoverLink = x.XPathString('//img[@class="cover"]/@src')
-    MANGAINFO.Genres    = x.XPathStringAll('//div[@class="genres"]/a')
-    MANGAINFO.Summary   = x.XPathString('//div[@class="summary"]')
-    
-    x.XPathHREFAll('//ul[@class="chapters"]/li/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
-    MANGAINFO.ChapterLinks.Reverse()
-    MANGAINFO.ChapterNames.Reverse()
-    
-    return no_error
-end
-
-function GetPageNumber()
-    local u = MaybeFillHost(MODULE.RootURL, URL)
-    
-    if not HTTP.GET(u) then return false end
-    
-    local x = CreateTXQuery(HTTP.Document)
-    x.XPathStringAll('//div[@class="reader"]/img/@src', TASK.PageLinks)
-    
-    return true
 end
 ```
 
 ### Example 2: API-Based Module with JSON
 
 ```lua
+----------------------------------------------------------------------------------------------------
+-- Event Functions
+----------------------------------------------------------------------------------------------------
+
+function GetDirectoryPageNumber()
+    HTTP.MimeType = 'application/json'
+    local s = '{"filter":{"tags":[],"status":[],"types":[],"showAdult":true},"page":1}'
+
+    if not HTTP.POST(MODULE.RootURL .. '/api/manga', '{page = 0}') then return net_problem end
+
+    PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('json(*).total_pages')) or 1
+
+    return no_error
+end
+
+function GetNameAndLink()
+    HTTP.MimeType = 'application/json'
+    local s = '{"filter":{"tags":[],"status":[],"types":[],"showAdult":true},"page":' .. URL .. '}'
+
+    if not HTTP.POST(MODULE.RootURL .. '/api/manga', s) then return net_problem end
+
+    for v in CreateTXQuery(HTTP.Document).XPath('json(*).results()').Get() do
+        LINKS.Add(v.GetProperty('id').ToString())
+        NAMES.Add(v.GetProperty('title').ToString())
+    end
+
+    return no_error
+end
+
+function GetInfo()
+    local u = MODULE.RootURL .. '/api/manga/' .. URL
+
+    if not HTTP.GET(u) then return net_problem end
+
+    local x = CreateTXQuery(HTTP.Document)
+    local data = x.XPath('json(*)')
+    MANGAINFO.Title     = x.XPathString('title', data)
+    MANGAINFO.CoverLink = x.XPathString('cover_url', data)
+    MANGAINFO.Authors   = x.XPathString('author', data)
+    MANGAINFO.Genres    = x.XPathString('string-join(genres?*?name, ", ")', data)
+    MANGAINFO.Summary   = x.XPathString('description', data)
+
+    for v in x.XPath('chapters?*', data).Get() do
+        MANGAINFO.ChapterLinks.Add(v.GetProperty('id').ToString())
+        MANGAINFO.ChapterNames.Add('Chapter ' .. v.GetProperty('number').ToString())
+    end
+
+    return no_error
+end
+
+function GetPageNumber()
+    local u = MODULE.RootURL .. '/api/chapter/' .. URL
+
+    if not HTTP.GET(u) then return false end
+
+    for v in CreateTXQuery(HTTP.Document)  .XPath('json(*).pages()').Get() do
+        TASK.PageLinks.Add(v.GetProperty('image_url').ToString())
+    end
+
+    return true
+end
+
 ----------------------------------------------------------------------------------------------------
 -- Module Initialization
 ----------------------------------------------------------------------------------------------------
@@ -1589,116 +2393,17 @@ function Init()
     m.Name                     = 'APISite'
     m.RootURL                  = 'https://api.example.com'
     m.Category                 = 'English'
-    m.SortedList               = true
     m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
     m.OnGetNameAndLink         = 'GetNameAndLink'
     m.OnGetInfo                = 'GetInfo'
     m.OnGetPageNumber          = 'GetPageNumber'
-    return m
-end
-
-----------------------------------------------------------------------------------------------------
--- Local Constants
-----------------------------------------------------------------------------------------------------
-
-local json = require 'utils.json'
-
-----------------------------------------------------------------------------------------------------
--- Event Functions
-----------------------------------------------------------------------------------------------------
-
-function GetDirectoryPageNumber()
-    HTTP.MimeType = 'application/json'
-    
-    if HTTP.POST(MODULE.RootURL .. '/api/manga', json.encode({page = 0})) then
-        local x = CreateTXQuery(HTTP.Document)
-        PAGENUMBER = tonumber(x.XPathString('json(*).total_pages')) or 1
-        return no_error
-    end
-    
-    return net_problem
-end
-
-function GetNameAndLink()
-    HTTP.MimeType = 'application/json'
-    local data = json.encode({page = URL})
-    
-    if HTTP.POST(MODULE.RootURL .. '/api/manga', data) then
-        local x = CreateTXQuery(HTTP.Document)
-        
-        for v in x.XPath('json(*).results()').Get() do
-            LINKS.Add(v.GetProperty('id').ToString())
-            NAMES.Add(v.GetProperty('title').ToString())
-        end
-        
-        return no_error
-    end
-    
-    return net_problem
-end
-
-function GetInfo()
-    local url = MODULE.RootURL .. '/api/manga/' .. URL
-    
-    if HTTP.GET(url) then
-        local x = CreateTXQuery(HTTP.Document)
-        local data = x.XPath('json(*)')
-        
-        MANGAINFO.Title     = x.XPathString('title', data)
-        MANGAINFO.CoverLink = x.XPathString('cover_url', data)
-        MANGAINFO.Authors   = x.XPathString('author', data)
-        MANGAINFO.Genres    = x.XPathStringAll('genres[*].name', data)
-        MANGAINFO.Summary   = x.XPathString('description', data)
-        
-        for v in x.XPath('chapters[*]', data).Get() do
-            MANGAINFO.ChapterLinks.Add(v.GetProperty('id').ToString())
-            MANGAINFO.ChapterNames.Add('Chapter ' .. v.GetProperty('number').ToString())
-        end
-        
-        return no_error
-    end
-    
-    return net_problem
-end
-
-function GetPageNumber()
-    local url = MODULE.RootURL .. '/api/chapter/' .. URL
-    
-    if HTTP.GET(url) then
-        local x = CreateTXQuery(HTTP.Document)
-        
-        for v in x.XPath('json(*).pages[*]').Get() do
-            TASK.PageLinks.Add(v.GetProperty('image_url').ToString())
-        end
-        
-        return true
-    end
-    
-    return false
+    m.SortedList               = true
 end
 ```
 
 ### Example 3: Module with Login
 
 ```lua
-----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-    local m = NewWebsiteModule()
-    m.ID                       = 'login123456789012345678'
-    m.Name                     = 'LoginSite'
-    m.RootURL                  = 'https://members.example.com'
-    m.Category                 = 'English'
-    m.AccountSupport           = true
-    m.OnLogin                  = 'Login'
-    m.OnGetNameAndLink         = 'GetNameAndLink'
-    m.OnGetInfo                = 'GetInfo'
-    m.OnGetPageNumber          = 'GetPageNumber'
-    return m
-end
-
 ----------------------------------------------------------------------------------------------------
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
@@ -1711,12 +2416,12 @@ local crypto = require 'fmd.crypto'
 
 function Login()
     if not MODULE.Account.Enabled then return false end
-    
+
     local data = 'username=' .. crypto.EncodeURLElement(MODULE.Account.Username) ..
                  '&password=' .. crypto.EncodeURLElement(MODULE.Account.Password)
-    
+
     MODULE.Account.Status = asChecking
-    
+
     if HTTP.POST(MODULE.RootURL .. '/login', data) then
         if HTTP.ResultCode == 200 and HTTP.Document.Size > 100 then
             MODULE.Account.Status = asValid
@@ -1726,7 +2431,7 @@ function Login()
             return false
         end
     end
-    
+
     MODULE.Account.Status = asUnknown
     return false
 end
@@ -1734,39 +2439,55 @@ end
 function GetNameAndLink()
     -- Login will be called automatically
     local u = MODULE.RootURL .. '/manga?page=' .. (URL + 1)
-    
+
     if not HTTP.GET(u) then return net_problem end
-    
+
     local x = CreateTXQuery(HTTP.Document)
     x.XPathHREFAll('//div[@class="manga"]/a', LINKS, NAMES)
-    
+
     return no_error
 end
 
 function GetInfo()
     local u = MaybeFillHost(MODULE.RootURL, URL)
-    
+
     if not HTTP.GET(u) then return net_problem end
-    
+
     local x = CreateTXQuery(HTTP.Document)
     MANGAINFO.Title = x.XPathString('//h1')
     MANGAINFO.CoverLink = x.XPathString('//img/@src')
-    
+
     x.XPathHREFAll('//ul[@class="chapters"]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
-    
+
     return no_error
 end
 
 function GetPageNumber()
-    HTTP.Headers.Values['Referer'] = MODULE.RootURL
-    
-    if HTTP.GET(URL) then
-        local x = CreateTXQuery(HTTP.Document)
-        x.XPathStringAll('//div[@class="reader"]/img/@data-src', TASK.PageLinks)
-        return true
-    end
-    
-    return false
+    local u = MaybeFillHost(MODULE.RootURL, URL)
+
+    if not HTTP.GET(u) then return false end
+
+    CreateTXQuery(HTTP.Document).XPathStringAll('//div[@class="reader"]/img/@data-src', TASK.PageLinks)
+
+    return true
+end
+
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+    local m = NewWebsiteModule()
+    m.ID                       = 'login123456789012345678'
+    m.Name                     = 'LoginSite'
+    m.RootURL                  = 'https://members.example.com'
+    m.Category                 = 'English'
+    m.OnGetNameAndLink         = 'GetNameAndLink'
+    m.OnGetInfo                = 'GetInfo'
+    m.OnGetPageNumber          = 'GetPageNumber'
+    m.OnLogin                  = 'Login'
+    m.AccountSupport           = true
 end
 ```
 
@@ -1784,38 +2505,16 @@ FMD2.exe --lua-dofile
 
 ### 2. Use Templates When Possible
 
-Many websites use common CMS themes. Check existing templates before writing from scratch:
-- **Madara** - WordPress Madara theme (100+ sites)
-- **FoOlSlide** - FoOlSlide reader
-- **SPA** - Single Page Applications
+Many websites use common CMS themes. Check the
+[Available Templates](#available-templates) before writing a module from scratch.
 
-### 3. Handle JSON APIs
+### 3. Set Proper Headers
 
-Many modern sites use JSON APIs. Use the built-in JSON support:
+Many sites require specific headers (usually `Referer` and `Origin`). Set them in
+`OnBeforeDownloadImage`; see [Before Download Image](#10-before-download-image-onbeforedownloadimage).
+For JSON APIs, see [JSON API Handling](#json-api-handling).
 
-```lua
--- Using XPath JSON functions
-local x = CreateTXQuery(HTTP.Document)
-local value = x.XPathString('json(*).data.field')
-
--- Or using utils.json
-local json = require 'utils.json'
-local data = json.decode(HTTP.Document.ReadString)
-```
-
-### 4. Set Proper Headers
-
-Many sites require specific headers:
-
-```lua
-function BeforeDownloadImage()
-    HTTP.Headers.Values['Referer'] = MODULE.RootURL
-    HTTP.Headers.Values['Origin'] = MODULE.RootURL
-    return true
-end
-```
-
-### 5. Handle JavaScript-Heavy Sites
+### 4. Handle JavaScript-Heavy Sites
 
 For sites that require JavaScript execution:
 
@@ -1830,7 +2529,7 @@ local nodejs = require 'utils.nodejs'
 local html = nodejs.run_html_load(url)
 ```
 
-### 6. Check for Paywalls
+### 5. Check for Paywalls
 
 Skip locked chapters:
 
@@ -1843,7 +2542,7 @@ for v in x.XPath('//ul[@class="chapters"]/a').Get() do
 end
 ```
 
-### 7. Use Persistent Storage
+### 6. Use Persistent Storage
 
 Store data between sessions:
 
@@ -1856,7 +2555,11 @@ MODULE.Storage['cached_data'] = some_data
 local last = MODULE.Storage['last_update']
 ```
 
-### 8. Debug with Logging
+`MODULE.Storage` also exposes `Text` (get/set the whole storage as
+`name=value` lines), `Remove(name)`, `Tag` (integer), `Enable` (boolean)
+and `Status` (string).
+
+### 7. Debug with Logging
 
 ```lua
 print('Debug: ' .. variable)
@@ -1864,7 +2567,7 @@ logger.Send('Info message')
 logger.SendError('Error: ' .. error_message)
 ```
 
-### 9. Module Categories
+### 8. Module Categories
 
 Common category values:
 - `English` - English language sites
@@ -1876,12 +2579,12 @@ Common category values:
 - `H-Sites` - Adult content sites
 - `Webcomics` - Webcomic platforms
 
-### 10. Generate Unique IDs
+### 9. Generate Unique IDs
 
 Use a UUID generator to create unique module IDs:
 
 ```lua
--- Generate at https://www.uuidgenerator.net/
+-- Generate at https://guidgenerator.com/
 m.ID = '56473ae447f04cee93683d7404b32e60'
 ```
 
@@ -1901,36 +2604,6 @@ FMD2/
 │   └── lua/              # Delphi Lua integration files (.pas)
 └── docs/
     └── SUPPORTED_WEBSITES.md
-```
-
----
-
-## Key Statistics
-
-- **Total Modules:** 600+ website modules
-- **Templates:** 35+ reusable templates
-- **Lua Version:** 5.4.8
-- **JavaScript Engine:** Duktape 2.5.0 (embedded) + Node.js (optional)
-
----
-
-## Return Values Reference
-
-```lua
--- Standard return values
-no_error              = 0  -- Success
-net_problem           = 1  -- Network error
-information_not_found = 2  -- Content not found
-
--- Boolean returns
-true   -- Success
-false  -- Failure
-
--- Account status
-asUnknown  = -1  -- Unknown status
-asChecking = 0   -- Validating credentials
-asValid    = 1   -- Credentials valid
-asInvalid  = 2   -- Credentials invalid
 ```
 
 ---
