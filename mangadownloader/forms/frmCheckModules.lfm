@@ -71,20 +71,66 @@ object FormCheckModules: TFormCheckModules
       OnChange = edtFilterChange
     end
   end
-  object lvModules: TListView
+  object vtModules: TVirtualStringTree
     Left = 0
     Height = 344
     Top = 56
     Width = 900
     Align = alClient
-    AutoWidthLastColumn = True
-    Checkboxes = True
-    Columns = <>
+    Colors.DropTargetBorderColor = clHotLight
+    Colors.FocusedSelectionBorderColor = clHotLight
+    Colors.SelectionRectangleBorderColor = clHotLight
+    Colors.UnfocusedSelectionBorderColor = clBtnShadow
+    Header.AutoSizeIndex = 0
+    Header.Columns = <
+      item
+        MinWidth = 25
+        Options = [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coFixed, coAllowFocus]
+        Position = 0
+        Width = 25
+      end
+      item
+        Position = 1
+        Text = 'Module Name'
+        Width = 180
+      end
+      item
+        Position = 2
+        Text = 'Filename'
+        Width = 180
+      end
+      item
+        Position = 3
+        Text = 'CheckSite'
+        Width = 80
+      end
+      item
+        Position = 4
+        Text = 'CheckChapter'
+        Width = 90
+      end
+      item
+        Position = 5
+        Text = 'Status'
+        Width = 250
+      end
+      item
+        Position = 6
+        Text = 'Details'
+        Width = 250
+      end>
+    Header.DefaultHeight = 17
+    Header.Height = 23
+    Header.Options = [hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible]
     TabOrder = 1
-    ViewStyle = vsReport
-    OnColumnClick = lvModulesColumnClick
-    OnCompare = lvModulesCompare
-    OnCustomDrawItem = lvModulesCustomDrawItem
+    TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScrollOnExpand, toAutoTristateTracking, toDisableAutoscrollOnFocus]
+    TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning, toEditOnClick]
+    TreeOptions.PaintOptions = [toHideFocusRect, toShowButtons, toShowDropmark, toShowHorzGridLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toFullVertGridLines]
+    TreeOptions.SelectionOptions = [toFullRowSelect]
+    OnCompareNodes = vtModulesCompareNodes
+    OnFreeNode = vtModulesFreeNode
+    OnGetText = vtModulesGetText
+    OnHeaderClick = vtModulesHeaderClick
   end
   object pnlTop: TPanel
     Left = 0
