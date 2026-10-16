@@ -5,7 +5,7 @@
 local _M = {}
 
 ----------------------------------------------------------------------------------------------------
--- Local Constants
+-- Template Configuration
 ----------------------------------------------------------------------------------------------------
 
 DirectoryPagination = '/manga/list-mode/'
@@ -29,6 +29,7 @@ local function GetCoverLink(x)
 	local img = x.XPathString('//div[@itemprop="image"]//img/@data-lazy-src')
 	if img == '' then img = x.XPathString('//div[@itemprop="image"]//img/@data-src') end
 	if img == '' then img = x.XPathString('//div[@itemprop="image"]//img/@src') end
+	if img == '' then img = x.XPathString('//meta[@property="og:image"]/@content') end
 	return img
 end
 
@@ -90,7 +91,7 @@ function _M.GetInfo()
 	MANGAINFO.Authors   = GetAuthors(x)
 	MANGAINFO.Artists   = GetArtists(x)
 	MANGAINFO.Genres    = GetGenres(x)
-	MANGAINFO.Status    = MangaInfoStatusIfPos(GetStatus(x), 'Berjalan|Ongoing|Publishing|En Cours', 'Tamat|Completed|Finished|Terminé', 'Hiatus|En Pause', 'Dropped|Abandonné')
+	MANGAINFO.Status    = MangaInfoStatusIfPos(GetStatus(x), 'Berjalan|Ongoing|Publi|En Cours', 'Tamat|Completed|Fin|Terminé', 'Hiatus|En Pause', 'Dropped|Abandonné')
 	MANGAINFO.Summary   = x.XPathString('//div[@itemprop="description"]/*[not(script)]/string-join(text(), "\r\n")')
 
 	for v in x.XPath('//div[@id="chapterlist"]//div[@class="eph-num"]/a').Get() do

@@ -1,84 +1,128 @@
+----------------------------------------------------------------------------------------------------
+-- Template Configuration
+----------------------------------------------------------------------------------------------------
+
+local Template      = require 'templates.MangaThemesia'
+local DirectoryPage = '/lista'
+XPathTokenStatus    = 'Estado'
+
+----------------------------------------------------------------------------------------------------
+-- Local Functions
+----------------------------------------------------------------------------------------------------
+
+-- Extract the page image URLs from the encrypted 'ReaderBlob'.
+local function GetReaderBlobPages(s)
+	local crypto = require 'fmd.crypto'
+	local json = require 'utils.json'
+	local blob = s:match('ReaderBlob%.start%((%b{})%)')
+	if not blob or blob == '' then return nil end
+
+	local ok, b = pcall(json.decode, blob)
+	if not ok then return nil end
+
+	local pt = crypto.AESDecryptGCM(crypto.DecodeBase64(b.c), crypto.DecodeBase64(b.k), crypto.DecodeBase64(b.iv))
+	if pt == '' then return nil end
+
+	local ok2, d = pcall(json.decode, pt)
+	if not ok2 then return nil end
+
+	local skip = {}
+	for _, idx in ipairs(d.s) do skip[tonumber(idx) or -1] = true end
+
+	local pages = {}
+	for i, img in ipairs(d.p) do
+		if not skip[i - 1] and img ~= '' then
+			pages[#pages + 1] = img
+		end
+	end
+
+	return pages
+end
+
+----------------------------------------------------------------------------------------------------
+-- Event Functions
+----------------------------------------------------------------------------------------------------
+
+-- Get links and names from the manga list of the current website.
+function GetNameAndLink()
+	local u = MODULE.RootURL .. DirectoryPage
+
+	if not HTTP.GET(u) then return net_problem end
+
+	CreateTXQuery(HTTP.Document).XPathHREFTitleAll('//div[@class="bsx"]/a', LINKS, NAMES)
+
+	return no_error
+end
+
+-- Get info and chapter list for the current manga.
+function GetInfo()
+	Template.GetInfo()
+
+	local x = CreateTXQuery(HTTP.Document)
+	MANGAINFO.AltTitles = x.XPathStringAll('//div[b="Título Alternativos"]//a')
+	MANGAINFO.Genres    = x.XPathStringAll('//div[b="Generos:"]//a')
+	MANGAINFO.Summary   = x.XPathString('//div[b="Sinopsis"]/span')
+
+	for v in x.XPath('//div[@id="chapterlist"]//div[@class="chbox"]').Get() do
+		MANGAINFO.ChapterLinks.Add(x.XPathString('div[@class="dt"]/a/@href', v))
+		MANGAINFO.ChapterNames.Add(x.XPathString('div[@class="eph-num"]/span[@class="chapternum"][1]', v))
+	end
+	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
+
+	HTTP.Reset()
+	HTTP.Headers.Values['Referer'] = MANGAINFO.URL
+
+	return no_error
+end
+
+-- Get the page count and/or page links for the current chapter.
+function GetPageNumber()
+	local rev = tonumber(require 'fmd.env'.Revision)
+	if rev < 6944 then
+		print('Require FMD2 revision 6944 and later')
+		print('Revision ' .. rev .. ' detected')
+		return false
+	end
+	local u = MaybeFillHost(MODULE.RootURL, URL)
+
+	if not HTTP.GET(u) then return false end
+
+	local x = CreateTXQuery(HTTP.Document)
+	local s = x.XPathString('//script[contains(., "p,a,c,k,e,d")]')
+	if s == '' then return false end
+
+	local packed = s:match('^%s*eval(.+)$')
+	local unpacked = require 'fmd.duktape'.ExecJS(packed)
+
+	local pages = GetReaderBlobPages(unpacked)
+	if not pages or #pages == 0 then return false end
+
+	for _, img in ipairs(pages) do
+		TASK.PageLinks.Add(img)
+	end
+
+	return true
+end
+
+-- Prepare the URL, http header and/or http cookies before downloading an image.
+function BeforeDownloadImage()
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+
+	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
 function Init()
 	local m = NewWebsiteModule()
-	m.ID                         = 'd78d163c51b24bc487e777e2b0d811e3'
-	m.Name                       = 'MangaTV'
-	m.RootURL                    = 'https://mangatv.net'
-	m.Category                   = 'Spanish'
-	m.OnGetDirectoryPageNumber   = 'GetDirectoryPageNumber'
-	m.OnGetNameAndLink           = 'GetNameAndLink'
-	m.OnGetInfo                  = 'GetInfo'
-	m.OnGetPageNumber            = 'GetPageNumber'
-	m.SortedList                 = true
-end
-
-function GetDirectoryPageNumber()
-	if HTTP.GET(MODULE.RootURL) then
-		PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//div[@class="navigation"]//li[last()]/a')) or 1
-		return no_error
-	else
-		return net_problem
-	end
-end
-
-function GetNameAndLink()
-	if HTTP.GET(MODULE.RootURL .. '/page/' .. (URL + 1)) then
-		CreateTXQuery(HTTP.Document).XPathHREFTitleAll('//*[@id="main"]//div[contains(@class, "chapter-thumb")]/a', LINKS, NAMES)
-		return no_error
-	else
-		return net_problem
-	end
-end
-
-function GetInfo()
-	MANGAINFO.URL = MaybeFillHost(MODULE.RootURL, URL)
-	if HTTP.GET(MANGAINFO.URL) then
-		local x = CreateTXQuery(HTTP.Document)
-		MANGAINFO.Title      = x.XPathStringAll('//h1[contains(@class, "entry-title")]/text()')
-		MANGAINFO.Summary    = x.XPathString('//div[contains(@class, "wd-full")][4]//span/text()')
-		MANGAINFO.Authors    = x.XPathString('//div[@class="uk-text-center"]/h2/a')
-		MANGAINFO.CoverLink  = x.XPathString('//div[contains(@class, "thumb")]//img/@src')
-		MANGAINFO.Genres     = x.XPathStringAll('//h1[contains(@class, "entry-title")]')
-
-		local v
-		for v in x.XPath('//div[contains(@class, "eplister")]//li').Get() do
-			-- Extraer el enlace
-			MANGAINFO.ChapterLinks.Add(x.XPathString('.//a[@class="dload"]/@href', v))
-			
-			-- Extraer número de capítulo y grupo
-			local chapterNum = x.XPathString('.//span[@class="chapternum"][1]/text()', v)
-			local titleGroup = x.XPathString('.//span[@class="chapternum"][2]/text()', v)
-			
-			-- Procesar el grupo de traducción
-			local group = "Sin grupo"
-			if titleGroup then
-				group = titleGroup:match("|%s*(.+)$") or "Sin grupo"
-			end
-			
-			MANGAINFO.ChapterNames.Add(string.format("%s [%s]", chapterNum:gsub("%s+", " "), group:gsub("%s+", " ")))
-		end
-		
-		MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
-		return no_error
-	else
-		return net_problem
-	end
-end
-
-function GetPageNumber()
-	local result = false
-	if HTTP.GET(MaybeFillHost(MODULE.RootURL, URL)) then
-		local crypto = require "fmd.crypto"
-		local x = CreateTXQuery(HTTP.Document)
-		local s = x.XPathString('//script[contains(., "eval")]')
-	
-		for url in s:gmatch("|Ly9pbWc[^'|%s]+") do
-			local decodedURL = crypto.DecodeBase64(url .. '==')
-			if decodedURL then
-				TASK.PageLinks.Add("https:" .. decodedURL)
-			end
-		end
-		TASK.PageLinks.Reverse()
-		result = true
-	end
-	return result
+	m.ID                       = 'd78d163c51b24bc487e777e2b0d811e3'
+	m.Name                     = 'MangaTV'
+	m.RootURL                  = 'https://mangatv.net'
+	m.Category                 = 'Spanish'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.OnBeforeDownloadImage    = 'BeforeDownloadImage'
 end
