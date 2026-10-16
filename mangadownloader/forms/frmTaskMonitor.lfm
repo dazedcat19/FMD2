@@ -1,0 +1,75 @@
+object FormTaskMonitor: TFormTaskMonitor
+  Left = 0
+  Height = 480
+  Top = 0
+  Width = 700
+  Caption = 'Task Monitor'
+  ClientHeight = 480
+  ClientWidth = 700
+  OnClose = FormClose
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnHide = FormHide
+  Position = poMainFormCenter
+  LCLVersion = '3.8.0.0'
+  object pnlTop: TPanel
+    Left = 0
+    Height = 36
+    Top = 0
+    Width = 700
+    Align = alTop
+    BevelOuter = bvNone
+    Caption = ''
+    ClientHeight = 36
+    ClientWidth = 700
+    TabOrder = 0
+    object ckStayOnTop: TCheckBox
+      Left = 6
+      Height = 19
+      Top = 8
+      Width = 85
+      Caption = 'Stay on top'
+      TabOrder = 0
+      OnChange = ckStayOnTopChange
+    end
+    object btnClose: TBitBtn
+      Left = 616
+      Height = 26
+      Top = 5
+      Width = 74
+      Anchors = [akTop, akRight]
+      AutoSize = True
+      Caption = 'Close'
+      Kind = bkClose
+      TabOrder = 1
+      OnClick = btnCloseClick
+    end
+  end
+  object ScrollBox: TScrollBox
+    Left = 0
+    Height = 444
+    Top = 36
+    Width = 700
+    Align = alClient
+    AutoScroll = True
+    BorderStyle = bsNone
+    ClientHeight = 444
+    ClientWidth = 700
+    TabOrder = 1
+    object lblNoTasks: TLabel
+      Left = 10
+      Height = 18
+      Top = 10
+      Width = 200
+      Caption = 'No active tasks at this time.'
+      Visible = True
+    end
+  end
+  object tmRefresh: TTimer
+    Enabled = False
+    Interval = 800
+    OnTimer = tmRefreshTimer
+    Left = 560
+    Top = 80
+  end
+end
