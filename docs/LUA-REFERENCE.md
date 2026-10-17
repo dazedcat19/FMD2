@@ -4,13 +4,92 @@
 
 1. [Overview](#overview)
 2. [Module Structure](#module-structure)
+    - [Basic Module Template](#basic-module-template)
+    - [Event Handler Reference](#event-handler-reference)
+    - [Status Constants and Return Values](#status-constants-and-return-values)
 3. [Injected Delphi Objects](#injected-delphi-objects)
+    - [HTTP Object (THTTPSendThread)](#http-object-thttpsendthread)
+        - [HTTP.Document (TMemoryStream)](#httpdocument-tmemorystream)
+    - [MODULE Object (TModuleContainer)](#module-object-tmodulecontainer)
+    - [Event Handlers - Complete Workflow](#event-handlers---complete-workflow)
+        - [1. Module Initialization (`Init`)](#1-module-initialization-init)
+        - [2. Before Update List (`OnBeforeUpdateList`)](#2-before-update-list-onbeforeupdatelist)
+        - [3. Get Directory Page Number (`OnGetDirectoryPageNumber`)](#3-get-directory-page-number-ongetdirectorypagenumber)
+        - [4. Get Name And Link (`OnGetNameAndLink`)](#4-get-name-and-link-ongetnameandlink)
+        - [5. After Update List (`OnAfterUpdateList`)](#5-after-update-list-onafterupdatelist)
+        - [6. Get Info (`OnGetInfo`)](#6-get-info-ongetinfo)
+        - [7. Task Start (`OnTaskStart`)](#7-task-start-ontaskstart)
+        - [8. Get Page Number (`OnGetPageNumber`)](#8-get-page-number-ongetpagenumber)
+        - [9. Get Image URL (`OnGetImageURL`)](#9-get-image-url-ongetimageurl)
+        - [10. Before Download Image (`OnBeforeDownloadImage`)](#10-before-download-image-onbeforedownloadimage)
+        - [11. Download Image (`OnDownloadImage`)](#11-download-image-ondownloadimage)
+        - [12. Save Image (`OnSaveImage`)](#12-save-image-onsaveimage)
+        - [13. After Image Saved (`OnAfterImageSaved`)](#13-after-image-saved-onafterimagesaved)
+        - [14. Login (`OnLogin`)](#14-login-onlogin)
+        - [15. Account State (`OnAccountState`)](#15-account-state-onaccountstate)
+        - [16. Check Site (`OnCheckSite`)](#16-check-site-onchecksite)
+    - [Complete Event Flow Example](#complete-event-flow-example)
+    - [MANGAINFO Object (TMangaInfo)](#mangainfo-object-tmangainfo)
+    - [TASK Object (TTaskContainer)](#task-object-ttaskcontainer)
+    - [LINKS and NAMES (TStringList)](#links-and-names-tstringlist)
+    - [UPDATELIST Object (TUpdateListManagerThread)](#updatelist-object-tupdatelistmanagerthread)
+    - [PAGENUMBER (Global Variable)](#pagenumber-global-variable)
+    - [URL (Global Variable)](#url-global-variable)
 4. [Built-in Functions](#built-in-functions)
+    - [TXQuery (XML/HTML/JSON Parser)](#txquery-xmlhtmljson-parser)
+        - [Query Object Methods](#query-object-methods)
+        - [Value/Node Object Methods](#valuenode-object-methods)
+        - [XPath Extensions](#xpath-extensions)
+    - [Utility Functions](#utility-functions)
+        - [String Manipulation](#string-manipulation)
+        - [Status Helper](#status-helper)
+        - [Other Functions](#other-functions)
 5. [Lua Libraries](#lua-libraries)
+    - [fmd.* Modules (Injected by Delphi)](#fmd-modules-injected-by-delphi)
+        - [fmd.crypto](#fmdcrypto)
+        - [fmd.duktape](#fmdduktape)
+        - [fmd.env](#fmdenv)
+        - [fmd.fileutil](#fmdfileutil)
+        - [fmd.logger](#fmdlogger)
+        - [fmd.subprocess](#fmdsubprocess)
+        - [fmd.mangafoxwatermark](#fmdmangafoxwatermark)
+        - [fmd.gzip](#fmdgzip)
+        - [fmd.pcre2](#fmdpcre2)
+        - [fmd.imagepuzzle](#fmdimagepuzzle)
+        - [fmd.strings](#fmdstrings)
+    - [utils.* Modules (Lua Files)](#utils-modules-lua-files)
+        - [utils.json](#utilsjson)
+        - [utils.lzstring](#utilslzstring)
+        - [utils.jsunpack](#utilsjsunpack)
+        - [utils.nodejs](#utilsnodejs)
+        - [utils.nextjs](#utilsnextjs)
+        - [utils.sha256](#utilssha256)
+        - [utils.protoc (with the `pb` runtime)](#utilsprotoc-with-the-pb-runtime)
 6. [Templates](#templates)
+    - [Using Templates](#using-templates)
+    - [Available Templates](#available-templates)
+    - [Template Customization](#template-customization)
 7. [Common Patterns](#common-patterns)
+    - [Error Handling](#error-handling)
+    - [Account Support](#account-support)
+    - [User Options](#user-options)
+    - [JSON API Handling](#json-api-handling)
+    - [Multi-Category Sites](#multi-category-sites)
+    - [Iterating Over Nodes](#iterating-over-nodes)
 8. [Examples](#examples)
+    - [Example 1: Simple Module](#example-1-simple-module)
+    - [Example 2: API-Based Module with JSON](#example-2-api-based-module-with-json)
+    - [Example 3: Module with Login](#example-3-module-with-login)
 9. [Development Tips](#development-tips)
+    - [1. Use `--lua-dofile` for Development](#1-use---lua-dofile-for-development)
+    - [2. Use Templates When Possible](#2-use-templates-when-possible)
+    - [3. Set Proper Headers](#3-set-proper-headers)
+    - [4. Handle JavaScript-Heavy Sites](#4-handle-javascript-heavy-sites)
+    - [5. Check for Paywalls](#5-check-for-paywalls)
+    - [6. Use Persistent Storage](#6-use-persistent-storage)
+    - [7. Debug with Logging](#7-debug-with-logging)
+    - [8. Module Categories](#8-module-categories)
+    - [9. Generate Unique IDs](#9-generate-unique-ids)
 10. [File Locations](#file-locations)
 11. [Additional Resources](#additional-resources)
 
@@ -130,10 +209,10 @@ true   -- Success / continue
 false  -- Failure / cancel
 
 -- Account status (MODULE.Account.Status)
-asUnknown  = -1  -- Unknown status
-asChecking = 0   -- Validating credentials
-asValid    = 1   -- Credentials valid
-asInvalid  = 2   -- Credentials invalid
+asUnknown  = 0  -- Unknown status
+asChecking = 1  -- Validating credentials
+asValid    = 2  -- Credentials valid
+asInvalid  = 3  -- Credentials invalid
 ```
 
 ---
@@ -167,14 +246,14 @@ HTTP.XHR('https://example.com/ajax')
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `HTTP.Document` | TMemoryStream | Response body (HTML/XML/JSON) |
+| `HTTP.Document` | TMemoryStream | Request/response body — see [HTTP.Document](#httpdocument-tmemorystream) |
 | `HTTP.ResultCode` | Integer | HTTP status code (200, 404, etc.) |
 | `HTTP.Terminated` | Boolean | Check if download was terminated |
 | `HTTP.MimeType` | String | Request content type |
 | `HTTP.UserAgent` | String | User agent string |
 | `HTTP.RetryCount` | Integer | Number of retry attempts |
-| `HTTP.Headers` | TStringList | Request headers |
-| `HTTP.Cookies` | TStringList | Cookies |
+| `HTTP.Headers` | TStrings | Request headers (same object kind as `LINKS` — full API in [fmd.strings](#fmdstrings)) |
+| `HTTP.Cookies` | TStrings | Cookies (same object kind as `LINKS` — full API in [fmd.strings](#fmdstrings)) |
 | `HTTP.EnabledCookies` | Boolean | Enable cookie handling |
 | `HTTP.ResultString` | String | HTTP status text ("OK", "Not Found", etc.) |
 | `HTTP.LastURL` | String | URL of the last completed request |
@@ -184,10 +263,10 @@ HTTP.XHR('https://example.com/ajax')
 | Method | Description |
 |--------|-------------|
 | `HTTP.GET(url)` | Perform HTTP GET request |
-| `HTTP.POST(url, data)` | Perform HTTP POST request |
-| `HTTP.XHR(url)` | Perform XMLHttpRequest |
+| `HTTP.POST(url, data)` | Perform HTTP POST request (`data` is written into the document first; passing `''` sends whatever the document already holds) |
+| `HTTP.XHR(url)` | Perform XMLHttpRequest (GET with `X-Requested-With: XMLHttpRequest`) |
 | `HTTP.HEAD(url)` | Perform HTTP HEAD request |
-| `HTTP.Request(url, method)` | Perform a request with an arbitrary HTTP method |
+| `HTTP.Request(method, url)` | Perform a request with an arbitrary HTTP method, e.g. `HTTP.Request('POST', url)` |
 | `HTTP.Reset()` | Reset HTTP state |
 | `HTTP.ResetBasic()` | Reset basic settings |
 | `HTTP.ClearCookies()` | Clear all cookies |
@@ -195,7 +274,58 @@ HTTP.XHR('https://example.com/ajax')
 | `HTTP.AddServerCookies(url, cookie_string)` | Add cookies to persistent storage for the URL's domain (first argument may be omitted) |
 | `HTTP.ClearCookiesStorage()` | Clear the module's persistent cookie storage |
 | `HTTP.ParseServerCookies()` | Parse `Set-Cookie` headers from the last response into cookie storage |
-| `HTTP.SetProxy(host, port, username, password, proxyType)` | Configure proxy |
+| `HTTP.SetProxy(proxyType, host, port, username, password)` | Configure proxy — `proxyType` is `'HTTP'`, `'SOCKS4'` or `'SOCKS5'` (case-insensitive) |
+
+#### HTTP.Document (TMemoryStream)
+
+`HTTP.Document` is both the request body and the response body of the `HTTP`
+object. `GET`/`POST`/`XHR`/`HEAD`/`Request` write the response into it, and
+whatever it holds when a request starts is sent as the request body (that is
+how `HTTP.Request('POST', url)` sends a body — `HTTP.POST(url, data)` writes
+`data` into it for you and clears it first).
+
+Right after a request the stream position is `0`, so `ToString()` returns the
+whole body and `WriteString()` overwrites it from the start.
+
+| Member | Description |
+|--------|-------------|
+| `HTTP.Document.ToString()` | Return the stream content from the current position to the end as a string (the position is restored — after a request that means the whole body) |
+| `HTTP.Document.ReadString()` | Alias of `ToString()` |
+| `HTTP.Document.WriteString(s)` | Write the raw bytes of `s` at the **current position**, advancing it — does **not** clear or resize the stream by itself |
+| `HTTP.Document.Clear()` | Empty the stream (size and position back to 0) |
+| `HTTP.Document.LoadFromFile(path)` | Replace the stream content with a file's content |
+| `HTTP.Document.SaveToFile(path)` | Write the stream content to a file |
+| `HTTP.Document.Size` | Stream size in bytes (read/write; setting it grows or truncates the stream) |
+
+Real usage — decrypt the image in place in `OnDownloadImage`
+(`lua/modules/MangaPlus.lua`; the same pattern appears in `PhiliaScans.lua`
+and `Comix.lua`):
+
+```lua
+function DownloadImage()
+    if not HTTP.GET(url) then return false end
+    local data = HTTP.Document.ToString()
+    local key = ...  -- from the page
+    local out = {}
+    for i = 1, data:len() do
+        out[i] = string.char(string.byte(data, i) ~ string.byte(key, ((i - 1) % key:len()) + 1))
+    end
+    HTTP.Document.WriteString(table.concat(out, ''))  -- same length = exact overwrite
+    return true
+end
+```
+
+> [!NOTE]
+> - `WriteString` writes at the current position without resizing the stream:
+>   writing a **shorter** string leaves the old tail at the end, writing a
+>   **longer** one grows the stream. Call `Clear()` first when replacing the
+>   content with something of a different length.
+> - To send a custom request body with an arbitrary method:
+>   `HTTP.Document.Clear(); HTTP.Document.WriteString(body);
+>   HTTP.MimeType = 'application/...'; HTTP.Request('POST', url)`.
+> - `HTTP.Document` is a `TStream`, so it can be fed directly to
+>   [fmd.imagepuzzle](#fmdimagepuzzle) — in-place descrambling works:
+>   `puzzle.DeScramble(HTTP.Document, HTTP.Document)`.
 
 ---
 
@@ -360,6 +490,12 @@ end
 2. Calls `OnGetDirectoryPageNumber`
 3. Module sets `PAGENUMBER` to total page count
 4. FMD2 uses this for pagination UI
+
+**Note:** besides `PAGENUMBER`, FMD2 also injects the `WORKPTR` global here —
+the 0-based index of the directory (category) whose page count is being
+fetched. For multi-category sites (`MODULE.TotalDirectory` > 1) use it
+together with `MODULE.CurrentDirectoryIndex` to find out which category is
+being updated.
 
 ---
 
@@ -549,7 +685,7 @@ end
 1. FMD2 is about to download an image
 2. Calls `OnBeforeDownloadImage`
 3. `WORKID` global contains image index
-4. Module can set headers and cookies; to change the URL itself, rewrite `TASK.PageLinks[WORKID + 1]` here, or handle the download in `OnDownloadImage`
+4. Module can set headers and cookies; to change the URL itself, rewrite `TASK.PageLinks[WORKID]` here (a later retry picks it up — the current download still uses the old URL), or handle the download in `OnDownloadImage`
 5. If returns `false`, image download is skipped
 
 ---
@@ -775,7 +911,8 @@ A full example is in [Get Info](#6-get-info-ongetinfo).
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `MANGAINFO.URL` | String | Current manga URL |
+| `MANGAINFO.URL` | String | Current manga URL (absolute — the host fills it from `MODULE.RootURL` + link before `OnGetInfo` runs) |
+| `MANGAINFO.Link` | String | Manga link relative to the site root — pre-filled from the manga list; if still empty after `OnGetInfo`, the host fills it from `URL` with the host part removed |
 | `MANGAINFO.Title` | String | Manga title |
 | `MANGAINFO.AltTitles` | String | Alternative titles |
 | `MANGAINFO.CoverLink` | String | Cover image URL |
@@ -845,7 +982,10 @@ end
 | `LINKS.Reverse()` | Reverse list order |
 | `LINKS[i]` | Access item by index (0-based) |
 
-Same methods apply to `NAMES`.
+Same methods apply to `NAMES`. Both are `TStrings` objects, so the **full
+API** (`Text`, `Values`, `IndexOf`, `Sort`, `SaveToFile`, …) from
+[fmd.strings](#fmdstrings) works on them — and on `HTTP.Headers`,
+`HTTP.Cookies`, `TASK.PageLinks`, `MANGAINFO.ChapterLinks`, … alike.
 
 ---
 
@@ -867,7 +1007,7 @@ end
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `UPDATELIST.CurrentDirectoryPageNumber` | Integer | Current page in manga list |
+| `UPDATELIST.CurrentDirectoryPageNumber` | Integer (read/write) | Current page in manga list |
 
 #### Methods
 
@@ -937,6 +1077,11 @@ common TXQuery mistake.
 | `x.XPath(xpath)` | Get node list / value object for iteration |
 | `x.XPathCount(xpath)` | Count matching nodes |
 
+All of these methods (not just `XPathString`) also accept an optional
+trailing **context** argument — a value object returned by `x.XPath(...)` —
+and then evaluate the expression relative to that value instead of the whole
+document; see [Parsing once, querying many times](#parsing-once-querying-many-times).
+
 #### Value/Node Object Methods
 
 Returned by `x.XPath(...)`; each item from an iteration is the same kind of
@@ -999,7 +1144,7 @@ What the pieces mean:
 | `?name` | (lookup style) Get the key `name`. |
 | `?*` | (lookup style) Get all members of the array or map. |
 
-###### Examples
+###### JSON examples
 
 ```lua
 local x = CreateTXQuery(HTTP.Document)
@@ -1836,19 +1981,19 @@ local list = strings.New()      -- or strings.Create()
 | `list.DelimitedText` | get/set using `Delimiter` + `StrictDelimiter`-style CSV |
 | `list.Delimiter` | delimiter char for `DelimitedText` (one character) |
 | `list.NameValueSeparator` | the `name=value` separator char (default `=`) |
-| `list[i]` | 1-based line access (read/write) — the default indexer |
+| `list[i]` | 0-based line access (read/write) — the default indexer; the first line is `list[0]` |
 | `list.Strings[i]` | same as `list[i]` |
-| `list.Values['name']` | 1-based `name=value` pair access (read/write) |
+| `list.Values['name']` | `name=value` pair access (read/write) |
 | `list.Count` | number of lines |
 | `list.Sort()` | sort ascending (case-sensitive) |
 | `list.Reverse()` | reverse the order |
-| `list.IndexOf(s)` | first index of `s` (1-based) or `0` if absent |
-| `list.IndexOfName(name)` | first index whose `name=` prefix matches, or `0` |
-| `list.Delete(i)` | delete 1-based line `i` |
+| `list.IndexOf(s)` | first index of `s` (0-based) or `-1` if absent |
+| `list.IndexOfName(name)` | first index whose `name=` prefix matches (0-based), or `-1` |
+| `list.Delete(i)` | delete 0-based line `i` |
 | `list.Clear()` | empty the list |
 | `list.LoadFromFile(path)` / `list.SaveToFile(path)` | file I/O |
 | `list.LoadFromStream(stream)` / `list.SaveToStream(stream)` | stream I/O |
-| `list.Get(i)` / `list.Set(i, s)` | 1-based accessor methods behind `list[i]` |
+| `list.Get(i)` / `list.Set(i, s)` | 0-based accessor methods behind `list[i]` |
 
 Typical use with XPath list-filling:
 
