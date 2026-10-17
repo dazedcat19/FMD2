@@ -87,7 +87,7 @@
     - [5. Check for Paywalls](#5-check-for-paywalls)
     - [6. Use Persistent Storage](#6-use-persistent-storage)
     - [7. Debug with Logging](#7-debug-with-logging)
-    - [8. Generate Unique IDs](#9-generate-unique-ids)
+    - [8. Generate Unique IDs](#8-generate-unique-ids)
 10. [File Locations](#file-locations)
 11. [Additional Resources](#additional-resources)
 
