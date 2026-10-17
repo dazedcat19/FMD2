@@ -95,6 +95,18 @@ begin
     luaToString(L, 3), luaToString(L, 4), luaToString(L, 5));
 end;
 
+function http_mergecookies(L: Plua_State): Integer; cdecl;
+begin
+  Result := 0;
+  TUserData(luaClassGetObject(L)).MergeCookies(luaToString(L, 1));
+end;
+
+function http_removecookie(L: Plua_State): Integer; cdecl;
+begin
+  Result := 0;
+  TUserData(luaClassGetObject(L)).RemoveCookie(luaToString(L, 1));
+end;
+
 function http_getcookies(L: Plua_State): Integer; cdecl;
 begin
   lua_pushstring(L, TUserData(luaClassGetObject(L)).GetCookies);
@@ -125,8 +137,20 @@ begin
   Result := 1;
 end;
 
+function http_threadtimeout(L: Plua_State): Integer; cdecl;
+begin
+  lua_pushinteger(L, TUserData(luaClassGetObject(L)).Timeout);
+  Result := 1;
+end;
+
+function http_threadsettimeout(L: Plua_State): Integer; cdecl;
+begin
+  Result := 0;
+  TUserData(luaClassGetObject(L)).Timeout := lua_tointeger(L, 1);
+end;
+
 const
-  methods: packed array [0..13] of luaL_Reg = (
+  methods: packed array [0..15] of luaL_Reg = (
     (name: 'Request'; func: @http_request),
     (name: 'GET'; func: @http_get),
     (name: 'POST'; func: @http_post),
@@ -140,13 +164,16 @@ const
     (name: 'AddServerCookies'; func: @http_addservercookies),
     (name: 'ParseServerCookies'; func: @http_parseservercookies),
     (name: 'SetProxy'; func: @http_setproxy),
+    (name: 'MergeCookies'; func: @http_mergecookies),
+    (name: 'RemoveCookie'; func: @http_removecookie),
     (name: nil; func: nil)
     );
-  props: packed array[0..4] of luaL_Reg_prop = (
+  props: packed array[0..5] of luaL_Reg_prop = (
     (name: 'Terminated'; funcget: @http_threadterminated; funcset: nil),
     (name: 'LastURL'; funcget: @http_threadlasturl; funcset: nil),
     (name: 'ResultCode'; funcget: @http_threadresultcode; funcset: nil),
     (name: 'ResultString'; funcget: @http_threadresultstring; funcset: nil),
+    (name: 'Timeout'; funcget: @http_threadtimeout; funcset: @http_threadsettimeout),
     (name: nil; funcget: nil; funcset: nil)
     );
 
@@ -163,7 +190,11 @@ begin
     luaClassAddStringProperty(L, MetaTable, 'MimeType', @TUserData(Obj).MimeType);
     luaClassAddStringProperty(L, MetaTable, 'UserAgent', @TUserData(Obj).UserAgent);
     luaClassAddIntegerProperty(L, MetaTable, 'RetryCount', @TUserData(Obj).RetryCount);
-    luaClassAddBooleanProperty(L,MetaTable, 'EnabledCookies', @TUserData(Obj).EnabledCookies);
+    luaClassAddBooleanProperty(L, MetaTable, 'EnabledCookies', @TUserData(Obj).EnabledCookies);
+    luaClassAddBooleanProperty(L, MetaTable, 'FollowRedirection', @TUserData(Obj).FollowRedirection);
+    luaClassAddIntegerProperty(L, MetaTable, 'MaxRedirect', @TUserData(Obj).MaxRedirect);
+    luaClassAddBooleanProperty(L, MetaTable, 'AllowServerErrorResponse', @TUserData(Obj).AllowServerErrorResponse);
+    luaClassAddBooleanProperty(L, MetaTable, 'Compress', @TUserData(Obj).Compress);
   end;
 end;
 
