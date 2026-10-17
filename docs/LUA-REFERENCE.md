@@ -67,7 +67,6 @@
         - [utils.protoc (with the `pb` runtime)](#utilsprotoc-with-the-pb-runtime)
 6. [Templates](#templates)
     - [Using Templates](#using-templates)
-    - [Available Templates](#available-templates)
     - [Template Customization](#template-customization)
 7. [Common Patterns](#common-patterns)
     - [Error Handling](#error-handling)
@@ -88,8 +87,7 @@
     - [5. Check for Paywalls](#5-check-for-paywalls)
     - [6. Use Persistent Storage](#6-use-persistent-storage)
     - [7. Debug with Logging](#7-debug-with-logging)
-    - [8. Module Categories](#8-module-categories)
-    - [9. Generate Unique IDs](#9-generate-unique-ids)
+    - [8. Generate Unique IDs](#8-generate-unique-ids)
 10. [File Locations](#file-locations)
 11. [Additional Resources](#additional-resources)
 
@@ -360,8 +358,6 @@ function Init()
     -- Add user options
     m.AddOptionSpinEdit('timeout', 'Timeout (seconds)', 60)
     m.AddOptionCheckBox('showgroup', 'Show group name', false)
-
-    return m
 end
 
 function GetNameAndLink()
@@ -1317,8 +1313,8 @@ local crypto = require 'fmd.crypto'
 ```
 
 The library merges two registration tables from `baseunits/lua/LuaCrypto.pas`
-(40 methods from `BaseCrypto.pas` and 16 methods from the Synapse `synacode`
-unit), so all **56 functions** below live on the same `crypto` table.
+(43 methods from `BaseCrypto.pas` and 16 methods from the Synapse `synacode`
+unit), so all **59 functions** below live on the same `crypto` table.
 
 **Conventions**
 
@@ -1336,7 +1332,7 @@ unit), so all **56 functions** below live on the same `crypto` table.
   internal converter that expects only hex characters — non-hex input there
   can raise an internal error, so validate scraped values first.
 
-**Quick reference (56 functions)**
+**Quick reference (59 functions)**
 
 | Category | Functions |
 |----------|-----------|
@@ -1345,7 +1341,7 @@ unit), so all **56 functions** below live on the same `crypto` table.
 | AES (raw modes) | `AESEncryptCBC` `AESDecryptCBC` `AESEncryptECBPkcs7` `AESDecryptECBPkcs7` `AESEncryptCFB` `AESDecryptCFB` `AESCTR` `AESOFB` `AESEncryptGCM` `AESDecryptGCM` |
 | AES (composite) | `AESEncryptCBCSHA256Base64Pkcs7` `AESDecryptCBCSHA256Base64Pkcs7` `AESDecryptCBCMD5Base64ZerosPadding` `AESDecryptCBCHexBase64ZerosPadding` |
 | Other ciphers | `RC4` |
-| KDF / key exchange | `PBKDF2SHA256` `X25519_PublicKey` `X25519_SharedSecret` |
+| KDF / key exchange | `PBKDF2SHA256` `X25519_PublicKey` `X25519_SharedSecret` `P256_GenerateKeyPair` `P256_PublicKey` `P256_SharedSecret` |
 | Authenticated streaming | `SecretStream_InitPull` `SecretStream_Pull` |
 | Encoding / decoding | `EncodeBase64` `DecodeBase64` `EncodeBase64URL` `DecodeBase64URL` `EncodeURL` `DecodeURL` `EncodeURLElement` `HTMLEncode` `HTMLDecode` `EncodeUU` `DecodeUU` `HexToStr` `StrToHexStr` |
 | Checksums | `CRC16` `CRC32` |
@@ -1564,6 +1560,23 @@ print(crypto.StrToHexStr(crypto.PBKDF2SHA256('data', 'salt', 1000, 16)))
 the 32-byte raw shared secret. Both return `''` unless the inputs are
 exactly 32 bytes.
 
+**`P256_GenerateKeyPair()`** — generates a fresh P-256 (secp256r1) key pair
+using OpenSSL's CSPRNG and returns two values: the 32-byte raw private key
+and the 65-byte uncompressed public key (`0x04 || X || Y`). Returns no
+values on failure.
+
+```lua
+local crypto = require 'fmd.crypto'
+local priv, pub = crypto.P256_GenerateKeyPair()
+```
+
+**`P256_PublicKey(privKey)`** — derives the 65-byte uncompressed public key
+from a 32-byte raw big-endian private scalar.
+**`P256_SharedSecret(privKey, pubKey)`** — P-256 ECDH: combines your 32-byte
+raw private key with the peer's 65-byte uncompressed public key and returns
+the 32-byte shared secret. The peer point is validated to be on the curve
+while parsing; both return `''` on malformed input.
+
 > [!IMPORTANT]
 > Keys must be raw bytes — convert hex keys with `HexToStr` first.
 > The shared secret is typically hashed (e.g. `SHA256`) before use as a symmetric key.
@@ -1724,7 +1737,9 @@ HTTP.GET(base .. path .. '?' .. params .. '&sign=' .. sign)
 - `HexToStr` returns `''` (not an error) on invalid hex — validate scraped
   values with `s:match('^%x+$')` when you need to tell bad input apart.
 - `SecretStream_Pull` returns three values — always keep the new `state`.
-- `X25519_*` requires OpenSSL 3 on the system and exact 32-byte raw keys.
+- `X25519_*` and `P256_*` require OpenSSL 3 on the system; keys are raw
+  bytes (`X25519`: 32-byte keys, `P256`: 32-byte private key / 65-byte
+  uncompressed public key).
 
 #### fmd.duktape
 
@@ -2259,25 +2274,6 @@ function GetPageNumber()
 end
 ```
 
-### Available Templates
-
-| Template | Description | Usage Count |
-|----------|-------------|-------------|
-| `templates.Madara` | WordPress Madara theme | 100+ sites |
-| `templates.FoOlSlide` | FoOlSlide reader | Common |
-| `templates.VTheme` | VTheme template | Common |
-| `templates.MangaHub` | MangaHub API | Common |
-| `templates.Guya` | Guya.moe reader | Few sites |
-| `templates.GroupLe` | Grouple.co based sites | Few sites |
-| `templates.HeanCMS` | HeanCMS based sites | Few sites |
-| `templates.NineManga` | NineManga template | Few sites |
-| `templates.ColorlibAnime` | Colorlib anime theme | Few sites |
-| `templates.FuzzyDoodle` | FuzzyDoodle sites | Few sites |
-| `templates.FMReader` | FMReader template | Few sites |
-| `templates.LibGroup` | LibGroup template | Few sites |
-| `templates.Roseveil` | Roseveil template | Few sites |
-| `templates.ZManga` | ZManga template | Few sites |
-
 ### Template Customization
 
 Some templates support customization:
@@ -2286,10 +2282,10 @@ Some templates support customization:
 local Template = require 'templates.Madara'
 
 -- Override constants
-ChapterParameters = 'custom=manga_get_chapters&manga='
+ChapterParameters   = 'custom=manga_get_chapters&manga='
 DirectoryPagination = '/list?page='
-XPathTokenAuthors = 'Author'
-XPathTokenGenres = 'Genres'
+XPathTokenAuthors   = 'Author'
+XPathTokenGenres    = 'Genres'
 
 function GetInfo()
     Template.GetInfo()
@@ -2307,6 +2303,8 @@ end
 ```lua
 -- Standard pattern
 if not HTTP.GET(url) then return net_problem end
+-- process
+return no_error
 
 -- Or
 if HTTP.GET(url) then
@@ -2325,7 +2323,6 @@ function Init()
     m.ID = '...'
     m.AccountSupport = true
     m.OnLogin = 'Login'
-    return m
 end
 ```
 
@@ -2341,7 +2338,6 @@ function Init()
     m.AddOptionSpinEdit('timeout', 'Timeout (s)', 60)
     m.AddOptionCheckBox('showgroup', 'Show group name', false)
     m.AddOptionComboBox('imagesize', 'Image size:', 'Auto\n780x\n980x\nOriginal', 0)
-    return m
 end
 
 -- Get option values
@@ -2380,7 +2376,6 @@ function Init()
     local m = NewWebsiteModule()
     m.ID = '...'
     m.TotalDirectory = #categories
-    return m
 end
 
 function GetNameAndLink()
@@ -2397,11 +2392,9 @@ end
 local x = CreateTXQuery(HTTP.Document)
 
 -- Method 1: Using for-in loop
-for v in x.XPath('//div[@class="item"]').Get() do
-    local title = x.XPathString('.//h2', v)
-    local link = x.XPathString('.//a/@href', v)
-    LINKS.Add(link)
-    NAMES.Add(title)
+for v in x.XPath('//div[@class="item"]/a').Get() do
+    LINKS.Add(v.GetProperty('href').ToString())
+    NAMES.Add(x.XPathString('.//h2', v))
 end
 
 -- Method 2: Using index
@@ -2424,7 +2417,7 @@ end
 ----------------------------------------------------------------------------------------------------
 
 function GetNameAndLink()
-    local u = MODULE.RootURL .. '/manga-list?page=' .. (URL + 1)
+    local u = MODULE.RootURL .. '/manga-list'
 
     if not HTTP.GET(u) then return net_problem end
 
@@ -2488,7 +2481,7 @@ function GetDirectoryPageNumber()
     HTTP.MimeType = 'application/json'
     local s = '{"filter":{"tags":[],"status":[],"types":[],"showAdult":true},"page":1}'
 
-    if not HTTP.POST(MODULE.RootURL .. '/api/manga', '{page = 0}') then return net_problem end
+    if not HTTP.POST(MODULE.RootURL .. '/api/manga', s) then return net_problem end
 
     PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('json(*).total_pages')) or 1
 
@@ -2497,7 +2490,7 @@ end
 
 function GetNameAndLink()
     HTTP.MimeType = 'application/json'
-    local s = '{"filter":{"tags":[],"status":[],"types":[],"showAdult":true},"page":' .. URL .. '}'
+    local s = '{"filter":{"tags":[],"status":[],"types":[],"showAdult":true},"page":' .. (URL + 1) .. '}'
 
     if not HTTP.POST(MODULE.RootURL .. '/api/manga', s) then return net_problem end
 
@@ -2535,8 +2528,8 @@ function GetPageNumber()
 
     if not HTTP.GET(u) then return false end
 
-    for v in CreateTXQuery(HTTP.Document)  .XPath('json(*).pages()').Get() do
-        TASK.PageLinks.Add(v.GetProperty('image_url').ToString())
+    for v in CreateTXQuery(HTTP.Document).XPath('json(*).pages()').Get() do
+        TASK.PageLinks.Add(MaybeFillHost(MODULE.RootURL, v.GetProperty('image_url').ToString()))
     end
 
     return true
@@ -2582,7 +2575,7 @@ function Login()
     MODULE.Account.Status = asChecking
 
     if HTTP.POST(MODULE.RootURL .. '/login', data) then
-        if HTTP.ResultCode == 200 and HTTP.Document.Size > 100 then
+        if (HTTP.ResultCode == 200) and (HTTP.Cookies.Values['auth_session'] ~= '') then
             MODULE.Account.Status = asValid
             return true
         else
@@ -2597,12 +2590,11 @@ end
 
 function GetNameAndLink()
     -- Login will be called automatically
-    local u = MODULE.RootURL .. '/manga?page=' .. (URL + 1)
+    local u = MODULE.RootURL .. '/manga-list'
 
     if not HTTP.GET(u) then return net_problem end
 
-    local x = CreateTXQuery(HTTP.Document)
-    x.XPathHREFAll('//div[@class="manga"]/a', LINKS, NAMES)
+    CreateTXQuery(HTTP.Document).XPathHREFAll('//div[@class="manga"]/a', LINKS, NAMES)
 
     return no_error
 end
@@ -2613,7 +2605,7 @@ function GetInfo()
     if not HTTP.GET(u) then return net_problem end
 
     local x = CreateTXQuery(HTTP.Document)
-    MANGAINFO.Title = x.XPathString('//h1')
+    MANGAINFO.Title     = x.XPathString('//h1')
     MANGAINFO.CoverLink = x.XPathString('//img/@src')
 
     x.XPathHREFAll('//ul[@class="chapters"]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
@@ -2699,6 +2691,13 @@ for v in x.XPath('//ul[@class="chapters"]/a').Get() do
         MANGAINFO.ChapterNames.Add(v.ToString())
     end
 end
+
+for v in x.XPath('json(*).capitulos()').Get() do
+    if v.GetProperty('es_premium').ToString() ~= 'true' then
+        MANGAINFO.ChapterLinks.Add(slug .. '/' .. v.GetProperty('slug').ToString())
+        MANGAINFO.ChapterNames.Add('Capítulo ' .. v.GetProperty('numero').ToString())
+    end
+end
 ```
 
 ### 6. Use Persistent Storage
@@ -2722,23 +2721,13 @@ and `Status` (string).
 
 ```lua
 print('Debug: ' .. variable)
+
+local logger = require 'fmd.logger'
 logger.Send('Info message')
 logger.SendError('Error: ' .. error_message)
 ```
 
-### 8. Module Categories
-
-Common category values:
-- `English` - English language sites
-- `English-Scanlation` - English scanlation groups
-- `Raw` - Japanese raw sites
-- `Vietnamese` - Vietnamese sites
-- `Russian` - Russian sites
-- `Arabic-Scanlation` - Arabic scanlation
-- `H-Sites` - Adult content sites
-- `Webcomics` - Webcomic platforms
-
-### 9. Generate Unique IDs
+### 8. Generate Unique IDs
 
 Use a UUID generator to create unique module IDs:
 

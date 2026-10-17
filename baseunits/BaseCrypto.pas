@@ -50,6 +50,9 @@ function HMAC_SHA512Hex(const s, key: String): String;
 
 function X25519_PublicKey(const privKey: String): String;
 function X25519_SharedSecret(const privKey, pubKey: String): String;
+function P256_PublicKey(const privKey: String): String;
+function P256_SharedSecret(const privKey, pubKey: String): String;
+function P256_GenerateKeyPair(var privKey, pubKey: String): Boolean;
 function SecretStream_InitPull(const header, key: String; var state: String): Boolean;
 function SecretStream_Pull(var state: String; const chunk: String; var msg: String; var tag: Byte): Boolean;
 
@@ -1571,6 +1574,156 @@ begin
         EVP_PKEY_free(peer);
     end;
   end;
+end;
+
+const
+  EVP_PKEY_EC = 408;
+
+type
+  PP256Byte = ^PByte;
+
+function d2i_PUBKEY(a: PPointer; pp: PP256Byte; length: PtrUInt): Pointer; cdecl; external LIBCRYPTO_DLL;
+function d2i_PrivateKey(t: Integer; a: PPointer; pp: PP256Byte; length: PtrUInt): Pointer; cdecl; external LIBCRYPTO_DLL;
+function i2d_PUBKEY(pkey: Pointer; pp: PP256Byte): Integer; cdecl; external LIBCRYPTO_DLL;
+function i2d_PrivateKey(pkey: Pointer; pp: PP256Byte): Integer; cdecl; external LIBCRYPTO_DLL;
+function EVP_PKEY_CTX_new_id(id: Integer; e: Pointer): Pointer; cdecl; external LIBCRYPTO_DLL;
+function EVP_PKEY_keygen_init(ctx: Pointer): Integer; cdecl; external LIBCRYPTO_DLL;
+function EVP_PKEY_keygen(ctx: Pointer; ppkey: PPointer): Integer; cdecl; external LIBCRYPTO_DLL;
+function EVP_PKEY_CTX_set_group_name(ctx: Pointer; name: PAnsiChar): Integer; cdecl; external LIBCRYPTO_DLL;
+
+const
+  P256_SPKI_PREFIX: array[0..25] of Byte = (
+    $30, $59, $30, $13, $06, $07, $2A, $86, $48, $CE, $3D, $02, $01,
+    $06, $08, $2A, $86, $48, $CE, $3D, $03, $01, $07, $03, $42, $00);
+
+  P256_SEC1_HEAD: array[0..6] of Byte = ($30, $31, $02, $01, $01, $04, $20);
+  P256_SEC1_TAIL: array[0..11] of Byte = ($A0, $0A, $06, $08, $2A, $86, $48, $CE, $3D, $03, $01, $07);
+
+function P256_LoadPrivateKey(const privKey: String): Pointer;
+var
+  der: array[0..50] of Byte;
+  p: PByte;
+begin
+  Result := nil;
+  if Length(privKey) = 32 then
+  begin
+    Move(P256_SEC1_HEAD[0], der[0], 7);
+    Move(privKey[1], der[7], 32);
+    Move(P256_SEC1_TAIL[0], der[39], 12);
+    p := @der[0];
+    Result := d2i_PrivateKey(EVP_PKEY_EC, nil, @p, 51);
+  end;
+end;
+
+function P256_LoadPublicKey(const pubKey: String): Pointer;
+var
+  der: array[0..90] of Byte;
+  p: PByte;
+begin
+  Result := nil;
+  if (Length(pubKey) = 65) and (pubKey[1] = #$04) then
+  begin
+    Move(P256_SPKI_PREFIX[0], der[0], 26);
+    Move(pubKey[1], der[26], 65);
+    p := @der[0];
+    Result := d2i_PUBKEY(nil, @p, 91);
+  end;
+end;
+
+function P256_PublicKey(const privKey: String): String;
+var
+  pkey: Pointer;
+  buf: array[0..255] of Byte;
+  pp: PByte;
+  n: Integer;
+begin
+  Result := '';
+  pkey := P256_LoadPrivateKey(privKey);
+  if pkey = nil then Exit;
+  try
+    pp := @buf[0];
+    n := i2d_PUBKEY(pkey, @pp);
+    if (n = 91) and (n <= SizeOf(buf)) and CompareMem(@buf[0], @P256_SPKI_PREFIX[0], 26) then
+      SetString(Result, PChar(@buf[26]), 65);
+  finally
+    EVP_PKEY_free(pkey);
+  end;
+end;
+
+function P256_SharedSecret(const privKey, pubKey: String): String;
+var
+  priv, peer, ctx: Pointer;
+  len: SizeUInt;
+  q: array[0..31] of Byte;
+begin
+  Result := '';
+  priv := P256_LoadPrivateKey(privKey);
+  peer := P256_LoadPublicKey(pubKey);
+  ctx := nil;
+  try
+    if (priv <> nil) and (peer <> nil) then
+      ctx := EVP_PKEY_CTX_new(priv, nil);
+    if ctx <> nil then
+    begin
+      if (EVP_PKEY_derive_init(ctx) = 1) and
+         (EVP_PKEY_derive_set_peer(ctx, peer) = 1) then
+      begin
+        len := 32;
+        if (EVP_PKEY_derive(ctx, @q[0], len) = 1) and (len = 32) then
+          SetString(Result, PChar(@q[0]), 32);
+      end;
+    end;
+  finally
+    if ctx <> nil then
+      EVP_PKEY_CTX_free(ctx);
+    if priv <> nil then
+      EVP_PKEY_free(priv);
+    if peer <> nil then
+      EVP_PKEY_free(peer);
+  end;
+end;
+
+function P256_GenerateKeyPair(var privKey, pubKey: String): Boolean;
+var
+  ctx, pkey: Pointer;
+  buf: array[0..255] of Byte;
+  pp: PByte;
+  n, i: Integer;
+begin
+  Result := False;
+  privKey := '';
+  pubKey := '';
+  ctx := EVP_PKEY_CTX_new_id(EVP_PKEY_EC, nil);
+  if ctx = nil then Exit;
+  try
+    pkey := nil;
+    if (EVP_PKEY_keygen_init(ctx) = 1) and
+       (EVP_PKEY_CTX_set_group_name(ctx, PAnsiChar('prime256v1')) = 1) and
+       (EVP_PKEY_keygen(ctx, @pkey) = 1) and (pkey <> nil) then
+    begin
+      try
+        pp := @buf[0];
+        n := i2d_PUBKEY(pkey, @pp);
+        if (n = 91) and (n <= SizeOf(buf)) and CompareMem(@buf[0], @P256_SPKI_PREFIX[0], 26) then
+          SetString(pubKey, PChar(@buf[26]), 65);
+        pp := @buf[0];
+        n := i2d_PrivateKey(pkey, @pp);
+        if (n > 37) and (n <= SizeOf(buf)) then
+          for i := 0 to n - 37 do
+            if (buf[i] = $02) and (buf[i + 1] = $01) and (buf[i + 2] = $01) and
+               (buf[i + 3] = $04) and (buf[i + 4] = $20) then
+            begin
+              SetString(privKey, PChar(@buf[i + 5]), 32);
+              Break;
+            end;
+      finally
+        EVP_PKEY_free(pkey);
+      end;
+    end;
+  finally
+    EVP_PKEY_CTX_free(ctx);
+  end;
+  Result := (privKey <> '') and (pubKey <> '');
 end;
 
 procedure SecretStreamCounterReset(var st: TSecretStreamState);
