@@ -255,6 +255,11 @@ HTTP.XHR('https://example.com/ajax')
 | `HTTP.Headers` | TStrings | Request headers (same object kind as `LINKS` — full API in [fmd.strings](#fmdstrings)) |
 | `HTTP.Cookies` | TStrings | Cookies (same object kind as `LINKS` — full API in [fmd.strings](#fmdstrings)) |
 | `HTTP.EnabledCookies` | Boolean | Enable cookie handling |
+| `HTTP.FollowRedirection` | Boolean | Automatically follow 301/302/303/307 redirects (default `true`). Set to `false` before a request to receive the raw 3xx response and inspect `HTTP.Headers.Values['Location']` yourself |
+| `HTTP.MaxRedirect` | Integer | Maximum number of redirects followed per request while `HTTP.FollowRedirection` is `true` (default `5`) |
+| `HTTP.AllowServerErrorResponse` | Boolean | When `false` (default), a 5xx response is treated as a failure and the request is retried; set to `true` to receive 5xx bodies as-is |
+| `HTTP.Compress` | Boolean | When `true` (default), `Reset()`/`ResetBasic()` add `Accept-Encoding: gzip, deflate, br, zstd` and compressed responses are auto-decompressed |
+| `HTTP.Timeout` | Integer | Socket connection/read timeout in milliseconds (default `15000`); assigning applies it to the underlying socket immediately |
 | `HTTP.ResultString` | String | HTTP status text ("OK", "Not Found", etc.) |
 | `HTTP.LastURL` | String | URL of the last completed request |
 
@@ -274,7 +279,16 @@ HTTP.XHR('https://example.com/ajax')
 | `HTTP.AddServerCookies(url, cookie_string)` | Add cookies to persistent storage for the URL's domain (first argument may be omitted) |
 | `HTTP.ClearCookiesStorage()` | Clear the module's persistent cookie storage |
 | `HTTP.ParseServerCookies()` | Parse `Set-Cookie` headers from the last response into cookie storage |
+| `HTTP.MergeCookies(cookie_string)` | Merge a `'name=value; other=value'` string into `HTTP.Cookies` (values for existing names are overwritten) |
+| `HTTP.RemoveCookie(name)` | Remove the cookie `name` from `HTTP.Cookies` |
 | `HTTP.SetProxy(proxyType, host, port, username, password)` | Configure proxy — `proxyType` is `'HTTP'`, `'SOCKS4'` or `'SOCKS5'` (case-insensitive) |
+
+> [!NOTE]
+> `HTTP.FollowRedirection`, `HTTP.MaxRedirect`, `HTTP.AllowServerErrorResponse`,
+> `HTTP.Compress` and `HTTP.Timeout` are **not** touched by `HTTP.Reset()` or
+> `HTTP.ResetBasic()` — once set they stay in effect for later requests. If you
+> turn redirection off for a single request, always set it back to `true`
+> afterwards.
 
 #### HTTP.Document (TMemoryStream)
 
