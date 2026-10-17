@@ -351,6 +351,32 @@ begin
   Result := 1;
 end;
 
+function crypto_p256_publickey(L: Plua_State): Integer; cdecl;
+begin
+  PushLuaString(L, P256_PublicKey(GetLuaString(L, 1)));
+  Result := 1;
+end;
+
+function crypto_p256_sharedsecret(L: Plua_State): Integer; cdecl;
+begin
+  PushLuaString(L, P256_SharedSecret(GetLuaString(L, 1), GetLuaString(L, 2)));
+  Result := 1;
+end;
+
+function crypto_p256_generatekeypair(L: Plua_State): Integer; cdecl;
+var
+  privKey, pubKey: String;
+begin
+  if P256_GenerateKeyPair(privKey, pubKey) then
+  begin
+    PushLuaString(L, privKey);
+    PushLuaString(L, pubKey);
+    Result := 2;
+  end
+  else
+    Result := 0;
+end;
+
 function crypto_secretstream_initpull(L: Plua_State): Integer; cdecl;
 var
   state: String;
@@ -400,7 +426,7 @@ begin
 end;
 
 const
-  cryptomethods: packed array [0..40] of luaL_Reg = (
+  cryptomethods: packed array [0..43] of luaL_Reg = (
     (name: 'EncryptString'; func: @lua_encryptstring),
     (name: 'DecryptString'; func: @lua_decryptstring),
     (name: 'HTMLDecode'; func: @lua_htmldecode),
@@ -439,6 +465,9 @@ const
     (name: 'AESDecryptGCM'; func: @crypto_aesdecryptgcm),
     (name: 'X25519_PublicKey'; func: @crypto_x25519_publickey),
     (name: 'X25519_SharedSecret'; func: @crypto_x25519_sharedsecret),
+    (name: 'P256_PublicKey'; func: @crypto_p256_publickey),
+    (name: 'P256_SharedSecret'; func: @crypto_p256_sharedsecret),
+    (name: 'P256_GenerateKeyPair'; func: @crypto_p256_generatekeypair),
     (name: 'SecretStream_InitPull'; func: @crypto_secretstream_initpull),
     (name: 'SecretStream_Pull'; func: @crypto_secretstream_pull),
     (name: nil; func: nil)
