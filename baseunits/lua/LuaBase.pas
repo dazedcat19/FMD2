@@ -53,15 +53,20 @@ uses
 function luabase_print(L: Plua_State): Integer; cdecl;
 var
   i: Integer;
+  S: String;
 begin
   Result := 0;
+  S := '';
   for i := 1 to lua_gettop(L) do
+  begin
+    if i > 1 then S := S + #9;
     case lua_type(L, i) of
-      LUA_TBOOLEAN:
-        SendLog(BoolToStr(lua_toboolean(L, i), 'true', 'false'));
-      else
-        SendLog(luaToString(L, i));
+      LUA_TBOOLEAN: S := S + BoolToStr(lua_toboolean(L, i), 'true', 'false');
+      LUA_TNIL:     S := S + 'nil';
+      else          S := S + luaToString(L, i);
     end;
+  end;
+  SendLog(S);
 end;
 
 function luabase_sleep(L: Plua_State): Integer; cdecl;
