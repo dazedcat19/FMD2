@@ -7,7 +7,7 @@
     - [Basic Module Template](#basic-module-template)
     - [Event Handler Reference](#event-handler-reference)
     - [Status Constants and Return Values](#status-constants-and-return-values)
-3. [Injected Delphi Objects](#injected-delphi-objects)
+3. [Injected Pascal Objects](#injected-pascal-objects)
     - [HTTP Object (THTTPSendThread)](#http-object-thttpsendthread)
         - [HTTP.Document (TMemoryStream)](#httpdocument-tmemorystream)
     - [MODULE Object (TModuleContainer)](#module-object-tmodulecontainer)
@@ -45,7 +45,7 @@
         - [Status Helper](#status-helper)
         - [Other Functions](#other-functions)
 5. [Lua Libraries](#lua-libraries)
-    - [fmd.* Modules (Injected by Delphi)](#fmd-modules-injected-by-delphi)
+    - [fmd.* Modules (Injected by the host application)](#fmd-modules-injected-by-the-host-application)
         - [fmd.crypto](#fmdcrypto)
         - [fmd.duktape](#fmdduktape)
         - [fmd.env](#fmdenv)
@@ -215,9 +215,9 @@ asInvalid  = 3  -- Credentials invalid
 
 ---
 
-## Injected Delphi Objects
+## Injected Pascal Objects
 
-These objects are automatically injected by the Delphi application and available globally in Lua.
+These objects are automatically injected by the host application and available globally in Lua.
 
 ### HTTP Object (THTTPSendThread)
 
@@ -1301,11 +1301,11 @@ print('Debug message')  -- Output to log
 
 ## Lua Libraries
 
-### fmd.* Modules (Injected by Delphi)
+### fmd.* Modules (Injected by the host application)
 
 #### fmd.crypto
 
-Crypto, hashing, and encoding functions, exposed natively (Pascal/Delphi) and
+Crypto, hashing, and encoding functions, exposed natively (Object Pascal) and
 loaded with:
 
 ```lua
@@ -2749,7 +2749,7 @@ FMD2/
 │   ├── extras/           # Additional helpers
 │   └── websitebypass/    # Cloudflare bypass scripts
 ├── baseunits/
-│   └── lua/              # Delphi Lua integration files (.pas)
+│   └── lua/              # Pascal Lua integration files (.pas)
 └── docs/
     └── SUPPORTED_WEBSITES.md
 ```
