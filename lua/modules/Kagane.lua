@@ -301,8 +301,8 @@ function Init()
 	for i = 1, #DOMAINS do
 		domainitems[#domainitems + 1] = DOMAINS[i]:gsub('^https?://', '')
 	end
-	m.AddOptionComboBox('domain', lang.domain, table.concat(domainitems, '\n'), 0)
-	m.AddOptionComboBox('chaptertitle', lang.chaptertitle, lang.titlemode, 0)
 	m.AddOptionCheckBox('showscangroup', lang.showscangroup, false)
 	m.AddOptionCheckBox('datasaver', lang.datasaver, false)
+	m.AddOptionComboBox('domain', lang.domain, table.concat(domainitems, '\n'), 0)
+	m.AddOptionComboBox('chaptertitle', lang.chaptertitle, lang.titlemode, 0)
 end
