@@ -715,6 +715,33 @@ type
     procedure DisableAddToFavorites(const AModule: Pointer);
   private
     PrevWindowState: TWindowState;
+    {$ifdef windows}
+    // client area snapshot taken right before the window is minimized and
+    // blitted back into the empty redirection surface at the start of the
+    // restore animation - see CaptureRestoreSnapshotBeforeMinimize
+    RestoreSnapshotDC: windows.HDC;
+    RestoreSnapshotBitmap: windows.HBITMAP;
+    RestoreSnapshotWidth: Integer;
+    RestoreSnapshotHeight: Integer;
+    // set on WM_WINDOWPOSCHANGING while the window is still minimized and
+    // consumed by the WM_WINDOWPOSCHANGED that actually leaves the minimized
+    // state - iconic pos changes must keep it armed (see WndCallback)
+    IconicPosChangePending: Boolean;
+    // true between PresentRestoreSnapshot and 2 s later: the tree repaint
+    // that the restore triggers produces WM_ERASEBKGND both DURING the
+    // animation (re-entrant, while LCL re-inflates the tree) and in a storm
+    // right AFTER the first WM_PAINT, and their default handling would wipe
+    // the just-blitted snapshot with the form background brush color (the
+    // "dark rectangle" during the animation / the flash right after it)
+    RestorePresentActive: Boolean;
+    RestorePresentTick: windows.DWORD;
+    procedure CaptureRestoreSnapshotBeforeMinimize;
+    procedure PresentRestoreSnapshot;
+    procedure DiscardRestoreSnapshot;
+    {$endif}
+    // bring the window back on screen from minimized or hidden (tray) state,
+    // with a safety net that forces the widget window into the right state
+    procedure RestoreFromMinimizedOrHidden;
     procedure vtDownloadMoveItems(NextIndex : Cardinal; Mode : TDropMode);
   protected
     procedure FMDInstanceReceiveMsg(Sender: TObject);
@@ -819,6 +846,11 @@ type
     // load form information, like previous position, size, ...
     procedure LoadFormInformation;
     procedure SaveFormInformation;
+
+    // ignore bounds changes while the window is minimized, see implementation
+    // for the reason (prevents the restore-from-minimized repaint flash when
+    // the window was maximized)
+    procedure SetBounds(ALeft, ATop, AWidth, AHeight: Integer); override;
 
     // drop target
     procedure ShowDropTarget(const AShow: Boolean);
@@ -1047,6 +1079,13 @@ var
 var
   PrevWndProc: windows.WNDPROC;
 
+// gdi32.GdiFlush forces the calling thread's GDI batch to execute
+// immediately. GDI batches drawing operations - they are not applied to
+// the window's redirection surface when the call returns, the batch is
+// flushed lazily. Declared locally under a distinct name so it can never
+// collide with an equivalent declaration inside the windows unit.
+function GdiFlushFMD: windows.BOOL; stdcall; external 'gdi32' name 'GdiFlush';
+
 function WndCallback(Ahwnd: HWND; uMsg: UINT; wParam: WParam; lParam: LParam): LRESULT; stdcall;
 begin
   if uMsg = WM_DISPLAYCHANGE then
@@ -1064,7 +1103,98 @@ begin
       MainForm.MoveToDefaultPosition;
     end;
   end;
+
+  // The window is about to be minimized (taskbar button, caption button,
+  // Win+M, system menu): capture the client area content BEFORE the minimize
+  // animation starts - see PresentRestoreSnapshot for what it is needed for.
+  if (uMsg = WM_SYSCOMMAND) and ((wParam and $FFF0) = SC_MINIMIZE) then
+    MainForm.CaptureRestoreSnapshotBeforeMinimize;
+
+  // while the window is minimized, remember that the position change that is
+  // currently in progress is the one that can leave the minimized state
+  if (uMsg = WM_WINDOWPOSCHANGING) and windows.IsIconic(Ahwnd) then
+    MainForm.IconicPosChangePending := True;
+
+  // The snapshot blitted by PresentRestoreSnapshot is what DWM must show
+  // during the whole restore animation AND until the tree repaint has fully
+  // caught up, but the restore produces WM_ERASEBKGND in two waves: one
+  // re-entrant erase ~160 ms into the animation while LCL re-inflates the
+  // control tree inside CallWindowProc, then a storm of 15-30 more messages
+  // right AFTER the first WM_PAINT. Their default handling fills the
+  // surface with the form background brush - that fill is the dark
+  // rectangle seen during the animation and the flash right after it.
+  // While the guard is active, report the background as already erased and
+  // draw nothing, so the snapshot pixels survive the entire repaint wave.
+  if (uMsg = WM_ERASEBKGND) and MainForm.RestorePresentActive then
+  begin
+    if (windows.GetTickCount - MainForm.RestorePresentTick) < 2000 then
+    begin
+      Result := 1;
+      Exit;
+    end;
+    // the repaint wave of the restore is long over by now (every observed
+    // restore finishes painting within ~350 ms) - stop suppressing so
+    // painting falls back to the stock behavior
+    MainForm.RestorePresentActive := False;
+  end;
+
+  // The position change that restored the minimized window just got applied
+  // by the OS: the client area is restored-sized again but its redirection
+  // surface is still empty, so present the captured content NOW - before
+  // CallWindowProc, not after it. CallWindowProc of this very message is
+  // where LCL re-inflates the whole control tree (WM_SIZE -> SetBounds ->
+  // relayout of every child), which takes ~300 ms on a maximized window -
+  // the entire DWM animation: with the blit placed after CallWindowProc the
+  // pixels only reached the screen once the animation had already ended
+  // (confirmed with a solid-color probe build). Blitting before
+  // CallWindowProc puts the snapshot into the surface before the animation
+  // composites its first frames and arms the erase suppression guard early
+  // enough to swallow the re-entrant WM_ERASEBKGND that LCL performs inside
+  // this CallWindowProc (~160 ms into the animation).
+  //
+  // The WM_WINDOWPOSCHANGED events that arrive WHILE the window is still
+  // iconic (z-order/visibility nudges of the minimized window) must not
+  // consume the pending flag: PresentRestoreSnapshot would only skip them
+  // ("still iconic") and the flag would be gone when the position change
+  // that actually leaves the minimized state arrives. Keep the flag armed
+  // until the iconic state is really gone.
+  if (uMsg = WM_WINDOWPOSCHANGED) and MainForm.IconicPosChangePending then
+  begin
+    if not windows.IsIconic(Ahwnd) then
+    begin
+      MainForm.IconicPosChangePending := False;
+      MainForm.PresentRestoreSnapshot;
+    end;
+  end;
+
   Result := CallWindowProc(PrevWndProc, Ahwnd, uMsg, WParam, LParam);
+
+  // While the window is minimized, LCL invalidates the whole window on
+  // every size change (the win32 interface does a "complete invalidate on
+  // resize") - and the minimize itself is such a size change. A non-empty
+  // update region leaves the window's cached visual stale, and that cache
+  // is what DWM presents for a minimized window (it has no live surface to
+  // composite): with the region left invalid for the whole time the window
+  // sits minimized, the restore animation shows an empty client area -
+  // black in dark mode, omitted in light mode. Re-validating the region
+  // right after LCL's invalidate keeps the cached visual valid, so the
+  // restore animation runs with the real pre-minimize content, exactly
+  // like native Windows applications do. Painting while iconic is pointless
+  // anyway (the window is not visible), and the restore itself triggers a
+  // fresh full invalidate + repaint at the restored size.
+  if (uMsg = WM_WINDOWPOSCHANGED) and windows.IsIconic(Ahwnd) then
+    windows.ValidateRect(Ahwnd, nil);
+
+  // The tree repaint after a restore does NOT end with the first WM_PAINT:
+  // the real WM_ERASEBKGND storm (15-30 messages, the paint cycle of the
+  // re-inflated control tree) arrives 15-30 ms AFTER the first WM_PAINT -
+  // ending the guard there would re-enable exactly the form brush fill it
+  // exists to block. The guard therefore ends by age only (2 s, checked
+  // whenever the next WM_PAINT or WM_ERASEBKGND arrives), by which time
+  // every observed restore has long finished painting.
+  if (uMsg = WM_PAINT) and MainForm.RestorePresentActive and
+     ((windows.GetTickCount - MainForm.RestorePresentTick) >= 2000) then
+    MainForm.RestorePresentActive := False;
 end;
 {$endif}
 
@@ -1428,6 +1558,16 @@ begin
   if (END_SESSION=False) and
     (cbOptionShowQuitDialog.Checked and (DoAfterFMD = DO_NOTHING) and (not OptionRestartFMD)) then
   begin
+    // If the window is currently minimized (taskbar) or hidden (minimized to
+    // tray), bring it back on screen before showing the modal confirmation
+    // dialog. Showing a modal dialog while the main window is iconic or
+    // hidden leaves the LCL window state bookkeeping desynchronized: after
+    // cancelling the dialog, the next "Restore" from the tray produces a
+    // window whose client area no longer follows resizes. Restoring first
+    // keeps everything on the well tested "modal dialog over a visible main
+    // form" path, and gives the dialog a proper visual context.
+    if (WindowState = wsMinimized) or (Visible = False) then
+      RestoreFromMinimizedOrHidden;
     if CenteredMessageDlg(Self, RS_DlgQuit, mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
     begin
       Logger.Send(Self.ClassName+'.FormClose aborted!');
@@ -1509,6 +1649,9 @@ end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
 begin
+  {$ifdef windows}
+  DiscardRestoreSnapshot;
+  {$endif}
   SilentThreadManager.Free;
   DLManager.Free;
   FavoriteManager.Free;
@@ -1547,6 +1690,222 @@ begin
   end
   else
     PrevWindowState := WindowState;
+end;
+
+procedure TMainForm.SetBounds(ALeft, ATop, AWidth, AHeight: Integer);
+begin
+  {$ifdef windows}
+  // While the window is minimized, the LCL widgetset reports the window
+  // placement's "restored" (non-maximized) rectangle through WM_SIZE/WM_MOVE
+  // (see GetWindowSize in the win32 interface: it uses rcNormalPosition for
+  // minimized top level windows). For a window that was maximized before
+  // being minimized, applying that rectangle here would squeeze every child
+  // control to normal size while the window is not visible, and re-inflate
+  // them when the window is restored - a full relayout + repaint that shows
+  // up as a visible "loading the UI" flash over the whole window.
+  //
+  // Skipping bounds changes while iconic is safe: as soon as the window is
+  // restored (also from tray, via ShowHide -> ShowWindow(SW_SHOWNORMAL/
+  // SW_SHOWMAXIMIZED)), the widgetset re-syncs the real bounds through
+  // WM_SIZE/WM_MOVE and this method runs again without the guard.
+  if HandleAllocated and windows.IsIconic(Handle) then
+    Exit;
+  {$endif}
+  inherited SetBounds(ALeft, ATop, AWidth, AHeight);
+end;
+
+{$ifdef windows}
+procedure TMainForm.CaptureRestoreSnapshotBeforeMinimize;
+var
+  clientRC: windows.TRECT;
+  screenPos: windows.TPOINT;
+  screenDC, memoryDC: windows.HDC;
+  memoryBitmap: windows.HBITMAP;
+begin
+  if not HandleAllocated then
+    Exit;
+  // nothing to capture when the window is already minimized or hidden
+  if windows.IsIconic(Handle) or (not windows.IsWindowVisible(Handle)) then
+    Exit;
+  if not windows.GetClientRect(Handle, clientRC) then
+    Exit;
+  if (clientRC.Right <= 0) or (clientRC.Bottom <= 0) then
+    Exit;
+
+  DiscardRestoreSnapshot;
+  // a fresh capture invalidates any leftover presentation guard state
+  RestorePresentActive := False;
+
+  // Capture what is actually visible on screen. This form's client area is
+  // almost entirely covered by child windows (page control, virtual trees,
+  // toolbars) and every child HWND keeps its pixels in its own redirection
+  // surface: BitBlt from the form's own DC returns only the form background
+  // plus never-painted (black) parent pixels where the children sit - not the
+  // content the user sees (observed as a black client area in dark mode and
+  // a dark one in light mode). The composited screen image contains the real
+  // pixels of the whole window tree, so grab the client area's screen
+  // rectangle from the screen DC instead. The mouse cursor is composed
+  // separately and is not part of the capture; should another window overlap
+  // this one at that moment its pixels are captured too, which is still
+  // better than an empty animation.
+  screenPos.x := 0;
+  screenPos.y := 0;
+  if not windows.ClientToScreen(Handle, screenPos) then
+    Exit;
+
+  screenDC := windows.GetDC(0);
+  if screenDC = 0 then
+    Exit;
+  try
+    memoryDC := windows.CreateCompatibleDC(screenDC);
+    if memoryDC <> 0 then
+    begin
+      memoryBitmap := windows.CreateCompatibleBitmap(screenDC, clientRC.Right, clientRC.Bottom);
+      if memoryBitmap <> 0 then
+      begin
+        windows.SelectObject(memoryDC, memoryBitmap);
+        if windows.BitBlt(memoryDC, 0, 0, clientRC.Right, clientRC.Bottom,
+          screenDC, screenPos.x, screenPos.y, SRCCOPY) then
+        begin
+          // success - keep the bitmap selected in the memory DC,
+          // PresentRestoreSnapshot blits directly from it
+          RestoreSnapshotDC := memoryDC;
+          RestoreSnapshotBitmap := memoryBitmap;
+          RestoreSnapshotWidth := clientRC.Right;
+          RestoreSnapshotHeight := clientRC.Bottom;
+          // execute the capture blit immediately as well - the batch
+          // would flush lazily, see PresentRestoreSnapshot
+          GdiFlushFMD;
+        end
+        else
+        begin
+          // blit failed - fall back to the regular repaint on restore
+          windows.DeleteObject(memoryBitmap);
+          windows.DeleteDC(memoryDC);
+        end;
+      end
+      else
+        windows.DeleteDC(memoryDC);
+    end;
+  finally
+    windows.ReleaseDC(0, screenDC);
+  end;
+end;
+
+procedure TMainForm.PresentRestoreSnapshot;
+var
+  clientRC: windows.TRECT;
+  windowStyle: windows.LONG_PTR;
+  windowDC: windows.HDC;
+begin
+  if (RestoreSnapshotDC = 0) or (not HandleAllocated) then
+    Exit;
+  // the position change did not leave the minimized state (z-order or
+  // visibility change while iconic) - wait for the one that does
+  if windows.IsIconic(Handle) then
+    Exit;
+  if not windows.GetClientRect(Handle, clientRC) then
+    Exit;
+  // the window was not restored to the size it had before being minimized
+  // (display mode or DPI changed while minimized): the snapshot would not
+  // fit, fall back to the regular repaint
+  if (clientRC.Right <> RestoreSnapshotWidth) or (clientRC.Bottom <> RestoreSnapshotHeight) then
+  begin
+    DiscardRestoreSnapshot;
+    Exit;
+  end;
+
+  // Windows discards the redirection surface content of a window while it is
+  // minimized, so right after the restore the client area is restored-sized
+  // but still empty - DWM renders it black in dark mode and invisible in
+  // light mode until the whole window tree has repainted. This is called
+  // from WndCallback BEFORE CallWindowProc of the WM_WINDOWPOSCHANGED that
+  // restored the window: the OS has already applied the restored geometry
+  // there, while LCL's re-inflation of the control tree inside CallWindowProc
+  // takes ~300 ms on a maximized window - longer than the whole DWM
+  // animation - so blitting after it would only reach the screen once the
+  // animation had already ended. Blitting here puts the snapshot pixels
+  // into the surface before the animation composites its first frames, so
+  // the restore animation shows the real window content from the very
+  // start. The pending full tree repaint then draws over snapshot pixels
+  // identical to what it produces, so it completes invisibly whether it
+  // runs during or after the animation. WS_CLIPCHILDREN is dropped for the
+  // duration of the blit only (the capture reads from the screen DC and
+  // does not need it) so the blit writes the form's full client surface;
+  // the still-empty child surfaces composite on top of it as fully
+  // transparent, so the snapshot shows through everywhere.
+  windowStyle := windows.GetWindowLongPtr(Handle, GWL_STYLE);
+  if (windowStyle and WS_CLIPCHILDREN) <> 0 then
+    windows.SetWindowLongPtr(Handle, GWL_STYLE, windowStyle and (not WS_CLIPCHILDREN));
+  try
+    windowDC := windows.GetDC(Handle);
+    if windowDC <> 0 then
+    begin
+      try
+        if windows.BitBlt(windowDC, 0, 0, RestoreSnapshotWidth, RestoreSnapshotHeight,
+          RestoreSnapshotDC, 0, 0, SRCCOPY) then
+        begin
+          // arm the WM_ERASEBKGND suppression guard (see WndCallback)
+          RestorePresentActive := True;
+          RestorePresentTick := windows.GetTickCount;
+        end;
+        // GDI batches drawing operations on the calling thread instead of
+        // applying them when the call returns; left in the batch the blit is
+        // still invisible when DWM starts compositing the restore animation,
+        // which would then animate the freshly allocated (still empty/black)
+        // surface. Flushing executes the blit right now, so the snapshot
+        // pixels are guaranteed to be in the surface before the animation
+        // composites its first frame.
+        GdiFlushFMD;
+      finally
+        windows.ReleaseDC(Handle, windowDC);
+      end;
+    end;
+  finally
+    if (windowStyle and WS_CLIPCHILDREN) <> 0 then
+      windows.SetWindowLongPtr(Handle, GWL_STYLE, windowStyle);
+  end;
+
+  // the snapshot has served its purpose, release the screen sized bitmap
+  DiscardRestoreSnapshot;
+end;
+
+procedure TMainForm.DiscardRestoreSnapshot;
+begin
+  if RestoreSnapshotDC <> 0 then
+  begin
+    windows.DeleteDC(RestoreSnapshotDC);
+    RestoreSnapshotDC := 0;
+  end;
+  if RestoreSnapshotBitmap <> 0 then
+  begin
+    windows.DeleteObject(RestoreSnapshotBitmap);
+    RestoreSnapshotBitmap := 0;
+  end;
+  RestoreSnapshotWidth := 0;
+  RestoreSnapshotHeight := 0;
+end;
+{$endif}
+
+procedure TMainForm.RestoreFromMinimizedOrHidden;
+begin
+  WindowState := PrevWindowState;
+  ShowInTaskBar := stDefault;
+  Show;
+  {$ifdef windows}
+  // Safety net: if a modal dialog was previously shown while the window was
+  // minimized/hidden (e.g. the quit confirmation cancelled from the tray
+  // menu), the LCL visibility bookkeeping can disagree with the real widget
+  // window state and the Show above turns into a no-op. Force the widget
+  // window into the intended state directly.
+  if HandleAllocated and (windows.IsIconic(Handle) or (not windows.IsWindowVisible(Handle))) then
+  begin
+    if WindowState = wsMaximized then
+      windows.ShowWindow(Handle, SW_SHOWMAXIMIZED)
+    else
+      windows.ShowWindow(Handle, SW_SHOWNORMAL);
+  end;
+  {$endif}
 end;
 
 procedure TMainForm.miChapterListAscendingClick(Sender: TObject);
@@ -4195,7 +4554,7 @@ begin
   if pcMain.ActivePage = tsFavorites then
   begin
     vtFavorites.Repaint;
-	if vtFavorites.SelectedCount > 0 then
+    if vtFavorites.SelectedCount > 0 then
       sbMain.Panels[0].Text := Format(RS_Selected, [vtFavorites.SelectedCount])
     else
       sbMain.Panels[0].Text := ''
@@ -4490,11 +4849,7 @@ end;
 procedure TMainForm.TrayIconDblClick(Sender: TObject);
 begin
   if (WindowState = wsMinimized) or (Visible = False) then
-  begin
-    WindowState := PrevWindowState;
-    ShowInTaskBar := stDefault;
-    Show;
-  end
+    RestoreFromMinimizedOrHidden
   else
     Application.BringToFront;
 end;
@@ -6059,11 +6414,11 @@ begin
       WriteInteger('connections', 'ConnectionTimeout', seOptionConnectionTimeout.Value);
       if DefaultUserAgent <> UserAgentDefault then
       begin
-	WriteString('connections', 'DefaultUserAgent', DefaultUserAgent);
+        WriteString('connections', 'DefaultUserAgent', DefaultUserAgent);
       end
       else
       begin
-	WriteString('connections', 'DefaultUserAgent', '');
+        WriteString('connections', 'DefaultUserAgent', '');
       end;
 
       // proxy
@@ -6205,12 +6560,12 @@ begin
         cbSelectManga.ItemIndex := 0;
 
         // Disable download manga list dialog when applying options:
-  	b := cbOptionShowDownloadMangalistDialog.Checked;
-	cbOptionShowDownloadMangalistDialog.Checked := False;
+        b := cbOptionShowDownloadMangalistDialog.Checked;
+        cbOptionShowDownloadMangalistDialog.Checked := False;
         cbSelectMangaEditingDone(cbSelectManga);
 
-	// Revert state back to like it was before:
-	cbOptionShowDownloadMangalistDialog.Checked := b;
+        // Revert state back to like it was before:
+        cbOptionShowDownloadMangalistDialog.Checked := b;
       end
       else
       begin
@@ -6807,7 +7162,21 @@ procedure TMainForm.SaveFormInformation;
     end;
   end;
 
+var
+  isMinimizedNow: Boolean;
+  {$ifdef windows}
+  windowPlacement: windows.TWINDOWPLACEMENT;
+  {$endif}
 begin
+  // when closing while minimized, Left/Top/Width/Height still hold the
+  // pre-minimize (possibly maximized) bounds because SetBounds ignores
+  // changes while the window is iconic, so ask the OS for the restored
+  // rectangle instead (same values the widgetset would have reported)
+  {$ifdef windows}
+  isMinimizedNow := HandleAllocated and windows.IsIconic(Handle);
+  {$else}
+  isMinimizedNow := False;
+  {$endif}
   with settingsfile do
   try
     WriteInteger('form', 'DownloadsSplitter', psDownloads.Position);
@@ -6820,6 +7189,27 @@ begin
       WriteInteger('form', 'MainFormTop', CurrentFormTop);
       WriteInteger('form', 'MainFormWidth', CurrentFormWidth);
       WriteInteger('form', 'MainFormHeight', CurrentFormHeight);
+    end
+    else if isMinimizedNow then
+    begin
+      {$ifdef windows}
+      windowPlacement.length := SizeOf(windows.TWINDOWPLACEMENT);
+      if windows.GetWindowPlacement(Handle, @windowPlacement) then
+        with windowPlacement.rcNormalPosition do
+        begin
+          WriteInteger('form', 'MainFormLeft', Left);
+          WriteInteger('form', 'MainFormTop', Top);
+          WriteInteger('form', 'MainFormWidth', Right - Left);
+          WriteInteger('form', 'MainFormHeight', Bottom - Top);
+        end
+      else
+      {$endif}
+      begin
+        WriteInteger('form', 'MainFormLeft', CurrentFormLeft);
+        WriteInteger('form', 'MainFormTop', CurrentFormTop);
+        WriteInteger('form', 'MainFormWidth', CurrentFormWidth);
+        WriteInteger('form', 'MainFormHeight', CurrentFormHeight);
+      end;
     end
     else
     begin

@@ -269,6 +269,12 @@ begin
   Application.Scaled := True;
   uMetaDarkStyle.ApplyMetaDarkStyle(DefaultDark);
   Application.Initialize;
+  // must be set before the main form handle is created (TMainForm.FormCreate
+  // forces handle allocation), so the main form is created as a top-level
+  // window with its own taskbar button. Otherwise the hidden application
+  // window owns the taskbar button and minimize/restore are emulated by
+  // hiding/showing the form, which loses the native Windows animations.
+  Application.MainFormOnTaskBar := True;
   Application.CreateForm(TMainForm, MainForm);
   MainForm.winBuildNumber := g_buildNumber;
   Application.CreateForm(TFormCheckModules, FormCheckModules);
