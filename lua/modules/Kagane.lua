@@ -303,6 +303,6 @@ function Init()
 	end
 	m.AddOptionCheckBox('showscangroup', lang.showscangroup, false)
 	m.AddOptionCheckBox('datasaver', lang.datasaver, false)
-	m.AddOptionComboBox('domain', lang.domain, table.concat(domainitems, '\n'), 0)
+	m.AddOptionComboBox('domain', lang.domain, table.concat(domainitems, '\r\n'), 0)
 	m.AddOptionComboBox('chaptertitle', lang.chaptertitle, lang.titlemode, 0)
 end
