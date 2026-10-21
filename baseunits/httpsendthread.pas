@@ -62,7 +62,7 @@ type
 
   THTTPSendThreadEvent = procedure(const AHTTP: THTTPSendThread) of object;
 
-  THTTPMethodEvent = procedure(const AHTTP: THTTPSendThread; var Method, URL: String);
+  THTTPMethodEvent = procedure(const AHTTP: THTTPSendThread; var Method, URL: String) of object;
 
   THTTPRequestEvent = function(const AHTTP: THTTPSendThread; const Method, URL: String; const Response: TObject = nil): Boolean of object;
 

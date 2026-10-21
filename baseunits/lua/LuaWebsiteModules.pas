@@ -551,6 +551,7 @@ begin
           c.Modules.Add(TempModules[i]);
           Container := c;
           Module.RootURL := LowerCase(Module.RootURL);
+          Module.RegisterMirrorOption;
           if OnBeforeUpdateList <> '' then
             Module.OnBeforeUpdateList := @DoBeforeUpdateList;
           if OnAfterUpdateList <> '' then
@@ -948,6 +949,18 @@ begin
   end;
 end;
 
+function lua_getmirrorurls(L: Plua_State): Integer; cdecl;
+begin
+  lua_pushstring(L, TLuaWebsiteModule(luaClassGetObject(L)).Module.MirrorURLs.Text);
+  Result := 1;
+end;
+
+function lua_setmirrorurls(L: Plua_State): Integer; cdecl;
+begin
+  Result := 0;
+  TLuaWebsiteModule(luaClassGetObject(L)).Module.SetMirrorURLs(luaToString(L, 1));
+end;
+
 function lua_getaccountsupport(L: Plua_State): Integer; cdecl;
 begin
   lua_pushboolean(L, TLuaWebsiteModule(luaClassGetObject(L)).Module.AccountSupport);
@@ -1027,6 +1040,7 @@ begin
 
     luaClassAddProperty(L, MetaTable, UserData, 'TotalDirectory', @lua_gettotaldirectory, @lua_settotaldirectory);
     luaClassAddProperty(L, MetaTable, UserData, 'AccountSupport', @lua_getaccountsupport, @lua_setaccountsupport);
+    luaClassAddProperty(L, MetaTable, UserData, 'MirrorURLs', @lua_getmirrorurls, @lua_setmirrorurls);
 
     luaClassAddFunction(L, MetaTable, UserData, methods);
 

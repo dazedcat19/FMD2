@@ -111,6 +111,9 @@ type
     FWebsiteBypass: TWebsiteBypass;
     FCookieManager: THTTPCookieManager;
     FConnectionsQueue: THTTPQueue;
+    FMirrorOptionCaption: String;
+    FMirrorOptionItems: String;
+    FMirrorCustomCaption: String;
     procedure SetAccountSupport(AValue: Boolean);
     function WebsiteBypassHTTPRequest(const AHTTP: THTTPSendThread; const Method, URL: String; const Response: TObject = nil): Boolean;
     procedure MergeHTTPCookiesFromSetting(const AHTTP: THTTPSendThread);
@@ -125,7 +128,10 @@ type
     ID: String;
     Name: String;
     RootURL: String;
+    MirrorURLs: TStringList;
     Category: String;
+    MirrorOptionIndex: Integer;
+    MirrorCustomURL: String;
     ActiveTaskCount: Integer;
     SortedList: Boolean;
     InformationAvailable: Boolean;
@@ -165,6 +171,13 @@ type
       const ACaption, AItems: PString);
     procedure PrepareHTTP(const AHTTP: THTTPSendThread);
     function CreateHTTP(const AOwner: TBaseThread = nil): THTTPSendThread; inline;
+
+    procedure SetMirrorURLs(const AValue: String);
+    procedure RegisterMirrorOption;
+    function GetCustomMirrorURL: String;
+    function GetActiveMirrorURL: String;
+    function ContainsURL(const AURL: String): Boolean;
+    procedure RewriteMirrorURL(const AHTTP: THTTPSendThread; var Method, URL: String);
 
     procedure IncActiveTaskCount; inline;
     procedure DecActiveTaskCount; inline;
@@ -219,6 +232,11 @@ implementation
 
 var
   CS_Connection: TRTLCriticalSection;
+
+resourcestring
+  RS_MirrorOptionCaption = 'Website mirror';
+  RS_MirrorCustomItem = 'Custom domain';
+  RS_MirrorCustomCaption = 'Custom mirror domain';
 
 function CleanOptionName(const S: String): String;
 const
@@ -281,6 +299,121 @@ begin
     AHTTP.MergeCookies(Settings.HTTP.Cookies);
 end;
 
+procedure TModuleContainer.SetMirrorURLs(const AValue: String);
+var
+  sl: TStringList;
+  i: Integer;
+  s: String;
+begin
+  MirrorURLs.Clear;
+  if Trim(AValue) = '' then Exit;
+  sl := TStringList.Create;
+  try
+    // accept comma, semicolon, tab, space or newline separated URLs
+    s := StringReplace(AValue, ',', sLineBreak, [rfReplaceAll]);
+    s := StringReplace(s, ';', sLineBreak, [rfReplaceAll]);
+    s := StringReplace(s, #9, sLineBreak, [rfReplaceAll]);
+    s := StringReplace(s, ' ', sLineBreak, [rfReplaceAll]);
+    sl.Text := s;
+    for i := 0 to sl.Count - 1 do
+    begin
+      s := Trim(sl[i]);
+      if s = '' then Continue;
+      if Pos('://', s) = 0 then
+        s := 'https://' + s;
+      s := LowerCase(RemoveURLDelim(s));
+      if (s <> '') and (MirrorURLs.IndexOf(s) = -1) then
+        MirrorURLs.Add(s);
+    end;
+  finally
+    sl.Free;
+  end;
+end;
+
+procedure TModuleContainer.RegisterMirrorOption;
+var
+  i: Integer;
+  items: TStringList;
+begin
+  if RootURL = '' then Exit;
+  // cleanup mirror list, remove empty entries and duplicates of RootURL
+  for i := MirrorURLs.Count - 1 downto 0 do
+    if (MirrorURLs[i] = '') or (MirrorURLs[i] = LowerCase(RemoveURLDelim(RootURL))) then
+      MirrorURLs.Delete(i);
+  if MirrorURLs.Count = 0 then Exit;
+  items := TStringList.Create;
+  try
+    items.Add(RootURL); // index 0 = default (RootURL)
+    items.AddStrings(MirrorURLs);
+    items.Add(RS_MirrorCustomItem); // last index = user-defined custom domain
+    FMirrorOptionCaption := RS_MirrorOptionCaption;
+    FMirrorOptionItems := items.Text;
+    if (MirrorOptionIndex < 0) or (MirrorOptionIndex >= items.Count) then
+      MirrorOptionIndex := 0;
+    AddOptionComboBox(@MirrorOptionIndex, 'mirror', @FMirrorOptionCaption, @FMirrorOptionItems);
+    FMirrorCustomCaption := RS_MirrorCustomCaption;
+    AddOptionEdit(@MirrorCustomURL, 'mirrorcustom', @FMirrorCustomCaption);
+  finally
+    items.Free;
+  end;
+end;
+
+function TModuleContainer.GetCustomMirrorURL: String;
+var
+  s: String;
+begin
+  Result := '';
+  s := Trim(MirrorCustomURL);
+  if s = '' then Exit;
+  if Pos('://', s) = 0 then
+    s := 'https://' + s;
+  Result := LowerCase(RemoveURLDelim(s));
+end;
+
+function TModuleContainer.GetActiveMirrorURL: String;
+begin
+  Result := '';
+  if MirrorOptionIndex = MirrorURLs.Count + 1 then
+    Result := GetCustomMirrorURL // "Custom domain" selected in the combobox
+  else if (MirrorOptionIndex > 0) and (MirrorOptionIndex <= MirrorURLs.Count) then
+    Result := MirrorURLs[MirrorOptionIndex - 1];
+end;
+
+function TModuleContainer.ContainsURL(const AURL: String): Boolean;
+var
+  i: Integer;
+  s: String;
+begin
+  Result := (AURL <> '') and (Pos(AURL, RootURL) <> 0);
+  if not Result then
+    for i := 0 to MirrorURLs.Count - 1 do
+      if Pos(AURL, MirrorURLs[i]) <> 0 then
+        Exit(True);
+  if not Result then
+  begin
+    // the user-defined custom domain belongs to this module too
+    s := GetCustomMirrorURL;
+    Result := (s <> '') and (Pos(AURL, s) <> 0);
+  end;
+end;
+
+procedure TModuleContainer.RewriteMirrorURL(const AHTTP: THTTPSendThread;
+  var Method, URL: String);
+var
+  s, host, path: String;
+begin
+  s := GetActiveMirrorURL;
+  if s = '' then Exit;
+  // only rewrite requests to this module's own domains (RootURL or any mirror)
+  SplitURL(URL, @host, @path);
+  if host = '' then Exit;
+  host := LowerCase(host);
+  if not ContainsURL(host) then Exit;
+  s := FillHost(s, path);
+  if (s <> '') and (s <> URL) then
+    URL := s;
+end;
+
 procedure TModuleContainer.SetTotalDirectory(AValue: Integer);
 var
   i: Integer;
@@ -304,6 +437,10 @@ begin
   DynamicPageLink := False;
   TotalDirectory := 1;
   CurrentDirectoryIndex := 0;
+  MirrorURLs := TStringList.Create;
+  MirrorOptionIndex := 0;
+  FMirrorOptionCaption := '';
+  FMirrorOptionItems := '';
   FWebsiteBypass := TWebsiteBypass.Create(self);
   FCookieManager := THTTPCookieManager.Create;
   FConnectionsQueue := THTTPQueue.Create;
@@ -315,6 +452,7 @@ destructor TModuleContainer.Destroy;
 begin
   SetLength(TotalDirectoryPage, 0);
   SetLength(OptionList,0);
+  MirrorURLs.Free;
   if Assigned(FWebsiteBypass) then
     FWebsiteBypass.Free;
   if Assigned(FAccount) then
@@ -358,6 +496,8 @@ begin
   AHTTP.ConnectionsQueue := FConnectionsQueue;
   AHTTP.OnHTTPRequest := @WebsiteBypassHTTPRequest;
   AHTTP.OnAfterSetHTTPCookies := @MergeHTTPCookiesFromSetting;
+  if MirrorURLs.Count > 0 then
+    AHTTP.OnBeforeHTTPMethod := @RewriteMirrorURL;
 
   if not Settings.Enabled then exit;
   with Settings.HTTP do
@@ -504,8 +644,9 @@ function TWebsiteModules.LocateModuleByHost(const AHost: String
   var
     i: Integer;
   begin
+    // RootURL, mirror sites and the custom domain all belong to the same module
     for i := FModuleList.Count - 1 downto 0 do
-      if Pos(s, FModuleList[i].RootURL) <> 0 then
+      if FModuleList[i].ContainsURL(s) then
         Exit(FModuleList[i]);
     Result := nil;
   end;
@@ -514,7 +655,7 @@ var
   expr: TRegExpr;
 begin
   h := LowerCase(AHost);
-  if Assigned(FLastLocateModule) and (Pos(h, FLastLocateModule.RootURL) <> 0) then
+  if Assigned(FLastLocateModule) and FLastLocateModule.ContainsURL(h) then
     Exit(FLastLocateModule);
   Result := PosModule(h);
   if Result = nil then
