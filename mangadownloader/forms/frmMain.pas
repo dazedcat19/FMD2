@@ -727,6 +727,8 @@ type
     LastSearchWeb: Pointer;
     LastUserPickedSaveTo: String;
     LastViewMangaInfoSender: TObject;
+    LastViewMangaInfoModule: Pointer;
+    LastViewMangaInfoURL: String;
 
     CurrentFormLeft: Integer;
     CurrentFormTop: Integer;
@@ -4205,7 +4207,10 @@ begin
     if vtMangaList.SelectedCount > 0 then
       sbMain.Panels[0].Text := Format(RS_Selected, [vtMangaList.SelectedCount])
     else
-      sbMain.Panels[0].Text := ''
+      sbMain.Panels[0].Text := '';
+    // keep the address bar in sync with the current mirror option
+    if (LastViewMangaInfoModule <> nil) and (LastViewMangaInfoURL <> '') then
+      edURL.Text := TModuleContainer(LastViewMangaInfoModule).GetDisplayURL(LastViewMangaInfoURL);
   end
   else if pcMain.ActivePage = tsOption then
     LoadOptions;
@@ -5664,7 +5669,9 @@ begin
   end;
 
   // set the UI
-  edURL.Text := FillHost(TModuleContainer(AModule).RootURL, ALink);
+  edURL.Text := FillHost(TModuleContainer(AModule).GetBaseURL, ALink);
+  LastViewMangaInfoModule := AModule;
+  LastViewMangaInfoURL := edURL.Text;
   pcMain.ActivePage := tsInformation;
   imCover.Picture.Assign(nil);
 
@@ -5734,6 +5741,8 @@ begin
       Lines.BeginUpdate;
       Lines.Clear;
       edURL.Text := mangaInfo.URL;
+      LastViewMangaInfoModule := mangaInfo.Module;
+      LastViewMangaInfoURL := mangaInfo.URL;
       AddTextToInfo(RS_InfoTitle, mangaInfo.Title);
       AddTextToInfo(RS_InfoAltTitles, mangaInfo.AltTitles);
       AddTextToInfo(RS_InfoAuthors, mangaInfo.Authors);

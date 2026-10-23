@@ -62,7 +62,7 @@ type
 
   THTTPSendThreadEvent = procedure(const AHTTP: THTTPSendThread) of object;
 
-  THTTPMethodEvent = procedure(const AHTTP: THTTPSendThread; var Method, URL: String);
+  THTTPMethodEvent = procedure(const AHTTP: THTTPSendThread; var Method, URL: String) of object;
 
   THTTPRequestEvent = function(const AHTTP: THTTPSendThread; const Method, URL: String; const Response: TObject = nil): Boolean of object;
 
@@ -561,7 +561,10 @@ begin
   try
     FRunning:=True;
     if Assigned(OnBeforeHTTPMethod) then
+    begin
       OnBeforeHTTPMethod(Self, amethod, aurl);
+      FURL := aurl; // keep LastURL pointing to the URL actually requested
+    end;
     SetHTTPCookies;
     Result := inherited HTTPMethod(amethod, aurl);
     if FEnabledCookies then

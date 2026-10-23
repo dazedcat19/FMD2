@@ -72,6 +72,7 @@
     - [Error Handling](#error-handling)
     - [Account Support](#account-support)
     - [User Options](#user-options)
+    - [Mirror Sites](#mirror-sites)
     - [JSON API Handling](#json-api-handling)
     - [Multi-Category Sites](#multi-category-sites)
     - [Iterating Over Nodes](#iterating-over-nodes)
@@ -157,6 +158,7 @@ function Init()
     -- m.AccountSupport           = true
     -- m.SortedList               = true
     -- m.TotalDirectory           = number_of_categories
+    -- m.MirrorURLs               = 'https://mirror1.website.com, mirror2.website.com'  -- mirror domains, see Mirror Sites
 end
 ```
 
@@ -378,6 +380,8 @@ end
 | `MODULE.ID` | String | Read-only | Module's unique identifier (32-char hex) |
 | `MODULE.Name` | String | Read-only | Module display name |
 | `MODULE.RootURL` | String | Read-only | Website root URL |
+| `MODULE.MirrorURLs` | String | Read/Write | Mirror domain list, comma/semicolon/tab/space/newline separated (protocol optional, defaults to `https://`) |
+| `MODULE.ActiveMirrorURL` | String | Read-only | Mirror URL currently in use (empty string when the default `RootURL` is active) |
 | `MODULE.Category` | String | Read-only | Module category (English, Vietnamese, etc.) |
 | `MODULE.MaxTaskLimit` | Integer | Read/Write | Maximum concurrent tasks for this module |
 | `MODULE.MaxThreadPerTaskLimit` | Integer | Read/Write | Maximum threads per task |
@@ -2345,6 +2349,55 @@ local timeout = tonumber(MODULE.GetOption('timeout') or '60')
 local show_group = MODULE.GetOption('showgroup')
 local image_size = MODULE.GetOption('imagesize')
 ```
+
+### Mirror Sites
+
+Some websites are reachable under several domains. Instead of creating one
+module per domain, declare the extra domains once with `MODULE.MirrorURLs` and
+let the host application handle the rest.
+
+```lua
+function Init()
+    local m = NewWebsiteModule()
+    m.ID         = '...'
+    m.Name       = 'Website Name'
+    m.RootURL    = 'https://website.com'  -- default/canonical domain
+    m.MirrorURLs = 'https://mirror.website.com, mirror2.website.com'
+    m.Category   = 'Category-Name'
+    ...
+end
+```
+
+What the host application does with the list:
+
+- **Recognition** - a link from any declared mirror (pasted into the address
+  bar, drag & dropped, or imported from a favorites list) resolves to the
+  module, exactly like a `RootURL` link does. A user-defined
+  **Custom mirror domain** is recognized as well.
+- **Options** - a built-in **Website mirror** combobox is added to the
+  module's options: the `RootURL`, every declared mirror, plus a
+  **Custom domain** entry paired with an editable **Custom mirror domain**
+  field for user-defined domains. The selection is persisted with the module
+  options.
+- **Routing** - when a mirror (or the custom domain) is selected, every HTTP
+  request of the module is transparently re-anchored to that domain, including
+  manga list updates, manga info, downloads, images and website bypass
+  requests. No changes to the event handlers are needed.
+- **Address bar** - displayed links follow the selection: links pasted from
+  any mirror are normalized to the `RootURL` by default, and shown under the
+  selected mirror domain when one is active. `MANGAINFO.URL` follows the same
+  rule.
+
+Notes for module developers:
+
+- Keep `RootURL` pointing at the canonical/default domain and put only the
+  *extra* domains into `MirrorURLs`. Entries equal to `RootURL` are ignored.
+- The protocol is optional (`mirror2.website.com` is stored as
+  `https://mirror2.website.com`); entries are lowercased and deduplicated.
+- Inside Lua callbacks, `MODULE.RootURL` always returns the canonical domain.
+  To find out which domain is actually in use, check `MODULE.ActiveMirrorURL`.
+- `MODULE.MirrorURLs` is completely optional: modules that do not set it keep
+  the plain single-domain behavior.
 
 ### JSON API Handling
 

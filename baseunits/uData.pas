@@ -102,7 +102,7 @@ begin
 
   if Assigned(TModuleContainer(FModule).OnGetInfo) then
   begin
-    MangaInfo.URL := FillHost(TModuleContainer(FModule).RootURL, AURL);
+    MangaInfo.URL := FillHost(TModuleContainer(FModule).GetBaseURL, AURL);
     Result := TModuleContainer(FModule).OnGetInfo(Self, AURL, TModuleContainer(FModule));
   end
   else
