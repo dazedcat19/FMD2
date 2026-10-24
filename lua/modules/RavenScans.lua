@@ -38,7 +38,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '70c8aa5554e84aa9addd7378599e1003'
 	m.Name                     = 'Raven Scans'
-	m.RootURL                  = 'https://ravenscans.net'
+	m.RootURL                  = 'https://ravenscans.org'
 	m.Category                 = 'English-Scanlation'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
