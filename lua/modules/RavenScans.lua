@@ -3,7 +3,7 @@
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.MangaThemesia'
-DirectoryPagination = '/series/list-mode/'
+DirectoryPagination = '/manga/list-mode/'
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
