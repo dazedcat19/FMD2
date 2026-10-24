@@ -5,7 +5,7 @@
 local _M = {}
 
 ----------------------------------------------------------------------------------------------------
--- Local Constants
+-- Template Configuration
 ----------------------------------------------------------------------------------------------------
 
 local DirectoryPagination = '/wp-admin/admin-ajax.php?action=advanced_search'
@@ -111,7 +111,7 @@ function _M.GetPageNumber()
 
 	if not HTTP.GET(u) then return false end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('//section[@data-image-data]/img/@src', TASK.PageLinks)
+	CreateTXQuery(HTTP.Document).XPathStringAll('//section[@data-image-data]//img/@src', TASK.PageLinks)
 
 	return true
 end
