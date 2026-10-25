@@ -1,25 +1,7 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
+-- Module Constants
 ----------------------------------------------------------------------------------------------------
 
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = '35e1b3ff5dbf428889d0f316c3d881e6'
-	m.Name                     = 'WestManga'
-	m.RootURL                  = 'https://westmanga.co'
-	m.Category                 = 'Indonesian'
-	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-	m.SortedList               = true
-end
-
-----------------------------------------------------------------------------------------------------
--- Local Constants
-----------------------------------------------------------------------------------------------------
-
-local API_URL = 'https://data.westmanga.co/api'
 local DirectoryPagination = '/contents?orderBy=Added&type=Comic&page='
 
 ----------------------------------------------------------------------------------------------------
@@ -27,14 +9,23 @@ local DirectoryPagination = '/contents?orderBy=Added&type=Comic&page='
 ----------------------------------------------------------------------------------------------------
 
 -- Set the required http headers for making a request.
-local function SetRequestHeaders(RequestPath)
-	local access_key = 'WM_WEB_FRONT_END'
-	local secret_key = 'xxxoidj'
-	local timestamp = os.time()
-	local key = timestamp .. 'GET' .. RequestPath:match('([^?]+)') .. access_key .. secret_key
-	HTTP.Headers.Values['x-wm-accses-key'] = access_key
-	HTTP.Headers.Values['x-wm-request-time'] = timestamp
-	HTTP.Headers.Values['x-wm-request-signature'] = require('utils.sha256').hmac_sha256(key, 'wm-api-request')
+local function SetRequestHeaders()
+	local now = os.time()
+
+	local token  = MODULE.Storage['token']
+	local expiry = tonumber(MODULE.Storage['exp']) or 0
+
+	if token == '' or now > expiry then
+		if not HTTP.GET(MODULE.RootURL .. '/api/visit-token') then return false end
+
+		local body = HTTP.Document.ToString()
+		MODULE.Storage['token'] = body:match('"token":"(.-)"')
+		MODULE.Storage['exp'] = body:match('"expires_at":(%d+)')
+	end
+
+	HTTP.Reset()
+	HTTP.Headers.Values['X-WM-Visit'] = MODULE.Storage['token']
+	HTTP.Headers.Values['Sec-Fetch-Site'] = 'same-origin'
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -43,8 +34,8 @@ end
 
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
-	local u = API_URL .. DirectoryPagination .. 1
-	SetRequestHeaders('/api' .. DirectoryPagination)
+	local u = MODULE.RootURL .. '/api' .. DirectoryPagination .. 1
+	SetRequestHeaders()
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -55,8 +46,8 @@ end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local u = API_URL .. DirectoryPagination .. (URL + 1)
-	SetRequestHeaders('/api' .. DirectoryPagination)
+	local u = MODULE.RootURL .. '/api' .. DirectoryPagination .. (URL + 1)
+	SetRequestHeaders()
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -70,22 +61,22 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local u = API_URL .. URL
-	SetRequestHeaders('/api' .. URL)
+	local u = MODULE.RootURL .. '/api' .. URL
+	SetRequestHeaders()
 
 	if not HTTP.GET(u) then return net_problem end
 
 	local x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
-	local json = x.XPath('json(*).data')
-	MANGAINFO.Title     = x.XPathString('title', json)
-	MANGAINFO.AltTitles = x.XPathString('alternative_name', json)
-	MANGAINFO.CoverLink = x.XPathString('cover', json)
-	MANGAINFO.Authors   = x.XPathString('author', json)
-	MANGAINFO.Genres    = x.XPathString('string-join(genres?*?name, ", ")', json)
-	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status', json))
-	MANGAINFO.Summary   = x.XPathString('sinopsis', json)
+	local info = x.XPath('json(*).data')
+	MANGAINFO.Title     = x.XPathString('title', info)
+	MANGAINFO.AltTitles = x.XPathString('alternative_name', info)
+	MANGAINFO.CoverLink = MaybeFillHost(MODULE.RootURL, x.XPathString('cover', info))
+	MANGAINFO.Authors   = x.XPathString('author', info)
+	MANGAINFO.Genres    = x.XPathString('string-join(genres?*?name, ", ")', info)
+	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status', info))
+	MANGAINFO.Summary   = x.XPathString('sinopsis', info)
 
-	for v in x.XPath('chapters?*', json).Get() do
+	for v in x.XPath('chapters?*', info).Get() do
 		MANGAINFO.ChapterLinks.Add(v.GetProperty('slug').ToString())
 		MANGAINFO.ChapterNames.Add('Chapter ' .. v.GetProperty('number').ToString())
 	end
@@ -96,12 +87,31 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local u = API_URL .. '/v' .. URL
-	SetRequestHeaders('/api/v' .. URL)
+	local u = MODULE.RootURL .. '/api/v' .. URL
+	SetRequestHeaders()
 
 	if not HTTP.GET(u) then return false end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).data.images()', TASK.PageLinks)
+	for v in CreateTXQuery(HTTP.Document).XPath('json(*).data.images()').Get() do
+		TASK.PageLinks.Add(MaybeFillHost(MODULE.RootURL, v.ToString()))
+	end
 
 	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = '35e1b3ff5dbf428889d0f316c3d881e6'
+	m.Name                     = 'WestManga'
+	m.RootURL                  = 'https://v1.westmanga.my'
+	m.Category                 = 'Indonesian'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.SortedList               = true
 end
