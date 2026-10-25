@@ -9,6 +9,7 @@
     - [Status Constants and Return Values](#status-constants-and-return-values)
 3. [Injected Pascal Objects](#injected-pascal-objects)
     - [HTTP Object (THTTPSendThread)](#http-object-thttpsendthread)
+        - [HTTP.Reset() and Header Lifecycle](#httpreset-and-header-lifecycle)
         - [HTTP.Document (TMemoryStream)](#httpdocument-tmemorystream)
     - [MODULE Object (TModuleContainer)](#module-object-tmodulecontainer)
     - [Event Handlers - Complete Workflow](#event-handlers---complete-workflow)
@@ -238,6 +239,13 @@ end
 -- XHR request
 HTTP.Headers.Values['X-Requested-With'] = 'XMLHttpRequest'
 HTTP.XHR('https://example.com/ajax')
+
+-- Request with custom headers
+HTTP.Reset()  -- always reset before setting headers, see HTTP.Reset() and Header Lifecycle
+HTTP.Headers.Values['Referer'] = 'https://example.com/'
+if HTTP.GET('https://example.com/data') then
+    -- process response
+end
 ```
 
 #### Properties
@@ -270,8 +278,8 @@ HTTP.XHR('https://example.com/ajax')
 | `HTTP.XHR(url)` | Perform XMLHttpRequest (GET with `X-Requested-With: XMLHttpRequest`) |
 | `HTTP.HEAD(url)` | Perform HTTP HEAD request |
 | `HTTP.Request(method, url)` | Perform a request with an arbitrary HTTP method, e.g. `HTTP.Request('POST', url)` |
-| `HTTP.Reset()` | Reset HTTP state |
-| `HTTP.ResetBasic()` | Reset basic settings |
+| `HTTP.Reset()` | Clear the request state — document, headers, in-memory cookies, ranges, `MimeType` back to `text/html` — close the keep-alive socket, and restore the default browser headers (`DNT`, `Accept`, `Accept-Language`, `Accept-Charset`, plus `Accept-Encoding` when `HTTP.Compress` is on). **Call it before setting custom request headers** — see [HTTP.Reset() and Header Lifecycle](#httpreset-and-header-lifecycle) |
+| `HTTP.ResetBasic()` | Same clear as `Reset()` without re-adding the default browser headers — for when you build the whole header list yourself |
 | `HTTP.ClearCookies()` | Clear all cookies |
 | `HTTP.GetCookies()` | Get cookies string |
 | `HTTP.AddServerCookies(url, cookie_string)` | Add cookies to persistent storage for the URL's domain (first argument may be omitted) |
@@ -287,6 +295,93 @@ HTTP.XHR('https://example.com/ajax')
 > `HTTP.ResetBasic()` — once set they stay in effect for later requests. If you
 > turn redirection off for a single request, always set it back to `true`
 > afterwards.
+
+#### HTTP.Reset() and Header Lifecycle
+
+`HTTP.Headers` is dual-purpose: it carries your request headers **into** a
+request, and the server's response headers **out** of it. Once `HTTP.GET`,
+`HTTP.POST`, `HTTP.XHR`, `HTTP.HEAD` or `HTTP.Request` returns, `HTTP.Headers`
+no longer holds the headers you set — it holds the status line and the
+headers of the response instead:
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+...
+```
+
+As a safety net, the request functions detect these leftovers (the `HTTP/`
+status line as the first entry) and silently reset the header list when the
+next request starts. That safety reset also wipes headers the module set
+*after* the previous response arrived, so they never reach the server. A
+handler that sets a custom header therefore works on its first call and
+fails on every following one:
+
+```lua
+function GetPageNumber()
+    local u = MODULE.RootURL .. '/api/.../pages'
+    HTTP.Headers.Values['X-Organization'] = site -- appended to the PREVIOUS response
+    if not HTTP.GET(u) then return false end     -- safety reset drops X-Organization
+    ...
+end
+```
+
+Calling `HTTP.Reset()` **before** setting custom headers starts from a clean
+state, so the header survives the request:
+
+```lua
+function GetPageNumber()
+    local u = MODULE.RootURL .. '/api/.../pages'
+    HTTP.Reset()                                  -- clean request state
+    HTTP.Headers.Values['X-Organization'] = site  -- now it is sent
+    if not HTTP.GET(u) then return false end
+    ...
+end
+```
+
+Real usage — `lua/modules/CapibaraTraductor.lua` (without the `Reset()` the
+first chapter of a multi-chapter task downloads fine and every later chapter
+fails):
+
+```lua
+function GetPageNumber()
+    local site, slug, cid = URL:match('^/([^/]+)/([^/]+)/([^/]+)$')
+    local u = MODULE.RootURL .. '/api/manga-custom/' .. slug .. '/chapter/' .. cid .. '/pages'
+    HTTP.Reset()
+    HTTP.Headers.Values['X-Organization'] = site
+    if not HTTP.GET(u) then return false end
+    CreateTXQuery(HTTP.Document).XPathStringAll('json(*).data().imageUrl', TASK.PageLinks)
+    return true
+end
+```
+
+**When a reset is needed** depends on who owns the `HTTP` object and whether
+the host resets it between handler calls:
+
+| Handler | `HTTP` instance | Host resets? |
+|---------|-----------------|--------------|
+| `OnGetDirectoryPageNumber`, `OnGetNameAndLink` | one per update-list run | yes — after every call |
+| `OnGetInfo` (update list) | one per update-list run | yes — after every manga |
+| `OnGetInfo` (favorites / manga info dialog) | fresh per lookup | first request starts clean |
+| `OnGetPageNumber` | **one per download task — reused for every chapter** | **no** |
+| `OnGetImageURL`, `OnBeforeDownloadImage`, `OnDownloadImage`, `OnAfterImageSaved` | one per download worker thread | yes — before every image |
+
+`OnGetPageNumber` is the one to watch: in a multi-chapter task, every chapter
+after the first inherits the previous chapter's response headers. The same
+applies inside any handler that makes **more than one request of its own** —
+after your first request the object is "dirty" again, so reset before
+setting the headers for the second one.
+
+> [!IMPORTANT]
+> Whenever you set `HTTP.Headers`, `HTTP.Cookies` or `HTTP.MimeType` before a
+> request, call `HTTP.Reset()` first — unless you are certain the object has
+> not been used since it was created.
+
+`HTTP.Reset()` also clears the in-memory cookie list and closes the keep-alive
+socket (a fresh connection is made on the next request). The module's
+persistent cookie storage is **not** touched — stored cookies are re-applied
+automatically when the next request is made, so a logged-in session survives
+a `Reset()`. For which properties survive a reset, see the note above.
 
 #### HTTP.Document (TMemoryStream)
 
@@ -647,6 +742,14 @@ end
    - **Multi-page:** Add page URLs to `TASK.PageContainerLinks`, then `OnGetImageURL` will be called for each
 4. Can set `TASK.PageNumber` for progress tracking
 5. Can set `TASK.FileNames` for custom filenames
+
+> [!WARNING]
+> `OnGetPageNumber` runs once per chapter on the **task's shared `HTTP`
+> object**, with no reset in between. If you set custom headers, cookies or
+> `MimeType`, call `HTTP.Reset()` first — otherwise every chapter after the
+> first inherits the previous response's headers and your custom headers are
+> silently dropped. See
+> [HTTP.Reset() and Header Lifecycle](#httpreset-and-header-lifecycle).
 
 ---
 
@@ -2664,6 +2767,14 @@ Many websites use common CMS themes. Check the
 Many sites require specific headers (usually `Referer` and `Origin`). Set them in
 `OnBeforeDownloadImage`; see [Before Download Image](#10-before-download-image-onbeforedownloadimage).
 For JSON APIs, see [JSON API Handling](#json-api-handling).
+
+**Always call `HTTP.Reset()` before setting custom headers.** `HTTP.Headers`
+holds the *previous response's* headers after each request, and the request
+functions silently reset the list when they detect that — dropping any header
+you set in the meantime. This bites hardest in `OnGetPageNumber`, which runs
+once per chapter on the task's shared `HTTP` object: the first chapter works,
+the rest fail. See
+[HTTP.Reset() and Header Lifecycle](#httpreset-and-header-lifecycle).
 
 ### 4. Handle JavaScript-Heavy Sites
 
