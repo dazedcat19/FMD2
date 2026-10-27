@@ -92,6 +92,7 @@ function xquery_xpathstringall(L: Plua_State): Integer; cdecl;
 var
   u: TUserData;
   S: String;
+  o: TObject;
 begin
   Result := 0;
   u := TUserData(luaClassGetObject(L));
@@ -111,8 +112,20 @@ begin
          else
          if lua_isuserdata(L, 2) then
          begin
-           u.XPathStringAll(luaToString(L, 1), TStrings(luaToUserData(L, 2)));
-           Result := 0;
+           o := TObject(luaToUserData(L, 2));
+           if o is TLuaIXQValue then
+           begin
+             S := u.XPathStringAll(luaToString(L, 1), ', ',
+               TLuaIXQValue(o).FIXQValue);
+             lua_pushstring(L, S);
+             Result := 1;
+           end
+           else
+           if o is TStrings then
+           begin
+             u.XPathStringAll(luaToString(L, 1), TStrings(o));
+             Result := 0;
+           end;
          end;
        end;
     3: begin
@@ -131,7 +144,7 @@ begin
            Result := 0;
          end;
        end;
-    end;
+  end;
 end;
 
 function xquery_xpathhrefall(L: Plua_State): Integer; cdecl;
