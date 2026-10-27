@@ -9,6 +9,7 @@
     - [Status Constants and Return Values](#status-constants-and-return-values)
 3. [Injected Pascal Objects](#injected-pascal-objects)
     - [HTTP Object (THTTPSendThread)](#http-object-thttpsendthread)
+        - [HTTP.Reset() and Header Lifecycle](#httpreset-and-header-lifecycle)
         - [HTTP.Document (TMemoryStream)](#httpdocument-tmemorystream)
     - [MODULE Object (TModuleContainer)](#module-object-tmodulecontainer)
     - [Event Handlers - Complete Workflow](#event-handlers---complete-workflow)
@@ -66,6 +67,7 @@
         - [utils.sha256](#utilssha256)
         - [utils.protoc (with the `pb` runtime)](#utilsprotoc-with-the-pb-runtime)
 6. [Templates](#templates)
+    - [Available Templates](#available-templates)
     - [Using Templates](#using-templates)
     - [Template Customization](#template-customization)
 7. [Common Patterns](#common-patterns)
@@ -74,7 +76,7 @@
     - [User Options](#user-options)
     - [Mirror Sites](#mirror-sites)
     - [JSON API Handling](#json-api-handling)
-    - [Multi-Category Sites](#multi-category-sites)
+    - [Multi-Directory Sites](#multi-directory-sites)
     - [Iterating Over Nodes](#iterating-over-nodes)
 8. [Examples](#examples)
     - [Example 1: Simple Module](#example-1-simple-module)
@@ -113,7 +115,7 @@ Every Lua module follows a consistent structure:
 
 ```lua
 ----------------------------------------------------------------------------------------------------
--- Local Constants (optional)
+-- Module Constants (optional)
 ----------------------------------------------------------------------------------------------------
 
 local API_URL = 'https://api.website.com'
@@ -141,7 +143,7 @@ end
 
 function Init()
     local m = NewWebsiteModule()
-    m.ID                       = 'unique_hex_identifier'  -- 32-character hex string
+    m.ID                       = '56473ae447f04cee93683d7404b32e60'  -- GUID with the hyphens removed — generate your own, see Generate Unique IDs
     m.Name                     = 'Website Name'
     m.RootURL                  = 'https://website.com'
     m.Category                 = 'Category-Name'
@@ -174,18 +176,18 @@ handler is explained in
 | `OnGetNameAndLink` | **Yes** | status code | `HTTP`, `LINKS`, `NAMES`, `UPDATELIST` | `URL` |
 | `OnGetInfo` | **Yes** | status code | `HTTP`, `MANGAINFO` | `URL` |
 | `OnGetPageNumber` | **Yes** | `true` / `false` | `HTTP`, `TASK` | `URL` |
-| `OnBeforeUpdateList` | No | `true` = continue, `false` = cancel | `UPDATELIST` | none |
+| `OnBeforeUpdateList` | No | `true` / `false` — **not used by the host** | `UPDATELIST` | none |
 | `OnGetDirectoryPageNumber` | No | status code | `HTTP`, `UPDATELIST` | `PAGENUMBER`, `WORKPTR` |
-| `OnAfterUpdateList` | No | `true` / `false` | `UPDATELIST` | none |
-| `OnTaskStart` | No | `true` = continue, `false` = cancel | `TASK` | none |
+| `OnAfterUpdateList` | No | `true` / `false` — **not used by the host** | `UPDATELIST` | none |
+| `OnTaskStart` | No | `true` / `false` — **not used by the host** | `TASK` | none |
 | `OnGetImageURL` | No | `true` / `false` | `HTTP`, `TASK` | `URL`, `WORKID` |
-| `OnBeforeDownloadImage` | No | `true` = continue, `false` = skip image | `HTTP`, `TASK` | `URL`, `WORKID` |
+| `OnBeforeDownloadImage` | No | `true` / `false` — **not used by the host** | `HTTP`, `TASK` | `URL`, `WORKID` |
 | `OnDownloadImage` | No | `true` / `false` | `HTTP`, `TASK` | `URL`, `WORKID` |
 | `OnSaveImage` | No | filename (string) | `HTTP` | `PATH`, `FILENAME` |
-| `OnAfterImageSaved` | No | `true` / `false` | none | `FILENAME` |
-| `OnLogin` | No | `true` / `false` | `HTTP` | account status constants |
-| `OnAccountState` | No | `true` / `false` | none | account status constants |
-| `OnCheckSite` | No | `true` / `false` | none | account status constants |
+| `OnAfterImageSaved` | No | `true` / `false` — **not used by the host** | none | `FILENAME` |
+| `OnLogin` | No | `true` / `false` — **not used by the host** (set `MODULE.Account.Status` instead) | `HTTP` | account status constants |
+| `OnAccountState` | No | `true` / `false` — **not used by the host** | none | account status constants |
+| `OnCheckSite` | No | `true` / `false` — **not used by the host** (fill `MANGACHECK` instead) | `MANGACHECK` | account status constants, net status constants |
 
 "Status code" means one of the [status constants](#status-constants-and-return-values).
 `Init` has no injected objects; it creates the module with `NewWebsiteModule()`.
@@ -240,6 +242,13 @@ end
 -- XHR request
 HTTP.Headers.Values['X-Requested-With'] = 'XMLHttpRequest'
 HTTP.XHR('https://example.com/ajax')
+
+-- Request with custom headers
+HTTP.Reset()  -- always reset before setting headers, see HTTP.Reset() and Header Lifecycle
+HTTP.Headers.Values['Referer'] = 'https://example.com/'
+if HTTP.GET('https://example.com/data') then
+    -- process response
+end
 ```
 
 #### Properties
@@ -272,8 +281,8 @@ HTTP.XHR('https://example.com/ajax')
 | `HTTP.XHR(url)` | Perform XMLHttpRequest (GET with `X-Requested-With: XMLHttpRequest`) |
 | `HTTP.HEAD(url)` | Perform HTTP HEAD request |
 | `HTTP.Request(method, url)` | Perform a request with an arbitrary HTTP method, e.g. `HTTP.Request('POST', url)` |
-| `HTTP.Reset()` | Reset HTTP state |
-| `HTTP.ResetBasic()` | Reset basic settings |
+| `HTTP.Reset()` | Clear the request state — document, headers, in-memory cookies, ranges, `MimeType` back to `text/html` — close the keep-alive socket, and restore the default browser headers (`DNT`, `Accept`, `Accept-Language`, `Accept-Charset`, plus `Accept-Encoding` when `HTTP.Compress` is on). **Call it before setting custom request headers** — see [HTTP.Reset() and Header Lifecycle](#httpreset-and-header-lifecycle) |
+| `HTTP.ResetBasic()` | Same clear as `Reset()` without re-adding the default browser headers — for when you build the whole header list yourself |
 | `HTTP.ClearCookies()` | Clear all cookies |
 | `HTTP.GetCookies()` | Get cookies string |
 | `HTTP.AddServerCookies(url, cookie_string)` | Add cookies to persistent storage for the URL's domain (first argument may be omitted) |
@@ -289,6 +298,93 @@ HTTP.XHR('https://example.com/ajax')
 > `HTTP.ResetBasic()` — once set they stay in effect for later requests. If you
 > turn redirection off for a single request, always set it back to `true`
 > afterwards.
+
+#### HTTP.Reset() and Header Lifecycle
+
+`HTTP.Headers` is dual-purpose: it carries your request headers **into** a
+request, and the server's response headers **out** of it. Once `HTTP.GET`,
+`HTTP.POST`, `HTTP.XHR`, `HTTP.HEAD` or `HTTP.Request` returns, `HTTP.Headers`
+no longer holds the headers you set — it holds the status line and the
+headers of the response instead:
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+...
+```
+
+As a safety net, the request functions detect these leftovers (the `HTTP/`
+status line as the first entry) and silently reset the header list when the
+next request starts. That safety reset also wipes headers the module set
+*after* the previous response arrived, so they never reach the server. A
+handler that sets a custom header therefore works on its first call and
+fails on every following one:
+
+```lua
+function GetPageNumber()
+    local u = MODULE.RootURL .. '/api/.../pages'
+    HTTP.Headers.Values['X-Organization'] = site -- appended to the PREVIOUS response
+    if not HTTP.GET(u) then return false end     -- safety reset drops X-Organization
+    ...
+end
+```
+
+Calling `HTTP.Reset()` **before** setting custom headers starts from a clean
+state, so the header survives the request:
+
+```lua
+function GetPageNumber()
+    local u = MODULE.RootURL .. '/api/.../pages'
+    HTTP.Reset()                                  -- clean request state
+    HTTP.Headers.Values['X-Organization'] = site  -- now it is sent
+    if not HTTP.GET(u) then return false end
+    ...
+end
+```
+
+Real usage — `lua/modules/CapibaraTraductor.lua` (without the `Reset()` the
+first chapter of a multi-chapter task downloads fine and every later chapter
+fails):
+
+```lua
+function GetPageNumber()
+    local site, slug, cid = URL:match('^/([^/]+)/([^/]+)/([^/]+)$')
+    local u = MODULE.RootURL .. '/api/manga-custom/' .. slug .. '/chapter/' .. cid .. '/pages'
+    HTTP.Reset()
+    HTTP.Headers.Values['X-Organization'] = site
+    if not HTTP.GET(u) then return false end
+    CreateTXQuery(HTTP.Document).XPathStringAll('json(*).data().imageUrl', TASK.PageLinks)
+    return true
+end
+```
+
+**When a reset is needed** depends on who owns the `HTTP` object and whether
+the host resets it between handler calls:
+
+| Handler | `HTTP` instance | Host resets? |
+|---------|-----------------|--------------|
+| `OnGetDirectoryPageNumber`, `OnGetNameAndLink` | one per update-list run | yes — after every call |
+| `OnGetInfo` (update list) | one per update-list run | yes — after every manga |
+| `OnGetInfo` (favorites / manga info dialog) | fresh per lookup | first request starts clean |
+| `OnGetPageNumber` | **one per download task — reused for every chapter** | **no** |
+| `OnGetImageURL`, `OnBeforeDownloadImage`, `OnDownloadImage`, `OnAfterImageSaved` | one per download worker thread | yes — before every image |
+
+`OnGetPageNumber` is the one to watch: in a multi-chapter task, every chapter
+after the first inherits the previous chapter's response headers. The same
+applies inside any handler that makes **more than one request of its own** —
+after your first request the object is "dirty" again, so reset before
+setting the headers for the second one.
+
+> [!IMPORTANT]
+> Whenever you set `HTTP.Headers`, `HTTP.Cookies` or `HTTP.MimeType` before a
+> request, call `HTTP.Reset()` first — unless you are certain the object has
+> not been used since it was created.
+
+`HTTP.Reset()` also clears the in-memory cookie list and closes the keep-alive
+socket (a fresh connection is made on the next request). The module's
+persistent cookie storage is **not** touched — stored cookies are re-applied
+automatically when the next request is made, so a logged-in session survives
+a `Reset()`. For which properties survive a reset, see the note above.
 
 #### HTTP.Document (TMemoryStream)
 
@@ -350,7 +446,7 @@ Current module information and settings. This is the central object for module c
 ```lua
 function Init()
     local m = NewWebsiteModule()
-    m.ID = 'unique_hex_identifier'
+    m.ID = '56473ae447f04cee93683d7404b32e60'  -- GUID with the hyphens removed
 
     -- Configure module properties
     m.Name = 'Website Name'
@@ -377,12 +473,12 @@ end
 
 | Property | Type | Access | Description |
 |----------|------|--------|-------------|
-| `MODULE.ID` | String | Read-only | Module's unique identifier (32-char hex) |
-| `MODULE.Name` | String | Read-only | Module display name |
-| `MODULE.RootURL` | String | Read-only | Website root URL |
+| `MODULE.ID` | String | Read/Write | Module's unique identifier, **assigned once in `Init()` and never changed** — by convention a GUID/UUID created with a GUID generator and stripped of the hyphens — 32 hexadecimal characters, e.g. `56473ae447f04cee93683d7404b32e60`. The format is not validated, but the ID must be unique among all modules and must never change after release. See [Generate Unique IDs](#8-generate-unique-ids) |
+| `MODULE.Name` | String | Read/Write | Module display name — set once in `Init()`; writing it later changes the list entry but not the stored website name |
+| `MODULE.RootURL` | String | Read/Write | Website root URL — set once in `Init()` |
 | `MODULE.MirrorURLs` | String | Read/Write | Mirror domain list, comma/semicolon/tab/space/newline separated (protocol optional, defaults to `https://`) |
 | `MODULE.ActiveMirrorURL` | String | Read-only | Mirror URL currently in use (empty string when the default `RootURL` is active) |
-| `MODULE.Category` | String | Read-only | Module category (English, Vietnamese, etc.) |
+| `MODULE.Category` | String | Read/Write | Module category (English, Vietnamese, etc.) — set once in `Init()` |
 | `MODULE.MaxTaskLimit` | Integer | Read/Write | Maximum concurrent tasks for this module |
 | `MODULE.MaxThreadPerTaskLimit` | Integer | Read/Write | Maximum threads per task |
 | `MODULE.MaxConnectionLimit` | Integer | Read/Write | Maximum HTTP connections |
@@ -392,13 +488,13 @@ end
 | `MODULE.InformationAvailable` | Boolean | Read/Write | Whether manga info is available |
 | `MODULE.FavoriteAvailable` | Boolean | Read/Write | Whether favorites are supported |
 | `MODULE.DynamicPageLink` | Boolean | Read/Write | Whether page links are dynamic |
-| `MODULE.CurrentDirectoryIndex` | Integer | Read/Write | Current category index (for multi-category sites) |
+| `MODULE.CurrentDirectoryIndex` | Integer | Read/Write | Current directory index (for multi-directory sites) |
 | `MODULE.TotalDirectory` | Integer | Read/Write | Total number of categories |
 | `MODULE.AccountSupport` | Boolean | Read/Write | Whether module supports user accounts |
 | `MODULE.LastUpdated` | String | Read/Write | Last update timestamp |
 | `MODULE.Tag` | Integer | Read/Write | Custom tag for internal use |
 | `MODULE.Storage` | TStringsStorage | Read-only | Persistent key-value storage |
-| `MODULE.Account` | TWebsiteModuleAccount | Read-only | User account information |
+| `MODULE.Account` | TWebsiteModuleAccount | Read-only | User account information — **only present when `AccountSupport` is enabled** (otherwise accessing it raises an error) |
 | `MODULE.Guardian` | TCriticalSection | Read-only | Thread synchronization object |
 
 #### Event Handler Properties
@@ -479,8 +575,8 @@ end
 **Workflow:**
 1. User clicks "Update" in manga list
 2. FMD2 calls `OnBeforeUpdateList` (if defined)
-3. If returns `false`, update is cancelled
-4. If returns `true`, continues to `OnGetDirectoryPageNumber`
+3. The return value is **ignored** — the update proceeds either way, so treat this purely as a preparation hook
+4. The host actually calls it **twice**: once before the page-count stage, and again after the manga-list pages have been fetched (before the manga-info stage)
 
 ---
 
@@ -506,9 +602,9 @@ end
 4. FMD2 uses this for pagination UI
 
 **Note:** besides `PAGENUMBER`, FMD2 also injects the `WORKPTR` global here —
-the 0-based index of the directory (category) whose page count is being
-fetched. For multi-category sites (`MODULE.TotalDirectory` > 1) use it
-together with `MODULE.CurrentDirectoryIndex` to find out which category is
+the 0-based index of the directory whose page count is being
+fetched. For multi-directory sites (`MODULE.TotalDirectory` > 1) use it
+together with `MODULE.CurrentDirectoryIndex` to find out which directory is
 being updated.
 
 ---
@@ -543,27 +639,27 @@ end
 
 #### 5. After Update List (`OnAfterUpdateList`)
 
-**When:** After manga list update completes (optional)
+**When:** At the start of a website's update, and when an update is cancelled (optional)
 **Called by:** UpdateListManagerThread
 
 ```lua
 function AfterUpdateList()
-    -- Cleanup or final processing
+    -- Reset state accumulated by the previous update run
     return true
 end
 ```
 
 **Workflow:**
-1. All pages have been fetched
-2. FMD2 calls `OnAfterUpdateList` (if defined)
-3. Module can perform cleanup or additional processing
+1. Before anything else is done for the website, FMD2 calls `OnAfterUpdateList` (if defined) — use it to clean up state from a *previous* update run
+2. If the update is terminated (cancelled), `OnAfterUpdateList` is called again on the way out
+3. It is **not** called after a successful update — despite the name, this is a reset hook, not a completion hook
 
 ---
 
 #### 6. Get Info (`OnGetInfo`)
 
 **When:** Fetching manga details (title, chapters, etc.)
-**Called by:** TMangaInformation thread
+**Called by:** manga-info threads — the update list (for new manga), favorites refresh, and the manga info dialog
 **Sets:** `MANGAINFO` object properties
 
 ```lua
@@ -615,7 +711,7 @@ end
 1. User starts downloading a chapter
 2. FMD2 calls `OnTaskStart` (if defined)
 3. Module can set initial values or perform setup
-4. If returns `false`, download is cancelled
+4. The return value is **ignored** — the download proceeds either way
 
 ---
 
@@ -652,17 +748,31 @@ end
 4. Can set `TASK.PageNumber` for progress tracking
 5. Can set `TASK.FileNames` for custom filenames
 
+> [!WARNING]
+> `OnGetPageNumber` runs once per chapter on the **task's shared `HTTP`
+> object**, with no reset in between. If you set custom headers, cookies or
+> `MimeType`, call `HTTP.Reset()` first — otherwise every chapter after the
+> first inherits the previous response's headers and your custom headers are
+> silently dropped. See
+> [HTTP.Reset() and Header Lifecycle](#httpreset-and-header-lifecycle).
+
 ---
 
 #### 9. Get Image URL (`OnGetImageURL`)
 
-**When:** Extracting image URL from chapter page (for multi-page chapters)
-**Called by:** TDownloadThread (for each page in `TASK.PageContainerLinks`)
+**When:** Resolving the real image URL for each page (for multi-page chapters)
+**Called by:** TDownloadThread (once for each page still marked for work)
 **Sets:** `TASK.PageLinks[WORKID]`
 
 ```lua
 function GetImageURL()
-    if not HTTP.GET(URL) then return false end
+    -- URL here is the CHAPTER url, not the page url!
+    -- Build the page url from TASK.PageContainerLinks[WORKID]...
+    local u = MaybeFillHost(MODULE.RootURL, TASK.PageContainerLinks[WORKID])
+    -- ...or derive it from the chapter url + WORKID:
+    -- local u = MaybeFillHost(MODULE.RootURL, URL:gsub('/gallery/', '/g/')) .. (WORKID + 1) .. '/'
+
+    if not HTTP.GET(u) then return false end
     local x = CreateTXQuery(HTTP.Document)
     local img_url = x.XPathString('//img[@id="page"]/@src')
     TASK.PageLinks[WORKID] = MaybeFillHost(MODULE.RootURL, img_url)
@@ -671,10 +781,10 @@ end
 ```
 
 **Workflow:**
-1. Only called if `TASK.PageContainerLinks` has entries
-2. FMD2 calls `OnGetImageURL` for each page
-3. `WORKID` global contains current work index
-4. Module must set `TASK.PageLinks[WORKID]` to image URL
+1. FMD2 calls `OnGetImageURL` once per work item (per page not yet resolved)
+2. `WORKID` global contains the current work index
+3. `URL` contains the **chapter URL** — take the page URL from `TASK.PageContainerLinks[WORKID]` or derive it with `WORKID`
+4. Module must set `TASK.PageLinks[WORKID]` to the image URL
 5. FMD2 then downloads the image
 
 ---
@@ -700,7 +810,7 @@ end
 2. Calls `OnBeforeDownloadImage`
 3. `WORKID` global contains image index
 4. Module can set headers and cookies; to change the URL itself, rewrite `TASK.PageLinks[WORKID]` here (a later retry picks it up — the current download still uses the old URL), or handle the download in `OnDownloadImage`
-5. If returns `false`, image download is skipped
+5. The return value is **ignored** — it is always overwritten by `OnDownloadImage` or the default download, so this hook cannot skip an image
 
 ---
 
@@ -734,19 +844,19 @@ end
 
 ```lua
 function SaveImage()
-    -- Custom filename
-    local ext = '.jpg'
-    local filename = PATH .. '/' .. string.format('%03d', WORKID) .. ext
+    -- Save the image yourself and return the full path of the saved file
+    local filename = PATH .. '/' .. string.format('%03d', WORKID + 1) .. '.jpg'
+    HTTP.Document.SaveToFile(filename)
     return filename
 end
 ```
 
 **Workflow:**
-1. Only called if `OnSaveImage` is defined
+1. Only called if `OnSaveImage` is defined (and the file does not already exist on disk)
 2. `PATH` global contains target directory
 3. `FILENAME` global contains default filename
-4. Module returns custom filename
-5. FMD2 saves image with returned filename
+4. The module **saves the image data itself** — the downloaded bytes are in `HTTP.Document` (e.g. `HTTP.Document.SaveToFile(path)`)
+5. Return the full path of the saved file; FMD2 then checks that the file exists
 
 ---
 
@@ -775,7 +885,7 @@ end
 #### 14. Login (`OnLogin`)
 
 **When:** Authenticating user account
-**Called by:** THTTPSendThread (when account is enabled)
+**Called by:** TAccountCheckThread — when the user clicks the check button in the Account Manager dialog
 **Sets:** `MODULE.Account.Status`
 
 ```lua
@@ -806,15 +916,14 @@ end
 ```
 
 **Workflow:**
-1. User enables account in FMD2 settings
-2. FMD2 calls `OnLogin` when needed
+1. User opens the Account Manager and clicks "check" for the module's account
+2. FMD2 sets `MODULE.Account.Status = asChecking`, then calls `OnLogin`
 3. Module should:
    - Check `MODULE.Account.Enabled`
    - Access `MODULE.Account.Username` and `.Password`
-   - Set `MODULE.Account.Status = asChecking`
    - Perform login request
    - Set status to `asValid`, `asInvalid`, or `asUnknown`
-4. Return `true` if login successful
+4. The return value itself is **not used by the host** — the `Status` you set is what the UI shows
 
 ---
 
@@ -833,32 +942,41 @@ end
 ```
 
 **Workflow:**
-1. FMD2 periodically checks account status
-2. Calls `OnAccountState` (if defined)
-3. Module should return `true` if account is still valid
-4. Use this for simple state checks only
+1. User toggles the module account's enabled checkbox in the Account Manager
+2. FMD2 calls `OnAccountState` (if defined)
+3. Use it to react to the account being enabled/disabled (e.g. clear cached session data)
+4. The return value is **not used by the host**
 
 ---
 
 #### 16. Check Site (`OnCheckSite`)
 
-**When:** Checking if website is accessible (optional)
-**Called by:** FMD2 site availability check
+**When:** The user runs the module checker dialog (optional)
+**Called by:** FormCheckModules
+**Sets:** `MANGACHECK` properties
 
 ```lua
 function CheckSite()
-    -- Check if site is accessible
-    -- Note: HTTP is NOT injected in this function
-    -- Return true if module should be considered active
-    return true
+    -- Provide a known-good manga and chapter for the module checker to test with
+    MANGACHECK.MangaURL     = '/manga/6rUzU'
+    MANGACHECK.MangaTitle   = 'The Academy’s Sashimi Sword Master'
+    MANGACHECK.ChapterURL   = '/6rUzU/pIEtz'
+    MANGACHECK.ChapterTitle = 'Episode 74'
+    MANGACHECK.ChapterURLAddRootHost = false
 end
 ```
 
 **Workflow:**
-1. FMD2 checks if website is online
-2. Calls `OnCheckSite` (if defined)
-3. Module should return `true` if site should be considered active
-4. Use this for module-specific state checks only
+1. User opens the module checker tool
+2. FMD2 calls `OnCheckSite` (if defined) with a `MANGACHECK` object injected
+3. Module fills `MANGACHECK` with a test manga and chapter (URLs and titles) it knows exist
+4. The checker then runs a full `GetInfo`/chapter test against those URLs to verify the module still works
+5. The return value is **not used by the host** — the `MANGACHECK` fields are the output
+
+Available `MANGACHECK` properties: `MangaURL`, `MangaTitle`, `ChapterURL`,
+`ChapterTitle`, `ChapterURLPrefix` (prefix the checker uses to build chapter
+links), `MangaURLAddRootHost` and `ChapterURLAddRootHost` (prepend
+`MODULE.RootURL` to the given URLs; default `true`).
 
 ---
 
@@ -868,40 +986,43 @@ end
 
 ```
 1. Init()                              -- Module loads at startup
-2. OnBeforeUpdateList()                -- Optional: prepare for update
-3. OnGetDirectoryPageNumber()          -- Get total pages (sets PAGENUMBER)
-4. OnGetNameAndLink()                  -- Called for each page (fills LINKS/NAMES)
+2. OnAfterUpdateList()                 -- Optional: reset state from previous run
+3. OnBeforeUpdateList()                -- Optional: prepare for update
+4. OnGetDirectoryPageNumber()          -- Get total pages (sets PAGENUMBER)
+5. OnGetNameAndLink()                  -- Called for each page (fills LINKS/NAMES)
    - Page 0: GetNameAndLink()
    - Page 1: GetNameAndLink()
    - ...
    - Page N: GetNameAndLink()
-5. OnAfterUpdateList()                 -- Optional: cleanup
+6. OnBeforeUpdateList()                -- Called again before the manga-info stage
+7. OnGetInfo()                         -- For each new manga found (fills MANGAINFO)
 
 -- User clicks on manga to view info
-6. OnGetInfo()                         -- Fetch manga details (fills MANGAINFO)
+8. OnGetInfo()                         -- Fetch manga details (fills MANGAINFO)
 
--- User double-clicks chapter to download
-7. OnTaskStart()                       -- Optional: initialize task
-8. OnGetPageNumber()                   -- Get chapter pages (fills TASK.PageLinks)
+-- User selects chapter to download
+9. OnTaskStart()                       -- Optional: initialize task
+10. OnGetPageNumber()                  -- Get chapter pages (fills TASK.PageLinks)
 
 -- For each image in chapter:
-9. OnBeforeDownloadImage()             -- Set headers, modify URL if needed
-10. OnDownloadImage()                  -- Optional: custom download logic
+11. OnBeforeDownloadImage()             -- Set headers, modify URL if needed
+12. OnDownloadImage()                   -- Optional: custom download logic
     -- OR default download if not defined
-11. OnSaveImage()                      -- Optional: custom filename
-12. OnAfterImageSaved()                -- Post-process saved image
+13. OnSaveImage()                       -- Optional: save the image yourself, return path
+14. OnAfterImageSaved()                -- Post-process saved image
 
--- Repeat 9-12 for each image
+-- Repeat 11-14 for each image
 ```
 
 **Scenario: User has account enabled**
 
 ```
 1. Init()
-2. OnLogin()                           -- Called when account is enabled
-   - Sets MODULE.Account.Status
-3. [Normal workflow continues]
-4. OnAccountState()                    -- Periodically called to verify account
+2. User clicks "check" in Account Manager
+3. OnLogin()                           -- Host sets Status=asChecking, then calls Login
+   - Module sets MODULE.Account.Status (asValid/asInvalid/asUnknown)
+4. [Normal workflow continues]
+5. OnAccountState()                    -- When the account checkbox is toggled
 ```
 
 ---
@@ -1053,7 +1174,7 @@ The current URL being processed. What it holds depends on the handler:
 | `OnGetNameAndLink` | Current page number of the manga list (0-based) |
 | `OnGetInfo` | Manga URL |
 | `OnGetPageNumber` | Chapter URL |
-| `OnGetImageURL` | URL of the current chapter page |
+| `OnGetImageURL` | Chapter URL — take the page URL from `TASK.PageContainerLinks[WORKID]` or derive it with `WORKID` |
 | `OnBeforeDownloadImage`, `OnDownloadImage` | Image URL (read-only in `OnBeforeDownloadImage`; the host does not read changes back) |
 
 ---
@@ -1080,21 +1201,28 @@ common TXQuery mistake.
 
 | Method | Description |
 |--------|-------------|
-| `x.ParseHTML(html)` | Parse HTML string or stream (replaces the previous tree) |
-| `x.XPathString(xpath)` | Get single string result |
+| `x.ParseHTML(html)` | Parse an HTML string or stream, replacing the previous tree. An empty string is ignored (the old tree is kept) |
+| `x.XPath(xpath)` | Get a value/node object (a sequence) for iteration |
+| `x.XPath(xpath, context)` | Same, evaluated against `context` |
+| `x.XPathString(xpath)` | Get the result as one string |
 | `x.XPathString(xpath, context)` | Same, but evaluated against `context` (a value returned by `x.XPath(...)`, e.g. parsed JSON) instead of the whole document |
-| `x.XPathStringAll(xpath)` | Get all matching strings (comma-separated) |
-| `x.XPathStringAll(xpath, separator)` | Get all strings with custom separator |
-| `x.XPathStringAll(xpath, list)` | Append all matches to a `TStrings` list (`TASK.PageLinks`, `MANGAINFO.Genres`, a `fmd.strings` list, …) |
-| `x.XPathHREFAll(xpath, linksList, namesList)` | Extract href and text to lists |
-| `x.XPathHREFTitleAll(xpath, linksList, namesList)` | Extract href and title attribute |
-| `x.XPath(xpath)` | Get node list / value object for iteration |
-| `x.XPathCount(xpath)` | Count matching nodes |
+| `x.XPathStringAll(xpath)` | Get all matching items as one string, joined with `", "` |
+| `x.XPathStringAll(xpath, separator)` | Same, with a custom separator |
+| `x.XPathStringAll(xpath, context)` | Same as `XPathStringAll(xpath)` (`", "` separator), evaluated against `context` |
+| `x.XPathStringAll(xpath, separator, context)` | Custom separator **and** a context |
+| `x.XPathStringAll(xpath, list)` | Append all matches to a `TStrings` list (`TASK.PageLinks`, `LINKS`, a `fmd.strings` list, …) |
+| `x.XPathStringAll(xpath, list, context)` | Same, evaluated against `context` |
+| `x.XPathHREFAll(xpath, linksList, namesList)` | Extract `href` and text (trimmed) to lists |
+| `x.XPathHREFAll(xpath, linksList, namesList, context)` | Same, evaluated against `context` |
+| `x.XPathHREFTitleAll(xpath, linksList, namesList)` | Extract `href` and `title` attribute to lists |
+| `x.XPathHREFTitleAll(xpath, linksList, namesList, context)` | Same, evaluated against `context` |
+| `x.XPathCount(xpath)` | Count matching items |
+| `x.XPathCount(xpath, context)` | Same, evaluated against `context` |
 
-All of these methods (not just `XPathString`) also accept an optional
-trailing **context** argument — a value object returned by `x.XPath(...)` —
-and then evaluate the expression relative to that value instead of the whole
-document; see [Parsing once, querying many times](#parsing-once-querying-many-times).
+The optional **context** is always the **last** argument and must be a value
+object returned by `x.XPath(...)`. The expression is then evaluated relative to
+that value instead of the whole document; see
+[Parsing once, querying many times](#parsing-once-querying-many-times).
 
 #### Value/Node Object Methods
 
@@ -1166,17 +1294,24 @@ local x = CreateTXQuery(HTTP.Document)
 -- One value
 local title = x.XPathString('json(*)?data?title')
 
--- All values of a field into a list (lookup style)
-x.XPathStringAll('json(*)?data?items?*?name', MANGAINFO.Genres)
+-- All values of a field as one string: "A, B" (lookup style)
+MANGAINFO.Genres = x.XPathStringAll('json(*)?data?items?*?name')
 
 -- Same thing, dot style
-x.XPathStringAll('json(*).data.items().name', MANGAINFO.Genres)
+MANGAINFO.Genres = x.XPathStringAll('json(*).data.items().name')
+
+-- All values of a field appended to a list (e.g. TASK.PageLinks)
+x.XPathStringAll('json(*)?data?items?*?url', TASK.PageLinks)
 
 -- Using parse-json
 local title2 = x.XPathString('parse-json(.)?data?title')
 
--- Combine with string functions
-local names = x.XPathString('string-join(json(*)?data?items?*?name, ", ")')
+-- XPathStringAll already joins with ", ", so string-join() is not needed
+local names = x.XPathStringAll('json(*)?data?items?*?name')            -- "A, B"
+local slash = x.XPathStringAll('json(*)?data?items?*?name', ' / ')    -- "A / B"
+
+-- XPathString concatenates without a separator, so string-join() is needed there
+local joined = x.XPathString('string-join(json(*)?data?items?*?name, ", ")')
 ```
 
 Iterating over a JSON array from Lua:
@@ -1216,6 +1351,10 @@ local s = x.XPathString('json(*).data.field')
 local json = x.XPath('json(*)')
 local s1 = x.XPathString('data?field', json)
 local s2 = x.XPathString('data?other', json)
+
+-- Several values from an array: the context is the last argument
+local all = x.XPathStringAll('data?items?*?name', json)         -- "A, B"
+local sep = x.XPathStringAll('data?items?*?name', ' / ', json)  -- "A / B"
 ```
 
 Both ways give the same result for `s`. In the two-step form, move down
@@ -1243,11 +1382,13 @@ The older JSONiq-style helpers from internettools can also be used. They are
 less common than the lookup styles above.
 
 ```lua
-jn:keys($obj)      -- Get JSON object keys
-jn:members($arr)   -- Get JSON array members
+local x = CreateTXQuery(HTTP.Document)
+local json = x.XPath('json(*)')
 
-local count = x.XPathCount('jn:keys($obj)')
-for v in x.XPath('jn:members($arr)').Get() do ... end
+-- jn:keys(object)    -> the keys of a JSON object
+-- jn:members(array)  -> the members of a JSON array
+local count = x.XPathCount('jn:keys(data)', json)
+for v in x.XPath('jn:members(data?items)', json).Get() do ... end
 ```
 
 ### Utility Functions
@@ -2254,6 +2395,34 @@ And the essential `pb` runtime calls:
 
 Templates are reusable module components that handle common website patterns.
 
+### Available Templates
+
+41 templates ship in `lua/templates/` — `require` them by file name:
+
+| Template | Common for |
+|----------|------------|
+| `Madara` | Madara-theme WordPress sites (largest family) |
+| `MangaThemesia` | MangaThemesia / WP Manga reader themes |
+| `FMReader` | FMReader-based sites |
+| `HeanCMS` | HeanCMS sites |
+| `MadTheme` | MadTheme sites |
+| `Genkan` | Genkan (Kemono-style reader) sites |
+| `FoOlSlide` | FoOlSlide-powered scanlators |
+| `MangaHub` | MangaHub themes |
+| `MangaEsp` | Spanish MangaES theme |
+| `WPComics` | WPComics themes |
+| `KeyoApp` | Keyoapp sites |
+| `Hiper` | Hiper themes |
+| `MangAdventure` | MangAdventure instances |
+| `Guya` | Guya.moe-style readers |
+| `SchaleNetwork` | SchaleNetwork sites |
+| `SinMH` | SinMH (Chinese) sites |
+| `MangaBox` | MangaBox (mobile reader) sites |
+| `NineManga`, `MultiChan`, `ZManga`, `ZeroTheme`, `VTheme`, `SpicyTheme`, `MangaK`, `MangaTaro`, `MangaReaderOnline`, `MangaCatalog`, `Liliana`, `LibGroup`, `KiruBase`, `GroupLe`, `GoDa`, `EZManga`, `DataLife`, `ColorlibAnime`, `NiAdd`, `NovelCool`, `NovelsHub`, `Roseveil`, `SPA`, `FuzzyDoodle` | assorted smaller CMS families |
+
+Pick the closest match, then override the module-level constants it exposes
+(see [Template Customization](#template-customization)).
+
 ### Using Templates
 
 ```lua
@@ -2420,20 +2589,20 @@ end
 All the JSON query styles (dot, `?` lookup, `parse-json`) are described in
 [XPath Extensions](#xpath-extensions).
 
-### Multi-Category Sites
+### Multi-Directory Sites
 
 ```lua
-local categories = {'action', 'romance', 'fantasy'}
+local directories = {'action', 'romance', 'fantasy'}
 
 function Init()
     local m = NewWebsiteModule()
     m.ID = '...'
-    m.TotalDirectory = #categories
+    m.TotalDirectory = #directories
 end
 
 function GetNameAndLink()
-    local category = categories[MODULE.CurrentDirectoryIndex + 1]
-    HTTP.GET(MODULE.RootURL .. '/category/' .. category)
+    local directory = directories[MODULE.CurrentDirectoryIndex + 1]
+    HTTP.GET(MODULE.RootURL .. '/category/' .. directory)
     -- process
     return no_error
 end
@@ -2513,7 +2682,7 @@ end
 
 function Init()
     local m = NewWebsiteModule()
-    m.ID                       = 'example1234567890abcdef'
+    m.ID                       = 'a1b2c3d4e5f60718293a4b5c6d7e8f90'
     m.Name                     = 'ExampleSite'
     m.RootURL                  = 'https://example.com'
     m.Category                 = 'English'
@@ -2565,7 +2734,7 @@ function GetInfo()
     MANGAINFO.Title     = x.XPathString('title', data)
     MANGAINFO.CoverLink = x.XPathString('cover_url', data)
     MANGAINFO.Authors   = x.XPathString('author', data)
-    MANGAINFO.Genres    = x.XPathString('string-join(genres?*?name, ", ")', data)
+    MANGAINFO.Genres    = x.XPathStringAll('genres?*?name', data)
     MANGAINFO.Summary   = x.XPathString('description', data)
 
     for v in x.XPath('chapters?*', data).Get() do
@@ -2594,7 +2763,7 @@ end
 
 function Init()
     local m = NewWebsiteModule()
-    m.ID                       = 'api12345678901234567890'
+    m.ID                       = '0f9e8d7c6b5a4938271605f4e3d2c1b0'
     m.Name                     = 'APISite'
     m.RootURL                  = 'https://api.example.com'
     m.Category                 = 'English'
@@ -2610,7 +2779,7 @@ end
 
 ```lua
 ----------------------------------------------------------------------------------------------------
--- Local Constants
+-- Module Constants
 ----------------------------------------------------------------------------------------------------
 
 local crypto = require 'fmd.crypto'
@@ -2683,7 +2852,7 @@ end
 
 function Init()
     local m = NewWebsiteModule()
-    m.ID                       = 'login123456789012345678'
+    m.ID                       = '1a2b3c4d5e6f708192a3b4c5d6e7f809'
     m.Name                     = 'LoginSite'
     m.RootURL                  = 'https://members.example.com'
     m.Category                 = 'English'
@@ -2717,6 +2886,14 @@ Many websites use common CMS themes. Check the
 Many sites require specific headers (usually `Referer` and `Origin`). Set them in
 `OnBeforeDownloadImage`; see [Before Download Image](#10-before-download-image-onbeforedownloadimage).
 For JSON APIs, see [JSON API Handling](#json-api-handling).
+
+**Always call `HTTP.Reset()` before setting custom headers.** `HTTP.Headers`
+holds the *previous response's* headers after each request, and the request
+functions silently reset the list when they detect that — dropping any header
+you set in the meantime. This bites hardest in `OnGetPageNumber`, which runs
+once per chapter on the task's shared `HTTP` object: the first chapter works,
+the rest fail. See
+[HTTP.Reset() and Header Lifecycle](#httpreset-and-header-lifecycle).
 
 ### 4. Handle JavaScript-Heavy Sites
 
@@ -2782,12 +2959,28 @@ logger.SendError('Error: ' .. error_message)
 
 ### 8. Generate Unique IDs
 
-Use a UUID generator to create unique module IDs:
+`m.ID` is the module's permanent identifier. Create it with a GUID generator
+and **remove the hyphens** — a GUID without hyphens is exactly 32 hexadecimal
+characters:
 
 ```lua
--- Generate at https://guidgenerator.com/
+-- Generate at https://guidgenerator.com/, then strip the dashes:
+--   56473ae4-47f0-4cee-9368-3d7404b32e60
+-- becomes
 m.ID = '56473ae447f04cee93683d7404b32e60'
 ```
+
+The host does not validate the format — any unique string is accepted — but
+keep to the plain dash-less GUID convention used by the bundled modules:
+
+- **Unique** — no two modules may share an ID; the module list is sorted and
+  searched by ID, so a duplicate breaks module lookup.
+- **Stable** — never change or reuse an ID after release. Favorites, download
+  history, module settings, user options, account credentials and persistent
+  cookies are all stored under the ID; a new ID silently orphans the user's
+  existing data.
+- **Plain form** — no hyphens, no `{}` braces; the 32-character dash-less
+  form like every bundled module.
 
 ---
 

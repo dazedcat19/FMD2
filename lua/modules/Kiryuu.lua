@@ -1,20 +1,5 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = '031f3cc0ae3346ad9b8c33d5377891e9'
-	m.Name                     = 'Kiryuu'
-	m.RootURL                  = 'https://v6.kiryuu.to'
-	m.Category                 = 'Indonesian'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-end
-
-----------------------------------------------------------------------------------------------------
--- Local Constants
+-- Template Configuration
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.KiruBase'
@@ -42,4 +27,19 @@ function GetPageNumber()
 	Template.GetPageNumber()
 
 	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = '031f3cc0ae3346ad9b8c33d5377891e9'
+	m.Name                     = 'Kiryuu'
+	m.RootURL                  = 'https://v7.kiryuu.to'
+	m.Category                 = 'Indonesian'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
 end

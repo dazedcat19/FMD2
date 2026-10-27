@@ -2,7 +2,8 @@
 -- Local Constants
 ----------------------------------------------------------------------------------------------------
 
-local API_URL = 'https://manhwawebbackend-production.up.railway.app'
+local domain = 'manhwaweb.com'
+local API_URL = 'https://api.' .. domain
 local DirectoryPagination = '/manhwa/library?order_item=creacion&order_dir=desc&page='
 
 ----------------------------------------------------------------------------------------------------
@@ -96,7 +97,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'K042a85566244b7e836679491ce67ot0'
 	m.Name                     = 'ManhwaWeb'
-	m.RootURL                  = 'https://www.manhwaweb.com'
+	m.RootURL                  = 'https://www.' .. domain
 	m.Category                 = 'Spanish'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'

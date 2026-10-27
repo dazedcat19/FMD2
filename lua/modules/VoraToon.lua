@@ -1,18 +1,32 @@
 ----------------------------------------------------------------------------------------------------
--- Local Constants
+-- Module Constants
 ----------------------------------------------------------------------------------------------------
 
-local API_URL = 'https://api.voratoon.com'
-local DirectoryPagination = '/series?take=100000'
+local API_URL = '/api/proxy'
+local DirectoryPage = '/series?take=100000'
 
 ----------------------------------------------------------------------------------------------------
 -- Helper Functions
 ----------------------------------------------------------------------------------------------------
 
--- Set the required http header for making a request.
+-- Set the required http headers for making a request.
 local function SetRequestHeaders()
-	HTTP.Headers.Values['Origin']  = MODULE.RootURL
-	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
+	local expiry = tonumber(MODULE.Storage['expiry']) or 0
+	local now = tonumber(MODULE.Storage['now']) or 0
+	local vt_proxy = MODULE.Storage['vt_proxy']
+
+	if vt_proxy == '' or now > expiry then
+		if not HTTP.GET(MODULE.RootURL) then return net_problem end
+		vt_proxy = HTTP.Cookies.Values['vt_proxy']
+		local now, expiry = vt_proxy:match('v1%.(%d+)%.(%d+)%.')
+		MODULE.Storage['expiry'] = expiry
+		MODULE.Storage['now'] = now
+		MODULE.Storage['vt_proxy'] = vt_proxy
+	end
+
+	HTTP.Reset()
+	HTTP.Cookies.Values['vt_proxy'] = MODULE.Storage['vt_proxy']
+	HTTP.Headers.Values['Origin'] = MODULE.RootURL
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -21,7 +35,7 @@ end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local u = API_URL .. DirectoryPagination
+	local u = MODULE.RootURL .. API_URL .. DirectoryPage
 	SetRequestHeaders()
 
 	if not HTTP.GET(u) then return net_problem end
@@ -37,7 +51,7 @@ end
 -- Get info and chapter list for the current manga.
 function GetInfo()
 	local slug = URL:match('/([^/]+)$')
-	local u = API_URL .. '/series/' .. slug
+	local u = MODULE.RootURL .. API_URL .. '/series/' .. slug
 	SetRequestHeaders()
 
 	if not HTTP.GET(u) then return net_problem end
@@ -52,7 +66,6 @@ function GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('?status', info))
 	MANGAINFO.Summary   = x.XPathString('?synopsis', info)
 
-	HTTP.Reset()
 	SetRequestHeaders()
 
 	if not HTTP.GET(u .. '/chapters') then return net_problem end
@@ -72,8 +85,7 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local u = API_URL .. URL
-	HTTP.Reset()
+	local u = MODULE.RootURL .. API_URL .. URL
 	SetRequestHeaders()
 
 	if not HTTP.GET(u) then return false end
@@ -98,7 +110,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = 'b8206e754d4541689c1d367f7e19fd64'
 	m.Name                     = 'VoraToon'
-	m.RootURL                  = 'https://v1.voratoon.com'
+	m.RootURL                  = 'https://voratoon.co'
 	m.Category                 = 'Indonesian'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'

@@ -22,16 +22,6 @@ local function GetMangaListFetchScript(page)
 			});
 		})();
 	`;
-	page.on('request', (request) => {
-		let blocked = false;
-		try {
-			const path = new URL(request.url()).pathname;
-			blocked = ['/api/v1/client-errors', '/api/v1/threads/', '/assets/uploads/'].some((p) => path.startsWith(p));
-		} catch (e) {}
-		const act = blocked ? request.abort() : request.continue();
-		if (act && typeof act.catch === 'function') act.catch(() => {});
-	});
-	await page.setRequestInterception(true);
 	await page.evaluateOnNewDocument(hookCode);
 	await page.reload({ waitUntil: 'domcontentloaded', timeout: 90000 });
 
@@ -106,16 +96,6 @@ local function GetChapterFetchScript(mid)
 			};
 		})();
 	`;
-	page.on('request', (request) => {
-		let blocked = false;
-		try {
-			const path = new URL(request.url()).pathname;
-			blocked = ['/api/v1/client-errors', '/api/v1/threads/', '/assets/uploads/'].some((p) => path.startsWith(p));
-		} catch (e) {}
-		const act = blocked ? request.abort() : request.continue();
-		if (act && typeof act.catch === 'function') act.catch(() => {});
-	});
-	await page.setRequestInterception(true);
 	await page.evaluateOnNewDocument(hookCode);
 	await page.reload({ waitUntil: 'domcontentloaded', timeout: 90000 });
 
@@ -153,14 +133,17 @@ local function GetChapterFetchScript(mid)
 
 				const chapterPath = '/title/' + mangaId + '-';
 				const maxPages = 1000;
-				const pageDelayMs = 500;
+				const pagesInFlight = 4;
 				const chapters = [];
+				const received = new Map();
 				const isChapter = (item) => item &&
 					typeof item.id === 'number' &&
 					typeof item.number === 'number' &&
 					typeof item.url === 'string' &&
 					item.url.includes(chapterPath);
-				let page = 1;
+				let lastPage = null;
+				let nextToRead = 1;
+				let nextToRequest = 2;
 				let done = false;
 
 				const navigateToPage = (page) => {
@@ -168,6 +151,31 @@ local function GetChapterFetchScript(mid)
 					url.searchParams.set('page', String(page));
 					history.pushState(history.state, '', url);
 					dispatchEvent(new PopStateEvent('popstate', { state: history.state }));
+				};
+
+				const advance = () => {
+					while (received.has(nextToRead)) {
+						const pageData = received.get(nextToRead);
+						received.delete(nextToRead);
+						chapters.push(...pageData.items);
+						const meta = pageData.meta;
+						if (!meta.hasNext || nextToRead >= lastPage) {
+							done = true;
+							const count = new Set(chapters.map((item) => item.id)).size;
+							if (count === meta.total) {
+								chapters.sort((a, b) => (a.number || 0) - (b.number || 0) || (a.id || 0) - (b.id || 0));
+								finish({ items: chapters, info: info });
+							} else {
+								fail('Got ' + count + ' of ' + meta.total + ' chapters');
+							}
+							return;
+						}
+						nextToRead++;
+					}
+					while (nextToRequest <= lastPage && nextToRequest < nextToRead + pagesInFlight) {
+						const page = nextToRequest++;
+						setTimeout(() => { try { navigateToPage(page); } catch (e) {} });
+					}
 				};
 
 				const handle = (holder) => {
@@ -181,22 +189,11 @@ local function GetChapterFetchScript(mid)
 						fail('Chapter list has no page numbers');
 						return;
 					}
-					if (meta.page !== page) return;
-					chapters.push(...items);
+					if (meta.page < nextToRead || received.has(meta.page)) return;
+					if (lastPage === null) lastPage = Math.min(meta.lastPage, maxPages);
+					received.set(meta.page, { items: items, meta: meta });
 					resetWatchdog();
-					if (!meta.hasNext || page >= Math.min(meta.lastPage, maxPages)) {
-						done = true;
-						const count = new Set(chapters.map((item) => item.id)).size;
-						if (count === meta.total) {
-							chapters.sort((a, b) => (a.number || 0) - (b.number || 0) || (a.id || 0) - (b.id || 0));
-							finish({ items: chapters, info: info });
-						} else {
-							fail('Got ' + count + ' of ' + meta.total + ' chapters');
-						}
-						return;
-					}
-					page++;
-					setTimeout(() => { try { navigateToPage(page); } catch (e) {} }, pageDelayMs);
+					advance();
 				};
 
 				const poll = setInterval(() => {
@@ -209,8 +206,8 @@ local function GetChapterFetchScript(mid)
 				resetWatchdog();
 
 				navigateToPage(1);
-				setTimeout(() => { if (chapters.length === 0 && !done) navigateToPage(2); }, 4000);
-				setTimeout(() => { if (chapters.length === 0 && !done) navigateToPage(1); }, 8000);
+				setTimeout(() => { if (!received.has(1) && !done) navigateToPage(2); }, 4000);
+				setTimeout(() => { if (!received.has(1) && !done) navigateToPage(1); }, 8000);
 			});
 		} catch (e) {
 			return { error: e.message || String(e) };
@@ -255,16 +252,6 @@ local function GetPageFetchScript()
 			};
 		})();
 	`;
-	page.on('request', (request) => {
-		let blocked = false;
-		try {
-			const path = new URL(request.url()).pathname;
-			blocked = ['/api/v1/client-errors', '/api/v1/threads/', '/assets/uploads/'].some((p) => path.startsWith(p));
-		} catch (e) {}
-		const act = blocked ? request.abort() : request.continue();
-		if (act && typeof act.catch === 'function') act.catch(() => {});
-	});
-	await page.setRequestInterception(true);
 	await page.evaluateOnNewDocument(hookCode);
 	await page.reload({ waitUntil: 'domcontentloaded', timeout: 90000 });
 
@@ -545,8 +532,8 @@ function GetInfo()
 
 	local data = json.decode(output)
 	if data.error then
-		MANGAINFO.Title = 'Error: ' .. data.error
-		print('Error: ' .. data.error)
+		MANGAINFO.Title = data.error
+		print(data.error)
 		return no_error
 	end
 
