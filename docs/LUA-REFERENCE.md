@@ -1197,21 +1197,28 @@ common TXQuery mistake.
 
 | Method | Description |
 |--------|-------------|
-| `x.ParseHTML(html)` | Parse HTML string or stream (replaces the previous tree) |
-| `x.XPathString(xpath)` | Get single string result |
+| `x.ParseHTML(html)` | Parse an HTML string or stream, replacing the previous tree. An empty string is ignored (the old tree is kept) |
+| `x.XPath(xpath)` | Get a value/node object (a sequence) for iteration |
+| `x.XPath(xpath, context)` | Same, evaluated against `context` |
+| `x.XPathString(xpath)` | Get the result as one string |
 | `x.XPathString(xpath, context)` | Same, but evaluated against `context` (a value returned by `x.XPath(...)`, e.g. parsed JSON) instead of the whole document |
-| `x.XPathStringAll(xpath)` | Get all matching strings (comma-separated) |
-| `x.XPathStringAll(xpath, separator)` | Get all strings with custom separator |
-| `x.XPathStringAll(xpath, list)` | Append all matches to a `TStrings` list (`TASK.PageLinks`, `MANGAINFO.Genres`, a `fmd.strings` list, …) |
-| `x.XPathHREFAll(xpath, linksList, namesList)` | Extract href and text to lists |
-| `x.XPathHREFTitleAll(xpath, linksList, namesList)` | Extract href and title attribute |
-| `x.XPath(xpath)` | Get node list / value object for iteration |
-| `x.XPathCount(xpath)` | Count matching nodes |
+| `x.XPathStringAll(xpath)` | Get all matching items as one string, joined with `", "` |
+| `x.XPathStringAll(xpath, separator)` | Same, with a custom separator |
+| `x.XPathStringAll(xpath, context)` | Same as `XPathStringAll(xpath)` (`", "` separator), evaluated against `context` |
+| `x.XPathStringAll(xpath, separator, context)` | Custom separator **and** a context |
+| `x.XPathStringAll(xpath, list)` | Append all matches to a `TStrings` list (`TASK.PageLinks`, `LINKS`, a `fmd.strings` list, …) |
+| `x.XPathStringAll(xpath, list, context)` | Same, evaluated against `context` |
+| `x.XPathHREFAll(xpath, linksList, namesList)` | Extract `href` and text (trimmed) to lists |
+| `x.XPathHREFAll(xpath, linksList, namesList, context)` | Same, evaluated against `context` |
+| `x.XPathHREFTitleAll(xpath, linksList, namesList)` | Extract `href` and `title` attribute to lists |
+| `x.XPathHREFTitleAll(xpath, linksList, namesList, context)` | Same, evaluated against `context` |
+| `x.XPathCount(xpath)` | Count matching items |
+| `x.XPathCount(xpath, context)` | Same, evaluated against `context` |
 
-All of these methods (not just `XPathString`) also accept an optional
-trailing **context** argument — a value object returned by `x.XPath(...)` —
-and then evaluate the expression relative to that value instead of the whole
-document; see [Parsing once, querying many times](#parsing-once-querying-many-times).
+The optional **context** is always the **last** argument and must be a value
+object returned by `x.XPath(...)`. The expression is then evaluated relative to
+that value instead of the whole document; see
+[Parsing once, querying many times](#parsing-once-querying-many-times).
 
 #### Value/Node Object Methods
 
@@ -1283,17 +1290,24 @@ local x = CreateTXQuery(HTTP.Document)
 -- One value
 local title = x.XPathString('json(*)?data?title')
 
--- All values of a field into a list (lookup style)
-x.XPathStringAll('json(*)?data?items?*?name', MANGAINFO.Genres)
+-- All values of a field as one string: "A, B" (lookup style)
+MANGAINFO.Genres = x.XPathStringAll('json(*)?data?items?*?name')
 
 -- Same thing, dot style
-x.XPathStringAll('json(*).data.items().name', MANGAINFO.Genres)
+MANGAINFO.Genres = x.XPathStringAll('json(*).data.items().name')
+
+-- All values of a field appended to a list (e.g. TASK.PageLinks)
+x.XPathStringAll('json(*)?data?items?*?url', TASK.PageLinks)
 
 -- Using parse-json
 local title2 = x.XPathString('parse-json(.)?data?title')
 
--- Combine with string functions
-local names = x.XPathString('string-join(json(*)?data?items?*?name, ", ")')
+-- XPathStringAll already joins with ", ", so string-join() is not needed
+local names = x.XPathStringAll('json(*)?data?items?*?name')            -- "A, B"
+local slash = x.XPathStringAll('json(*)?data?items?*?name', ' / ')    -- "A / B"
+
+-- XPathString concatenates without a separator, so string-join() is needed there
+local joined = x.XPathString('string-join(json(*)?data?items?*?name, ", ")')
 ```
 
 Iterating over a JSON array from Lua:
@@ -1333,6 +1347,10 @@ local s = x.XPathString('json(*).data.field')
 local json = x.XPath('json(*)')
 local s1 = x.XPathString('data?field', json)
 local s2 = x.XPathString('data?other', json)
+
+-- Several values from an array: the context is the last argument
+local all = x.XPathStringAll('data?items?*?name', json)         -- "A, B"
+local sep = x.XPathStringAll('data?items?*?name', ' / ', json)  -- "A / B"
 ```
 
 Both ways give the same result for `s`. In the two-step form, move down
@@ -1360,11 +1378,13 @@ The older JSONiq-style helpers from internettools can also be used. They are
 less common than the lookup styles above.
 
 ```lua
-jn:keys($obj)      -- Get JSON object keys
-jn:members($arr)   -- Get JSON array members
+local x = CreateTXQuery(HTTP.Document)
+local json = x.XPath('json(*)')
 
-local count = x.XPathCount('jn:keys($obj)')
-for v in x.XPath('jn:members($arr)').Get() do ... end
+-- jn:keys(object)    -> the keys of a JSON object
+-- jn:members(array)  -> the members of a JSON array
+local count = x.XPathCount('jn:keys(data)', json)
+for v in x.XPath('jn:members(data?items)', json).Get() do ... end
 ```
 
 ### Utility Functions
@@ -2661,7 +2681,7 @@ function GetInfo()
     MANGAINFO.Title     = x.XPathString('title', data)
     MANGAINFO.CoverLink = x.XPathString('cover_url', data)
     MANGAINFO.Authors   = x.XPathString('author', data)
-    MANGAINFO.Genres    = x.XPathString('string-join(genres?*?name, ", ")', data)
+    MANGAINFO.Genres    = x.XPathStringAll('genres?*?name', data)
     MANGAINFO.Summary   = x.XPathString('description', data)
 
     for v in x.XPath('chapters?*', data).Get() do
