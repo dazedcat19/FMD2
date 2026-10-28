@@ -1,9 +1,9 @@
 {==============================================================================|
-| Project : Ararat Synapse                                       | 007.007.003 |
+| Project : Ararat Synapse                                       | 007.008.000 |
 |==============================================================================|
 | Content: Serial port support                                                 |
 |==============================================================================|
-| Copyright (c)2001-2023, Lukas Gebauer                                        |
+| Copyright (c)2001-2026, Lukas Gebauer                                        |
 | All rights reserved.                                                         |
 |                                                                              |
 | Redistribution and use in source and binary forms, with or without           |
@@ -33,7 +33,7 @@
 | DAMAGE.                                                                      |
 |==============================================================================|
 | The Initial Developer of the Original Code is Lukas Gebauer (Czech Republic).|
-| Portions created by Lukas Gebauer are Copyright (c)2001-2023.                |
+| Portions created by Lukas Gebauer are Copyright (c)2001-2026.                |
 | All Rights Reserved.                                                         |
 |==============================================================================|
 | Contributor(s):                                                              |
@@ -229,7 +229,10 @@ type
   PDCB = ^TDCB;
 
 const
-{$IFDEF UNIX}
+{$IFNDEF MSWINDOWS}
+  {$IFDEF MACOS}
+    {$DEFINE BSD}
+  {$ENDIF}
   {$IFDEF BSD}
     MaxRates = 18;  //MAC
   {$ELSE}
@@ -289,11 +292,12 @@ const // From fcntl.h
   O_SYNC = $0080;  { synchronous writes }
 {$ENDIF}
 
-{$IFDEF ANDROID}
+{$IFDEF POSIX}
 const
   TIOCMSET = $5418;
   TIOCMGET = $5415;
   TCSBRK   = $5409;
+  TCFLSH   = $540B;
 {$ENDIF}
 
 const
@@ -349,6 +353,9 @@ type
     FSendBuffer: integer;
     FModemWord: integer;
     FRTSToggle: Boolean;
+    FManualSignals: Boolean;
+    FLastRTS: Boolean;
+    FLastDTR: Boolean;
     FDeadlockTimeout: integer;
     FInstanceActive: boolean;      {HGJ}
     FTestDSR: Boolean;
@@ -424,7 +431,12 @@ type
      @param(stop Define number of stopbits. Use constants @link(SB1),
       @link(SB1andHalf) and @link(SB2).)
      @param(softflow Enable XON/XOFF handshake.)
-     @param(hardflow Enable CTS/RTS handshake.)}
+     @param(hardflow Enable CTS/RTS handshake.)
+
+     If @link(ManualSignals) is @true and hardflow is @false, this method will
+     not touch the RTS/DTR control mode at all (no RTS_CONTROL_ENABLE/
+     DTR_CONTROL_ENABLE on Windows), so it will never override RTS/DTR values
+     you set manually via the @link(RTS) and @link(DTR) properties.}
     procedure Config(baud, bits: integer; parity: char; stop: integer;
       softflow, hardflow: boolean); virtual;
 
@@ -435,7 +447,10 @@ type
      converted!)
 
      After successfull connection the DTR signal is set (if you not set hardware
-     handshake, then the RTS signal is set, too!)
+     handshake, then the RTS signal is set, too!) - unless @link(ManualSignals)
+     is set to @true, in which case RTS and DTR are left exactly as found
+     (typically low) and are entirely under your control via the @link(RTS) and
+     @link(DTR) properties.
 
      Connection parameters is predefined by your system configuration. If you
      need use another parameters, then you can use Config method after.
@@ -705,6 +720,37 @@ type
     {:Use this property to set the value of the DTR signal.}
     property DTR: Boolean write SetDTRF;
 
+    {:Set this to @true if you need full, exclusive manual control of RTS/DTR
+     from your own code - for example when implementing your own RS485
+     direction control or a custom signalling protocol. Set it @bold(before)
+     calling @link(Connect).
+
+     Default is @false, matching historical SynaSer behaviour, where the
+     library automatically drives RTS/DTR at protocol-level "convenience"
+     moments: both signals are set @true by @link(Connect) right after the
+     port is opened, and set @false by @link(CloseSocket) before the port is
+     closed. The OS is also allowed to auto-drop the modem control lines on
+     close (HUPCL on POSIX).
+
+     With @true, after @link(Connect) both lines are left exactly as the
+     driver/port presented them (normally low), @link(CloseSocket) will not
+     touch them, and on POSIX they will not be dropped automatically when the
+     handle is closed.
+
+     On Windows this also changes the behaviour of @link(SetCommState) (and
+     therefore of @link(Config) and @link(SetSizeRecvBuffer), which call it
+     internally): normally Windows' RTS_CONTROL_ENABLE/DTR_CONTROL_ENABLE mode
+     re-asserts the line high on every SetCommState call, which would
+     otherwise silently override a line you previously set @false. With this
+     property @true, the last value you assigned via the @link(RTS) and
+     @link(DTR) properties is re-applied immediately after every
+     @link(SetCommState) call, so calling @link(Config) - even repeatedly,
+     e.g. to change the baud rate later - never clobbers your manual signal
+     state. This does not apply when @link(Config)'s hardflow parameter is
+     @true, since hardware handshake inherently requires the driver to manage
+     RTS itself.}
+    property ManualSignals: Boolean read FManualSignals write FManualSignals;
+
     {:Exposes the status of the DSR signal.}
     property DSR: boolean read GetDSR;
 
@@ -814,6 +860,9 @@ begin
   FInstanceActive:= false;             {HGJ}
   Fbuffer := '';
   FRTSToggle := False;
+  FManualSignals := False;
+  FLastRTS := False;
+  FLastDTR := False;
   FMaxLineLength := 0;
   FTestDSR := False;
   FTestCTS := False;
@@ -840,7 +889,7 @@ end;
 
 class function TBlockSerial.GetVersion: string;
 begin
-	Result := 'SynaSer 7.6.0';
+	Result := 'SynaSer 7.8.0';
 end;
 
 procedure TBlockSerial.CloseSocket;
@@ -848,8 +897,11 @@ begin
   if Fhandle <> INVALID_HANDLE_VALUE then
   begin
     Purge;
-    RTS := False;
-    DTR := False;
+    if not FManualSignals then
+    begin
+      RTS := False;
+      DTR := False;
+    end;
     FileClose(FHandle);
   end;
   if InstanceActive then
@@ -903,7 +955,7 @@ begin
   if pos('COM', uppercase(Value)) = 1 then
     FComNr := StrToIntdef(copy(Value, 4, Length(Value) - 3), PortIsClosed + 1) - 1;
   if pos('/DEV/TTYS', uppercase(Value)) = 1 then
-    FComNr := StrToIntdef(copy(Value, 10, Length(Value) - 9), PortIsClosed - 1);
+    FComNr := StrToIntdef(copy(Value, 10, Length(Value) - 9), PortIsClosed);
 end;
 
 procedure TBlockSerial.SetBandwidth(Value: Integer);
@@ -959,8 +1011,10 @@ begin
   if hardflow then
     dcb.Flags := dcb.Flags or dcb_OutxCtsFlow or dcb_RtsControlHandshake
   else
-    dcb.Flags := dcb.Flags or dcb_RtsControlEnable;
-  dcb.Flags := dcb.Flags or dcb_DtrControlEnable;
+    if not FManualSignals then
+      dcb.Flags := dcb.Flags or dcb_RtsControlEnable;
+  if not FManualSignals then
+    dcb.Flags := dcb.Flags or dcb_DtrControlEnable;
   if dcb.Parity > 0 then
     dcb.Flags := dcb.Flags or dcb_ParityCheck;
   SetCommState;
@@ -991,30 +1045,30 @@ begin
   {$ENDIF}
 {$ENDIF}
 {$IFNDEF MSWINDOWS}
-  if FComNr <> PortIsClosed then
+  if FComNr > PortIsClosed then
     FDevice := '/dev/ttyS' + IntToStr(FComNr);
-  {$IFDEF USE_LINUX_LOCK}
-    // Comport already owned by another process?          {HGJ}
-    if FLinuxLock then
-      if not cpomComportAccessible then
-      begin
-        if FileExists(LockfileName) then
-          RaiseSynaError(ErrAlreadyOwned)
-        else
-          RaiseSynaError(ErrAccessDenied);
 
-        Exit;
-      end;
+  {$IFDEF USE_LINUX_LOCK}
+  // Comport already owned by another process?          {HGJ}
+  if FLinuxLock then
+    if not cpomComportAccessible then
+    begin
+      if FileExists(LockfileName) then
+        RaiseSynaError(ErrAlreadyOwned)
+      else
+        RaiseSynaError(ErrAccessDenied);
+      Exit;
+    end;
   {$ENDIF}
 
   {$IFNDEF FPC}
     {$IFDEF POSIX}
-      FHandle := open(MarshaledAString(AnsiString(FDevice)), O_RDWR or O_SYNC);
+  FHandle := open(MarshaledAString(AnsiString(FDevice)), O_RDWR or O_SYNC);
     {$ELSE}
-      FHandle := THandle(Libc.open(pchar(FDevice), O_RDWR or O_SYNC));
+  FHandle := THandle(Libc.open(pchar(FDevice), O_RDWR or O_SYNC));
     {$ENDIF}
   {$ELSE}
-    FHandle := THandle(fpOpen(FDevice, O_RDWR or O_SYNC));
+  FHandle := THandle(fpOpen(FDevice, O_RDWR or O_SYNC));
   {$ENDIF}
   if FHandle = INVALID_HANDLE_VALUE then  //because THandle is not integer on all platforms!
     SerialCheck(-1)
@@ -1029,7 +1083,7 @@ begin
   if FLastError <> sOK then
     Exit;
 {$ELSE}
-  if FComNr <> PortIsClosed then
+  if FComNr > PortIsClosed then
     FDevice := '\\.\COM' + IntToStr(FComNr + 1);
   FHandle := THandle(CreateFile(PChar(FDevice), GENERIC_READ or GENERIC_WRITE,
     0, nil, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL or FILE_FLAG_OVERLAPPED, 0));
@@ -1067,8 +1121,11 @@ begin
   else
   begin
     FInstanceActive:= True;
-    RTS := True;
-    DTR := True;
+    if not FManualSignals then
+    begin
+      RTS := True;
+      DTR := True;
+    end;
     Purge;
   end;
   ExceptCheck;
@@ -1589,7 +1646,10 @@ begin
   cfmakeraw(term);
   term.c_cflag := term.c_cflag or CREAD;
   term.c_cflag := term.c_cflag or CLOCAL;
-  term.c_cflag := term.c_cflag or HUPCL;
+  if FManualSignals then
+    term.c_cflag := term.c_cflag and (not HUPCL)
+  else
+    term.c_cflag := term.c_cflag or HUPCL;
   //hardware handshake
   if (dcb.flags and dcb_RtsControlHandshake) > 0 then
     term.c_cflag := term.c_cflag or CRTSCTS
@@ -1719,6 +1779,27 @@ begin
   SetSynaError(sOK);
   if not windows.SetCommState(Fhandle, dcb) then
     SerialCheck(sErr);
+  {Win32 Comm API has no "leave RTS/DTR as-is" mode: RTS_CONTROL_ENABLE /
+   DTR_CONTROL_ENABLE ("leaves it on") and RTS_CONTROL_DISABLE /
+   DTR_CONTROL_DISABLE are both actively re-applied by many drivers on every
+   SetCommState call (not only at device open), which would otherwise stomp
+   on a manually-set line every time Config or SetSizeRecvBuffer is called.
+   When ManualSignals is True, re-assert the last value the user
+   actually requested via the RTS/DTR properties.}
+  if FManualSignals then
+  begin
+    if (dcb.Flags and dcb_RtsControlHandshake) = 0 then
+    begin
+      if FLastRTS then
+        EscapeCommFunction(FHandle, SETRTS)
+      else
+        EscapeCommFunction(FHandle, CLRRTS);
+    end;
+    if FLastDTR then
+      EscapeCommFunction(FHandle, SETDTR)
+    else
+      EscapeCommFunction(FHandle, CLRDTR);
+  end;
   ExceptCheck;
 end;
 {$ENDIF}
@@ -1764,6 +1845,7 @@ end;
 
 procedure TBlockSerial.SetDTRF(Value: Boolean);
 begin
+  FLastDTR := Value;
 {$IFNDEF MSWINDOWS}
   ModemStatus;
   if Value then
@@ -1795,6 +1877,7 @@ end;
 
 procedure TBlockSerial.SetRTSF(Value: Boolean);
 begin
+  FLastRTS := Value;
 {$IFNDEF MSWINDOWS}
   ModemStatus;
   if Value then
@@ -2004,17 +2087,19 @@ begin
 end;
 
 procedure TBlockSerial.Flush;
+{$IFDEF ANDROID} {$IFDEF FPC}
 var
   Data : Integer;
+{$ENDIF} {$ENDIF}
 begin
 {$IFNDEF MSWINDOWS}
   {$IFDEF ANDROID}
-    Data := 1;
     {$IFNDEF FPC}
     ioctl(FHandle, TCSBRK, 1);
     {$ELSE}
+    Data := 1;
     FpIOCtl(FHandle, TCSBRK, @Data);
-    {$ENDIF}    
+    {$ENDIF}
   {$ELSE}
     SerialCheck(tcdrain(FHandle));
   {$ENDIF}

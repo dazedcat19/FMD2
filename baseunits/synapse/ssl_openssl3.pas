@@ -1,9 +1,9 @@
 {==============================================================================|
-| Project : Ararat Synapse                                       | 001.000.002 |
+| Project : Ararat Synapse                                       | 001.002.000 |
 |==============================================================================|
 | Content: SSL support by OpenSSL                                              |
 |==============================================================================|
-| Copyright (c)1999-2023, Lukas Gebauer                                        |
+| Copyright (c)1999-2026, Lukas Gebauer                                        |
 | All rights reserved.                                                         |
 |                                                                              |
 | Redistribution and use in source and binary forms, with or without           |
@@ -33,7 +33,7 @@
 | DAMAGE.                                                                      |
 |==============================================================================|
 | The Initial Developer of the Original Code is Lukas Gebauer (Czech Republic).|
-| Portions created by Lukas Gebauer are Copyright (c)2005-2023.                |
+| Portions created by Lukas Gebauer are Copyright (c)2005-2026.                |
 | Portions created by Petr Fejfar are Copyright (c)2011-2012.                  |
 | All Rights Reserved.                                                         |
 |==============================================================================|
@@ -99,6 +99,7 @@ type
   protected
     FSsl: PSSL;
     Fctx: PSSL_CTX;
+    FReuseSession: PSSL_SESSION;
     function SSLCheck: Boolean;
     function SetSslKeys: boolean;
     function Init(server:Boolean): Boolean;
@@ -110,6 +111,7 @@ type
     {:See @inherited}
     constructor Create(const Value: TTCPBlockSocket); override;
     destructor Destroy; override;
+    procedure Assign(const Value: TCustomSSL); override;
     {:See @inherited}
     function LibVersion: String; override;
     {:See @inherited}
@@ -152,6 +154,8 @@ type
     function GetCipherAlgBits: integer; override;
     {:See @inherited}
     function GetVerifyCert: integer; override;
+    {:See @inherited}
+    function ImplementsEOF: boolean; override;
   end;
 
 implementation
@@ -179,12 +183,25 @@ begin
   FCiphers := 'DEFAULT';
   FSsl := nil;
   Fctx := nil;
+  FReuseSession := nil;
 end;
 
 destructor TSSLOpenSSL3.Destroy;
 begin
   DeInit;
+  if assigned(FReuseSession) then
+    SslSessionFree(FReuseSession);
   inherited Destroy;
+end;
+
+procedure TSSLOpenSSL3.Assign(const Value: TCustomSSL);
+begin
+  inherited Assign(Value);
+  if assigned(FReuseSession) then
+    SslSessionFree(FReuseSession);
+  FReuseSession := nil;
+  if (Value is TSSLOpenSSL3) and assigned(TSSLOpenSSL3(Value).FSsl) and Value.SSLEnabled then
+    FReuseSession := SslGet1Session(TSSLOpenSSL3(Value).FSsl);
 end;
 
 function TSSLOpenSSL3.LibVersion: String;
@@ -400,11 +417,17 @@ begin
   end;
 end;
 
+function TSSLOpenSSL3.ImplementsEOF: boolean;
+begin
+  Result := true;
+end;
+
 function TSSLOpenSSL3.Init(server:Boolean): Boolean;
 var
   s: AnsiString;
 begin
   Result := False;
+  FEOF := false;
   FLastErrorDesc := '';
   FLastError := 0;
   Fctx := SslCtxNew(SslMethodTLS); // best common protocol
@@ -509,6 +532,8 @@ begin
       SSLCheck;
       Exit;
     end;
+    if assigned(FReuseSession) then
+      SslSetSession(FSsl, FReuseSession);
     if SNIHost<>'' then
     begin
       SSLCtrl(Fssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, TLSEXT_NAMETYPE_host_name, PAnsiChar(AnsiString(SNIHost)));
@@ -613,7 +638,10 @@ begin
     err := SslGetError(FSsl, Result);
   until (err <> SSL_ERROR_WANT_READ) and (err <> SSL_ERROR_WANT_WRITE);
   if err = SSL_ERROR_ZERO_RETURN then
-    Result := 0
+  begin
+    Result := 0;
+    FEOF := true;
+  end
   else
     if (err <> 0) then
       FLastError := err;
@@ -630,12 +658,13 @@ begin
     err := SslGetError(FSsl, Result);
   until (err <> SSL_ERROR_WANT_READ) and (err <> SSL_ERROR_WANT_WRITE);
   if err = SSL_ERROR_ZERO_RETURN then
-    Result := 0
-  {pf}// Verze 1.1.0 byla s else tak jak to ted mam,
-      // ve verzi 1.1.1 bylo ELSE zruseno, ale pak je SSL_ERROR_ZERO_RETURN
-      // propagovano jako Chyba.
-  {pf} else {/pf} if (err <> 0) then
-    FLastError := err;
+  begin
+    Result := 0;
+    FEOF := true;
+  end
+  else
+    if (err <> 0) then
+      FLastError := err;
 end;
 
 function TSSLOpenSSL3.WaitingData: Integer;
