@@ -1,9 +1,9 @@
 {==============================================================================|
-| Project : Ararat Synapse                                       | 001.000.003 |
+| Project : Ararat Synapse                                       | 001.000.004 |
 |==============================================================================|
 | Content: SSL support by OpenSSL 3.0                                          |
 |==============================================================================|
-| Copyright (c)1999-2023, Lukas Gebauer                                        |
+| Copyright (c)1999-2026, Lukas Gebauer                                        |
 | All rights reserved.                                                         |
 |                                                                              |
 | Redistribution and use in source and binary forms, with or without           |
@@ -33,7 +33,7 @@
 | DAMAGE.                                                                      |
 |==============================================================================|
 | The Initial Developer of the Original Code is Lukas Gebauer (Czech Republic).|
-| Portions created by Lukas Gebauer are Copyright (c)2002-2023.                |
+| Portions created by Lukas Gebauer are Copyright (c)2002-2026.                |
 | Portions created by Petr Fejfar are Copyright (c)2011-2012.                  |
 | All Rights Reserved.                                                         |
 |==============================================================================|
@@ -134,6 +134,7 @@ type
   PSslPtr = ^SslPtr;
   PSSL_CTX = SslPtr;
   PSSL = SslPtr;
+  PSSL_SESSION = SslPtr;
   PSSL_METHOD = SslPtr;
   PX509 = SslPtr;
   PX509_NAME = SslPtr;
@@ -286,6 +287,9 @@ var
   function SSLGetVerifyResult(ssl: PSSL):Integer;
   function SSLCtrl(ssl: PSSL; cmd: integer; larg: integer; parg: SslPtr):Integer;
   function SslSet1Host(ssl: PSSL; hostname: PAnsiChar):Integer;
+  function SslGet1Session(ssl: PSSL):PSSL_SESSION;
+  function SslSetSession(ssl: PSSL; session: PSSL_SESSION):Integer;
+  procedure SslSessionFree(session: PSSL_SESSION);
 
 // libeay.dll
 
@@ -389,6 +393,9 @@ type
   TSslFree = procedure(ssl: PSSL); cdecl;
   TSslAccept = function(ssl: PSSL):Integer; cdecl;
   TSslConnect = function(ssl: PSSL):Integer; cdecl;
+  TSslGet1Session = function(ssl: PSSL):PSSL_SESSION; cdecl;
+  TSslSetSession = function(ssl: PSSL; session: PSSL_SESSION):Integer; cdecl;
+  TSslSessionFree = procedure(session: PSSL_SESSION); cdecl;
   TSslShutdown = function(ssl: PSSL):Integer; cdecl;
   TSslRead = function(ssl: PSSL; buf: PAnsiChar; num: Integer):Integer; cdecl;
   TSslPeek = function(ssl: PSSL; buf: PAnsiChar; num: Integer):Integer; cdecl;
@@ -492,6 +499,9 @@ var
   _SslFree: TSslFree = nil;
   _SslAccept: TSslAccept = nil;
   _SslConnect: TSslConnect = nil;
+  _SslGet1Session: TSslGet1Session = nil;
+  _SslSetSession: TSslSetSession = nil;
+  _SslSessionFree: TSslSessionFree = nil;
   _SslShutdown: TSslShutdown = nil;
   _SslRead: TSslRead = nil;
   _SslPeek: TSslPeek = nil;
@@ -763,6 +773,28 @@ begin
     Result := _SslConnect(ssl)
   else
     Result := -1;
+end;
+
+function SslGet1Session(ssl: PSSL):PSSL_SESSION;
+begin
+  if InitSSLInterface and Assigned(_SslGet1Session) then
+    Result := _SslGet1Session(ssl)
+  else
+    Result := nil;
+end;
+
+function SslSetSession(ssl: PSSL; session: PSSL_SESSION):Integer;
+begin
+  if InitSSLInterface and Assigned(_SslSetSession) then
+    Result := _SslSetSession(ssl, session)
+  else
+    Result := 0;
+end;
+
+procedure SslSessionFree(session: PSSL_SESSION);
+begin
+  if InitSSLInterface and Assigned(_SslSessionFree) then
+    _SslSessionFree(session);
 end;
 
 function SslShutdown(ssl: PSSL):Integer;
@@ -1334,6 +1366,9 @@ begin
         _SslFree := GetProcAddr(SSLLibHandle, 'SSL_free');
         _SslAccept := GetProcAddr(SSLLibHandle, 'SSL_accept');
         _SslConnect := GetProcAddr(SSLLibHandle, 'SSL_connect');
+        _SslGet1Session := GetProcAddr(SSLLibHandle, 'SSL_get1_session');
+        _SslSetSession := GetProcAddr(SSLLibHandle, 'SSL_set_session');
+        _SslSessionFree := GetProcAddr(SSLLibHandle, 'SSL_SESSION_free');
         _SslShutdown := GetProcAddr(SSLLibHandle, 'SSL_shutdown');
         _SslRead := GetProcAddr(SSLLibHandle, 'SSL_read');
         _SslPeek := GetProcAddr(SSLLibHandle, 'SSL_peek');
@@ -1474,6 +1509,9 @@ begin
     _SslFree := nil;
     _SslAccept := nil;
     _SslConnect := nil;
+    _SslGet1Session := nil;
+    _SslSetSession := nil;
+    _SslSessionFree := nil;
     _SslShutdown := nil;
     _SslRead := nil;
     _SslPeek := nil;

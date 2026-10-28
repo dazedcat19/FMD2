@@ -1,5 +1,5 @@
 {==============================================================================|
-| Project : Ararat Synapse                                       | 001.004.000 |
+| Project : Ararat Synapse                                       | 001.004.001 |
 |==============================================================================|
 | Content: misc. procedures and functions                                      |
 |==============================================================================|
@@ -179,7 +179,7 @@ end;
 
 {==============================================================================}
 
-{$IFNDEF UNIX}
+{$IFDEF MSWINDOWS}
 function GetDNSbyIpHlp: string;
 type
   PTIP_ADDRESS_STRING = ^TIP_ADDRESS_STRING;
@@ -271,27 +271,7 @@ end ;
 {$ENDIF}
 
 function GetDNS: string;
-{$IFDEF UNIX}
-var
-  l: TStringList;
-  n: integer;
-begin
-  Result := '';
-  l := TStringList.Create;
-  try
-    l.LoadFromFile('/etc/resolv.conf');
-    for n := 0 to l.Count - 1 do
-      if Pos('NAMESERVER', uppercase(l[n])) = 1 then
-      begin
-        if Result <> '' then
-          Result := Result + ',';
-        Result := Result + SeparateRight(l[n], ' ');
-      end;
-  finally
-    l.Free;
-  end;
-end;
-{$ELSE}
+{$IFDEF MSWINDOWS}
 const
   NTdyn = 'System\CurrentControlSet\Services\Tcpip\Parameters\Temporary';
   NTfix = 'System\CurrentControlSet\Services\Tcpip\Parameters';
@@ -311,6 +291,26 @@ begin
     else
       Result := ReadReg(W9xfix, 'NameServer');
     Result := ReplaceString(trim(Result), ' ', ',');
+  end;
+end;
+{$ELSE}
+var
+  l: TStringList;
+  n: integer;
+begin
+  Result := '';
+  l := TStringList.Create;
+  try
+    l.LoadFromFile('/etc/resolv.conf');
+    for n := 0 to l.Count - 1 do
+      if Pos('NAMESERVER', uppercase(l[n])) = 1 then
+      begin
+        if Result <> '' then
+          Result := Result + ',';
+        Result := Result + SeparateRight(l[n], ' ');
+      end;
+  finally
+    l.Free;
   end;
 end;
 {$ENDIF}
@@ -370,7 +370,6 @@ var
   Option : array[0..4] of INTERNET_PER_CONN_OPTION;
   List   : INTERNET_PER_CONN_OPTION_LIST;
   Err: Boolean;
-  Len: DWORD;
   Proxy: string;
   DefProxy: string;
   ProxyList: TStringList;

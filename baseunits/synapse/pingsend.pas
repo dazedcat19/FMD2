@@ -1,9 +1,9 @@
 {==============================================================================|
-| Project : Ararat Synapse                                       | 004.000.004 |
+| Project : Ararat Synapse                                       | 004.000.005 |
 |==============================================================================|
 | Content: PING sender                                                         |
 |==============================================================================|
-| Copyright (c)1999-2023, Lukas Gebauer                                        |
+| Copyright (c)1999-2026, Lukas Gebauer                                        |
 | All rights reserved.                                                         |
 |                                                                              |
 | Redistribution and use in source and binary forms, with or without           |
@@ -33,7 +33,7 @@
 | DAMAGE.                                                                      |
 |==============================================================================|
 | The Initial Developer of the Original Code is Lukas Gebauer (Czech Republic).|
-| Portions created by Lukas Gebauer are Copyright (c)2000-2023.                |
+| Portions created by Lukas Gebauer are Copyright (c)2000-2026.                |
 | All Rights Reserved.                                                         |
 |==============================================================================|
 | Contributor(s):                                                              |
@@ -490,7 +490,7 @@ begin
   x := synsock.WSAIoctl(FSock.Socket, SIO_ROUTING_INTERFACE_QUERY,
     @FSock.RemoteSin, SizeOf(FSock.RemoteSin),
     @ip6, SizeOf(ip6), @b, nil, nil);
-  if x <> -1 then
+  if x <> SOCKET_ERROR then
     ICMP6Ptr^.in_dest := ip6.sin6_addr
   else
     ICMP6Ptr^.in_dest := FSock.LocalSin.sin6_addr;
@@ -595,7 +595,7 @@ begin
     PingHandle := Icmp6CreateFile
   else
     PingHandle := IcmpCreateFile;
-  if PingHandle <> -1 then
+  if PingHandle <> INVALID_HANDLE_VALUE then
   begin
     try
       ipo.TTL := FTTL;

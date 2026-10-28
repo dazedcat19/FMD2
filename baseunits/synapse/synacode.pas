@@ -1,9 +1,9 @@
 {==============================================================================|
-| Project : Ararat Synapse                                       | 002.002.003 |
+| Project : Ararat Synapse                                       | 002.002.004 |
 |==============================================================================|
 | Content: Coding and decoding support                                         |
 |==============================================================================|
-| Copyright (c)1999-2013, Lukas Gebauer                                        |
+| Copyright (c)1999-2026, Lukas Gebauer                                        |
 | All rights reserved.                                                         |
 |                                                                              |
 | Redistribution and use in source and binary forms, with or without           |
@@ -33,7 +33,7 @@
 | DAMAGE.                                                                      |
 |==============================================================================|
 | The Initial Developer of the Original Code is Lukas Gebauer (Czech Republic).|
-| Portions created by Lukas Gebauer are Copyright (c)2000-2013.                |
+| Portions created by Lukas Gebauer are Copyright (c)2000-2026.                |
 | All Rights Reserved.                                                         |
 |==============================================================================|
 | Contributor(s):                                                              |
@@ -239,71 +239,71 @@ implementation
 
 const
 
-  Crc32Tab: array[0..255] of Integer = (
-    Integer($00000000), Integer($77073096), Integer($EE0E612C), Integer($990951BA),
-    Integer($076DC419), Integer($706AF48F), Integer($E963A535), Integer($9E6495A3),
-    Integer($0EDB8832), Integer($79DCB8A4), Integer($E0D5E91E), Integer($97D2D988),
-    Integer($09B64C2B), Integer($7EB17CBD), Integer($E7B82D07), Integer($90BF1D91),
-    Integer($1DB71064), Integer($6AB020F2), Integer($F3B97148), Integer($84BE41DE),
-    Integer($1ADAD47D), Integer($6DDDE4EB), Integer($F4D4B551), Integer($83D385C7),
-    Integer($136C9856), Integer($646BA8C0), Integer($FD62F97A), Integer($8A65C9EC),
-    Integer($14015C4F), Integer($63066CD9), Integer($FA0F3D63), Integer($8D080DF5),
-    Integer($3B6E20C8), Integer($4C69105E), Integer($D56041E4), Integer($A2677172),
-    Integer($3C03E4D1), Integer($4B04D447), Integer($D20D85FD), Integer($A50AB56B),
-    Integer($35B5A8FA), Integer($42B2986C), Integer($DBBBC9D6), Integer($ACBCF940),
-    Integer($32D86CE3), Integer($45DF5C75), Integer($DCD60DCF), Integer($ABD13D59),
-    Integer($26D930AC), Integer($51DE003A), Integer($C8D75180), Integer($BFD06116),
-    Integer($21B4F4B5), Integer($56B3C423), Integer($CFBA9599), Integer($B8BDA50F),
-    Integer($2802B89E), Integer($5F058808), Integer($C60CD9B2), Integer($B10BE924),
-    Integer($2F6F7C87), Integer($58684C11), Integer($C1611DAB), Integer($B6662D3D),
-    Integer($76DC4190), Integer($01DB7106), Integer($98D220BC), Integer($EFD5102A),
-    Integer($71B18589), Integer($06B6B51F), Integer($9FBFE4A5), Integer($E8B8D433),
-    Integer($7807C9A2), Integer($0F00F934), Integer($9609A88E), Integer($E10E9818),
-    Integer($7F6A0DBB), Integer($086D3D2D), Integer($91646C97), Integer($E6635C01),
-    Integer($6B6B51F4), Integer($1C6C6162), Integer($856530D8), Integer($F262004E),
-    Integer($6C0695ED), Integer($1B01A57B), Integer($8208F4C1), Integer($F50FC457),
-    Integer($65B0D9C6), Integer($12B7E950), Integer($8BBEB8EA), Integer($FCB9887C),
-    Integer($62DD1DDF), Integer($15DA2D49), Integer($8CD37CF3), Integer($FBD44C65),
-    Integer($4DB26158), Integer($3AB551CE), Integer($A3BC0074), Integer($D4BB30E2),
-    Integer($4ADFA541), Integer($3DD895D7), Integer($A4D1C46D), Integer($D3D6F4FB),
-    Integer($4369E96A), Integer($346ED9FC), Integer($AD678846), Integer($DA60B8D0),
-    Integer($44042D73), Integer($33031DE5), Integer($AA0A4C5F), Integer($DD0D7CC9),
-    Integer($5005713C), Integer($270241AA), Integer($BE0B1010), Integer($C90C2086),
-    Integer($5768B525), Integer($206F85B3), Integer($B966D409), Integer($CE61E49F),
-    Integer($5EDEF90E), Integer($29D9C998), Integer($B0D09822), Integer($C7D7A8B4),
-    Integer($59B33D17), Integer($2EB40D81), Integer($B7BD5C3B), Integer($C0BA6CAD),
-    Integer($EDB88320), Integer($9ABFB3B6), Integer($03B6E20C), Integer($74B1D29A),
-    Integer($EAD54739), Integer($9DD277AF), Integer($04DB2615), Integer($73DC1683),
-    Integer($E3630B12), Integer($94643B84), Integer($0D6D6A3E), Integer($7A6A5AA8),
-    Integer($E40ECF0B), Integer($9309FF9D), Integer($0A00AE27), Integer($7D079EB1),
-    Integer($F00F9344), Integer($8708A3D2), Integer($1E01F268), Integer($6906C2FE),
-    Integer($F762575D), Integer($806567CB), Integer($196C3671), Integer($6E6B06E7),
-    Integer($FED41B76), Integer($89D32BE0), Integer($10DA7A5A), Integer($67DD4ACC),
-    Integer($F9B9DF6F), Integer($8EBEEFF9), Integer($17B7BE43), Integer($60B08ED5),
-    Integer($D6D6A3E8), Integer($A1D1937E), Integer($38D8C2C4), Integer($4FDFF252),
-    Integer($D1BB67F1), Integer($A6BC5767), Integer($3FB506DD), Integer($48B2364B),
-    Integer($D80D2BDA), Integer($AF0A1B4C), Integer($36034AF6), Integer($41047A60),
-    Integer($DF60EFC3), Integer($A867DF55), Integer($316E8EEF), Integer($4669BE79),
-    Integer($CB61B38C), Integer($BC66831A), Integer($256FD2A0), Integer($5268E236),
-    Integer($CC0C7795), Integer($BB0B4703), Integer($220216B9), Integer($5505262F),
-    Integer($C5BA3BBE), Integer($B2BD0B28), Integer($2BB45A92), Integer($5CB36A04),
-    Integer($C2D7FFA7), Integer($B5D0CF31), Integer($2CD99E8B), Integer($5BDEAE1D),
-    Integer($9B64C2B0), Integer($EC63F226), Integer($756AA39C), Integer($026D930A),
-    Integer($9C0906A9), Integer($EB0E363F), Integer($72076785), Integer($05005713),
-    Integer($95BF4A82), Integer($E2B87A14), Integer($7BB12BAE), Integer($0CB61B38),
-    Integer($92D28E9B), Integer($E5D5BE0D), Integer($7CDCEFB7), Integer($0BDBDF21),
-    Integer($86D3D2D4), Integer($F1D4E242), Integer($68DDB3F8), Integer($1FDA836E),
-    Integer($81BE16CD), Integer($F6B9265B), Integer($6FB077E1), Integer($18B74777),
-    Integer($88085AE6), Integer($FF0F6A70), Integer($66063BCA), Integer($11010B5C),
-    Integer($8F659EFF), Integer($F862AE69), Integer($616BFFD3), Integer($166CCF45),
-    Integer($A00AE278), Integer($D70DD2EE), Integer($4E048354), Integer($3903B3C2),
-    Integer($A7672661), Integer($D06016F7), Integer($4969474D), Integer($3E6E77DB),
-    Integer($AED16A4A), Integer($D9D65ADC), Integer($40DF0B66), Integer($37D83BF0),
-    Integer($A9BCAE53), Integer($DEBB9EC5), Integer($47B2CF7F), Integer($30B5FFE9),
-    Integer($BDBDF21C), Integer($CABAC28A), Integer($53B39330), Integer($24B4A3A6),
-    Integer($BAD03605), Integer($CDD70693), Integer($54DE5729), Integer($23D967BF),
-    Integer($B3667A2E), Integer($C4614AB8), Integer($5D681B02), Integer($2A6F2B94),
-    Integer($B40BBE37), Integer($C30C8EA1), Integer($5A05DF1B), Integer($2D02EF8D)
+  Crc32Tab: array[0..255] of Cardinal = (
+    Cardinal($00000000), Cardinal($77073096), Cardinal($EE0E612C), Cardinal($990951BA),
+    Cardinal($076DC419), Cardinal($706AF48F), Cardinal($E963A535), Cardinal($9E6495A3),
+    Cardinal($0EDB8832), Cardinal($79DCB8A4), Cardinal($E0D5E91E), Cardinal($97D2D988),
+    Cardinal($09B64C2B), Cardinal($7EB17CBD), Cardinal($E7B82D07), Cardinal($90BF1D91),
+    Cardinal($1DB71064), Cardinal($6AB020F2), Cardinal($F3B97148), Cardinal($84BE41DE),
+    Cardinal($1ADAD47D), Cardinal($6DDDE4EB), Cardinal($F4D4B551), Cardinal($83D385C7),
+    Cardinal($136C9856), Cardinal($646BA8C0), Cardinal($FD62F97A), Cardinal($8A65C9EC),
+    Cardinal($14015C4F), Cardinal($63066CD9), Cardinal($FA0F3D63), Cardinal($8D080DF5),
+    Cardinal($3B6E20C8), Cardinal($4C69105E), Cardinal($D56041E4), Cardinal($A2677172),
+    Cardinal($3C03E4D1), Cardinal($4B04D447), Cardinal($D20D85FD), Cardinal($A50AB56B),
+    Cardinal($35B5A8FA), Cardinal($42B2986C), Cardinal($DBBBC9D6), Cardinal($ACBCF940),
+    Cardinal($32D86CE3), Cardinal($45DF5C75), Cardinal($DCD60DCF), Cardinal($ABD13D59),
+    Cardinal($26D930AC), Cardinal($51DE003A), Cardinal($C8D75180), Cardinal($BFD06116),
+    Cardinal($21B4F4B5), Cardinal($56B3C423), Cardinal($CFBA9599), Cardinal($B8BDA50F),
+    Cardinal($2802B89E), Cardinal($5F058808), Cardinal($C60CD9B2), Cardinal($B10BE924),
+    Cardinal($2F6F7C87), Cardinal($58684C11), Cardinal($C1611DAB), Cardinal($B6662D3D),
+    Cardinal($76DC4190), Cardinal($01DB7106), Cardinal($98D220BC), Cardinal($EFD5102A),
+    Cardinal($71B18589), Cardinal($06B6B51F), Cardinal($9FBFE4A5), Cardinal($E8B8D433),
+    Cardinal($7807C9A2), Cardinal($0F00F934), Cardinal($9609A88E), Cardinal($E10E9818),
+    Cardinal($7F6A0DBB), Cardinal($086D3D2D), Cardinal($91646C97), Cardinal($E6635C01),
+    Cardinal($6B6B51F4), Cardinal($1C6C6162), Cardinal($856530D8), Cardinal($F262004E),
+    Cardinal($6C0695ED), Cardinal($1B01A57B), Cardinal($8208F4C1), Cardinal($F50FC457),
+    Cardinal($65B0D9C6), Cardinal($12B7E950), Cardinal($8BBEB8EA), Cardinal($FCB9887C),
+    Cardinal($62DD1DDF), Cardinal($15DA2D49), Cardinal($8CD37CF3), Cardinal($FBD44C65),
+    Cardinal($4DB26158), Cardinal($3AB551CE), Cardinal($A3BC0074), Cardinal($D4BB30E2),
+    Cardinal($4ADFA541), Cardinal($3DD895D7), Cardinal($A4D1C46D), Cardinal($D3D6F4FB),
+    Cardinal($4369E96A), Cardinal($346ED9FC), Cardinal($AD678846), Cardinal($DA60B8D0),
+    Cardinal($44042D73), Cardinal($33031DE5), Cardinal($AA0A4C5F), Cardinal($DD0D7CC9),
+    Cardinal($5005713C), Cardinal($270241AA), Cardinal($BE0B1010), Cardinal($C90C2086),
+    Cardinal($5768B525), Cardinal($206F85B3), Cardinal($B966D409), Cardinal($CE61E49F),
+    Cardinal($5EDEF90E), Cardinal($29D9C998), Cardinal($B0D09822), Cardinal($C7D7A8B4),
+    Cardinal($59B33D17), Cardinal($2EB40D81), Cardinal($B7BD5C3B), Cardinal($C0BA6CAD),
+    Cardinal($EDB88320), Cardinal($9ABFB3B6), Cardinal($03B6E20C), Cardinal($74B1D29A),
+    Cardinal($EAD54739), Cardinal($9DD277AF), Cardinal($04DB2615), Cardinal($73DC1683),
+    Cardinal($E3630B12), Cardinal($94643B84), Cardinal($0D6D6A3E), Cardinal($7A6A5AA8),
+    Cardinal($E40ECF0B), Cardinal($9309FF9D), Cardinal($0A00AE27), Cardinal($7D079EB1),
+    Cardinal($F00F9344), Cardinal($8708A3D2), Cardinal($1E01F268), Cardinal($6906C2FE),
+    Cardinal($F762575D), Cardinal($806567CB), Cardinal($196C3671), Cardinal($6E6B06E7),
+    Cardinal($FED41B76), Cardinal($89D32BE0), Cardinal($10DA7A5A), Cardinal($67DD4ACC),
+    Cardinal($F9B9DF6F), Cardinal($8EBEEFF9), Cardinal($17B7BE43), Cardinal($60B08ED5),
+    Cardinal($D6D6A3E8), Cardinal($A1D1937E), Cardinal($38D8C2C4), Cardinal($4FDFF252),
+    Cardinal($D1BB67F1), Cardinal($A6BC5767), Cardinal($3FB506DD), Cardinal($48B2364B),
+    Cardinal($D80D2BDA), Cardinal($AF0A1B4C), Cardinal($36034AF6), Cardinal($41047A60),
+    Cardinal($DF60EFC3), Cardinal($A867DF55), Cardinal($316E8EEF), Cardinal($4669BE79),
+    Cardinal($CB61B38C), Cardinal($BC66831A), Cardinal($256FD2A0), Cardinal($5268E236),
+    Cardinal($CC0C7795), Cardinal($BB0B4703), Cardinal($220216B9), Cardinal($5505262F),
+    Cardinal($C5BA3BBE), Cardinal($B2BD0B28), Cardinal($2BB45A92), Cardinal($5CB36A04),
+    Cardinal($C2D7FFA7), Cardinal($B5D0CF31), Cardinal($2CD99E8B), Cardinal($5BDEAE1D),
+    Cardinal($9B64C2B0), Cardinal($EC63F226), Cardinal($756AA39C), Cardinal($026D930A),
+    Cardinal($9C0906A9), Cardinal($EB0E363F), Cardinal($72076785), Cardinal($05005713),
+    Cardinal($95BF4A82), Cardinal($E2B87A14), Cardinal($7BB12BAE), Cardinal($0CB61B38),
+    Cardinal($92D28E9B), Cardinal($E5D5BE0D), Cardinal($7CDCEFB7), Cardinal($0BDBDF21),
+    Cardinal($86D3D2D4), Cardinal($F1D4E242), Cardinal($68DDB3F8), Cardinal($1FDA836E),
+    Cardinal($81BE16CD), Cardinal($F6B9265B), Cardinal($6FB077E1), Cardinal($18B74777),
+    Cardinal($88085AE6), Cardinal($FF0F6A70), Cardinal($66063BCA), Cardinal($11010B5C),
+    Cardinal($8F659EFF), Cardinal($F862AE69), Cardinal($616BFFD3), Cardinal($166CCF45),
+    Cardinal($A00AE278), Cardinal($D70DD2EE), Cardinal($4E048354), Cardinal($3903B3C2),
+    Cardinal($A7672661), Cardinal($D06016F7), Cardinal($4969474D), Cardinal($3E6E77DB),
+    Cardinal($AED16A4A), Cardinal($D9D65ADC), Cardinal($40DF0B66), Cardinal($37D83BF0),
+    Cardinal($A9BCAE53), Cardinal($DEBB9EC5), Cardinal($47B2CF7F), Cardinal($30B5FFE9),
+    Cardinal($BDBDF21C), Cardinal($CABAC28A), Cardinal($53B39330), Cardinal($24B4A3A6),
+    Cardinal($BAD03605), Cardinal($CDD70693), Cardinal($54DE5729), Cardinal($23D967BF),
+    Cardinal($B3667A2E), Cardinal($C4614AB8), Cardinal($5D681B02), Cardinal($2A6F2B94),
+    Cardinal($B40BBE37), Cardinal($C30C8EA1), Cardinal($5A05DF1B), Cardinal($2D02EF8D)
     );
 
   Crc16Tab: array[0..255] of Word = (
