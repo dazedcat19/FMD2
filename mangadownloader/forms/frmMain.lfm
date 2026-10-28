@@ -4459,7 +4459,6 @@ object MainForm: TMainForm
               ChildSizing.VerticalSpacing = 6
               ClientHeight = 102
               ClientWidth = 975
-              Enabled = False
               ParentBackground = False
               TabOrder = 5
               object ckImageMagick: TCheckBox
@@ -4470,7 +4469,6 @@ object MainForm: TMainForm
                 Top = 4
                 Width = 191
                 Caption = 'Enable ImageMagick Conversion'
-                Enabled = False
                 TabOrder = 0
                 OnChange = ckImageMagickChange
               end
@@ -4484,7 +4482,7 @@ object MainForm: TMainForm
                 Width = 74
                 Caption = 'Save Image as'
               end
-              object cbImageMagickSaveAs: TComboBox
+               object cbImageMagickSaveAs: TComboBox
                 AnchorSideLeft.Control = lbImageMagickSaveAs
                 AnchorSideLeft.Side = asrBottom
                 AnchorSideTop.Control = lbImageMagickSaveAs
@@ -4493,51 +4491,27 @@ object MainForm: TMainForm
                 Height = 23
                 Top = 25
                 Width = 100
-                Enabled = False
                 ItemHeight = 15
                 ItemIndex = 0
                 Items.Strings = (
                   'JPEG'
+                  'PNG'
+                  'JXL'
+                  'GIF'
+                  'BMP'
+                  'WEBP'
+                  'AVIF'
                 )
                 TabOrder = 1
                 Text = 'JPEG'
               end
-              object lbImageMagickCompression: TLabel
+              object lbImageMagickQuality: TLabel
                 AnchorSideLeft.Control = lbImageMagickSaveAs
                 AnchorSideTop.Control = cbImageMagickSaveAs
                 AnchorSideTop.Side = asrBottom
                 Left = 4
                 Height = 15
                 Top = 54
-                Width = 132
-                Caption = 'Image Compression type'
-              end
-              object cbImageMagickCompression: TComboBox
-                AnchorSideLeft.Control = lbImageMagickCompression
-                AnchorSideLeft.Side = asrBottom
-                AnchorSideTop.Control = lbImageMagickCompression
-                AnchorSideTop.Side = asrCenter
-                AnchorSideRight.Side = asrBottom
-                Left = 142
-                Height = 23
-                Top = 50
-                Width = 100
-                Enabled = False
-                ItemHeight = 15
-                ItemIndex = 0
-                Items.Strings = (
-                  'None'
-                )
-                TabOrder = 2
-                Text = 'None'
-              end
-              object lbImageMagickQuality: TLabel
-                AnchorSideLeft.Control = lbImageMagickSaveAs
-                AnchorSideTop.Control = cbImageMagickCompression
-                AnchorSideTop.Side = asrBottom
-                Left = 4
-                Height = 15
-                Top = 79
                 Width = 72
                 Caption = 'Image quality'
               end
@@ -4551,11 +4525,35 @@ object MainForm: TMainForm
                 Height = 23
                 Top = 75
                 Width = 47
-                Enabled = False
                 MaxValue = 100
                 MinValue = 1
                 TabOrder = 3
                 Value = 75
+              end
+              object lbImageMagickParallel: TLabel
+                AnchorSideLeft.Control = lbImageMagickQuality
+                AnchorSideTop.Control = seImageMagickQuality
+                AnchorSideTop.Side = asrBottom
+                Left = 4
+                Height = 15
+                Top = 104
+                Width = 110
+                Caption = 'Parallel conversions'
+              end
+              object seImageMagickParallel: TSpinEdit
+                AnchorSideLeft.Control = lbImageMagickParallel
+                AnchorSideLeft.Side = asrBottom
+                AnchorSideTop.Control = lbImageMagickParallel
+                AnchorSideTop.Side = asrCenter
+                AnchorSideRight.Side = asrBottom
+                Left = 120
+                Height = 23
+                Top = 100
+                Width = 47
+                MaxValue = 16
+                MinValue = 1
+                TabOrder = 4
+                Value = 1
               end
             end
             object lbImageMagickHint: TLabel
@@ -5147,6 +5145,19 @@ object MainForm: TMainForm
                 }
                 OnClick = btOpenLogClick
                 TabOrder = 3
+              end
+              object btOpenTaskMonitor: TBitBtn
+                AnchorSideLeft.Control = ckEnableLogging
+                AnchorSideTop.Control = btOpenLog
+                AnchorSideTop.Side = asrBottom
+                Left = 4
+                Height = 26
+                Top = 133
+                Width = 130
+                AutoSize = True
+                Caption = 'Task Monitor'
+                OnClick = btOpenTaskMonitorClick
+                TabOrder = 4
               end
               object edLogFileName: TCustomEditButton
                 AnchorSideLeft.Control = ckEnableLogging
