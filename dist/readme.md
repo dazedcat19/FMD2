@@ -1,16 +1,16 @@
-Libraries compiled with `MSYS2/mingw-w64 gcc 15.2.0`:
+| Library      | Version    | Build system             |
+|--------------|------------|--------------------------|
+| Brotli       | 1.2.1      | CMake                    |
+| Duktape      | 2.7.0      | manual (amalgamation)    |
+| libwebp      | 1.6.0      | CMake                    |
+| Lua          | 5.4.9      | manual (core sources)    |
+| OpenSSL      | 3.6.5      | Configure/make           |
+| PCRE2        | 10.49      | CMake                    |
+| SQLite       | 3.54.1     | manual (amalgamation, `-DSQLITE_MAX_ATTACHED=125`) |
+| Zstd         | 1.5.7      | CMake                    |
+| lua-protobuf | 0.5.3      | manual, links against `lua54.dll` |
 
-* Brotli 1.2.0
-* Duktape 2.7.0
-* LibWebP 1.6.0
-* Lua 5.4.8
-* OpenSSL 3.6.1
-* PCRE2 10.47
-* SQLite 3.51.2 with compile-time options `-DSQLITE_MAX_ATTACHED=125`
-* Zstd 1.5.7
 
-Libraries compiled with `MSVC 19.29.30136`:
-* Lua-protobuf, [master@75e3b51b8e8dda0343c9b4956e0c33b6eef44aa6](https://github.com/starwing/lua-protobuf/tree/75e3b51b8e8dda0343c9b4956e0c33b6eef44aa6)
-
-Binaries:
-* 7-Zip Standalone (7za.exe) 19.00
+| Binaries                   | Version |
+|----------------------------|---------|
+| 7-Zip Standalone (7za.exe) | 19.00   |
