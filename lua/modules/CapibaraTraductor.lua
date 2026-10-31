@@ -62,12 +62,6 @@ local function DecodePageUrl(token, rv, index)
 	return table.concat(bytes)
 end
 
-local function CheckAuth()
-	if MODULE.Account.Enabled and MODULE.Account.Cookies == '' then
-		Login()
-	end
-end
-
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
@@ -170,12 +164,14 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	CheckAuth()
+	if MODULE.Account.Enabled and MODULE.Account.Cookies == '' then Login() end
 	local is_joint = URL:find('/joint/', 1, true)
 	local site, slug, cid = URL:match('^/([^/]+)/([^/]+)/([^/]+)$')
 
 	local endpoint = is_joint and 'joint' or 'manga-custom'
 	local u = MODULE.RootURL .. '/api/' .. endpoint .. '/' .. slug .. '/chapter/' .. cid .. '/pages'
+
+	::request::
 
 	HTTP.Reset()
 	HTTP.Headers.Values['X-Organization'] = site
@@ -184,17 +180,21 @@ function GetPageNumber()
 	if not HTTP.GET(u) then return false end
 
 	local x = CreateTXQuery(HTTP.Document)
+	if x.XPathString('json(*).errorType') == 'login_required' then
+		if MODULE.Account.Enabled then
+			MODULE.Account.Cookies = ''
+			if Login() then goto request end
+		end
+		return false
+	end
+
 	local rv = x.XPathString('json(*).rv')
-	if rv == 'null' then return false end
+	if rv == '' or rv == 'null' then return false end
 
 	local i = 1
 	for v in x.XPath('json(*).data()').Get() do
 		TASK.PageLinks.Add(DecodePageUrl(v.GetProperty('pg').ToString(), rv, i))
 		i = i + 1
-	end
-
-	if MODULE.Account.Enabled and TASK.PageLinks.Count == 0 then
-		MODULE.Account.Cookies = ''
 	end
 
 	return true
