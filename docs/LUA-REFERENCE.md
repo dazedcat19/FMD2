@@ -9,6 +9,7 @@
     - [Status Constants and Return Values](#status-constants-and-return-values)
 3. [Injected Pascal Objects](#injected-pascal-objects)
     - [HTTP Object (THTTPSendThread)](#http-object-thttpsendthread)
+        - [Cookie Storage and Persistence](#cookie-storage-and-persistence)
         - [HTTP.Reset() and Header Lifecycle](#httpreset-and-header-lifecycle)
         - [HTTP.Document (TMemoryStream)](#httpdocument-tmemorystream)
     - [MODULE Object (TModuleContainer)](#module-object-tmodulecontainer)
@@ -283,8 +284,8 @@ end
 | `HTTP.ResetBasic()` | Same clear as `Reset()` without re-adding the default browser headers — for when you build the whole header list yourself |
 | `HTTP.ClearCookies()` | Clear all cookies |
 | `HTTP.GetCookies()` | Get cookies string |
-| `HTTP.AddServerCookies(url, cookie_string)` | Add cookies to persistent storage for the URL's domain (first argument may be omitted) |
-| `HTTP.ClearCookiesStorage()` | Clear the module's persistent cookie storage |
+| `HTTP.AddServerCookies(url, cookie_string)` | Add cookies to the module's shared cookie storage, taking the domain and path from `url` — see [Cookie Storage and Persistence](#cookie-storage-and-persistence) |
+| `HTTP.ClearCookiesStorage()` | Clear the module's shared cookie storage — every stored cookie, session and persistent alike |
 | `HTTP.ParseServerCookies()` | Parse `Set-Cookie` headers from the last response into cookie storage |
 | `HTTP.MergeCookies(cookie_string)` | Merge a `'name=value; other=value'` string into `HTTP.Cookies` (values for existing names are overwritten) |
 | `HTTP.RemoveCookie(name)` | Remove the cookie `name` from `HTTP.Cookies` |
@@ -296,6 +297,43 @@ end
 > `HTTP.ResetBasic()` — once set they stay in effect for later requests. If you
 > turn redirection off for a single request, always set it back to `true`
 > afterwards.
+
+#### Cookie Storage and Persistence
+
+Every handler — including `Login()` — gets its own `HTTP` object, but all of
+them share **one cookie storage per module**. `HTTP.AddServerCookies`,
+`HTTP.ClearCookiesStorage`, `HTTP.ParseServerCookies` and the `MODULE.*`
+cookie methods all read and write that same storage.
+
+```lua
+-- the same storage, reached two ways:
+HTTP.AddServerCookies('https://example.com/', 'session=abc; path=/; max-age=2592000')
+MODULE.AddServerCookies('example.com', 'session=abc; path=/; max-age=2592000')
+```
+
+- While `HTTP.EnabledCookies` is `true` (the default), stored cookies are
+  matched by domain and path and attached automatically as a `Cookie:` header
+  on every request. They also survive `HTTP.Reset()`.
+- `HTTP.AddServerCookies(url, cookie_string)` derives the domain and path from
+  `url`. The first argument may be omitted — but then the cookie is stored with
+  an **empty domain**, which matches no host, so it is never sent back (unless
+  the cookie string itself carries a `domain=` attribute). Prefer the
+  two-argument form, or `MODULE.AddServerCookies(domain, cookie_string)`,
+  which takes the domain directly.
+- Several cookies can be passed at once, separated by newlines. Recognized
+  attributes: `domain`, `path`, `expires`, `max-age`, `secure`, `httponly`,
+  `samesite` — anything else is ignored.
+- **A cookie is written to disk only when its string contains `expires=` or
+  `max-age=`** (a *persistent* cookie in RFC 6265 terms). Without either
+  attribute it is a *session* cookie: it lives in memory for the current run
+  and is lost when the app restarts — even though `AddServerCookies` was used.
+- Persistent cookies are saved to `modules.json` under the module's `ID`,
+  together with the account and the user options, and are reloaded on startup.
+
+The cookie storage can only ever produce a `Cookie:` header — it cannot feed
+an `Authorization: Bearer ...` header. For token-based APIs keep the token in
+`MODULE.Account.Cookies` instead (see
+[Account Properties](#account-properties)).
 
 #### HTTP.Reset() and Header Lifecycle
 
@@ -379,8 +417,8 @@ setting the headers for the second one.
 > not been used since it was created.
 
 `HTTP.Reset()` also clears the in-memory cookie list and closes the keep-alive
-socket (a fresh connection is made on the next request). The module's
-persistent cookie storage is **not** touched — stored cookies are re-applied
+socket (a fresh connection is made on the next request). The module's shared
+cookie storage is **not** touched — stored cookies are re-applied
 automatically when the next request is made, so a logged-in session survives
 a `Reset()`. For which properties survive a reset, see the note above.
 
@@ -489,7 +527,7 @@ end
 | `MODULE.AccountSupport` | Boolean | Read/Write | Whether module supports user accounts |
 | `MODULE.LastUpdated` | String | Read/Write | Last update timestamp |
 | `MODULE.Tag` | Integer | Read/Write | Custom tag for internal use |
-| `MODULE.Storage` | TStringsStorage | Read-only | Persistent key-value storage |
+| `MODULE.Storage` | TStringsStorage | Read/Write | In-memory key-value storage for the current session, empty again after an app restart; see [Use Persistent Storage](#6-use-persistent-storage) |
 | `MODULE.Account` | TWebsiteModuleAccount | Read-only | User account information — **only present when `AccountSupport` is enabled** (otherwise accessing it raises an error) |
 | `MODULE.Guardian` | TCriticalSection | Read-only | Thread synchronization object |
 
@@ -507,10 +545,10 @@ The `On...` properties that register event handlers are listed in the
 | `MODULE.AddOptionEdit(name, caption, default)` | All strings | Add text input option |
 | `MODULE.AddOptionSpinEdit(name, caption, default)` | name, caption (string), default (int) | Add numeric option |
 | `MODULE.AddOptionComboBox(name, caption, items, default)` | items is newline-separated | Add dropdown option |
-| `MODULE.AddServerCookies(domain, cookie_string)` | Both strings | Add cookies for domain |
-| `MODULE.GetServerCookies(domain, path)` | Both strings | Get cookies for domain |
-| `MODULE.RemoveCookies(domain, path)` | Both strings | Remove specific cookies |
-| `MODULE.ClearCookies()` | None | Clear all cookies |
+| `MODULE.AddServerCookies(domain, cookie_string)` | Both strings | Add cookies for `domain` to the module's shared cookie storage — the same storage `HTTP.AddServerCookies` writes to, with the domain given directly. Only cookies carrying an `expires=`/`max-age=` attribute survive an app restart — see [Cookie Storage and Persistence](#cookie-storage-and-persistence) |
+| `MODULE.GetServerCookies(domain, name)` | Both strings | Return cookies stored for `domain` — optionally only the cookie `name` (pass `''` for all) — as `name=value; domain=…; path=…` lines |
+| `MODULE.RemoveCookies(domain, name)` | Both strings | Remove cookies stored for `domain` — optionally only the cookie `name` (pass `''` for all) |
+| `MODULE.ClearCookies()` | None | Clear the module's shared cookie storage — the same storage as `HTTP.ClearCookiesStorage()` |
 
 #### Account Properties
 
@@ -520,11 +558,16 @@ The `On...` properties that register event handlers are listed in the
 | `MODULE.Account.Username` | String | Read/Write | Username |
 | `MODULE.Account.Password` | String | Read/Write | Password |
 | `MODULE.Account.Status` | Integer | Read/Write | Account status (see below) |
-| `MODULE.Account.Cookies` | String | Read/Write | Account cookies |
+| `MODULE.Account.Cookies` | String | Read/Write | Account cookies / auth token — **saved encrypted to `modules.json` and restored on startup**. Not applied to requests automatically: set the header yourself, e.g. `HTTP.Headers.Values['Authorization'] = 'Bearer ' .. MODULE.Account.Cookies`. Set it back to `''` to force a re-login |
 | `MODULE.Account.Guardian` | TCriticalSection | Read-only | Thread sync object |
 
 For the `Status` values (`asUnknown`, `asChecking`, `asValid`, `asInvalid`) see
 [Status Constants and Return Values](#status-constants-and-return-values).
+
+> [!NOTE]
+> `Username`, `Password` and `Cookies` are written to disk — encrypted, in
+> `modules.json` under the module's `ID` — and decrypted again when the module
+> is loaded.
 
 ---
 
@@ -925,23 +968,34 @@ end
 
 #### 15. Account State (`OnAccountState`)
 
-**When:** Checking account status (optional)
-**Called by:** FMD2 account verification
+**When:** The user toggles the account's enabled checkbox in the Account Manager
+**Called by:** TAccountManagerForm.vtAccountListChecked — synchronously, on the UI thread, right after the host writes `MODULE.Account.Enabled`
 
 ```lua
 function AccountState()
-    -- Verify account is still logged in
-    -- Note: HTTP is NOT injected in this function
-    -- Use MODULE.Storage or other logic if needed
-    return MODULE.Account.Enabled
+    -- MODULE is available; HTTP is NOT injected here.
+    -- This is a toggle notification, not a validation hook.
+    if not MODULE.Account.Enabled then
+        MODULE.Account.Cookies = ''   -- forget the saved token/session
+        MODULE.ClearCookies()         -- forget the module's stored cookies
+    end
+    MODULE.Account.Status = asUnknown
+    return true
 end
 ```
 
 **Workflow:**
-1. User toggles the module account's enabled checkbox in the Account Manager
-2. FMD2 calls `OnAccountState` (if defined)
-3. Use it to react to the account being enabled/disabled (e.g. clear cached session data)
+1. The user (un)checks the module's account in the Account Manager list
+2. The host updates `MODULE.Account.Enabled`, then calls `OnAccountState` (if registered) on the UI thread
+3. Use it to react to the toggle — clear a cached token (`MODULE.Account.Cookies`), clear stored cookies (`MODULE.ClearCookies()`), reset `MODULE.Account.Status`
 4. The return value is **not used by the host**
+
+> [!NOTE]
+> This handler is a **notification, not a validator**: it is never called at
+> app startup or on a timer, and it cannot make network requests. Validating
+> credentials is the job of [Login](#14-login-onlogin), which the host runs
+> in a background thread when the user clicks "check" or saves new credentials.
+> The call also runs on the UI thread, so keep it quick — no waiting, no heavy work.
 
 ---
 
@@ -2498,6 +2552,82 @@ end
 The `Login` handler itself is described in [Login](#14-login-onlogin), and
 Example 3 below is a complete module with login.
 
+For sites whose login returns a **token** (JWT/Bearer) instead of a session
+cookie, store it in `MODULE.Account.Cookies` — the account field that is saved
+to disk and reloaded on startup — and send it yourself as a header:
+
+```lua
+function Login()
+    if not MODULE.Account.Enabled then return false end
+    local crypto = require 'fmd.crypto'
+    local data = 'email='    .. crypto.EncodeURLElement(MODULE.Account.Username) ..
+                 '&password=' .. crypto.EncodeURLElement(MODULE.Account.Password)
+    MODULE.Account.Status = asChecking
+    HTTP.Reset()  -- drop stale headers, e.g. the expired Authorization
+    if HTTP.POST(MODULE.RootURL .. '/api/auth/login', data) and HTTP.ResultCode == 200 then
+        MODULE.Account.Cookies = CreateTXQuery(HTTP.Document).XPathString('json(*).data.token')
+        if MODULE.Account.Cookies ~= '' then
+            MODULE.Account.Status = asValid
+            return true
+        end
+    end
+    MODULE.Account.Status = asInvalid
+    return false
+end
+
+function GetPageNumber()
+    -- first request after enabling the account: log in once
+    if MODULE.Account.Enabled and MODULE.Account.Cookies == '' then Login() end
+
+    local retried = false
+    ::request:: -- on a rejected token, log in again below and jump back here
+
+    HTTP.Reset()  -- the task's HTTP object is reused for every chapter
+    HTTP.Headers.Values['Authorization'] = 'Bearer ' .. MODULE.Account.Cookies
+    if not HTTP.GET(MODULE.RootURL .. '/api/.../pages') then return false end
+
+    local x = CreateTXQuery(HTTP.Document)
+    -- rejection signal 1: an explicit 401 status
+    -- rejection signal 2: the body — this API answers 200 with an error
+    -- payload such as {"status":false,"data":[],"errorType":"login_required"}
+    local rejected = HTTP.ResultCode == 401
+        or x.XPathString('json(*).errorType') == 'login_required'
+
+    if rejected then
+        -- token expired or rejected: clear it, log in again, retry once here
+        if not retried and MODULE.Account.Enabled then
+            MODULE.Account.Cookies = ''
+            retried = true
+            if Login() then goto request end
+        end
+        return false
+    end
+
+    -- rejection signal 3: a field the normal response always carries (here
+    -- `rv`) is missing — XPathString returns '' for a missing key and the
+    -- string 'null' for an explicit JSON null
+    local rv = x.XPathString('json(*).rv')
+    if rv == '' or rv == 'null' then return false end
+
+    for v in x.XPath('json(*).data()').Get() do
+        TASK.PageLinks.Add(v.GetProperty('imageUrl').ToString())
+    end
+
+    return true
+end
+```
+
+Not every API signals a rejected token with a `401` — some answer `200` with
+an error body instead, e.g.
+`{"status":false,"data":[],"message":"...","errorType":"login_required"}`, so
+the only reliable signal is the **content** of the response: an error field
+such as `errorType`, or the absence of a field the normal response always
+carries. Whatever the signal, the pattern is the same: clear the token, log
+in again, and retry **once, inside the same handler**. The retry is a backward
+`goto` to the request: the `retried` flag is declared *before* the label, so it
+survives the jump and limits the retry to a single attempt (Lua has no
+`continue`; a backward `goto` is the standard way to restart a block).
+
 ### User Options
 
 ```lua
@@ -2879,20 +3009,41 @@ end
 
 ### 6. Use Persistent Storage
 
-Store data between sessions:
+What survives an app restart — and what does not:
+
+| Data | Persisted? | Where |
+|------|-----------|-------|
+| `MODULE.Account.Username` / `.Password` / `.Cookies` | yes | `modules.json`, encrypted, keyed by the module `ID` |
+| `MODULE.Account.Status` | yes | `modules.json` |
+| user options (`MODULE.GetOption`) and module settings | yes | `modules.json` |
+| cookies stored with an `expires=` / `max-age=` attribute | yes | `modules.json` |
+| cookies stored without an expiry (session cookies) | no | memory only |
+| `MODULE.Storage` key/value pairs | **no** | memory only |
+| `HTTP` state (headers, document, `HTTP.Cookies`) | no | memory only |
+
+`MODULE.Storage` is a plain in-memory key-value store — handy for caching
+within one run of the application, but nothing in it is written to disk, so it
+starts empty after every restart:
 
 ```lua
--- Save data
-MODULE.Storage['last_update'] = os.time()
-MODULE.Storage['cached_data'] = some_data
-
--- Load data
+MODULE.Storage['last_update'] = os.time()  -- gone after a restart
 local last = MODULE.Storage['last_update']
 ```
 
 `MODULE.Storage` also exposes `Text` (get/set the whole storage as
 `name=value` lines), `Remove(name)`, `Tag` (integer), `Enable` (boolean)
 and `Status` (string).
+
+For data that must survive a restart, use the account fields or a persistent
+cookie:
+
+```lua
+-- an auth token: saved encrypted and reloaded on startup
+MODULE.Account.Cookies = token
+
+-- a cookie the server accepts: the expiry attribute is what makes it persist
+HTTP.AddServerCookies(MODULE.RootURL, 'session=abc; path=/; max-age=2592000')
+```
 
 ### 7. Debug with Logging
 
