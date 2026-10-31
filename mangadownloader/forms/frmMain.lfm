@@ -5431,7 +5431,6 @@ object MainForm: TMainForm
             BorderSpacing.Top = 4
             BorderSpacing.Bottom = 4
             Color = clWindow
-            Font.Style = [fsBold]
             HideSelection = False
             ParentFont = False
             ReadOnly = True

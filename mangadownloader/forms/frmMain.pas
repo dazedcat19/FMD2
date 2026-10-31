@@ -30,6 +30,11 @@ uses
 
 type
 
+  // A run of link text inside the About text (rmAbout)
+  TAboutLinkRange = record
+    StartPos, Length: Integer;
+  end;
+
   { TMainForm }
 
   TMainForm = class(TForm)
@@ -715,8 +720,17 @@ type
     procedure DisableAddToFavorites(const AModule: Pointer);
   private
     PrevWindowState: TWindowState;
+    // Link ranges of the About text, found once from the loaded RTF and reused
+    // whenever the colors have to be re-applied (see SetAboutTextAttributes).
+    FAboutLinks: array of TAboutLinkRange;
+    FAboutLinksScanned: Boolean;
     procedure vtDownloadMoveItems(NextIndex : Cardinal; Mode : TDropMode);
+    procedure LoadAboutText;
   protected
+    // Re-applies the About text colors after the form (and the fonts of its
+    // controls) were scaled for the current DPI.
+    procedure AutoAdjustLayout(AMode: TLayoutAdjustmentPolicy; const AFromPPI,
+      AToPPI, AOldFormWidth, ANewFormWidth: Integer); override;
     procedure FMDInstanceReceiveMsg(Sender: TObject);
     procedure ClearChapterListState;
     procedure DoExternalClose(Sender: TObject);
@@ -1864,8 +1878,29 @@ begin
 end;
 
 procedure TMainForm.tmAnimateMangaInfoTimer(Sender: TObject);
+var
+  W, H: Integer;
+  NewRect: TRect;
 begin
-  gifWaiting.Update(pbWait.Canvas, gifWaitingRect);
+  // Keep the waiting animation centered in the paint box. Its size is
+  // 48x47 at 96 DPI and has to follow the DPI and the size of the panel.
+  W := Scale96ToForm(48);
+  H := Scale96ToForm(47);
+  NewRect.Left := (pbWait.Width - W) div 2;
+  NewRect.Top := (pbWait.Height - H) div 2;
+  NewRect.Right := NewRect.Left + W;
+  NewRect.Bottom := NewRect.Top + H;
+
+  if not EqualRect(NewRect, gifWaitingRect) then
+  begin
+    // repaint the real background (removes the animation at its old place),
+    // then draw the animation from scratch at the new one
+    pbWait.Repaint;
+    gifWaitingRect := NewRect;
+    gifWaiting.Show(pbWait.Canvas, gifWaitingRect);
+  end
+  else
+    gifWaiting.Update(pbWait.Canvas, gifWaitingRect);
 end;
 
 procedure TMainForm.tmCheckFavoritesTimer(Sender: TObject);
@@ -2469,11 +2504,9 @@ begin
   vtMangaList.Repaint;
 end;
 
-procedure TMainForm.LoadAbout;
+procedure TMainForm.LoadAboutText;
 var
   fs: TFileStream;
-  s: String;
-  _OpenSSSL_version: function(t: integer): PAnsiChar; cdecl;
 begin
   // load readme.rtf
   if FileExistsUTF8(README_FILE) then begin
@@ -2483,9 +2516,19 @@ begin
     finally
       fs.free;
     end;
+    // the links of the freshly loaded text have to be found again
+    FAboutLinksScanned := False;
   end;
 
   SetAboutTextAttributes;
+end;
+
+procedure TMainForm.LoadAbout;
+var
+  s: String;
+  _OpenSSSL_version: function(t: integer): PAnsiChar; cdecl;
+begin
+  LoadAboutText;
 
   // load changelog.txt
   if FileExistsUTF8(CHANGELOG_FILE) then mmChangelog.Lines.LoadFromFile(CHANGELOG_FILE);
@@ -5519,56 +5562,73 @@ begin
   end;
 end;
 
+procedure TMainForm.AutoAdjustLayout(AMode: TLayoutAdjustmentPolicy;
+  const AFromPPI, AToPPI, AOldFormWidth, ANewFormWidth: Integer);
+begin
+  inherited AutoAdjustLayout(AMode, AFromPPI, AToPPI, AOldFormWidth, ANewFormWidth);
+
+  // LCL scales the form *after* OnCreate (where the About text is loaded) and
+  // again on every DPI change. Scaling changes the font of rmAbout, and
+  // TRichMemo answers a font change by resetting the formatting of the whole
+  // text to the default (everything loses its bold style and its colors). So
+  // the text has to be loaded again once scaling is done.
+  if (AMode = lapAutoAdjustForDPI) and (rmAbout <> nil) and
+    (rmAbout.GetTextLen > 0) then
+    LoadAboutText;
+end;
+
 procedure TMainForm.SetAboutTextAttributes;
 var
-  i: Integer;
-  currentColor, textColor, linkColor: TColor;
+  i, TextLen, RunStart: Integer;
+  textColor, linkColor: TColor;
   fp: TFontParams;
-  styleRanges: array of record
-    Color: TColor;
-    StartPos, Length: Integer;
-    //Text: String; // For debugging which text is affected
-  end;
-  StyleRangesCount: Integer;
+  IsLink: Boolean;
 begin
-  i := 0;
+  TextLen := rmAbout.GetTextLen;
+  if TextLen <= 0 then
+    Exit; // nothing loaded (yet)
+
   textColor := ColorToRGB(clWindowText); // Default text color
   linkColor := ColorToRGB(clHighlight);  // Color for links
 
-  // Set the array ranges (1st entry is a dud and unused)
-  StyleRangesCount := 0;
-  SetLength(styleRanges, 1);
-
-  while i < rmAbout.GetTextLen do
+  // Find the links (runs of clBlue text in the RTF) only once. After the first
+  // pass they are no longer clBlue, and after a font change the colors of the
+  // control can not be trusted at all, so later calls reuse the stored ranges.
+  if not FAboutLinksScanned then
   begin
-    rmAbout.GetTextAttributes(i, fp);
-    currentColor := fp.Color;
-
-    if (currentColor = clBlue) then
+    FAboutLinksScanned := True;
+    SetLength(FAboutLinks, 0);
+    RunStart := -1;
+    for i := 0 to TextLen do
     begin
-      if (i = 0) or (i - styleRanges[StyleRangesCount].Length <> styleRanges[StyleRangesCount].StartPos) then
+      IsLink := False;
+      if i < TextLen then
       begin
-        Inc(StyleRangesCount);
-        SetLength(styleRanges, StyleRangesCount + 1);
+        rmAbout.GetTextAttributes(i, fp);
+        IsLink := (fp.Color = clBlue);
       end;
 
-      styleRanges[StyleRangesCount].Color := linkColor;
-      styleRanges[StyleRangesCount].StartPos := i - styleRanges[StyleRangesCount].Length;
-      Inc(styleRanges[StyleRangesCount].Length);
-      //styleRanges[StyleRangesCount].Text := rmAbout.GetText(styleRanges[StyleRangesCount].StartPos, styleRanges[StyleRangesCount].Length);
+      if IsLink then
+      begin
+        if RunStart < 0 then
+          RunStart := i;
+      end
+      else if RunStart >= 0 then
+      begin
+        SetLength(FAboutLinks, Length(FAboutLinks) + 1);
+        FAboutLinks[High(FAboutLinks)].StartPos := RunStart;
+        FAboutLinks[High(FAboutLinks)].Length := i - RunStart;
+        RunStart := -1;
+      end;
     end;
-
-    Inc(i);
   end;
 
   // Set the default color for the entire text
   rmAbout.SetRangeColor(0, -1, textColor);
 
-  // Apply the colors of stored ranges
-  for i := 1 to StyleRangesCount do
-  begin
-    rmAbout.SetRangeColor(styleRanges[i].StartPos, styleRanges[i].Length, styleRanges[i].Color);
-  end;
+  // Apply the link color to the stored ranges
+  for i := 0 to High(FAboutLinks) do
+    rmAbout.SetRangeColor(FAboutLinks[i].StartPos, FAboutLinks[i].Length, linkColor);
 
   rmAbout.Refresh;
 end;

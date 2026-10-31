@@ -19,6 +19,8 @@ type
   private
     FHelpContext: Longint;
     procedure CreateButtons(AButtons: TMsgDlgButtons);
+    procedure PositionButtons;
+    procedure PositionButtonsEvent(Sender: TObject);
     procedure SetIcon(ADlgType: TMsgDlgType);
   public
     class function ShowDlg(const AForm: TForm; const ACaption, AMsg: String; ADlgType: TMsgDlgType;
@@ -128,34 +130,50 @@ begin
   Position := poScreenCenter;
   AutoSize := False;
   Icon := nil;
+  // The final size of the button panel is only known after the layout (and the
+  // DPI scaling) is done, so center the buttons again whenever it changes.
+  pnlButtons.OnResize := @PositionButtonsEvent;
+  OnShow := @PositionButtonsEvent;
+end;
+
+procedure TCustomMessageDlg.PositionButtonsEvent(Sender: TObject);
+begin
+  PositionButtons;
+end;
+
+procedure TCustomMessageDlg.PositionButtons;
+var
+  i, Spacing, TotalWidth, LeftPos: Integer;
+  Btn: TControl;
+begin
+  if pnlButtons.ControlCount = 0 then
+    Exit;
+
+  Spacing := Scale96ToForm(10);
+  TotalWidth := Spacing * (pnlButtons.ControlCount - 1);
+  for i := 0 to pnlButtons.ControlCount - 1 do
+    Inc(TotalWidth, pnlButtons.Controls[i].Width);
+
+  LeftPos := (pnlButtons.ClientWidth - TotalWidth) div 2;
+  for i := 0 to pnlButtons.ControlCount - 1 do
+  begin
+    Btn := pnlButtons.Controls[i];
+    Btn.SetBounds(LeftPos, (pnlButtons.ClientHeight - Btn.Height) div 2,
+      Btn.Width, Btn.Height);
+    Inc(LeftPos, Btn.Width + Spacing);
+  end;
 end;
 
 procedure TCustomMessageDlg.CreateButtons(AButtons: TMsgDlgButtons);
 const
-  ButtonWidth = 75;
-  ButtonHeight = 25;
-  ButtonSpacing = 10;
+  // Sizes at 96 DPI. The form has already been scaled for the current DPI when
+  // the buttons are created, so these values must be scaled as well.
+  ButtonWidth96 = 75;
+  ButtonHeight96 = 25;
 var
   BitBtn: TBitBtn;
-  LeftPos, ButtonCount, TotalWidth: Integer;
   BtnKind: TMsgDlgBtn;
 begin
-  // Calculate the number of buttons and total width
-  ButtonCount := 0;
-  for BtnKind := Low(TMsgDlgBtn) to High(TMsgDlgBtn) do
-  begin
-    if BtnKind in AButtons then
-    begin
-      Inc(ButtonCount);
-    end;
-  end;
-
-  TotalWidth := (ButtonWidth * ButtonCount) + (ButtonSpacing * (ButtonCount - 1));
-
-  // Calculate the starting position for the buttons
-  LeftPos := (pnlButtons.Width - TotalWidth) div 2;
-
-  // Create buttons dynamically based on AButtons
   for BtnKind := Low(TMsgDlgBtn) to High(TMsgDlgBtn) do
   begin
     if BtnKind in AButtons then
@@ -164,10 +182,8 @@ begin
       BitBtn.Parent := pnlButtons;
       BitBtn.Caption := GetButtonCaption(BtnKind);
       BitBtn.ModalResult := GetButtonResult(BtnKind);
-      BitBtn.Width := ButtonWidth;
-      BitBtn.Height := ButtonHeight;
-      BitBtn.Left := LeftPos;
-      BitBtn.Top := (pnlButtons.Height - ButtonHeight) div 2;
+      BitBtn.Width := Scale96ToForm(ButtonWidth96);
+      BitBtn.Height := Scale96ToForm(ButtonHeight96);
       BitBtn.Images := MainForm.IconSmall;
 
       case BtnKind of
@@ -179,10 +195,10 @@ begin
         mbRetry: BitBtn.ImageIndex := 2;
         mbIgnore: BitBtn.ImageIndex := 1;
       end;
-
-      LeftPos := LeftPos + ButtonWidth + ButtonSpacing;
     end;
   end;
+
+  PositionButtons;
 end;
 
 procedure TCustomMessageDlg.SetIcon(ADlgType: TMsgDlgType);

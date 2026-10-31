@@ -11,6 +11,7 @@ object CustomColorForm: TCustomColorForm
   OnCreate = FormCreate
   LCLVersion = '3.8.0.0'
   object CBColors: TColorBox
+    AnchorSideTop.Control = Owner
     AnchorSideRight.Control = btColors
     Left = 363
     Height = 22
@@ -18,14 +19,16 @@ object CustomColorForm: TCustomColorForm
     Width = 136
     Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbIncludeNone, cbCustomColor, cbPrettyNames]
     Anchors = [akTop, akRight]
+    BorderSpacing.Top = 22
+    BorderSpacing.Right = 4
     ItemHeight = 16
     OnChange = CBColorsChange
     TabOrder = 1
   end
   object btColors: TColorButton
-    AnchorSideLeft.Control = CBColors
-    AnchorSideLeft.Side = asrBottom
     AnchorSideTop.Control = CBColors
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
     AnchorSideBottom.Control = CBColors
     AnchorSideBottom.Side = asrBottom
     Left = 503
@@ -33,20 +36,25 @@ object CustomColorForm: TCustomColorForm
     Top = 22
     Width = 24
     Anchors = [akTop, akRight, akBottom]
+    BorderSpacing.Right = 8
     BorderWidth = 2
     ButtonColorSize = 16
     ButtonColor = clBlack
     OnColorChanged = btColorsColorChanged
   end
   object pcCustomColorList: TPageControl
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Owner
     AnchorSideRight.Control = CBColors
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
     Left = 0
     Height = 352
     Top = 0
     Width = 359
     ActivePage = tsBasicList
-    Align = alLeft
     Anchors = [akTop, akLeft, akRight, akBottom]
+    BorderSpacing.Right = 4
     TabIndex = 0
     TabOrder = 0
     object tsBasicList: TTabSheet
