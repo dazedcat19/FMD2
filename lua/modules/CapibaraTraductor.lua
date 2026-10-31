@@ -26,14 +26,12 @@ end
 
 -- URL-safe Base64 -> raw bytes.
 local function DecodeBase64URL(s)
-    local crypto = require 'fmd.crypto'
+	s = s:gsub('%-', '+'):gsub('_', '/')
+	local rem = #s % 4
+	if rem == 2 then s = s .. '=='
+	elseif rem == 3 then s = s .. '=' end
 
-    s = s:gsub('%-', '+'):gsub('_', '/')
-    local rem = #s % 4
-    if rem == 2 then s = s .. '=='
-    elseif rem == 3 then s = s .. '=' end
-
-    return crypto.DecodeBase64(s)
+	return require 'fmd.crypto'.DecodeBase64(s)
 end
 
 -- Decrypt a page url token with the rv seed of the chapter pages response.
@@ -65,11 +63,9 @@ local function DecodePageUrl(token, rv, index)
 end
 
 local function CheckAuth()
-    if MODULE.Account.Enabled then
-        if MODULE.Storage['Authorization'] == '' then
-	        Login()
-	    end
-    end
+	if MODULE.Account.Enabled and MODULE.Account.Cookies == '' then
+		Login()
+	end
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -83,13 +79,13 @@ function Login()
 
 	if not MODULE.Account.Enabled then return false end
 
-	local s = 'email='  .. MODULE.Account.Username ..
-	'&password=' .. MODULE.Account.Password
+	local s = 'email=' .. crypto.EncodeURLElement(MODULE.Account.Username) ..
+		'&password=' .. crypto.EncodeURLElement(MODULE.Account.Password)
 	MODULE.Account.Status = asChecking
 
 	if HTTP.POST(u, s) then
 		if HTTP.ResultCode == 200 then
-			MODULE.Storage['Authorization'] = CreateTXQuery(HTTP.Document).XPathString('json(*).data.token')
+			MODULE.Account.Cookies = CreateTXQuery(HTTP.Document).XPathString('json(*).data.token')
 			MODULE.Account.Status = asValid
 			return true
 		else
@@ -183,7 +179,7 @@ function GetPageNumber()
 
 	HTTP.Reset()
 	HTTP.Headers.Values['X-Organization'] = site
-	HTTP.Headers.Values['Authorization'] = 'Bearer ' .. MODULE.Storage['Authorization']
+	HTTP.Headers.Values['Authorization'] = 'Bearer ' .. MODULE.Account.Cookies
 
 	if not HTTP.GET(u) then return false end
 
@@ -195,6 +191,10 @@ function GetPageNumber()
 	for v in x.XPath('json(*).data()').Get() do
 		TASK.PageLinks.Add(DecodePageUrl(v.GetProperty('pg').ToString(), rv, i))
 		i = i + 1
+	end
+
+	if MODULE.Account.Enabled and TASK.PageLinks.Count == 0 then
+		MODULE.Account.Cookies = ''
 	end
 
 	return true
