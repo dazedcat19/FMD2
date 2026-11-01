@@ -1,6 +1,7 @@
 | Website | URL | Module status | Last checked date | Comment |
 |:---|:---|:---:|:---:|:---:|
 | 11Toon | [![https://www.11toon.com](https://img.shields.io/website?url=https://www.11toon.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.11toon.com)](https://www.11toon.com) | - | - | - |
+| 18Comic | [![https://18comic.vip](https://img.shields.io/website?url=https://18comic.vip%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://18comic.vip)](https://18comic.vip) | OK | 11.01.2026 | - |
 | 18Kami | [![https://18kami.com](https://img.shields.io/website?url=https://18kami.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://18kami.com)](https://18kami.com) | - | - | - |
 | 1MangaCo | [![https://1manga.co](https://img.shields.io/website?url=https://1manga.co%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://1manga.co)](https://1manga.co) | OK | 02.10.2026 | - |
 | 1stKissManhua | [![https://1stkissmanhua.net](https://img.shields.io/website?url=https://1stkissmanhua.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://1stkissmanhua.net)](https://1stkissmanhua.net) | OK | 30.03.2025 | - |
