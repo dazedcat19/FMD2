@@ -10,7 +10,7 @@ local DirectoryPages = '/bbs/board.php?bo_table=toon_c&sord=&type=upd&page='
 
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
-	local u = MODULE.RootURL .. DirectoryPages
+	local u = MODULE.RootURL .. DirectoryPages .. 1
 
 	if not HTTP.GET(u) then return false end
 
@@ -49,11 +49,12 @@ function GetInfo()
 
 	local page = 1
 	local pages = tonumber(x.XPathString('//a[contains(@class, "pg_end")] ! substring-after(@href, "&page=")')) or 1
-	while page <= pages do
+	while true do
 		for v in x.XPath('//ul[@class="episode-list"]//li/button').Get() do
 			MANGAINFO.ChapterLinks.Add('/bbs' .. v.GetAttribute('onclick'):match("%.(/[^']*)"))
 			MANGAINFO.ChapterNames.Add(x.XPathString('.//div[@class="episode-title ellipsis"]', v))
 		end
+		if page >= pages then break end
 		page = page + 1
 		if not HTTP.GET(MANGAINFO.URL .. '&sord=&type=&page=' .. page) then break end
 		x.ParseHTML(HTTP.Document)
