@@ -1,8 +1,7 @@
 | Website | URL | Module status | Last checked date | Comment |
 |:---|:---|:---:|:---:|:---:|
-| 11Toon | [![https://www.11toon.com](https://img.shields.io/website?url=https://www.11toon.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.11toon.com)](https://www.11toon.com) | - | - | - |
-| 18Comic | [![https://18comic.vip](https://img.shields.io/website?url=https://18comic.vip%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://18comic.vip)](https://18comic.vip) | OK | 11.01.2026 | - |
-| 18Kami | [![https://18kami.com](https://img.shields.io/website?url=https://18kami.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://18kami.com)](https://18kami.com) | - | - | - |
+| 18Comic | [![https://18comic.vip](https://img.shields.io/website?url=https://18comic.vip%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://18comic.vip)](https://18comic.vip) | OK | 01.11.2026 | - |
+| 11Toon | [![https://www.11toon.com](https://img.shields.io/website?url=https://www.11toon.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.11toon.com)](https://www.11toon.com) | OK | 01.11.2026 | - |
 | 1MangaCo | [![https://1manga.co](https://img.shields.io/website?url=https://1manga.co%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://1manga.co)](https://1manga.co) | OK | 02.10.2026 | - |
 | 1stKissManhua | [![https://1stkissmanhua.net](https://img.shields.io/website?url=https://1stkissmanhua.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://1stkissmanhua.net)](https://1stkissmanhua.net) | OK | 30.03.2025 | - |
 | 3asq | [![https://3asq.online](https://img.shields.io/website?url=https://3asq.online%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://3asq.online)](https://3asq.online) | OK | 25.07.2026 | - |
@@ -332,7 +331,6 @@
 | MangaSail | [![https://www.mangasail.co](https://img.shields.io/website?url=https://www.mangasail.co%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangasail.co)](https://www.mangasail.co) | - | - | - |
 | MangaSaki | [![https://www.mangasaki.com](https://img.shields.io/website?url=https://www.mangasaki.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.mangasaki.com)](https://www.mangasaki.com) | - | - | - |
 | MangaShiro | [![https://mangashiro.me](https://img.shields.io/website?url=https://mangashiro.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangashiro.me)](https://mangashiro.me) | - | - | - |
-| MangaShow | [![https://mangashow.me](https://img.shields.io/website?url=https://mangashow.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangashow.me)](https://mangashow.me) | - | - | - |
 | Mangastk18 | [![https://mangastk18.com](https://img.shields.io/website?url=https://mangastk18.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangastk18.com)](https://mangastk18.com) | - | - | - |
 | MangaStream | [![https://readms.net](https://img.shields.io/website?url=https://readms.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://readms.net)](https://readms.net) | - | - | - |
 | MangaSushi | [![https://mangasushi.org](https://img.shields.io/website?url=https://mangasushi.org%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangasushi.org)](https://mangasushi.org) | - | - | - |
@@ -664,6 +662,7 @@
 | 古风漫画网 | [![https://www.gufengmh.com](https://img.shields.io/website?url=https://www.gufengmh.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.gufengmh.com)](https://www.gufengmh.com) | OK | 06.01.2025 | - |
 | 嬉皮漫畫 (HipMH) | [![https://m.hipmh.com](https://img.shields.io/website?url=https://m.hipmh.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://m.hipmh.com)](https://m.hipmh.com) | OK | 03.10.2026 | - |
 | 漫画RAW (mangajp) | [![https://mangajp.top](https://img.shields.io/website?url=https://mangajp.top%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangajp.top)](https://mangajp.top) | OK | 03.04.2025 | - |
+| ~18Kami~ | ~https://18kami.com~ | Removed | 11.01.2026 | Redirected to 18Comic |
 | ~365Manga~ | ~https://365manga.com~ | Removed | 03.08.2025 | - |
 | ~AGR Comics~ | ~https://agrcomics.org~ | Removed | 11.06.2026 | - |
 | ~AHStudios~ | ~https://ahstudios.net~ | Removed | 03.08.2025 | - |
@@ -776,6 +775,7 @@
 | ~Mangas20~ | ~https://mangas20.com~ | Removed | 03.08.2025 | - |
 | ~MangaSaga~ | ~https://mangasaga.com~ | Removed | 05.06.2025 | Redirected to MangaK |
 | ~MangaSee~ | ~https://mangasee123.com~ | Removed | 07.02.2025 | Moved to Weeb Central |
+| ~MangaShow~ | ~https://mangashow.me~ | Removed | 01.11.2026 | - |
 | ~MangaSpin~ | ~https://mangaspin.com~ | Removed | 05.06.2025 | Redirected to MangaK |
 | ~MangasRaw~ | ~https://mangas-raw.com~ | Removed | 20.07.2025 | - |
 | ~MangaStreamCC~ | ~https://www.mangastream.cc~ | Removed | 03.08.2025 | - |
