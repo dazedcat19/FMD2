@@ -1,9 +1,9 @@
 ----------------------------------------------------------------------------------------------------
--- Local Constants
+-- Module Constants
 ----------------------------------------------------------------------------------------------------
 
 local API_URL = 'https://strapi.kappabeast.com'
-local DirectoryPagination = '/api/mangas?populate[media][populate]=*&populate[category][fields][0]=name&pagination[pageSize]=100&pagination[page]='
+local DirectoryPages = '/api/mangas?populate[media][populate]=*&populate[category][fields][0]=name&pagination[pageSize]=100&pagination[page]='
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -11,7 +11,7 @@ local DirectoryPagination = '/api/mangas?populate[media][populate]=*&populate[ca
 
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
-	local u = API_URL .. DirectoryPagination .. 1
+	local u = API_URL .. DirectoryPages .. 1
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -22,7 +22,7 @@ end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local u = API_URL .. DirectoryPagination .. (URL + 1)
+	local u = API_URL .. DirectoryPages .. (URL + 1)
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -58,7 +58,7 @@ function GetInfo()
 		if not HTTP.GET(API_URL .. '/api/chapters?filters[manga][documentId][$eq]=' .. mid .. '&populate[pages][populate]=*&populate=manga&sort[0]=number:asc&pagination[pageSize]=100&pagination[page]=' .. page) then return net_problem end
 
 		local x = CreateTXQuery(HTTP.Document)
-		for v in x.XPath('json(*).data()').Get() do
+		for v in x.XPath('parse-json(.)?data?*').Get() do
 			local number = v.GetProperty('number').ToString()
 			local title = v.GetProperty('title').ToString()
 
