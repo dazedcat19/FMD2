@@ -2,18 +2,14 @@ local API_URL = '/twirp/comic.v2.Comic'
 local API_PARAMS = '?device=pc&platform=web'
 
 function Init()
-	local function AddWebsiteModule(id, name, url, cat)
-		local m = NewWebsiteModule()
-		m.ID                 = id
-		m.Name               = name
-		m.RootURL            = url
-		m.Category           = cat
-		m.OnGetNameAndLink   = 'GetNameAndLink'
-		m.OnGetInfo          = 'GetInfo'
-		m.OnGetPageNumber    = 'GetPageNumber'
-	end
-	AddWebsiteModule('ba5c1a22af434aaca6c8c6874b7f54ec', 'BiliBiliComics', 'https://www.bilibilicomics.com', 'English')
-	AddWebsiteModule('5d84cd0ac31d42c39ac35b5ca5908ee0', 'BiliBiliManhua', 'https://manga.bilibili.com', 'Raw')
+	local m = NewWebsiteModule()
+	m.ID                 = '5d84cd0ac31d42c39ac35b5ca5908ee0'
+	m.Name               = 'BiliBiliManhua'
+	m.RootURL            = 'https://manga.bilibili.com'
+	m.Category           = 'Raw'
+	m.OnGetNameAndLink   = 'GetNameAndLink'
+	m.OnGetInfo          = 'GetInfo'
+	m.OnGetPageNumber    = 'GetPageNumber'
 end
 
 function GetNameAndLink()
