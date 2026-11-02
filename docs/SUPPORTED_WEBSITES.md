@@ -1,7 +1,7 @@
 | Website | URL | Module status | Last checked date | Comment |
 |:---|:---|:---:|:---:|:---:|
-| 18Comic | [![https://18comic.vip](https://img.shields.io/website?url=https://18comic.vip%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://18comic.vip)](https://18comic.vip) | OK | 01.11.2026 | - |
 | 11Toon | [![https://www.11toon.com](https://img.shields.io/website?url=https://www.11toon.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.11toon.com)](https://www.11toon.com) | OK | 01.11.2026 | - |
+| 18Comic | [![https://18comic.vip](https://img.shields.io/website?url=https://18comic.vip%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://18comic.vip)](https://18comic.vip) | OK | 01.11.2026 | - |
 | 1MangaCo | [![https://1manga.co](https://img.shields.io/website?url=https://1manga.co%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://1manga.co)](https://1manga.co) | OK | 02.10.2026 | - |
 | 1stKissManhua | [![https://1stkissmanhua.net](https://img.shields.io/website?url=https://1stkissmanhua.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://1stkissmanhua.net)](https://1stkissmanhua.net) | OK | 30.03.2025 | - |
 | 3asq | [![https://3asq.online](https://img.shields.io/website?url=https://3asq.online%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://3asq.online)](https://3asq.online) | OK | 25.07.2026 | - |
@@ -565,6 +565,7 @@
 | Starbound Scans | [![https://starboundscans.com](https://img.shields.io/website?url=https://starboundscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://starboundscans.com)](https://starboundscans.com) | OK | 09.01.2025 | Paid chapters are hidden by default |
 | Stick Horse | [![https://www.stickhorse.cl](https://img.shields.io/website?url=https://www.stickhorse.cl%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.stickhorse.cl)](https://www.stickhorse.cl) | OK | 25.07.2025 | - |
 | StoneScape | [![https://stonescape.xyz](https://img.shields.io/website?url=https://stonescape.xyz%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://stonescape.xyz)](https://stonescape.xyz) | OK | 28.03.2026 | - |
+| SubManhwa | [![https://submanhwa.com](https://img.shields.io/website?url=https://submanhwa.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://submanhwa.com)](https://submanhwa.com) | OK | 02.11.2026 | - |
 | SumManga | [![https://summanga.com](https://img.shields.io/website?url=https://summanga.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://summanga.com)](https://summanga.com) | OK | 01.06.2025 | - |
 | SundayWebEvery | [![https://www.sunday-webry.com](https://img.shields.io/website?url=https://www.sunday-webry.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.sunday-webry.com)](https://www.sunday-webry.com) | Broken | 02.11.2026 | - |
 | SushiScan | [![https://sushiscan.net](https://img.shields.io/website?url=https://sushiscan.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://sushiscan.net)](https://sushiscan.net) | OK | 21.08.2025 | - |
