@@ -527,7 +527,7 @@ end
 | `MODULE.AccountSupport` | Boolean | Read/Write | Whether module supports user accounts |
 | `MODULE.LastUpdated` | String | Read/Write | Last update timestamp |
 | `MODULE.Tag` | Integer | Read/Write | Custom tag for internal use |
-| `MODULE.Storage` | TStringsStorage | Read/Write | In-memory key-value storage for the current session, empty again after an app restart; see [Use Persistent Storage](#6-use-persistent-storage) |
+| `MODULE.Storage` | TStringsStorage | Read/Write | In-memory key-value storage — one store per module, shared by all of its tasks; a missing key reads as `''`, and everything is gone after an app restart; see [Use Persistent Storage](#6-use-persistent-storage) |
 | `MODULE.Account` | TWebsiteModuleAccount | Read-only | User account information — **only present when `AccountSupport` is enabled** (otherwise accessing it raises an error) |
 | `MODULE.Guardian` | TCriticalSection | Read-only | Thread synchronization object |
 
@@ -3023,16 +3023,60 @@ What survives an app restart — and what does not:
 
 `MODULE.Storage` is a plain in-memory key-value store — handy for caching
 within one run of the application, but nothing in it is written to disk, so it
-starts empty after every restart:
+starts empty after every restart. There is **one storage per module**: every
+handler call and every running task of the website shares the same keys, so
+concurrent downloads from the same site see and overwrite each other's
+entries.
+
+Values are always stored and returned as **strings** — a number is converted
+on write, so convert it back when reading:
 
 ```lua
-MODULE.Storage['last_update'] = os.time()  -- gone after a restart
-local last = MODULE.Storage['last_update']
+MODULE.Storage['last_update'] = os.time()             -- gone after a restart
+local last = tonumber(MODULE.Storage['last_update'])  -- reads back as a string
 ```
 
-`MODULE.Storage` also exposes `Text` (get/set the whole storage as
-`name=value` lines), `Remove(name)`, `Tag` (integer), `Enable` (boolean)
-and `Status` (string).
+Reading a key that was never set returns the **empty string**, never `nil` —
+and storing a boolean or a table yields `''` as well:
+
+```lua
+if MODULE.Storage['token'] ~= '' then  -- check for '', not for nil
+    ...
+end
+```
+
+`MODULE.Storage` also exposes:
+
+| Member | Description |
+|--------|-------------|
+| `.Text` | Get or set the whole storage as `name=value` lines — `MODULE.Storage.Text = ''` drops every key at once |
+| `.Remove(name)` | Delete a single key (a no-op when the key does not exist) |
+| `.Tag`, `.Enable`, `.Status` | Spare read/write fields (integer, boolean, string), also memory-only |
+
+Real usage — cache the rotating key of the site and drop the whole cache when
+it goes stale (`lua/modules/CapibaraTraductor.lua`):
+
+```lua
+if MODULE.Storage.Text == '' then  -- nothing cached yet
+    -- fetch the chapter page and store its key variables
+    for name, hex in HTTP.Document.ToString():gmatch('([%w_$]+)%s*=%s*"([0-9a-f]+)"') do
+        if #hex == 24 then MODULE.Storage[name] = hex end
+    end
+end
+...
+MODULE.Storage.Text = ''  -- the key did not match, clear everything
+```
+
+Single writes are internally locked, but reads are not — a read-modify-write
+sequence is not atomic. When several tasks can touch the same keys at the same
+time, guard the whole sequence with `MODULE.Guardian`:
+
+```lua
+MODULE.Guardian.Enter()
+local n = tonumber(MODULE.Storage['count']) or 0
+MODULE.Storage['count'] = n + 1
+MODULE.Guardian.Leave()
+```
 
 For data that must survive a restart, use the account fields or a persistent
 cookie:
