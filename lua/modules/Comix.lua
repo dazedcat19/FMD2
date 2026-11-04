@@ -567,7 +567,7 @@ function GetInfo()
 
 	MANGAINFO.Title     = info.title
 	MANGAINFO.AltTitles = table.concat(info.altTitles or {}, ', ')
-	MANGAINFO.CoverLink = info.poster and info.poster.medium
+	MANGAINFO.CoverLink = MaybeFillHost(MODULE.RootURL, info.poster and info.poster.medium)
 	MANGAINFO.Authors   = table.concat(authors, ', ')
 	MANGAINFO.Artists   = table.concat(artists, ', ')
 	MANGAINFO.Genres    = table.concat(genres, ', ')
