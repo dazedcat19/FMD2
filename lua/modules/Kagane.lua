@@ -3,91 +3,27 @@
 ----------------------------------------------------------------------------------------------------
 
 local API_URL = '/api/v2'
-local DOMAINS = {
-	'https://kagane.si',
-	'https://kagane.net',
-	'https://kagane.cx',
-	'https://kagane.moe',
-}
 
 ----------------------------------------------------------------------------------------------------
 -- Helper Functions
 ----------------------------------------------------------------------------------------------------
 
--- Ordered list of domains to try for the next request.
-local function GetDomainCandidates()
-	local list, seen = {}, {}
-	local function add(d)
-		if d and d ~= '' and not seen[d] then
-			list[#list + 1] = d
-			seen[d] = true
-		end
-	end
-	local pinned = MODULE.GetOption('domain') or 0
-	if pinned >= 1 and pinned <= #DOMAINS then
-		add(DOMAINS[pinned])
-		return list
-	end
-	for _, d in ipairs(DOMAINS) do add(d) end
-
-	return list
-end
-
--- Remember the working domain for the next requests.
-local function SetDomain(d)
-	MODULE.Storage['domain'] = d
-end
-
--- Request a URL path using the configured mirror fallback.
-local function Request(method, urlpath, postdata)
-	for _, d in ipairs(GetDomainCandidates()) do
-		HTTP.Reset()
-		if method == 'GET' then
-			if HTTP.GET(d .. urlpath) then
-				SetDomain(d)
-				return d
-			end
-		else
-			if postdata then
-				HTTP.MimeType = 'application/json'
-				if HTTP.POST(d .. urlpath, postdata) then
-					SetDomain(d)
-					return d
-				end
-			elseif HTTP.POST(d .. urlpath) then
-				SetDomain(d)
-				return d
-			end
-		end
-	end
-
-	return nil
-end
-
-local function Get(urlpath)
-	return Request('GET', urlpath)
-end
-
-local function Post(urlpath, postdata)
-	return Request('POST', urlpath, postdata)
-end
-
 -- Set the required http headers for making a request.
-local function SetRequestHeaders(d)
+local function SetRequestHeaders()
 	local now = os.time()
-	local token  = MODULE.Storage['token@' .. d]
-	local expiry = tonumber(MODULE.Storage['exp@' .. d] or '') or 0
+
+	local token  = MODULE.Storage['token']
+	local expiry = tonumber(MODULE.Storage['exp']) or 0
 
 	if token == '' or now > expiry then
 		HTTP.Reset()
-		if not HTTP.POST(d .. '/api/integrity') then return false end
-		local body = HTTP.Document.ToString()
-		MODULE.Storage['token@' .. d] = body:match('"token":"(.-)"') or ''
-		MODULE.Storage['exp@' .. d]   = body:match('"exp":(%d+)') or ''
-		token = MODULE.Storage['token@' .. d]
-	end
 
-	return token ~= ''
+		if not HTTP.POST(MODULE.RootURL .. '/api/integrity') then return false end
+
+		local body = HTTP.Document.ToString()
+		MODULE.Storage['token'] = body:match('"token":"(.-)"')
+		MODULE.Storage['exp'] = body:match('"exp":(%d+)')
+	end
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -123,27 +59,31 @@ function GetNameAndLink()
 							order = 'desc'
 						end
 
-						local u = API_URL .. '/search/series?page=' .. (page - 1) .. '&size=' .. limit .. '&sort=created_at%2C' .. order
+						local u = MODULE.RootURL .. API_URL .. '/search/series?page=' .. (page - 1) .. '&size=' .. limit .. '&sort=created_at%2C' .. order
 						local s = '{"content_rating":["' .. cr .. '"],"upload_status":["' .. ms .. '"],"format":["' .. fr .. '"],"genres":{"values":["' .. dg .. '"],"match_all":true}}'
-						local d
+						HTTP.Reset()
+						HTTP.MimeType = 'application/json'
 
-						if page <= 10 then d = Post(u, s) end
-						if not d then return net_problem end
+						if page <= 10 and HTTP.POST(u, s) then
+							local x = require 'utils.json'.decode(HTTP.Document.ToString())
 
-						local x = require 'utils.json'.decode(HTTP.Document.ToString())
-						total = tonumber(x.total_elements)
-						totalpages = math.ceil(total / limit)
-						UPDATELIST.UpdateStatusText(string.format(
-							'Loading page %d of %d | Format: %s | Demographic: %s | Status: %s | Rating: %s | Order: %s',
-							page, totalpages, fr, dgname, ms, cr, order
-						))
+							total = tonumber(x.total_elements)
+							totalpages = math.ceil(total / limit)
 
-						for _, data in ipairs(x.content or {}) do
-							LINKS.Add('series/' .. data.series_id)
-							NAMES.Add(data.title)
+							UPDATELIST.UpdateStatusText(string.format(
+								'Loading page %d of %d | Format: %s | Demographic: %s | Status: %s | Rating: %s | Order: %s',
+								page, totalpages, fr, dgname, ms, cr, order
+							))
+
+							for _, data in ipairs(x.content or {}) do
+								LINKS.Add('series/' .. data.series_id)
+								NAMES.Add(data.title)
+							end
+
+							page = page + 1
+						else
+							return net_problem
 						end
-
-						page = page + 1
 					end
 				end
 			end
@@ -155,18 +95,15 @@ end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local id = URL:match('(%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x)$')
+	local u = MODULE.RootURL .. API_URL .. '/series/' .. URL:match('(%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x)$')
 
-	local d = Get(API_URL .. '/series/' .. id)
-	if not d then return net_problem end
+	if not HTTP.GET(u) then return net_problem end
 
-	MANGAINFO.Link = 'series/' .. id
-	MANGAINFO.URL  = d .. '/series/' .. id
 	local x = CreateTXQuery(require 'fmd.crypto'.HTMLEncode(HTTP.Document.ToString()))
 	local info = x.XPath('parse-json(.)')
 	MANGAINFO.Title     = x.XPathString('title', info)
 	MANGAINFO.AltTitles = x.XPathString('string-join(series_alternate_titles?*?title, ", ")', info)
-	MANGAINFO.CoverLink = d .. API_URL .. '/image/' .. x.XPathString('series_covers?1?image_id', info) .. '/compressed'
+	MANGAINFO.CoverLink = MODULE.RootURL .. API_URL .. '/image/' .. x.XPathString('series_covers?1?image_id', info) .. '/compressed'
 	MANGAINFO.Authors   = x.XPathString('string-join(series_staff?*[role=("Author","Story")]?name, ", ")', info)
 	MANGAINFO.Artists   = x.XPathString('string-join(series_staff?*[role=("Artist","Art")]?name, ", ")', info)
 	MANGAINFO.Genres    = x.XPathString('string-join((genres?*?genre_name, format), ", ")', info)
@@ -178,7 +115,9 @@ function GetInfo()
 		MANGAINFO.Title = MANGAINFO.Title .. ' (' .. edition .. ')'
 	end
 
-	if not Get(API_URL .. '/series/' .. id .. '/books/index?fields=List') then return net_problem end
+	u = u .. '/books/index?fields=List'
+
+	if not HTTP.GET(u) then return net_problem end
 
 	local optgroup = MODULE.GetOption('showscangroup')
 	local titlemode = MODULE.GetOption('chaptertitle')
@@ -226,20 +165,14 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local d
-	for _, cand in ipairs(GetDomainCandidates()) do
-		if SetRequestHeaders(cand) then
-			HTTP.Reset()
-			HTTP.Headers.Values['X-Integrity-Token'] = MODULE.Storage['token@' .. cand]
-			if HTTP.POST(cand .. API_URL .. '/books' .. URL) then
-				d = cand
-				SetDomain(d)
-				break
-			end
-		end
-	end
+	SetRequestHeaders()
 
-	if not d then return false end
+	HTTP.Reset()
+	HTTP.Headers.Values['X-Integrity-Token'] = MODULE.Storage['token']
+
+	local u = MODULE.RootURL .. API_URL .. '/books' .. URL
+
+	if not HTTP.POST(u) then return false end
 
 	local x = CreateTXQuery(HTTP.Document)
 	local data = x.XPath('json(*)')
@@ -247,7 +180,7 @@ function GetPageNumber()
 	local token = x.XPathString('access_token', data)
 	local datasaver = MODULE.GetOption('datasaver')
 	for v in x.XPath('manifest?pages?*', data).Get() do
-		TASK.PageLinks.Add(string.format('%s/api/v2/books/page%s/%s.%s?token=%s&is_datasaver=%s',
+		TASK.PageLinks.Add(string.format('%s/api/v2/books/page%s/%s.%s?token=%s&is_datasaver=%s', 
 			CDN_URL, URL, v.GetProperty('page_id').ToString(), v.GetProperty('ext').ToString(), token, datasaver))
 	end
 
@@ -256,7 +189,7 @@ end
 
 -- Prepare the URL, http header and/or http cookies before downloading an image.
 function BeforeDownloadImage()
-	HTTP.Headers.Values['Origin'] = MODULE.Storage['domain']
+	HTTP.Headers.Values['Origin'] = MODULE.RootURL
 
 	return true
 end
@@ -269,7 +202,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '01528d6f798b4a07ac3f074a5441ec7f'
 	m.Name                     = 'Kagane'
-	m.RootURL                  = table.concat(DOMAINS, ' ')
+	m.RootURL                  = 'https://kagane.moe'
 	m.Category                 = 'English'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
@@ -279,30 +212,20 @@ function Init()
 	local slang = require 'fmd.env'.SelectedLanguage
 	local translations = {
 		['en'] = {
-			['domain'] = 'Domain',
-			['autodomain'] = 'Auto',
 			['showscangroup'] = 'Show group name',
 			['chaptertitle'] = 'Chapter title format',
 			['titlemode'] = "Title only (e.g. 'Title' / 'Ch. 26')\nChapter and title (e.g. 'Ch. 26 - Title')\nVolume, chapter, and title (e.g. 'Vol. 3 Ch. 26 - Title')",
 			['datasaver'] = 'Data saver'
 		},
 		['id_ID'] = {
-			['domain'] = 'Domain',
-			['autodomain'] = 'Otomatis',
 			['showscangroup'] = 'Tampilkan nama grup',
 			['chaptertitle'] = 'Format judul bab',
-			['titlemode'] = "Hanya judul (Contoh 'Judul' / 'Ch. 26')\nBab dan judul (Contoh 'Ch. 26 - Judul')\nJilid, bab, dan judul (Contoh 'Vol. 3 Ch. 26 - Judul')",
+			['titlemode'] = "Hanya judul (mis. 'Judul' / 'Ch. 26')\nBab dan judul (mis. 'Ch. 26 - Judul')\nJilid, bab, dan judul (mis. 'Vol. 3 Ch. 26 - Judul')",
 			['datasaver'] = 'Penghemat data'
 		}
 	}
 	local lang = translations[slang] or translations.en
-
-	local domainitems = { lang.autodomain }
-	for i = 1, #DOMAINS do
-		domainitems[#domainitems + 1] = DOMAINS[i]:gsub('^https?://', '')
-	end
 	m.AddOptionCheckBox('showscangroup', lang.showscangroup, false)
 	m.AddOptionCheckBox('datasaver', lang.datasaver, false)
-	m.AddOptionComboBox('domain', lang.domain, table.concat(domainitems, '\r\n'), 0)
 	m.AddOptionComboBox('chaptertitle', lang.chaptertitle, lang.titlemode, 0)
 end
