@@ -262,7 +262,6 @@ local function run_html_with_js(url, js_code)
                     headless: true,
                     args: [
                         '--disable-extensions', // Prevent browser extensions
-                        '--disable-webgl', // Disable WebGL
                         '--disable-webrtc', // Disable WebRTC
                         '--disable-background-networking', // Prevents background requests
 						'--disable-blink-features=AutomationControlled' // Prevents detection of automation
