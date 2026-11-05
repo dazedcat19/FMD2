@@ -3,31 +3,128 @@
 ----------------------------------------------------------------------------------------------------
 
 local DirectoryPagination = '/library?page='
+local WorkerFlagMeta = 'm9a49ea12cdb848'
+local PageReferer = '/build/assets/BSE14Tw9b.js'
 
 ----------------------------------------------------------------------------------------------------
 -- Helper Functions
 ----------------------------------------------------------------------------------------------------
 
-math.randomseed(os.time())
+-- Chapter reader script.
+local function GetReaderInitScript()
+	return [[
+	const hookCode = `
+		window.__blankData = { manifests: [], kdfKeys: [] };
+		(() => {
+			const strip = () => {
+				try {
+					const m = document.querySelector('meta[name="]] .. WorkerFlagMeta .. [["]');
+					if (m) m.remove();
+				} catch (e) {}
+			};
+			try {
+				new MutationObserver(strip).observe(document, { childList: true, subtree: true });
+			} catch (e) {}
+			try { document.addEventListener('readystatechange', strip); } catch (e) {}
 
-local PREFIX_LENGTH = 192
-local STREAM_HEADER_LENGTH = 24
-local CHUNK_SIZE = 65536 + 17
+			const consider = (parsed) => {
+				try {
+					if (parsed && typeof parsed === 'object' &&
+						typeof parsed.base === 'string' &&
+						parsed.base.indexOf('/p/') === 0) {
+						window.__blankData.manifests.push(parsed);
+					}
+				} catch (e) {}
+			};
+			try {
+				const origParse = JSON.parse;
+				JSON.parse = new Proxy(origParse, {
+					apply(target, thisArg, args) {
+						const parsed = Reflect.apply(target, thisArg, args);
+						consider(parsed);
+						return parsed;
+					}
+				});
+			} catch (e) {}
+			try {
+				const origJson = Response.prototype.json;
+				Response.prototype.json = async function () {
+					const value = await origJson.apply(this, arguments);
+					consider(value);
+					return value;
+				};
+			} catch (e) {}
 
-local function GetRandomBytes(count)
-	local res = {}
-	for i = 1, count do
-		res[i] = string.char(math.random(0, 255))
-	end
-	return table.concat(res)
-end
+			try {
+				const origInstantiate = WebAssembly.instantiate.bind(WebAssembly);
+				WebAssembly.instantiate = async function (bytes, imports) {
+					const result = await origInstantiate(bytes, imports);
+					try {
+						const instance = result && result.instance ? result.instance : result;
+						const origExports = instance.exports;
+						const isKdfRot = (name) => name === 'm' || name === '_ip9g3bzelx';
+						if (origExports && Object.keys(origExports).some(isKdfRot)) {
+							const memory = origExports.e;
+							const wrapExports = {};
+							for (const key of Object.keys(origExports)) {
+								const value = origExports[key];
+								wrapExports[key] = (isKdfRot(key) && typeof value === 'function') ?
+									function (...args) {
+										const ret = value.apply(origExports, args);
+										try {
+											if (ret) {
+												const out = new Uint8Array(memory.buffer, args[5], 32);
+												window.__blankData.kdfKeys.push(btoa(String.fromCharCode.apply(null, out)));
+											}
+										} catch (e) {}
+										return ret;
+									} : value;
+							}
+							if (result && result.instance) {
+								return { module: result.module, instance: Object.assign({}, instance, { exports: wrapExports }) };
+							}
+							return wrapExports;
+						}
+					} catch (e) {}
+					return result;
+				};
+			} catch (e) {}
+		})();
+	`;
+	await page.setViewport({ width: 1366, height: 768 });
+	await page.evaluateOnNewDocument(hookCode);
+	await page.reload({ waitUntil: 'domcontentloaded', timeout: 90000 });
 
-local function GetHexNonce(count)
-	local res = {}
-	for i = 1, count do
-		res[i] = string.format('%02x', math.random(0, 255))
-	end
-	return table.concat(res)
+	const resultJSON = await page.evaluate(async () => {
+		return await new Promise((resolve) => {
+			let submitted = false;
+			let poll = null;
+			const finish = (data) => {
+				if (submitted) return;
+				submitted = true;
+				if (poll) clearInterval(poll);
+				clearTimeout(watchdog);
+				resolve(data);
+			};
+			const watchdog = setTimeout(() => finish({ error: 'Timed out waiting for the chapter reader to unlock' }), 60000);
+			poll = setInterval(() => {
+				const data = window.__blankData;
+				if (!data || data.manifests.length === 0 || data.kdfKeys.length === 0) return;
+				const manifest = data.manifests[data.manifests.length - 1];
+				const key = data.kdfKeys[data.kdfKeys.length - 1];
+				if (!manifest.base || !key) return;
+				finish({
+					base: manifest.base,
+					pt: manifest['9d2e7b4a1c6f0e83'] || '',
+					count: manifest['cad8fbc0b0a1f7a5'] || 0,
+					variants: manifest['9c0e92122ffcad77'] || [],
+					key: key
+				});
+			}, 100);
+		});
+	});
+	console.log(JSON.stringify(resultJSON));
+	]]
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -77,9 +174,22 @@ function GetInfo()
 	MANGAINFO.Summary   = x.XPathString('description', info)
 
 	local slug = x.XPathString('slug', info)
-	for v in x.XPath('chapters?*[not(isPremium)]', info).Get() do
-		MANGAINFO.ChapterLinks.Add(slug .. '/' .. v.GetProperty('slug').ToString())
-		MANGAINFO.ChapterNames.Add(v.GetProperty('title').ToString())
+	local uid = x.XPathString('uid', info)
+	local page = 1
+	local pages = nil
+	while true do
+		u = MODULE.RootURL .. '/api/v1/series/' .. uid .. '/chapters?sort=asc&page=' .. page
+		if not HTTP.GET(u) then return net_problem end
+		x = CreateTXQuery(HTTP.Document)
+		for v in x.XPath('parse-json(.)?items?*[not(type="premium")]').Get() do
+			MANGAINFO.ChapterLinks.Add(slug .. '/' .. v.GetProperty('slug').ToString())
+			MANGAINFO.ChapterNames.Add(v.GetProperty('title').ToString())
+		end
+		if not pages then
+			pages = tonumber(x.XPathString('json(*).last_page')) or 1
+		end
+		if page >= pages then break end
+		page = page + 1
 	end
 
 	return no_error
@@ -87,31 +197,40 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local crypto = require 'fmd.crypto'
-	local serie_slug, chapter_slug = URL:match('^/([^/]+)/([^/]+)$')
-	local u = MODULE.RootURL .. '/serie/' .. serie_slug .. '/chapter/' .. chapter_slug
+	local json = require 'utils.json'
+	local mslug, cslug = URL:match('^/([^/]+)/([^/]+)$')
 
-	if not HTTP.GET(u) then return false end
+	local output = MODULE.Storage[URL]
+	if output == '' then
+		local js_code = GetReaderInitScript()
+		output = require 'utils.nodejs'.run_html_load_with_js(MODULE.RootURL .. '/serie/' .. mslug .. '/chapter/' .. cslug, js_code)
+		MODULE.Storage[URL] = output
+	end
 
-	local x = CreateTXQuery(HTTP.Document)
-	local props = x.XPath('json(//div[@id="app"]/@data-page).props')
-	local server_pubkey = x.XPathString('server_pubkey', props)
-	local chapter_token = x.XPathString('chapter_token', props)
-	local page_count = tonumber(x.XPathString('page_count', props)) or 0
+	local ok, decoded = pcall(json.decode, output)
+	if not ok or decoded.error then
+		local msg = (ok and decoded.error) or 'unexpected chapter reader response'
+		print('Error: ' .. msg)
+		return false
+	end
 
-	local server_pub = crypto.DecodeBase64(server_pubkey)
-	local priv = GetRandomBytes(32)
-	local client_pub = crypto.X25519_PublicKey(priv)
-	local shared_secret = crypto.X25519_SharedSecret(priv, server_pub)
+	local base = decoded.base
+	local pt = decoded.pt
+	local key = decoded.key
+	local count = tonumber(decoded.count) or 0
+	if not base or not pt or not key or count < 1 then
+		print('Error: chapter reader data is incomplete')
+		return false
+	end
 
-	local shared_secretB64 = crypto.EncodeBase64(shared_secret)
-	local client_pubB64 = crypto.EncodeBase64(client_pub)
+	local variants = decoded.variants
+	local width = 1080
+	if type(variants) == 'table' and tonumber(variants[1]) then
+		width = tonumber(variants[1])
+	end
 
-	for i = 1, page_count do
-		local page_url = string.format('%s/serie/%s/chapter/%s/page/%d#%s;%s;%s',
-			MODULE.RootURL, serie_slug, chapter_slug, i, chapter_token, shared_secretB64, client_pubB64)
-		
-		TASK.PageLinks.Add(page_url)
+	for i = 1, count do
+		TASK.PageLinks.Add(string.format('%s%s%d-%d.ece#pt=%s;key=%s', MODULE.RootURL, base, i, width, pt, key))
 	end
 
 	return true
@@ -120,71 +239,68 @@ end
 -- Download and decrypt image given the image URL.
 function DownloadImage()
 	local crypto = require 'fmd.crypto'
-	local serie_slug, chapter_slug, page_idx = URL:match('/serie/([^/]+)/chapter/([^/]+)/page/(%d+)')
 
-	local fragment = URL:match('#(.+)$')
+	local pt = URL:match('pt=([^;]+)')
+	local key_b64 = URL:match('key=([^;]+)$')
+
+	if not pt or not key_b64 then return false end
+
+	HTTP.Headers.Values['x-9d2e7b'] = pt
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. PageReferer
+
+	if not HTTP.GET(URL) then return false end
+
+	local data = HTTP.Document.ToString()
+	if #data < 38 then return false end
+
+	local salt = data:sub(1, 16)
+	local record_size = data:byte(17) * 16777216 + data:byte(18) * 65536 + data:byte(19) * 256 + data:byte(20)
+	local id_len = data:byte(21)
+	local offset = 22 + id_len
+
+	local page_key = crypto.DecodeBase64(key_b64)
+	if #page_key ~= 32 then return false end
+
+	local prk = crypto.HMAC_SHA256(page_key, salt)
+	local cek = crypto.HMAC_SHA256('Content-Encoding: aes128gcm\0\1', prk):sub(1, 16)
+	local nonce = crypto.HMAC_SHA256('Content-Encoding: nonce\0\1', prk):sub(1, 12)
+
+	local nonce_bytes = { nonce:byte(1, 12) }
+	local function RecordNonce(sequence)
+		local bytes = { nonce_bytes[1], nonce_bytes[2], nonce_bytes[3], nonce_bytes[4], nonce_bytes[5], nonce_bytes[6],
+				nonce_bytes[7], nonce_bytes[8], nonce_bytes[9], nonce_bytes[10], nonce_bytes[11], nonce_bytes[12] }
+		local r = sequence
+		for i = 12, 1, -1 do
+			if r <= 0 then break end
+			bytes[i] = bytes[i] ~ (r % 256)
+			r = math.floor(r / 256)
+		end
+		return string.char(bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6],
+					bytes[7], bytes[8], bytes[9], bytes[10], bytes[11], bytes[12])
+	end
 
 	local parts = {}
-	for v in fragment:gmatch('[^;]+') do
-		parts[#parts + 1] = v
-	end
-	
-	local chapter_token = parts[1]
-	local shared_secret = crypto.DecodeBase64(parts[2])
-	local client_pubB64 = parts[3]
-
-	local ts = os.time()
-	local nonce = GetHexNonce(16)
-	local sig_data = page_idx .. ts .. nonce
-	local sig = crypto.HMAC_SHA256Hex(sig_data, chapter_token)
-
-	local img_url = string.format('%s?token=%s&ts=%s&nonce=%s&sig=%s', URL:match('([^#]+)'), chapter_token, ts, nonce, sig)
-
-	HTTP.Headers.Values['X-Client-Pubkey'] = client_pubB64
-
-	if not HTTP.GET(img_url) then return false end
-
-	local page_name = Trim(HTTP.Headers.Values['X-Page-Name'])
-	local key_hintB64 = Trim(HTTP.Headers.Values['X-Key-Hint'])
-
-	if page_name == '' or key_hintB64 == '' then return false end
-
-	local key_hint = crypto.DecodeBase64(key_hintB64)
-	local sha = crypto.SHA256(shared_secret .. page_name)
-
-	local stream_key = ''
-	for i = 1, 32 do
-		local xor_byte = string.byte(sha, i) ~ string.byte(key_hint, i)
-		stream_key = stream_key .. string.char(xor_byte)
-	end
-
-	local encrypted_doc = HTTP.Document.ToString()
-	if #encrypted_doc < (PREFIX_LENGTH + STREAM_HEADER_LENGTH) then return false end
-
-	local header = encrypted_doc:sub(PREFIX_LENGTH + 1, PREFIX_LENGTH + STREAM_HEADER_LENGTH)
-	
-	local state = crypto.SecretStream_InitPull(header, stream_key)
-	if not state then return false end
-
-	local decrypted_doc = ''
-	local offset = PREFIX_LENGTH + STREAM_HEADER_LENGTH + 1
-	local doc_len = #encrypted_doc
-
-	while offset <= doc_len do
-		local chunk = encrypted_doc:sub(offset, offset + CHUNK_SIZE - 1)
-		if #chunk == 0 then break end
-
-		local msg, tag
-		state, msg, tag = crypto.SecretStream_Pull(state, chunk)
-		if not state then return false end
-
-		decrypted_doc = decrypted_doc .. msg
+	local sequence = 0
+	while offset <= #data do
+		local chunk = data:sub(offset, offset + record_size - 1)
 		offset = offset + #chunk
+		if #chunk <= 16 then return false end
 
-		if tag == 3 then break end 
+		local plain = crypto.AESDecryptGCM(chunk, cek, RecordNonce(sequence), '')
+		if plain == '' then return false end
+
+		local delimiter = string.byte(plain, #plain)
+		if delimiter ~= 1 and delimiter ~= 2 then return false end
+		parts[#parts + 1] = plain:sub(1, #plain - 1)
+
+		sequence = sequence + 1
+		if #chunk < record_size then break end
 	end
 
-	HTTP.Document.WriteString(decrypted_doc)
+	local image = table.concat(parts)
+	if #image < 8 then return false end
+
+	HTTP.Document.WriteString(image)
 
 	return true
 end
