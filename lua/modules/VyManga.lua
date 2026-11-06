@@ -69,7 +69,7 @@ function GetInfo()
 		local title = x.XPathString('span[1]', v)
 		local occurrence = (seen[title] or 0) + 1
 		seen[title] = occurrence
-		local id = ChapterStableId(title, occurrence)
+		local id = ChapterStableId(URL .. '@' .. title, occurrence)
 		MANGAINFO.ChapterLinks.Add(id)
 		MANGAINFO.ChapterNames.Add(title)
 		MODULE.Storage[id] = v.GetAttribute('href')
@@ -77,7 +77,7 @@ function GetInfo()
 
 	if MANGAINFO.ChapterLinks.Count == 0 then
 		local title = x.XPathString('//div[contains(@class, "div-chapter")]//a/span')
-		local id = ChapterStableId(title, 1)
+		local id = ChapterStableId(URL .. '@' .. title, 1)
 		MANGAINFO.ChapterLinks.Add(id)
 		MANGAINFO.ChapterNames.Add(title)
 		MODULE.Storage[id] = x.XPathString('//div[contains(@class, "div-chapter")]//a/@href')
@@ -92,12 +92,8 @@ end
 function GetPageNumber()
 	local u = MODULE.Storage[URL:match('[^/]+$')]
 	if u == '' then
-		if URL:sub(1, 4) == 'http' then
-			u = URL
-		else
-			require 'fmd.logger'.SendWarning('VyManga: chapter URL is not cached, refresh the manga info and try again')
-			return false
-		end
+		require 'fmd.logger'.SendWarning('VyManga: chapter URL is not cached, refresh the manga info and try again')
+		return false
 	end
 
 	if not HTTP.GET(MaybeFillHost(MODULE.RootURL, u)) then return false end
