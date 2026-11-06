@@ -5,7 +5,8 @@
 
 This is an active fork of the Free Manga Downloader which is a free open source application written in Object Pascal for managing and downloading manga from various websites. The source code was released under the GPLv2 license.  
 
-[![Supported Websites](https://img.shields.io/badge/Supported%20Websites-Blue?style=for-the-badge&color=purple)](https://github.com/dazedcat19/FMD2/blob/master/docs/SUPPORTED_WEBSITES.md)  
+[![Supported Websites](https://img.shields.io/badge/Supported%20Websites-Blue?style=for-the-badge&color=purple)](docs/SUPPORTED_WEBSITES.md)  
+[![Lua Reference](https://img.shields.io/badge/Lua%20Reference-Blue?style=for-the-badge&color=orange&logo=lua&logoColor=white)](docs/LUA_REFERENCE.md)  
 [![Discord](https://img.shields.io/badge/Discord-FMD-Blue?style=for-the-badge&color=blue&logo=discord&logoColor=white)](https://discord.gg/cXKKgw3)
 
 ## Download
@@ -45,8 +46,7 @@ This is an active fork of the Free Manga Downloader which is a free open source 
 
 <div align="left">
 
-In order to build FMD2 from the source code, you must install the latest stable version of Lazarus and Free Pascal Compiler:  
-[![Lazarus](https://img.shields.io/badge/Lazarus%20IDE-Blue?style=for-the-badge&color=blue)](https://sourceforge.net/projects/lazarus/files/Lazarus%20Windows%2064%20bits/)  
+In order to build FMD2 from the source code, you must install the latest stable version of Lazarus and Free Pascal Compiler: [![Lazarus](https://img.shields.io/badge/Lazarus%20IDE-4.8-Blue?style=plastic&color=blue&logo=lazarus)](https://www.lazarus-ide.org/)  
 
 To compile FMD2, some packages and components are needed. You can download and install them by either the built-in Online Package Manager (OPM) or GitHub repository.  
 The following packages and components are used for building FMD2:  
@@ -73,15 +73,16 @@ The following packages and components are used for building FMD2:
 > Try to `Clean up and build` within lazarus if it still fail to compile.
 
 Some other external 3rd party tools and libraries are used as well:  
+- [![Brotli](https://img.shields.io/badge/Brotli-1.2.1-Blue?style=plastic&color=blue)](https://www.brotli.org/)  
+- [![Duktape](https://img.shields.io/badge/Duktape-2.7.0-Blue?style=plastic&color=blue)](https://github.com/grijjy/DelphiDuktape)  
+- [![WebP (libwebp)](https://img.shields.io/badge/WebP%20(libwebp)-1.6.0-Blue?style=plastic&color=blue)](https://github.com/webmproject/libwebp/)  
+- [![Lua](https://img.shields.io/badge/Lua-5.4.9-Blue?style=plastic&color=blue)](http://www.lua.org/download)  
+- [![OpenSSL](https://img.shields.io/badge/OpenSSL-3.6.5-Blue?style=plastic&color=blue)](https://www.openssl.org/)  
+- [![SQLite](https://img.shields.io/badge/SQLite-3.54.1-Blue?style=plastic&color=blue)](https://www.sqlite.org/)  
+- [![PCRE2](https://img.shields.io/badge/PCRE2-10.49-Blue?style=plastic&color=blue)](https://pcre2project.github.io/pcre2/)  
+- [![Zstd](https://img.shields.io/badge/Zstd-1.5.7-Blue?style=plastic&color=blue)](https://facebook.github.io/zstd/)  
+- [![lua-protobuf](https://img.shields.io/badge/lua--protobuf-0.5.3-Blue?style=plastic&color=blue)](https://github.com/starwing/lua-protobuf)
 - [![7-Zip](https://img.shields.io/badge/7--Zip%20(Standalone)-19.00-Blue?style=plastic&color=blue)](https://www.7-zip.org)  
-- [![Duktape](https://img.shields.io/badge/Duktape-2.5.0-Blue?style=plastic&color=blue)](https://github.com/grijjy/DelphiDuktape)  
-- [![WebP (libwebp)](https://img.shields.io/badge/WebP%20(libwebp)-1.1.0-Blue?style=plastic&color=blue)](https://github.com/webmproject/libwebp/)  
-- [![Lua](https://img.shields.io/badge/Lua-5.4.8-Blue?style=plastic&color=blue)](http://www.lua.org/download)  
-- [![OpenSSL](https://img.shields.io/badge/OpenSSL-3.6.1-Blue?style=plastic&color=blue)](https://www.openssl.org/)  
-- [![SQLite](https://img.shields.io/badge/SQLite-3.51.2-Blue?style=plastic&color=blue)](https://www.sqlite.org/)  
-- [![PCRE2](https://img.shields.io/badge/PCRE2-10.47-Blue?style=plastic&color=blue)](https://pcre2project.github.io/pcre2/)  
-- [![Brotli](https://img.shields.io/badge/Brotli-1.2.0-Blue?style=plastic&color=blue)](https://www.brotli.org/)  
-- [![Zstd](https://img.shields.io/badge/Zstd-1.5.7-Blue?style=plastic&color=blue)](https://facebook.github.io/zstd/)
   
 These tools and libraries are not part of the source. You have to either download pre-compiled binaries, compile them yourself or just copy them from the latest FMD2 releases.
 
