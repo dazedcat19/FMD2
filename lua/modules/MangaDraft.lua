@@ -58,15 +58,6 @@ function GetInfo()
 
 	local counters = {}
 	for v in x.XPath('//div[@class="mt-7 w-full"]//a[(h3 or h5) and not((h3|h5)/small)]').Get() do
-		local url = v.GetAttribute('href')
-
-		MANGAINFO.ChapterLinks.Add(url)
-
-		if not url:find('c.', 1, true) then
-			MANGAINFO.ChapterNames.Add(MANGAINFO.Title)
-			break
-		end
-
 		local volume = x.XPathString('normalize-space(replace(preceding::h3[contains(@class, "uppercase")][1], "^[^:]*:", ""))', v)
 		local number = x.XPathString('normalize-space(.//b)', v)
 		local title  = x.XPathString('normalize-space((h3|h5)/text()[1])', v)
@@ -83,7 +74,13 @@ function GetInfo()
 			end
 		end
 
+		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
 		MANGAINFO.ChapterNames.Add(table.concat(parts, ' - '))
+	end
+
+	if MANGAINFO.ChapterLinks.Count == 0 then
+		MANGAINFO.ChapterLinks.Add(x.XPathString('(//div[@class="mt-7 w-full"]//a[starts-with(@href, "/reader/")])[1]/@href'))
+		MANGAINFO.ChapterNames.Add(MANGAINFO.Title)
 	end
 
 	return no_error
