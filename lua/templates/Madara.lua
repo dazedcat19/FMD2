@@ -5,7 +5,7 @@
 local _M = {}
 
 ----------------------------------------------------------------------------------------------------
--- Local Constants
+-- Template Configuration
 ----------------------------------------------------------------------------------------------------
 
 ChapterParameters   = 'action=manga_get_chapters&manga='
@@ -147,7 +147,7 @@ function _M.GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function _M.GetPageNumber()
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 	if not u:find('style=list', 1, true) then u = u:gsub('?style=paged', '') .. '?style=list' end
@@ -195,7 +195,7 @@ end
 
 -- Prepare the URL, http header and/or http cookies before downloading an image.
 function _M.BeforeDownloadImage()
-	HTTP.Headers.Values['Referer'] = MODULE.RootURL
+	HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
 
 	return true
 end
