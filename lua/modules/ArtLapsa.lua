@@ -3,15 +3,26 @@
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.KeyoApp'
-local DirectoryPagination = '/latest'
+local DirectoryPages = '/search?page='
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
+-- Get the page count of the manga list of the current website.
+function GetDirectoryPageNumber()
+	local u = MODULE.RootURL .. DirectoryPages .. 1
+
+	if not HTTP.GET(u) then return net_problem end
+
+	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('(//span[contains(@*[name()="key"], "paginator-page")])[last()]/a')) or 1
+
+	return no_error
+end
+
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local u = MODULE.RootURL .. DirectoryPagination
+	local u = MODULE.RootURL .. DirectoryPages .. (URL + 1)
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -24,7 +35,7 @@ end
 function GetInfo()
 	Template.GetInfo()
 
-	MANGAINFO.CoverLink = CreateTXQuery(HTTP.Document).XPathString('//div[contains(@class, "bg-cover bg-center bg-white")]/@style ! substring-before(substring-after(., "("), ")")')
+	MANGAINFO.CoverLink = CreateTXQuery(HTTP.Document).XPathString('//img[contains(@class, "size-full bg-white/10 object-cover")]/@src')
 
 	return no_error
 end
@@ -53,6 +64,7 @@ function Init()
 	m.Name                     = 'Art Lapsa'
 	m.RootURL                  = 'https://artlapsa.com'
 	m.Category                 = 'English-Scanlation'
+	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
 	m.OnGetInfo                = 'GetInfo'
 	m.OnGetPageNumber          = 'GetPageNumber'
