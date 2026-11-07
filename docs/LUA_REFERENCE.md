@@ -1,115 +1,131 @@
 # FMD2 Lua Module Development Guide
 
+Reference for writing and maintaining Lua website modules for Free Manga Downloader 2 (FMD2).
+
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Module Structure](#module-structure)
-    - [Basic Module Template](#basic-module-template)
-    - [Event Handler Reference](#event-handler-reference)
-    - [Status Constants and Return Values](#status-constants-and-return-values)
-3. [Injected Pascal Objects](#injected-pascal-objects)
-    - [HTTP Object (THTTPSendThread)](#http-object-thttpsendthread)
-        - [Cookie Storage and Persistence](#cookie-storage-and-persistence)
-        - [HTTP.Reset() and Header Lifecycle](#httpreset-and-header-lifecycle)
-        - [HTTP.Document (TMemoryStream)](#httpdocument-tmemorystream)
+- [1. Overview](#1-overview)
+- [2. Quick Start](#2-quick-start)
+    - [Module Skeleton](#module-skeleton)
+    - [Steps to Create a Module](#steps-to-create-a-module)
+- [3. Defining a Module](#3-defining-a-module)
+    - [How `Init()` Is Loaded](#how-init-is-loaded)
+    - [Module ID](#module-id)
     - [MODULE Object (TModuleContainer)](#module-object-tmodulecontainer)
-    - [Event Handlers - Complete Workflow](#event-handlers---complete-workflow)
-        - [1. Module Initialization (`Init`)](#1-module-initialization-init)
-        - [2. Before Update List (`OnBeforeUpdateList`)](#2-before-update-list-onbeforeupdatelist)
-        - [3. Get Directory Page Number (`OnGetDirectoryPageNumber`)](#3-get-directory-page-number-ongetdirectorypagenumber)
-        - [4. Get Name And Link (`OnGetNameAndLink`)](#4-get-name-and-link-ongetnameandlink)
-        - [5. After Update List (`OnAfterUpdateList`)](#5-after-update-list-onafterupdatelist)
-        - [6. Get Info (`OnGetInfo`)](#6-get-info-ongetinfo)
-        - [7. Task Start (`OnTaskStart`)](#7-task-start-ontaskstart)
-        - [8. Get Page Number (`OnGetPageNumber`)](#8-get-page-number-ongetpagenumber)
-        - [9. Get Image URL (`OnGetImageURL`)](#9-get-image-url-ongetimageurl)
-        - [10. Before Download Image (`OnBeforeDownloadImage`)](#10-before-download-image-onbeforedownloadimage)
-        - [11. Download Image (`OnDownloadImage`)](#11-download-image-ondownloadimage)
-        - [12. Save Image (`OnSaveImage`)](#12-save-image-onsaveimage)
-        - [13. After Image Saved (`OnAfterImageSaved`)](#13-after-image-saved-onafterimagesaved)
-        - [14. Login (`OnLogin`)](#14-login-onlogin)
-        - [15. Account State (`OnAccountState`)](#15-account-state-onaccountstate)
-        - [16. Check Site (`OnCheckSite`)](#16-check-site-onchecksite)
-    - [Complete Event Flow Example](#complete-event-flow-example)
+    - [User Options](#user-options)
+    - [Multi-Directory Sites](#multi-directory-sites)
+- [4. Event Handlers](#4-event-handlers)
+    - [Handler Reference](#handler-reference)
+    - [Status Constants and Return Values](#status-constants-and-return-values)
+    - [Injected Globals](#injected-globals)
+        - [URL](#url)
+        - [PAGENUMBER](#pagenumber)
+    - [Lifecycle at a Glance](#lifecycle-at-a-glance)
+    - [Updating the Manga List](#updating-the-manga-list)
+        - [`OnAfterUpdateList`](#onafterupdatelist)
+        - [`OnBeforeUpdateList`](#onbeforeupdatelist)
+        - [`OnGetDirectoryPageNumber`](#ongetdirectorypagenumber)
+        - [`OnGetNameAndLink`](#ongetnameandlink)
+    - [Reading Manga Details](#reading-manga-details)
+        - [`OnGetInfo`](#ongetinfo)
+    - [Downloading Chapters](#downloading-chapters)
+        - [`OnTaskStart`](#ontaskstart)
+        - [`OnGetPageNumber`](#ongetpagenumber)
+        - [`OnGetImageURL`](#ongetimageurl)
+        - [`OnBeforeDownloadImage`](#onbeforedownloadimage)
+        - [`OnDownloadImage`](#ondownloadimage)
+        - [`OnSaveImage`](#onsaveimage)
+        - [`OnAfterImageSaved`](#onafterimagesaved)
+    - [Module Checker](#module-checker)
+        - [`OnCheckSite`](#onchecksite)
+- [5. Accounts and Login](#5-accounts-and-login)
+    - [Enabling Account Support](#enabling-account-support)
+    - [MODULE.Account Properties](#moduleaccount-properties)
+    - [`OnLogin`](#onlogin)
+    - [`OnAccountState`](#onaccountstate)
+- [6. Host Objects](#6-host-objects)
+    - [HTTP Object (THTTPSendThread)](#http-object-thttpsendthread)
+        - [HTTP Properties](#http-properties)
+        - [HTTP Methods](#http-methods)
+        - [HTTP.Document (TMemoryStream)](#httpdocument-tmemorystream)
+        - [HTTP.Reset() and Header Lifecycle](#httpreset-and-header-lifecycle)
+        - [Cookie Storage and Persistence](#cookie-storage-and-persistence)
     - [MANGAINFO Object (TMangaInfo)](#mangainfo-object-tmangainfo)
+        - [MANGAINFO Properties](#mangainfo-properties)
     - [TASK Object (TTaskContainer)](#task-object-ttaskcontainer)
+        - [TASK Properties](#task-properties)
     - [LINKS and NAMES (TStringList)](#links-and-names-tstringlist)
+        - [LINKS and NAMES Methods](#links-and-names-methods)
     - [UPDATELIST Object (TUpdateListManagerThread)](#updatelist-object-tupdatelistmanagerthread)
-    - [PAGENUMBER (Global Variable)](#pagenumber-global-variable)
-    - [URL (Global Variable)](#url-global-variable)
-4. [Built-in Functions](#built-in-functions)
+        - [UPDATELIST Properties](#updatelist-properties)
+        - [UPDATELIST Methods](#updatelist-methods)
+    - [Storage and Persistence](#storage-and-persistence)
+- [7. Parsing and Helper Functions](#7-parsing-and-helper-functions)
     - [TXQuery (XML/HTML/JSON Parser)](#txquery-xmlhtmljson-parser)
-        - [Query Object Methods](#query-object-methods)
-        - [Value/Node Object Methods](#valuenode-object-methods)
-        - [XPath Extensions](#xpath-extensions)
     - [Utility Functions](#utility-functions)
-        - [String Manipulation](#string-manipulation)
-        - [Status Helper](#status-helper)
-        - [Other Functions](#other-functions)
-5. [Lua Libraries](#lua-libraries)
+- [8. Libraries](#8-libraries)
     - [fmd.* Modules (Injected by the host application)](#fmd-modules-injected-by-the-host-application)
-        - [fmd.crypto](#fmdcrypto)
-        - [fmd.duktape](#fmdduktape)
-        - [fmd.env](#fmdenv)
-        - [fmd.fileutil](#fmdfileutil)
-        - [fmd.logger](#fmdlogger)
-        - [fmd.subprocess](#fmdsubprocess)
-        - [fmd.mangafoxwatermark](#fmdmangafoxwatermark)
-        - [fmd.gzip](#fmdgzip)
-        - [fmd.pcre2](#fmdpcre2)
-        - [fmd.imagepuzzle](#fmdimagepuzzle)
-        - [fmd.strings](#fmdstrings)
     - [utils.* Modules (Lua Files)](#utils-modules-lua-files)
-        - [utils.json](#utilsjson)
-        - [utils.lzstring](#utilslzstring)
-        - [utils.jsunpack](#utilsjsunpack)
-        - [utils.nodejs](#utilsnodejs)
-        - [utils.nextjs](#utilsnextjs)
-        - [utils.sha256](#utilssha256)
-        - [utils.protoc (with the `pb` runtime)](#utilsprotoc-with-the-pb-runtime)
-6. [Templates](#templates)
+- [9. Templates](#9-templates)
     - [Available Templates](#available-templates)
     - [Using Templates](#using-templates)
     - [Template Customization](#template-customization)
-7. [Common Patterns](#common-patterns)
+- [10. Cookbook](#10-cookbook)
     - [Error Handling](#error-handling)
-    - [Account Support](#account-support)
-    - [User Options](#user-options)
     - [JSON API Handling](#json-api-handling)
-    - [Multi-Directory Sites](#multi-directory-sites)
     - [Iterating Over Nodes](#iterating-over-nodes)
-8. [Examples](#examples)
+    - [Headers, Referer and Origin](#headers-referer-and-origin)
+    - [Sites That Need JavaScript](#sites-that-need-javascript)
+    - [Skipping Locked or Premium Chapters](#skipping-locked-or-premium-chapters)
+- [11. Complete Examples](#11-complete-examples)
     - [Example 1: Simple Module](#example-1-simple-module)
     - [Example 2: API-Based Module with JSON](#example-2-api-based-module-with-json)
     - [Example 3: Module with Login](#example-3-module-with-login)
-9. [Development Tips](#development-tips)
-    - [1. Use `--lua-dofile` for Development](#1-use---lua-dofile-for-development)
-    - [2. Use Templates When Possible](#2-use-templates-when-possible)
-    - [3. Set Proper Headers](#3-set-proper-headers)
-    - [4. Handle JavaScript-Heavy Sites](#4-handle-javascript-heavy-sites)
-    - [5. Check for Paywalls](#5-check-for-paywalls)
-    - [6. Use Persistent Storage](#6-use-persistent-storage)
-    - [7. Debug with Logging](#7-debug-with-logging)
-    - [8. Generate Unique IDs](#8-generate-unique-ids)
-10. [File Locations](#file-locations)
-11. [Additional Resources](#additional-resources)
+- [12. Development and Debugging](#12-development-and-debugging)
+    - [Reloading Modules While Developing](#reloading-modules-while-developing)
+    - [Logging](#logging)
+    - [Common Pitfalls](#common-pitfalls)
+- [Appendix: File Locations and Resources](#appendix-file-locations-and-resources)
 
 ---
 
-## Overview
+## 1. Overview
 
-**Free Manga Downloader 2 (FMD2)** is a manga downloading application written in Object Pascal (Lazarus) that uses Lua scripts for website modules. The application supports 400+ manga websites through a modular Lua-based plugin system.
+**Free Manga Downloader 2 (FMD2)** is a manga downloader written in Object Pascal (Lazarus). Every supported website is a **Lua module**: one `.lua` file that tells FMD2 how to list manga, read manga details, and find the images of a chapter.
 
 **Modules:** 400+ website modules  
-**Templates:** 35+ reusable templates  
+**Templates:** 40+ reusable CMS templates  
 **Lua Version:** 5.4.9  
 **JavaScript Engine:** Duktape 2.7.0 (embedded) + Node.js (optional)
 
+### Where to find what
+
+| I want to... | Go to |
+|--------------|-------|
+| Write my first module | [Quick Start](#2-quick-start), then [Defining a Module](#3-defining-a-module) |
+| Know which handler runs when, and what it must return | [Event Handlers](#4-event-handlers) |
+| Support a site that needs a login | [Accounts and Login](#5-accounts-and-login) |
+| Send requests, set headers, handle cookies | [HTTP](#http-object-thttpsendthread) |
+| Fill `MANGAINFO`, `TASK`, `LINKS`/`NAMES` | [Host Objects](#6-host-objects) |
+| Parse HTML or JSON | [Parsing and Helper Functions](#7-parsing-and-helper-functions) |
+| Decrypt data, run JavaScript, descramble images | [Libraries](#8-libraries) |
+| Reuse an existing CMS family (Madara, MangaThemesia, ...) | [Templates](#9-templates) |
+| Copy a proven pattern | [Cookbook](#10-cookbook) and [Complete Examples](#11-complete-examples) |
+| Test and debug a module | [Development and Debugging](#12-development-and-debugging) |
+
+### Conventions used in this guide
+
+- `UPPERCASE` names (`HTTP`, `MODULE`, `MANGAINFO`, `TASK`, `LINKS`, `NAMES`, `URL`, ...) are objects and globals **injected by the host application**. Which ones exist in which handler is listed in the [handler reference](#handler-reference).
+- Lists (`LINKS`, `NAMES`, `TASK.PageLinks`, ...) are 0-based `TStrings` objects; see [LINKS and NAMES](#links-and-names-tstringlist).
+- "Real usage" examples name the bundled module they were taken from, so you can read the full file in `lua/modules/`.
+
 ---
 
-## Module Structure
+## 2. Quick Start
 
-### Basic Module Template
+A module is a single file in `lua/modules/`. It contains **handler functions** (what the site-specific work looks like) and an **`Init()`** function that registers the module and tells FMD2 which handler is which.
+
+### Module Skeleton
 
 Every Lua module follows a consistent structure:
 
@@ -163,30 +179,202 @@ function Init()
 end
 ```
 
-### Event Handler Reference
+### Steps to Create a Module
 
-Register a handler in `Init()` by assigning the **function name as a string** to
-the matching `On...` property (for example `m.OnGetInfo = 'GetInfo'`). Each
-handler is explained in
-[Event Handlers - Complete Workflow](#event-handlers---complete-workflow).
+1. **Check for a template.** Many sites run a common CMS theme. If one fits, start from a [template](#9-templates) and override only what differs.
+2. **Otherwise copy a similar bundled module** from `lua/modules/` (or the skeleton above).
+3. **Generate a permanent [Module ID](#module-id)** and fill in `Name`, `RootURL` and `Category` in `Init()`.
+4. **Implement the three required handlers:** `OnGetNameAndLink`, `OnGetInfo`, `OnGetPageNumber`. See [Handler Reference](#handler-reference) for what each must return.
+5. **Run FMD2 with `--lua-dofile`** so edits are picked up without restarting; see [Development and Debugging](#12-development-and-debugging).
+6. *(Optional)* Add [`OnCheckSite`](#onchecksite) so the built-in module checker can verify the module.
+
+A complete minimal module is shown in [Example 1](#example-1-simple-module).
+
+---
+
+## 3. Defining a Module
+
+This section covers everything that happens in `Init()` and the `MODULE` object that represents your module at runtime.
+
+### How `Init()` Is Loaded
+
+**When:** When FMD2 starts and loads Lua modules  
+**Called by:** Module loader during application startup  
+**Purpose:** Register module metadata and event handlers  
+
+See the [Basic Module Template](#module-skeleton) for a complete `Init()`.
+
+**Workflow:**
+1. FMD2 scans `lua/modules/` folder for `.lua` files
+2. For each file, calls `Init()` function
+3. `NewWebsiteModule()` creates module object
+4. Module properties are set (ID, Name, RootURL, etc.)
+5. Event handler strings are stored (function names)
+6. Module is added to FMD2's module list
+7. If ID or Name is empty, module is discarded
+
+### Module ID
+
+`m.ID` is the module's permanent identifier. Create it with a GUID generator
+and **remove the hyphens** — a GUID without hyphens is exactly 32 hexadecimal
+characters:
+
+```lua
+-- Generate at https://guidgenerator.com/, then strip the dashes:
+--   56473ae4-47f0-4cee-9368-3d7404b32e60
+-- becomes
+m.ID = '56473ae447f04cee93683d7404b32e60'
+```
+
+The host does not validate the format — any unique string is accepted — but
+keep to the plain dash-less GUID convention used by the bundled modules:
+
+- **Unique** — no two modules may share an ID; the module list is sorted and
+  searched by ID, so a duplicate breaks module lookup.
+- **Stable** — never change or reuse an ID after release. Favorites, download
+  history, module settings, user options, account credentials and persistent
+  cookies are all stored under the ID; a new ID silently orphans the user's
+  existing data.
+- **Plain form** — no hyphens, no `{}` braces; the 32-character dash-less
+  form like every bundled module.
+
+### MODULE Object (TModuleContainer)
+
+Current module information and settings. This is the central object for module configuration and runtime control.
+
+```lua
+function Init()
+    local m = NewWebsiteModule()
+    m.ID = '56473ae447f04cee93683d7404b32e60'  -- GUID with the hyphens removed
+
+    -- Configure module properties
+    m.Name = 'Website Name'
+    m.RootURL = 'https://website.com'
+    m.Category = 'English'
+
+    -- Add user options
+    m.AddOptionSpinEdit('timeout', 'Timeout (seconds)', 60)
+    m.AddOptionCheckBox('showgroup', 'Show group name', false)
+end
+
+function GetNameAndLink()
+    -- Access module properties
+    local timeout = MODULE.GetOption('timeout')
+    local root = MODULE.RootURL
+
+    if not HTTP.GET(root .. '/manga') then return net_problem end
+    -- process
+    return no_error
+end
+```
+
+The `On...` properties that register event handlers are listed in the [Handler Reference](#handler-reference).
+
+#### MODULE Properties
+
+| Property | Type | Access | Description |
+|----------|------|--------|-------------|
+| `MODULE.ID` | String | Read/Write | Module's unique identifier, **assigned once in `Init()` and never changed** — by convention a GUID/UUID created with a GUID generator and stripped of the hyphens — 32 hexadecimal characters, e.g. `56473ae447f04cee93683d7404b32e60`. The format is not validated, but the ID must be unique among all modules and must never change after release. See [Module ID](#module-id) |
+| `MODULE.Name` | String | Read/Write | Module display name — set once in `Init()`; writing it later changes the list entry but not the stored website name |
+| `MODULE.RootURL` | String | Read/Write | Website root URL — set once in `Init()` |
+| `MODULE.Category` | String | Read/Write | Module category (English, Vietnamese, etc.) — set once in `Init()` |
+| `MODULE.MaxTaskLimit` | Integer | Read/Write | Maximum concurrent tasks for this module |
+| `MODULE.MaxThreadPerTaskLimit` | Integer | Read/Write | Maximum threads per task |
+| `MODULE.MaxConnectionLimit` | Integer | Read/Write | Maximum HTTP connections |
+| `MODULE.ActiveTaskCount` | Integer | Read-only | Currently active tasks |
+| `MODULE.ActiveConnectionCount` | Integer | Read-only | Currently active connections |
+| `MODULE.SortedList` | Boolean | Read/Write | Whether manga list is sorted |
+| `MODULE.InformationAvailable` | Boolean | Read/Write | Whether manga info is available |
+| `MODULE.FavoriteAvailable` | Boolean | Read/Write | Whether favorites are supported |
+| `MODULE.DynamicPageLink` | Boolean | Read/Write | Whether page links are dynamic |
+| `MODULE.CurrentDirectoryIndex` | Integer | Read/Write | Current directory index (for multi-directory sites) |
+| `MODULE.TotalDirectory` | Integer | Read/Write | Total number of categories |
+| `MODULE.AccountSupport` | Boolean | Read/Write | Whether module supports user accounts |
+| `MODULE.LastUpdated` | String | Read/Write | Last update timestamp |
+| `MODULE.Tag` | Integer | Read/Write | Custom tag for internal use |
+| `MODULE.Storage` | TStringsStorage | Read/Write | In-memory key-value storage — one store per module, shared by all of its tasks; a missing key reads as `''`, and everything is gone after an app restart; see [Storage and Persistence](#storage-and-persistence) |
+| `MODULE.Account` | TWebsiteModuleAccount | Read-only | User account information — **only present when `AccountSupport` is enabled** (otherwise accessing it raises an error) |
+| `MODULE.Guardian` | TCriticalSection | Read-only | Thread synchronization object |
+
+#### MODULE Methods
+
+| Method | Parameters | Description |
+|--------|-----------|-------------|
+| `MODULE.GetOption(name)` | `name` (string) | Get user-configured option value |
+| `MODULE.AddOptionCheckBox(name, caption, default)` | All strings/boolean | Add checkbox option |
+| `MODULE.AddOptionEdit(name, caption, default)` | All strings | Add text input option |
+| `MODULE.AddOptionSpinEdit(name, caption, default)` | name, caption (string), default (int) | Add numeric option |
+| `MODULE.AddOptionComboBox(name, caption, items, default)` | items is newline-separated | Add dropdown option |
+| `MODULE.AddServerCookies(domain, cookie_string)` | Both strings | Add cookies for `domain` to the module's shared cookie storage — the same storage `HTTP.AddServerCookies` writes to, with the domain given directly. Only cookies carrying an `expires=`/`max-age=` attribute survive an app restart — see [Cookie Storage and Persistence](#cookie-storage-and-persistence) |
+| `MODULE.GetServerCookies(domain, name)` | Both strings | Return cookies stored for `domain` — optionally only the cookie `name` (pass `''` for all) — as `name=value; domain=…; path=…` lines |
+| `MODULE.RemoveCookies(domain, name)` | Both strings | Remove cookies stored for `domain` — optionally only the cookie `name` (pass `''` for all) |
+| `MODULE.ClearCookies()` | None | Clear the module's shared cookie storage — the same storage as `HTTP.ClearCookiesStorage()` |
+
+### User Options
+
+```lua
+function Init()
+    local m = NewWebsiteModule()
+    m.ID = '...'
+    m.AddOptionSpinEdit('timeout', 'Timeout (s)', 60)
+    m.AddOptionCheckBox('showgroup', 'Show group name', false)
+    m.AddOptionComboBox('imagesize', 'Image size:', 'Auto\n780x\n980x\nOriginal', 0)
+end
+
+-- Get option values
+local timeout = tonumber(MODULE.GetOption('timeout') or '60')
+local show_group = MODULE.GetOption('showgroup')
+local image_size = MODULE.GetOption('imagesize')
+```
+
+### Multi-Directory Sites
+
+```lua
+local directories = {'action', 'romance', 'fantasy'}
+
+function Init()
+    local m = NewWebsiteModule()
+    m.ID = '...'
+    m.TotalDirectory = #directories
+end
+
+function GetNameAndLink()
+    local directory = directories[MODULE.CurrentDirectoryIndex + 1]
+    if not HTTP.GET(MODULE.RootURL .. '/category/' .. directory) then return net_problem end
+    -- process
+    return no_error
+end
+```
+
+---
+
+## 4. Event Handlers
+
+Handlers are the Lua functions FMD2 calls at defined points: while updating a website's manga list, reading manga details, and downloading chapters. You register a handler in `Init()` by assigning its **function name as a string** to the matching `On...` property (for example `m.OnGetInfo = 'GetInfo'`).
+
+Handlers are grouped below by the job they belong to. Account handlers are in [Accounts and Login](#5-accounts-and-login).
+
+### Handler Reference
+
+Each handler is described in the grouped sections that follow; the handlers that deal with accounts are in [Accounts and Login](#5-accounts-and-login).
 
 | Handler property | Required | Returns | Injected objects | Injected globals |
 |------------------|----------|---------|------------------|------------------|
-| `OnGetNameAndLink` | **Yes** | status code | `HTTP`, `LINKS`, `NAMES`, `UPDATELIST` | `URL` |
-| `OnGetInfo` | **Yes** | status code | `HTTP`, `MANGAINFO` | `URL` |
-| `OnGetPageNumber` | **Yes** | `true` / `false` | `HTTP`, `TASK` | `URL` |
-| `OnBeforeUpdateList` | No | `true` / `false` — **not used by the host** | `UPDATELIST` | none |
-| `OnGetDirectoryPageNumber` | No | status code | `HTTP`, `UPDATELIST` | `PAGENUMBER`, `WORKPTR` |
-| `OnAfterUpdateList` | No | `true` / `false` — **not used by the host** | `UPDATELIST` | none |
-| `OnTaskStart` | No | `true` / `false` — **not used by the host** | `TASK` | none |
-| `OnGetImageURL` | No | `true` / `false` | `HTTP`, `TASK` | `URL`, `WORKID` |
-| `OnBeforeDownloadImage` | No | `true` / `false` — **not used by the host** | `HTTP`, `TASK` | `URL`, `WORKID` |
-| `OnDownloadImage` | No | `true` / `false` | `HTTP`, `TASK` | `URL`, `WORKID` |
-| `OnSaveImage` | No | filename (string) | `HTTP` | `PATH`, `FILENAME` |
-| `OnAfterImageSaved` | No | `true` / `false` — **not used by the host** | none | `FILENAME` |
-| `OnLogin` | No | `true` / `false` — **not used by the host** (set `MODULE.Account.Status` instead) | `HTTP` | account status constants |
-| `OnAccountState` | No | `true` / `false` — **not used by the host** | none | account status constants |
-| `OnCheckSite` | No | `true` / `false` — **not used by the host** (fill `MANGACHECK` instead) | `MANGACHECK` | account status constants, net status constants |
+| [`OnGetNameAndLink`](#ongetnameandlink) | **Yes** | status code | `HTTP`, `LINKS`, `NAMES`, `UPDATELIST` | `URL` |
+| [`OnGetInfo`](#ongetinfo) | **Yes** | status code | `HTTP`, `MANGAINFO` | `URL` |
+| [`OnGetPageNumber`](#ongetpagenumber) | **Yes** | `true` / `false` | `HTTP`, `TASK` | `URL` |
+| [`OnBeforeUpdateList`](#onbeforeupdatelist) | No | `true` / `false` — **not used by the host** | `UPDATELIST` | none |
+| [`OnGetDirectoryPageNumber`](#ongetdirectorypagenumber) | No | status code | `HTTP`, `UPDATELIST` | `PAGENUMBER`, `WORKPTR` |
+| [`OnAfterUpdateList`](#onafterupdatelist) | No | `true` / `false` — **not used by the host** | `UPDATELIST` | none |
+| [`OnTaskStart`](#ontaskstart) | No | `true` / `false` — **not used by the host** | `TASK` | none |
+| [`OnGetImageURL`](#ongetimageurl) | No | `true` / `false` | `HTTP`, `TASK` | `URL`, `WORKID` |
+| [`OnBeforeDownloadImage`](#onbeforedownloadimage) | No | `true` / `false` — **not used by the host** | `HTTP`, `TASK` | `URL`, `WORKID` |
+| [`OnDownloadImage`](#ondownloadimage) | No | `true` / `false` | `HTTP`, `TASK` | `URL`, `WORKID` |
+| [`OnSaveImage`](#onsaveimage) | No | filename (string) | `HTTP` | `PATH`, `FILENAME` |
+| [`OnAfterImageSaved`](#onafterimagesaved) | No | `true` / `false` — **not used by the host** | none | `FILENAME` |
+| [`OnLogin`](#onlogin) | No | `true` / `false` — **not used by the host** (set `MODULE.Account.Status` instead) | `HTTP` | account status constants |
+| [`OnAccountState`](#onaccountstate) | No | `true` / `false` — **not used by the host** | none | account status constants |
+| [`OnCheckSite`](#onchecksite) | No | `true` / `false` — **not used by the host** (fill `MANGACHECK` instead) | `MANGACHECK` | account status constants, net status constants |
 
 "Status code" means one of the [status constants](#status-constants-and-return-values).
 `Init` has no injected objects; it creates the module with `NewWebsiteModule()`.
@@ -194,7 +382,7 @@ handler is explained in
 > [!IMPORTANT]
 > - `MODULE` is **always available** in every handler except `Init`.
 > - `HTTP` is **not available** in `OnAccountState`, `OnCheckSite`, `OnAfterImageSaved` and `OnTaskStart`, so those handlers cannot make network requests.
-> - `URL` means different things in different handlers; see [URL](#url-global-variable).
+> - `URL` means different things in different handlers; see [URL](#url).
 > - Status constants (`no_error`, `net_problem`, ...) are available wherever the table lists a status code or account status constants.
 
 ### Status Constants and Return Values
@@ -216,11 +404,625 @@ asValid    = 2  -- Credentials valid
 asInvalid  = 3  -- Credentials invalid
 ```
 
+### Injected Globals
+
+Besides the injected objects, FMD2 sets plain global variables before calling certain handlers.
+
+| Global | Set in | Meaning |
+|--------|--------|---------|
+| `URL` | `OnGetNameAndLink`, `OnGetInfo`, `OnGetPageNumber`, `OnGetImageURL`, `OnBeforeDownloadImage`, `OnDownloadImage` | The item being processed; the meaning depends on the handler (see below) |
+| `PAGENUMBER` | `OnGetDirectoryPageNumber` | **You set it** to the number of pages in the manga list |
+| `WORKPTR` | `OnGetDirectoryPageNumber` | 0-based index of the directory being processed |
+| `WORKID` | `OnGetImageURL`, `OnBeforeDownloadImage`, `OnDownloadImage` | 0-based index of the page/image being processed |
+| `PATH` | `OnSaveImage` | Target directory |
+| `FILENAME` | `OnSaveImage`, `OnAfterImageSaved` | Default filename (`OnSaveImage`) / path of the saved file (`OnAfterImageSaved`) |
+
+#### URL
+
+The current URL being processed. What it holds depends on the handler:
+
+| Handler | `URL` contains |
+|---------|----------------|
+| [`OnGetNameAndLink`](#ongetnameandlink) | Current page number of the manga list (0-based) |
+| [`OnGetInfo`](#ongetinfo) | Manga URL |
+| [`OnGetPageNumber`](#ongetpagenumber) | Chapter URL |
+| [`OnGetImageURL`](#ongetimageurl) | Chapter URL — take the page URL from `TASK.PageContainerLinks[WORKID]` or derive it with `WORKID` |
+| `OnBeforeDownloadImage`, `OnDownloadImage` | Image URL (read-only in `OnBeforeDownloadImage`; the host does not read changes back) |
+
+#### PAGENUMBER
+
+Total pages in manga list directory.
+
+```lua
+PAGENUMBER = tonumber(x.XPathString('//last-page')) or 1
+```
+
+Set it in `OnGetDirectoryPageNumber`; see
+[`OnGetDirectoryPageNumber`](#ongetdirectorypagenumber).
+
+### Lifecycle at a Glance
+
+**Scenario: User updates manga list and downloads a chapter**
+
+```
+1. Init()                              -- Module loads at startup
+2. OnAfterUpdateList()                 -- Optional: reset state from previous run
+3. OnBeforeUpdateList()                -- Optional: prepare for update
+4. OnGetDirectoryPageNumber()          -- Get total pages (sets PAGENUMBER)
+5. OnGetNameAndLink()                  -- Called for each page (fills LINKS/NAMES)
+   - Page 0: GetNameAndLink()
+   - Page 1: GetNameAndLink()
+   - ...
+   - Page N: GetNameAndLink()
+6. OnBeforeUpdateList()                -- Called again before the manga-info stage
+7. OnGetInfo()                         -- For each new manga found (fills MANGAINFO)
+
+-- User clicks on manga to view info
+8. OnGetInfo()                         -- Fetch manga details (fills MANGAINFO)
+
+-- User selects chapter to download
+9. OnTaskStart()                       -- Optional: initialize task
+10. OnGetPageNumber()                  -- Get chapter pages (fills TASK.PageLinks)
+
+-- For each image in chapter:
+11. OnBeforeDownloadImage()             -- Set headers, modify URL if needed
+12. OnDownloadImage()                   -- Optional: custom download logic
+    -- OR default download if not defined
+13. OnSaveImage()                       -- Optional: save the image yourself, return path
+14. OnAfterImageSaved()                -- Post-process saved image
+
+-- Repeat 11-14 for each image
+```
+
+**Scenario: User has account enabled**
+
+```
+1. Init()
+2. User clicks "check" in Account Manager
+3. OnLogin()                           -- Host sets Status=asChecking, then calls Login
+   - Module sets MODULE.Account.Status (asValid/asInvalid/asUnknown)
+4. [Normal workflow continues]
+5. OnAccountState()                    -- When the account checkbox is toggled
+```
+
+### Updating the Manga List
+
+These handlers run when the user presses **Update** on a website's manga list (`TUpdateListManagerThread`). In call order: `OnAfterUpdateList` (reset hook at the start), `OnBeforeUpdateList`, `OnGetDirectoryPageNumber`, `OnGetNameAndLink` once per list page, `OnBeforeUpdateList` again, and then `OnGetInfo` for every manga that is new. Only `OnGetNameAndLink` is required.
+
+#### `OnAfterUpdateList`
+
+**When:** At the start of a website's update, and when an update is cancelled (optional)
+**Called by:** UpdateListManagerThread
+
+```lua
+function AfterUpdateList()
+    -- Reset state accumulated by the previous update run
+    return true
+end
+```
+
+**Workflow:**
+1. Before anything else is done for the website, FMD2 calls `OnAfterUpdateList` (if defined) — use it to clean up state from a *previous* update run
+2. If the update is terminated (cancelled), `OnAfterUpdateList` is called again on the way out
+3. It is **not** called after a successful update — despite the name, this is a reset hook, not a completion hook
+
+#### `OnBeforeUpdateList`
+
+**When:** Before manga list update begins (optional)
+**Called by:** UpdateListManagerThread
+
+```lua
+function BeforeUpdateList()
+    -- Prepare for update (login, set cookies, etc.)
+    return true
+end
+```
+
+**Workflow:**
+1. User clicks "Update" in manga list
+2. FMD2 calls `OnBeforeUpdateList` (if defined)
+3. The return value is **ignored** — the update proceeds either way, so treat this purely as a preparation hook
+4. The host actually calls it **twice**: once before the page-count stage, and again after the manga-list pages have been fetched (before the manga-info stage)
+
+#### `OnGetDirectoryPageNumber`
+
+**When:** Determining total pages in manga list
+**Called by:** UpdateListManagerThread
+**Sets:** `PAGENUMBER` global variable
+
+```lua
+function GetDirectoryPageNumber()
+    if not HTTP.GET(MODULE.RootURL .. '/manga-list?page=1') then return net_problem end
+    local x = CreateTXQuery(HTTP.Document)
+    PAGENUMBER = tonumber(x.XPathString('//last-page')) or 1
+    return no_error
+end
+```
+
+**Workflow:**
+1. FMD2 needs to know total pages
+2. Calls `OnGetDirectoryPageNumber`
+3. Module sets `PAGENUMBER` to total page count
+4. FMD2 uses this for pagination UI
+
+**Note:** besides `PAGENUMBER`, FMD2 also injects the `WORKPTR` global here —
+the 0-based index of the directory whose page count is being
+fetched. For multi-directory sites (`MODULE.TotalDirectory` > 1) use it
+together with `MODULE.CurrentDirectoryIndex` to find out which directory is
+being updated.
+
+#### `OnGetNameAndLink`
+
+**When:** Fetching manga list from website
+**Called by:** UpdateListManagerThread (repeatedly for each page)
+**Sets:** `LINKS` and `NAMES` global lists
+
+```lua
+function GetNameAndLink()
+    local page = URL  -- URL contains current page number (0-based)
+    local u = MODULE.RootURL .. '/manga-list?page=' .. (page + 1)
+
+    if not HTTP.GET(u) then return net_problem end
+    local x = CreateTXQuery(HTTP.Document)
+    x.XPathHREFAll('//div[@class="manga"]/a', LINKS, NAMES)
+    return no_error
+end
+```
+
+**Workflow:**
+1. FMD2 iterates through pages (0 to PAGENUMBER-1)
+2. For each page, calls `OnGetNameAndLink`
+3. Module adds manga URLs to `LINKS` and names to `NAMES`
+4. FMD2 collects all LINKS/NAMES for display
+5. Can call `UPDATELIST.UpdateStatusText()` to show progress
+6. Can access `UPDATELIST.CurrentDirectoryPageNumber`
+
+### Reading Manga Details
+
+#### `OnGetInfo`
+
+**When:** Fetching manga details (title, chapters, etc.)
+**Called by:** manga-info threads — the update list (for new manga), favorites refresh, and the manga info dialog
+**Sets:** `MANGAINFO` object properties
+
+```lua
+function GetInfo()
+    local u = MaybeFillHost(MODULE.RootURL, URL)
+
+    if not HTTP.GET(u) then return net_problem end
+
+    local x = CreateTXQuery(HTTP.Document)
+    MANGAINFO.Title     = x.XPathString('//h1')
+    MANGAINFO.CoverLink = x.XPathString('//img/@src')
+    MANGAINFO.Genres    = x.XPathStringAll('//div[@class="genres"]/a')
+
+    -- Fetch chapters
+    x.XPathHREFAll('//ul[@class="chapters"]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
+    -- Sites usually list the newest chapter first; reverse both lists
+    MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
+
+    return no_error
+end
+```
+
+**Workflow:**
+1. User clicks on manga or refreshes info
+2. FMD2 calls `OnGetInfo`
+3. Module fills `MANGAINFO` properties:
+   - `Title`, `AltTitles`, `CoverLink`
+   - `Authors`, `Artists`, `Genres`, `Status`, `Summary`
+   - `ChapterLinks`, `ChapterNames` (TStringList)
+4. FMD2 displays manga information
+5. Chapters are shown in chapter list
+
+### Downloading Chapters
+
+These handlers run for every chapter the user downloads. `OnGetPageNumber` collects the image URLs; the remaining handlers customize how each image is fetched, saved and post-processed. Only `OnGetPageNumber` is required. The default behaviour of each step applies when its handler is not defined.
+
+#### `OnTaskStart`
+
+**When:** Before downloading a chapter (optional)
+**Called by:** TTaskContainer
+
+```lua
+function TaskStart()
+    -- Initialize task, set custom options
+    TASK.PageNumber = 10  -- Set expected page count
+    return true
+end
+```
+
+**Workflow:**
+1. User starts downloading a chapter
+2. FMD2 calls `OnTaskStart` (if defined)
+3. Module can set initial values or perform setup
+4. The return value is **ignored** — the download proceeds either way
+
+#### `OnGetPageNumber`
+
+**When:** Fetching chapter pages (image URLs)
+**Called by:** TTaskThread
+**Sets:** `TASK.PageLinks` or `TASK.PageContainerLinks`
+
+```lua
+function GetPageNumber()
+    local u = MaybeFillHost(MODULE.RootURL, URL)
+
+    if not HTTP.GET(u) then return false end
+
+    local x = CreateTXQuery(HTTP.Document)
+
+    -- For single-page chapters (all images on one page)
+    x.XPathStringAll('//div[@class="reader"]/img/@src', TASK.PageLinks)
+
+    -- OR for multi-page chapters (each image on separate page)
+    -- x.XPathHREFAll('//div[@class="pages"]/a', TASK.PageContainerLinks)
+
+    return true
+end
+```
+
+**Workflow:**
+1. FMD2 starts downloading a chapter
+2. Calls `OnGetPageNumber`
+3. Module has two options:
+   - **Single-page:** Add all image URLs to `TASK.PageLinks`
+   - **Multi-page:** Add page URLs to `TASK.PageContainerLinks`, then `OnGetImageURL` will be called for each
+4. Can set `TASK.PageNumber` for progress tracking
+5. Can set `TASK.FileNames` for custom filenames
+
+> [!WARNING]
+> `OnGetPageNumber` runs once per chapter on the **task's shared `HTTP`
+> object**, with no reset in between. If you set custom headers, cookies or
+> `MimeType`, call `HTTP.Reset()` first — otherwise every chapter after the
+> first inherits the previous response's headers and your custom headers are
+> silently dropped. See
+> [HTTP.Reset() and Header Lifecycle](#httpreset-and-header-lifecycle).
+
+#### `OnGetImageURL`
+
+**When:** Resolving the real image URL for each page (for multi-page chapters)
+**Called by:** TDownloadThread (once for each page still marked for work)
+**Sets:** `TASK.PageLinks[WORKID]`
+
+```lua
+function GetImageURL()
+    -- URL here is the CHAPTER url, not the page url!
+    -- Build the page url from TASK.PageContainerLinks[WORKID]...
+    local u = MaybeFillHost(MODULE.RootURL, TASK.PageContainerLinks[WORKID])
+    -- ...or derive it from the chapter url + WORKID:
+    -- local u = MaybeFillHost(MODULE.RootURL, URL:gsub('/gallery/', '/g/')) .. (WORKID + 1) .. '/'
+
+    if not HTTP.GET(u) then return false end
+    local x = CreateTXQuery(HTTP.Document)
+    local img_url = x.XPathString('//img[@id="page"]/@src')
+    TASK.PageLinks[WORKID] = MaybeFillHost(MODULE.RootURL, img_url)
+    return true
+end
+```
+
+**Workflow:**
+1. FMD2 calls `OnGetImageURL` once per work item (per page not yet resolved)
+2. `WORKID` global contains the current work index
+3. `URL` contains the **chapter URL** — take the page URL from `TASK.PageContainerLinks[WORKID]` or derive it with `WORKID`
+4. Module must set `TASK.PageLinks[WORKID]` to the image URL
+5. FMD2 then downloads the image
+
+#### `OnBeforeDownloadImage`
+
+**When:** Before downloading each image
+**Called by:** TDownloadThread
+**Purpose:** set request headers/cookies before the image download
+
+```lua
+function BeforeDownloadImage()
+    -- Set required headers
+    HTTP.Headers.Values['Origin'] = MODULE.RootURL
+    HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
+
+    return true
+end
+```
+
+**Workflow:**
+1. FMD2 is about to download an image
+2. Calls `OnBeforeDownloadImage`
+3. `WORKID` global contains image index
+4. Module can set headers and cookies; to change the URL itself, rewrite `TASK.PageLinks[WORKID]` here (a later retry picks it up — the current download still uses the old URL), or handle the download in `OnDownloadImage`
+5. The return value is **ignored** — it is always overwritten by `OnDownloadImage` or the default download, so this hook cannot skip an image
+
+#### `OnDownloadImage`
+
+**When:** Custom image download logic (optional, replaces default)
+**Called by:** TDownloadThread
+
+```lua
+function DownloadImage()
+    -- Custom download logic (e.g., decrypt, decode, etc.)
+    if not HTTP.GET(URL) then return false end
+    -- Image data is in HTTP.Document
+    return true
+end
+```
+
+**Workflow:**
+1. Only called if `OnDownloadImage` is defined
+2. Replaces default image download behavior
+3. `WORKID` global contains image index
+4. Module handles downloading image data
+5. Image data should be in `HTTP.Document` after GET
+
+#### `OnSaveImage`
+
+**When:** Custom image save logic (optional)
+**Called by:** TDownloadThread
+
+```lua
+function SaveImage()
+    -- Save the image yourself and return the full path of the saved file
+    local filename = PATH .. '/' .. string.format('%03d', WORKID + 1) .. '.jpg'
+    HTTP.Document.SaveToFile(filename)
+    return filename
+end
+```
+
+**Workflow:**
+1. Only called if `OnSaveImage` is defined (and the file does not already exist on disk)
+2. `PATH` global contains target directory
+3. `FILENAME` global contains default filename
+4. The module **saves the image data itself** — the downloaded bytes are in `HTTP.Document` (e.g. `HTTP.Document.SaveToFile(path)`)
+5. Return the full path of the saved file; FMD2 then checks that the file exists
+
+#### `OnAfterImageSaved`
+
+**When:** After image is saved to disk
+**Called by:** TDownloadThread
+
+```lua
+function AfterImageSaved()
+    -- Post-processing (e.g., remove watermark)
+    require('fmd.mangafoxwatermark').RemoveWatermark(FILENAME, true)
+    return true
+end
+```
+
+**Workflow:**
+1. Image has been saved to disk
+2. FMD2 calls `OnAfterImageSaved`
+3. `FILENAME` global contains saved file path
+4. Module can process the saved file
+5. Common use: watermark removal
+
+### Module Checker
+
+#### `OnCheckSite`
+
+**When:** The user runs the module checker dialog (optional)
+**Called by:** FormCheckModules
+**Sets:** `MANGACHECK` properties
+
+```lua
+function CheckSite()
+    -- Provide a known-good manga and chapter for the module checker to test with
+    MANGACHECK.MangaURL     = '/manga/6rUzU'
+    MANGACHECK.MangaTitle   = 'The Academy’s Sashimi Sword Master'
+    MANGACHECK.ChapterURL   = '/6rUzU/pIEtz'
+    MANGACHECK.ChapterTitle = 'Episode 74'
+    MANGACHECK.ChapterURLAddRootHost = false
+end
+```
+
+**Workflow:**
+1. User opens the module checker tool
+2. FMD2 calls `OnCheckSite` (if defined) with a `MANGACHECK` object injected
+3. Module fills `MANGACHECK` with a test manga and chapter (URLs and titles) it knows exist
+4. The checker then runs a full `GetInfo`/chapter test against those URLs to verify the module still works
+5. The return value is **not used by the host** — the `MANGACHECK` fields are the output
+
+Available `MANGACHECK` properties: `MangaURL`, `MangaTitle`, `ChapterURL`,
+`ChapterTitle`, `ChapterURLPrefix` (prefix the checker uses to build chapter
+links), `MangaURLAddRootHost` and `ChapterURLAddRootHost` (prepend
+`MODULE.RootURL` to the given URLs; default `true`).
+
 ---
 
-## Injected Pascal Objects
+## 5. Accounts and Login
 
-These objects are automatically injected by the host application and available globally in Lua.
+Some sites need a login to read all content. A module opts in with `AccountSupport = true` and provides an `OnLogin` handler. The user enters credentials in FMD2's **Account Manager**; the module reads them from `MODULE.Account`.
+
+> [!IMPORTANT]
+> Login is **not** run automatically before other handlers. `OnLogin` is called when the user clicks the *check* button in the Account Manager. Everything else (sending the cookie or token on later requests) is up to your handlers.
+
+### Enabling Account Support
+
+```lua
+function Init()
+    local m = NewWebsiteModule()
+    m.ID = '...'
+    m.AccountSupport = true
+    m.OnLogin = 'Login'
+end
+```
+
+The `Login` handler itself is described in [`OnLogin`](#onlogin), and
+Example 3 below is a complete module with login.
+
+For sites whose login returns a **token** (JWT/Bearer) instead of a session
+cookie, store it in `MODULE.Account.Cookies` — the account field that is saved
+to disk and reloaded on startup — and send it yourself as a header:
+
+```lua
+function Login()
+    if not MODULE.Account.Enabled then return false end
+    local crypto = require 'fmd.crypto'
+    local data = 'email='    .. crypto.EncodeURLElement(MODULE.Account.Username) ..
+                 '&password=' .. crypto.EncodeURLElement(MODULE.Account.Password)
+    MODULE.Account.Status = asChecking
+    HTTP.Reset()  -- drop stale headers, e.g. the expired Authorization
+    if HTTP.POST(MODULE.RootURL .. '/api/auth/login', data) and HTTP.ResultCode == 200 then
+        MODULE.Account.Cookies = CreateTXQuery(HTTP.Document).XPathString('json(*).data.token')
+        if MODULE.Account.Cookies ~= '' then
+            MODULE.Account.Status = asValid
+            return true
+        end
+    end
+    MODULE.Account.Status = asInvalid
+    return false
+end
+
+function GetPageNumber()
+    -- first request after enabling the account: log in once
+    if MODULE.Account.Enabled and MODULE.Account.Cookies == '' then Login() end
+
+    local retried = false
+    ::request:: -- on a rejected token, log in again below and jump back here
+
+    HTTP.Reset()  -- the task's HTTP object is reused for every chapter
+    HTTP.Headers.Values['Authorization'] = 'Bearer ' .. MODULE.Account.Cookies
+    if not HTTP.GET(MODULE.RootURL .. '/api/.../pages') then return false end
+
+    local x = CreateTXQuery(HTTP.Document)
+    -- rejection signal 1: an explicit 401 status
+    -- rejection signal 2: the body — this API answers 200 with an error
+    -- payload such as {"status":false,"data":[],"errorType":"login_required"}
+    local rejected = HTTP.ResultCode == 401
+        or x.XPathString('json(*).errorType') == 'login_required'
+
+    if rejected then
+        -- token expired or rejected: clear it, log in again, retry once here
+        if not retried and MODULE.Account.Enabled then
+            MODULE.Account.Cookies = ''
+            retried = true
+            if Login() then goto request end
+        end
+        return false
+    end
+
+    -- rejection signal 3: a field the normal response always carries (here
+    -- `rv`) is missing — XPathString returns '' for a missing key and the
+    -- string 'null' for an explicit JSON null
+    local rv = x.XPathString('json(*).rv')
+    if rv == '' or rv == 'null' then return false end
+
+    for v in x.XPath('json(*).data()').Get() do
+        TASK.PageLinks.Add(v.GetProperty('imageUrl').ToString())
+    end
+
+    return true
+end
+```
+
+Not every API signals a rejected token with a `401` — some answer `200` with
+an error body instead, e.g.
+`{"status":false,"data":[],"message":"...","errorType":"login_required"}`, so
+the only reliable signal is the **content** of the response: an error field
+such as `errorType`, or the absence of a field the normal response always
+carries. Whatever the signal, the pattern is the same: clear the token, log
+in again, and retry **once, inside the same handler**. The retry is a backward
+`goto` to the request: the `retried` flag is declared *before* the label, so it
+survives the jump and limits the retry to a single attempt (Lua has no
+`continue`; a backward `goto` is the standard way to restart a block).
+
+### MODULE.Account Properties
+
+| Property | Type | Access | Description |
+|----------|------|--------|-------------|
+| `MODULE.Account.Enabled` | Boolean | Read/Write | Is account enabled |
+| `MODULE.Account.Username` | String | Read/Write | Username |
+| `MODULE.Account.Password` | String | Read/Write | Password |
+| `MODULE.Account.Status` | Integer | Read/Write | Account status (see below) |
+| `MODULE.Account.Cookies` | String | Read/Write | Account cookies / auth token — **saved encrypted to `modules.json` and restored on startup**. Not applied to requests automatically: set the header yourself, e.g. `HTTP.Headers.Values['Authorization'] = 'Bearer ' .. MODULE.Account.Cookies`. Set it back to `''` to force a re-login |
+| `MODULE.Account.Guardian` | TCriticalSection | Read-only | Thread sync object |
+
+For the `Status` values (`asUnknown`, `asChecking`, `asValid`, `asInvalid`) see
+[Status Constants and Return Values](#status-constants-and-return-values).
+
+> [!NOTE]
+> `Username`, `Password` and `Cookies` are written to disk — encrypted, in
+> `modules.json` under the module's `ID` — and decrypted again when the module
+> is loaded.
+
+### `OnLogin`
+
+**When:** Authenticating user account
+**Called by:** TAccountCheckThread — when the user clicks the check button in the Account Manager dialog
+**Sets:** `MODULE.Account.Status`
+
+```lua
+function Login()
+    if not MODULE.Account.Enabled then
+        return false
+    end
+
+    local crypto = require 'fmd.crypto'
+    local data = 'username=' .. crypto.EncodeURLElement(MODULE.Account.Username) ..
+                 '&password=' .. crypto.EncodeURLElement(MODULE.Account.Password)
+
+    MODULE.Account.Status = asChecking
+
+    if HTTP.POST(MODULE.RootURL .. '/login', data) then
+        if HTTP.ResultCode == 200 then
+            MODULE.Account.Status = asValid
+            return true
+        else
+            MODULE.Account.Status = asInvalid
+            return false
+        end
+    end
+
+    MODULE.Account.Status = asUnknown
+    return false
+end
+```
+
+**Workflow:**
+1. User opens the Account Manager and clicks "check" for the module's account
+2. FMD2 sets `MODULE.Account.Status = asChecking`, then calls `OnLogin`
+3. Module should:
+   - Check `MODULE.Account.Enabled`
+   - Access `MODULE.Account.Username` and `.Password`
+   - Perform login request
+   - Set status to `asValid`, `asInvalid`, or `asUnknown`
+4. The return value itself is **not used by the host** — the `Status` you set is what the UI shows
+
+### `OnAccountState`
+
+**When:** The user toggles the account's enabled checkbox in the Account Manager
+**Called by:** TAccountManagerForm.vtAccountListChecked — synchronously, on the UI thread, right after the host writes `MODULE.Account.Enabled`
+
+```lua
+function AccountState()
+    -- MODULE is available; HTTP is NOT injected here.
+    -- This is a toggle notification, not a validation hook.
+    if not MODULE.Account.Enabled then
+        MODULE.Account.Cookies = ''   -- forget the saved token/session
+        MODULE.ClearCookies()         -- forget the module's stored cookies
+    end
+    MODULE.Account.Status = asUnknown
+    return true
+end
+```
+
+**Workflow:**
+1. The user (un)checks the module's account in the Account Manager list
+2. The host updates `MODULE.Account.Enabled`, then calls `OnAccountState` (if registered) on the UI thread
+3. Use it to react to the toggle — clear a cached token (`MODULE.Account.Cookies`), clear stored cookies (`MODULE.ClearCookies()`), reset `MODULE.Account.Status`
+4. The return value is **not used by the host**
+
+> [!NOTE]
+> This handler is a **notification, not a validator**: it is never called at
+> app startup or on a timer, and it cannot make network requests. Validating
+> credentials is the job of [`OnLogin`](#onlogin), which the host runs
+> in a background thread when the user clicks "check" or saves new credentials.
+> The call also runs on the UI thread, so keep it quick — no waiting, no heavy work.
+
+A complete module with login is shown in [Example 3](#example-3-module-with-login).
+
+---
+
+## 6. Host Objects
+
+Objects that FMD2 injects into your handlers (see the [handler reference](#handler-reference) for which handler gets which). `MODULE` is covered in [Defining a Module](#3-defining-a-module).
 
 ### HTTP Object (THTTPSendThread)
 
@@ -250,7 +1052,7 @@ if HTTP.GET('https://example.com/data') then
 end
 ```
 
-#### Properties
+#### HTTP Properties
 
 | Property | Type | Description |
 |----------|------|-------------|
@@ -271,7 +1073,7 @@ end
 | `HTTP.ResultString` | String | HTTP status text ("OK", "Not Found", etc.) |
 | `HTTP.LastURL` | String | URL of the last completed request |
 
-#### Methods
+#### HTTP Methods
 
 | Method | Description |
 |--------|-------------|
@@ -298,42 +1100,56 @@ end
 > turn redirection off for a single request, always set it back to `true`
 > afterwards.
 
-#### Cookie Storage and Persistence
+#### HTTP.Document (TMemoryStream)
 
-Every handler — including `Login()` — gets its own `HTTP` object, but all of
-them share **one cookie storage per module**. `HTTP.AddServerCookies`,
-`HTTP.ClearCookiesStorage`, `HTTP.ParseServerCookies` and the `MODULE.*`
-cookie methods all read and write that same storage.
+`HTTP.Document` is both the request body and the response body of the `HTTP`
+object. `GET`/`POST`/`XHR`/`HEAD`/`Request` write the response into it, and
+whatever it holds when a request starts is sent as the request body (that is
+how `HTTP.Request('POST', url)` sends a body — `HTTP.POST(url, data)` writes
+`data` into it for you and clears it first).
+
+Right after a request the stream position is `0`, so `ToString()` returns the
+whole body and `WriteString()` overwrites it from the start.
+
+| Member | Description |
+|--------|-------------|
+| `HTTP.Document.ToString()` | Return the stream content from the current position to the end as a string (the position is restored — after a request that means the whole body) |
+| `HTTP.Document.ReadString()` | Alias of `ToString()` |
+| `HTTP.Document.WriteString(s)` | Write the raw bytes of `s` at the **current position**, advancing it — does **not** clear or resize the stream by itself |
+| `HTTP.Document.Clear()` | Empty the stream (size and position back to 0) |
+| `HTTP.Document.LoadFromFile(path)` | Replace the stream content with a file's content |
+| `HTTP.Document.SaveToFile(path)` | Write the stream content to a file |
+| `HTTP.Document.Size` | Stream size in bytes (read/write; setting it grows or truncates the stream) |
+
+Real usage — decrypt the image in place in `OnDownloadImage`
+(`lua/modules/MangaPlus.lua`; the same pattern appears in `PhiliaScans.lua`
+and `Comix.lua`):
 
 ```lua
--- the same storage, reached two ways:
-HTTP.AddServerCookies('https://example.com/', 'session=abc; path=/; max-age=2592000')
-MODULE.AddServerCookies('example.com', 'session=abc; path=/; max-age=2592000')
+function DownloadImage()
+    if not HTTP.GET(url) then return false end
+    local data = HTTP.Document.ToString()
+    local key = ...  -- from the page
+    local out = {}
+    for i = 1, data:len() do
+        out[i] = string.char(string.byte(data, i) ~ string.byte(key, ((i - 1) % key:len()) + 1))
+    end
+    HTTP.Document.WriteString(table.concat(out, ''))  -- same length = exact overwrite
+    return true
+end
 ```
 
-- While `HTTP.EnabledCookies` is `true` (the default), stored cookies are
-  matched by domain and path and attached automatically as a `Cookie:` header
-  on every request. They also survive `HTTP.Reset()`.
-- `HTTP.AddServerCookies(url, cookie_string)` derives the domain and path from
-  `url`. The first argument may be omitted — but then the cookie is stored with
-  an **empty domain**, which matches no host, so it is never sent back (unless
-  the cookie string itself carries a `domain=` attribute). Prefer the
-  two-argument form, or `MODULE.AddServerCookies(domain, cookie_string)`,
-  which takes the domain directly.
-- Several cookies can be passed at once, separated by newlines. Recognized
-  attributes: `domain`, `path`, `expires`, `max-age`, `secure`, `httponly`,
-  `samesite` — anything else is ignored.
-- **A cookie is written to disk only when its string contains `expires=` or
-  `max-age=`** (a *persistent* cookie in RFC 6265 terms). Without either
-  attribute it is a *session* cookie: it lives in memory for the current run
-  and is lost when the app restarts — even though `AddServerCookies` was used.
-- Persistent cookies are saved to `modules.json` under the module's `ID`,
-  together with the account and the user options, and are reloaded on startup.
-
-The cookie storage can only ever produce a `Cookie:` header — it cannot feed
-an `Authorization: Bearer ...` header. For token-based APIs keep the token in
-`MODULE.Account.Cookies` instead (see
-[Account Properties](#account-properties)).
+> [!NOTE]
+> - `WriteString` writes at the current position without resizing the stream:
+>   writing a **shorter** string leaves the old tail at the end, writing a
+>   **longer** one grows the stream. Call `Clear()` first when replacing the
+>   content with something of a different length.
+> - To send a custom request body with an arbitrary method:
+>   `HTTP.Document.Clear(); HTTP.Document.WriteString(body);
+>   HTTP.MimeType = 'application/...'; HTTP.Request('POST', url)`.
+> - `HTTP.Document` is a `TStream`, so it can be fed directly to
+>   [fmd.imagepuzzle](#fmdimagepuzzle) — in-place descrambling works:
+>   `puzzle.DeScramble(HTTP.Document, HTTP.Document)`.
 
 #### HTTP.Reset() and Header Lifecycle
 
@@ -402,7 +1218,7 @@ the host resets it between handler calls:
 | `OnGetDirectoryPageNumber`, `OnGetNameAndLink` | one per update-list run | yes — after every call |
 | `OnGetInfo` (update list) | one per update-list run | yes — after every manga |
 | `OnGetInfo` (favorites / manga info dialog) | fresh per lookup | first request starts clean |
-| `OnGetPageNumber` | **one per download task — reused for every chapter** | **no** |
+| [`OnGetPageNumber`](#ongetpagenumber) | **one per download task — reused for every chapter** | **no** |
 | `OnGetImageURL`, `OnBeforeDownloadImage`, `OnDownloadImage`, `OnAfterImageSaved` | one per download worker thread | yes — before every image |
 
 `OnGetPageNumber` is the one to watch: in a multi-chapter task, every chapter
@@ -420,662 +1236,44 @@ setting the headers for the second one.
 socket (a fresh connection is made on the next request). The module's shared
 cookie storage is **not** touched — stored cookies are re-applied
 automatically when the next request is made, so a logged-in session survives
-a `Reset()`. For which properties survive a reset, see the note above.
+a `Reset()`. Which properties survive a reset is listed in the note under [HTTP Methods](#http-methods).
 
-#### HTTP.Document (TMemoryStream)
+#### Cookie Storage and Persistence
 
-`HTTP.Document` is both the request body and the response body of the `HTTP`
-object. `GET`/`POST`/`XHR`/`HEAD`/`Request` write the response into it, and
-whatever it holds when a request starts is sent as the request body (that is
-how `HTTP.Request('POST', url)` sends a body — `HTTP.POST(url, data)` writes
-`data` into it for you and clears it first).
-
-Right after a request the stream position is `0`, so `ToString()` returns the
-whole body and `WriteString()` overwrites it from the start.
-
-| Member | Description |
-|--------|-------------|
-| `HTTP.Document.ToString()` | Return the stream content from the current position to the end as a string (the position is restored — after a request that means the whole body) |
-| `HTTP.Document.ReadString()` | Alias of `ToString()` |
-| `HTTP.Document.WriteString(s)` | Write the raw bytes of `s` at the **current position**, advancing it — does **not** clear or resize the stream by itself |
-| `HTTP.Document.Clear()` | Empty the stream (size and position back to 0) |
-| `HTTP.Document.LoadFromFile(path)` | Replace the stream content with a file's content |
-| `HTTP.Document.SaveToFile(path)` | Write the stream content to a file |
-| `HTTP.Document.Size` | Stream size in bytes (read/write; setting it grows or truncates the stream) |
-
-Real usage — decrypt the image in place in `OnDownloadImage`
-(`lua/modules/MangaPlus.lua`; the same pattern appears in `PhiliaScans.lua`
-and `Comix.lua`):
+Every handler — including `Login()` — gets its own `HTTP` object, but all of
+them share **one cookie storage per module**. `HTTP.AddServerCookies`,
+`HTTP.ClearCookiesStorage`, `HTTP.ParseServerCookies` and the `MODULE.*`
+cookie methods all read and write that same storage.
 
 ```lua
-function DownloadImage()
-    if not HTTP.GET(url) then return false end
-    local data = HTTP.Document.ToString()
-    local key = ...  -- from the page
-    local out = {}
-    for i = 1, data:len() do
-        out[i] = string.char(string.byte(data, i) ~ string.byte(key, ((i - 1) % key:len()) + 1))
-    end
-    HTTP.Document.WriteString(table.concat(out, ''))  -- same length = exact overwrite
-    return true
-end
+-- the same storage, reached two ways:
+HTTP.AddServerCookies('https://example.com/', 'session=abc; path=/; max-age=2592000')
+MODULE.AddServerCookies('example.com', 'session=abc; path=/; max-age=2592000')
 ```
 
-> [!NOTE]
-> - `WriteString` writes at the current position without resizing the stream:
->   writing a **shorter** string leaves the old tail at the end, writing a
->   **longer** one grows the stream. Call `Clear()` first when replacing the
->   content with something of a different length.
-> - To send a custom request body with an arbitrary method:
->   `HTTP.Document.Clear(); HTTP.Document.WriteString(body);
->   HTTP.MimeType = 'application/...'; HTTP.Request('POST', url)`.
-> - `HTTP.Document` is a `TStream`, so it can be fed directly to
->   [fmd.imagepuzzle](#fmdimagepuzzle) — in-place descrambling works:
->   `puzzle.DeScramble(HTTP.Document, HTTP.Document)`.
-
----
-
-### MODULE Object (TModuleContainer)
-
-Current module information and settings. This is the central object for module configuration and runtime control.
-
-```lua
-function Init()
-    local m = NewWebsiteModule()
-    m.ID = '56473ae447f04cee93683d7404b32e60'  -- GUID with the hyphens removed
-
-    -- Configure module properties
-    m.Name = 'Website Name'
-    m.RootURL = 'https://website.com'
-    m.Category = 'English'
-
-    -- Add user options
-    m.AddOptionSpinEdit('timeout', 'Timeout (seconds)', 60)
-    m.AddOptionCheckBox('showgroup', 'Show group name', false)
-end
-
-function GetNameAndLink()
-    -- Access module properties
-    local timeout = MODULE.GetOption('timeout')
-    local root = MODULE.RootURL
-
-    if not HTTP.GET(root .. '/manga') then return net_problem end
-    -- process
-    return no_error
-end
-```
-
-#### Properties
-
-| Property | Type | Access | Description |
-|----------|------|--------|-------------|
-| `MODULE.ID` | String | Read/Write | Module's unique identifier, **assigned once in `Init()` and never changed** — by convention a GUID/UUID created with a GUID generator and stripped of the hyphens — 32 hexadecimal characters, e.g. `56473ae447f04cee93683d7404b32e60`. The format is not validated, but the ID must be unique among all modules and must never change after release. See [Generate Unique IDs](#8-generate-unique-ids) |
-| `MODULE.Name` | String | Read/Write | Module display name — set once in `Init()`; writing it later changes the list entry but not the stored website name |
-| `MODULE.RootURL` | String | Read/Write | Website root URL — set once in `Init()` |
-| `MODULE.Category` | String | Read/Write | Module category (English, Vietnamese, etc.) — set once in `Init()` |
-| `MODULE.MaxTaskLimit` | Integer | Read/Write | Maximum concurrent tasks for this module |
-| `MODULE.MaxThreadPerTaskLimit` | Integer | Read/Write | Maximum threads per task |
-| `MODULE.MaxConnectionLimit` | Integer | Read/Write | Maximum HTTP connections |
-| `MODULE.ActiveTaskCount` | Integer | Read-only | Currently active tasks |
-| `MODULE.ActiveConnectionCount` | Integer | Read-only | Currently active connections |
-| `MODULE.SortedList` | Boolean | Read/Write | Whether manga list is sorted |
-| `MODULE.InformationAvailable` | Boolean | Read/Write | Whether manga info is available |
-| `MODULE.FavoriteAvailable` | Boolean | Read/Write | Whether favorites are supported |
-| `MODULE.DynamicPageLink` | Boolean | Read/Write | Whether page links are dynamic |
-| `MODULE.CurrentDirectoryIndex` | Integer | Read/Write | Current directory index (for multi-directory sites) |
-| `MODULE.TotalDirectory` | Integer | Read/Write | Total number of categories |
-| `MODULE.AccountSupport` | Boolean | Read/Write | Whether module supports user accounts |
-| `MODULE.LastUpdated` | String | Read/Write | Last update timestamp |
-| `MODULE.Tag` | Integer | Read/Write | Custom tag for internal use |
-| `MODULE.Storage` | TStringsStorage | Read/Write | In-memory key-value storage — one store per module, shared by all of its tasks; a missing key reads as `''`, and everything is gone after an app restart; see [Use Persistent Storage](#6-use-persistent-storage) |
-| `MODULE.Account` | TWebsiteModuleAccount | Read-only | User account information — **only present when `AccountSupport` is enabled** (otherwise accessing it raises an error) |
-| `MODULE.Guardian` | TCriticalSection | Read-only | Thread synchronization object |
-
-#### Event Handler Properties
-
-The `On...` properties that register event handlers are listed in the
-[Event Handler Reference](#event-handler-reference).
-
-#### Methods
-
-| Method | Parameters | Description |
-|--------|-----------|-------------|
-| `MODULE.GetOption(name)` | `name` (string) | Get user-configured option value |
-| `MODULE.AddOptionCheckBox(name, caption, default)` | All strings/boolean | Add checkbox option |
-| `MODULE.AddOptionEdit(name, caption, default)` | All strings | Add text input option |
-| `MODULE.AddOptionSpinEdit(name, caption, default)` | name, caption (string), default (int) | Add numeric option |
-| `MODULE.AddOptionComboBox(name, caption, items, default)` | items is newline-separated | Add dropdown option |
-| `MODULE.AddServerCookies(domain, cookie_string)` | Both strings | Add cookies for `domain` to the module's shared cookie storage — the same storage `HTTP.AddServerCookies` writes to, with the domain given directly. Only cookies carrying an `expires=`/`max-age=` attribute survive an app restart — see [Cookie Storage and Persistence](#cookie-storage-and-persistence) |
-| `MODULE.GetServerCookies(domain, name)` | Both strings | Return cookies stored for `domain` — optionally only the cookie `name` (pass `''` for all) — as `name=value; domain=…; path=…` lines |
-| `MODULE.RemoveCookies(domain, name)` | Both strings | Remove cookies stored for `domain` — optionally only the cookie `name` (pass `''` for all) |
-| `MODULE.ClearCookies()` | None | Clear the module's shared cookie storage — the same storage as `HTTP.ClearCookiesStorage()` |
-
-#### Account Properties
-
-| Property | Type | Access | Description |
-|----------|------|--------|-------------|
-| `MODULE.Account.Enabled` | Boolean | Read/Write | Is account enabled |
-| `MODULE.Account.Username` | String | Read/Write | Username |
-| `MODULE.Account.Password` | String | Read/Write | Password |
-| `MODULE.Account.Status` | Integer | Read/Write | Account status (see below) |
-| `MODULE.Account.Cookies` | String | Read/Write | Account cookies / auth token — **saved encrypted to `modules.json` and restored on startup**. Not applied to requests automatically: set the header yourself, e.g. `HTTP.Headers.Values['Authorization'] = 'Bearer ' .. MODULE.Account.Cookies`. Set it back to `''` to force a re-login |
-| `MODULE.Account.Guardian` | TCriticalSection | Read-only | Thread sync object |
-
-For the `Status` values (`asUnknown`, `asChecking`, `asValid`, `asInvalid`) see
-[Status Constants and Return Values](#status-constants-and-return-values).
-
-> [!NOTE]
-> `Username`, `Password` and `Cookies` are written to disk — encrypted, in
-> `modules.json` under the module's `ID` — and decrypted again when the module
-> is loaded.
-
----
-
-### Event Handlers - Complete Workflow
-
-This section explains how FMD2 calls your module's event handlers and in what order.
-
-Which objects and globals each handler receives is listed in the
-[Event Handler Reference](#event-handler-reference).
-
----
-
-#### 1. Module Initialization (`Init`)
-
-**When:** When FMD2 starts and loads Lua modules
-**Called by:** Module loader during application startup
-**Purpose:** Register module metadata and event handlers
-
-See the [Basic Module Template](#basic-module-template) for a complete `Init()`.
-
-**Workflow:**
-1. FMD2 scans `lua/modules/` folder for `.lua` files
-2. For each file, calls `Init()` function
-3. `NewWebsiteModule()` creates module object
-4. Module properties are set (ID, Name, RootURL, etc.)
-5. Event handler strings are stored (function names)
-6. Module is added to FMD2's module list
-7. If ID or Name is empty, module is discarded
-
----
-
-#### 2. Before Update List (`OnBeforeUpdateList`)
-
-**When:** Before manga list update begins (optional)
-**Called by:** UpdateListManagerThread
-
-```lua
-function BeforeUpdateList()
-    -- Prepare for update (login, set cookies, etc.)
-    return true
-end
-```
-
-**Workflow:**
-1. User clicks "Update" in manga list
-2. FMD2 calls `OnBeforeUpdateList` (if defined)
-3. The return value is **ignored** — the update proceeds either way, so treat this purely as a preparation hook
-4. The host actually calls it **twice**: once before the page-count stage, and again after the manga-list pages have been fetched (before the manga-info stage)
-
----
-
-#### 3. Get Directory Page Number (`OnGetDirectoryPageNumber`)
-
-**When:** Determining total pages in manga list
-**Called by:** UpdateListManagerThread
-**Sets:** `PAGENUMBER` global variable
-
-```lua
-function GetDirectoryPageNumber()
-    if not HTTP.GET(MODULE.RootURL .. '/manga-list?page=1') then return net_problem end
-    local x = CreateTXQuery(HTTP.Document)
-    PAGENUMBER = tonumber(x.XPathString('//last-page')) or 1
-    return no_error
-end
-```
-
-**Workflow:**
-1. FMD2 needs to know total pages
-2. Calls `OnGetDirectoryPageNumber`
-3. Module sets `PAGENUMBER` to total page count
-4. FMD2 uses this for pagination UI
-
-**Note:** besides `PAGENUMBER`, FMD2 also injects the `WORKPTR` global here —
-the 0-based index of the directory whose page count is being
-fetched. For multi-directory sites (`MODULE.TotalDirectory` > 1) use it
-together with `MODULE.CurrentDirectoryIndex` to find out which directory is
-being updated.
-
----
-
-#### 4. Get Name And Link (`OnGetNameAndLink`)
-
-**When:** Fetching manga list from website
-**Called by:** UpdateListManagerThread (repeatedly for each page)
-**Sets:** `LINKS` and `NAMES` global lists
-
-```lua
-function GetNameAndLink()
-    local page = URL  -- URL contains current page number (0-based)
-    local u = MODULE.RootURL .. '/manga-list?page=' .. (page + 1)
-
-    if not HTTP.GET(u) then return net_problem end
-    local x = CreateTXQuery(HTTP.Document)
-    x.XPathHREFAll('//div[@class="manga"]/a', LINKS, NAMES)
-    return no_error
-end
-```
-
-**Workflow:**
-1. FMD2 iterates through pages (0 to PAGENUMBER-1)
-2. For each page, calls `OnGetNameAndLink`
-3. Module adds manga URLs to `LINKS` and names to `NAMES`
-4. FMD2 collects all LINKS/NAMES for display
-5. Can call `UPDATELIST.UpdateStatusText()` to show progress
-6. Can access `UPDATELIST.CurrentDirectoryPageNumber`
-
----
-
-#### 5. After Update List (`OnAfterUpdateList`)
-
-**When:** At the start of a website's update, and when an update is cancelled (optional)
-**Called by:** UpdateListManagerThread
-
-```lua
-function AfterUpdateList()
-    -- Reset state accumulated by the previous update run
-    return true
-end
-```
-
-**Workflow:**
-1. Before anything else is done for the website, FMD2 calls `OnAfterUpdateList` (if defined) — use it to clean up state from a *previous* update run
-2. If the update is terminated (cancelled), `OnAfterUpdateList` is called again on the way out
-3. It is **not** called after a successful update — despite the name, this is a reset hook, not a completion hook
-
----
-
-#### 6. Get Info (`OnGetInfo`)
-
-**When:** Fetching manga details (title, chapters, etc.)
-**Called by:** manga-info threads — the update list (for new manga), favorites refresh, and the manga info dialog
-**Sets:** `MANGAINFO` object properties
-
-```lua
-function GetInfo()
-    local u = MaybeFillHost(MODULE.RootURL, URL)
-
-    if not HTTP.GET(u) then return net_problem end
-
-    local x = CreateTXQuery(HTTP.Document)
-    MANGAINFO.Title     = x.XPathString('//h1')
-    MANGAINFO.CoverLink = x.XPathString('//img/@src')
-    MANGAINFO.Genres    = x.XPathStringAll('//div[@class="genres"]/a')
-
-    -- Fetch chapters
-    x.XPathHREFAll('//ul[@class="chapters"]/a', MANGAINFO.ChapterLinks, MANGAINFO.ChapterNames)
-    -- Sites usually list the newest chapter first; reverse both lists
-    MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
-
-    return no_error
-end
-```
-
-**Workflow:**
-1. User clicks on manga or refreshes info
-2. FMD2 calls `OnGetInfo`
-3. Module fills `MANGAINFO` properties:
-   - `Title`, `AltTitles`, `CoverLink`
-   - `Authors`, `Artists`, `Genres`, `Status`, `Summary`
-   - `ChapterLinks`, `ChapterNames` (TStringList)
-4. FMD2 displays manga information
-5. Chapters are shown in chapter list
-
----
-
-#### 7. Task Start (`OnTaskStart`)
-
-**When:** Before downloading a chapter (optional)
-**Called by:** TTaskContainer
-
-```lua
-function TaskStart()
-    -- Initialize task, set custom options
-    TASK.PageNumber = 10  -- Set expected page count
-    return true
-end
-```
-
-**Workflow:**
-1. User starts downloading a chapter
-2. FMD2 calls `OnTaskStart` (if defined)
-3. Module can set initial values or perform setup
-4. The return value is **ignored** — the download proceeds either way
-
----
-
-#### 8. Get Page Number (`OnGetPageNumber`)
-
-**When:** Fetching chapter pages (image URLs)
-**Called by:** TTaskThread
-**Sets:** `TASK.PageLinks` or `TASK.PageContainerLinks`
-
-```lua
-function GetPageNumber()
-    local u = MaybeFillHost(MODULE.RootURL, URL)
-
-    if not HTTP.GET(u) then return false end
-
-    local x = CreateTXQuery(HTTP.Document)
-
-    -- For single-page chapters (all images on one page)
-    x.XPathStringAll('//div[@class="reader"]/img/@src', TASK.PageLinks)
-
-    -- OR for multi-page chapters (each image on separate page)
-    -- x.XPathHREFAll('//div[@class="pages"]/a', TASK.PageContainerLinks)
-
-    return true
-end
-```
-
-**Workflow:**
-1. FMD2 starts downloading a chapter
-2. Calls `OnGetPageNumber`
-3. Module has two options:
-   - **Single-page:** Add all image URLs to `TASK.PageLinks`
-   - **Multi-page:** Add page URLs to `TASK.PageContainerLinks`, then `OnGetImageURL` will be called for each
-4. Can set `TASK.PageNumber` for progress tracking
-5. Can set `TASK.FileNames` for custom filenames
-
-> [!WARNING]
-> `OnGetPageNumber` runs once per chapter on the **task's shared `HTTP`
-> object**, with no reset in between. If you set custom headers, cookies or
-> `MimeType`, call `HTTP.Reset()` first — otherwise every chapter after the
-> first inherits the previous response's headers and your custom headers are
-> silently dropped. See
-> [HTTP.Reset() and Header Lifecycle](#httpreset-and-header-lifecycle).
-
----
-
-#### 9. Get Image URL (`OnGetImageURL`)
-
-**When:** Resolving the real image URL for each page (for multi-page chapters)
-**Called by:** TDownloadThread (once for each page still marked for work)
-**Sets:** `TASK.PageLinks[WORKID]`
-
-```lua
-function GetImageURL()
-    -- URL here is the CHAPTER url, not the page url!
-    -- Build the page url from TASK.PageContainerLinks[WORKID]...
-    local u = MaybeFillHost(MODULE.RootURL, TASK.PageContainerLinks[WORKID])
-    -- ...or derive it from the chapter url + WORKID:
-    -- local u = MaybeFillHost(MODULE.RootURL, URL:gsub('/gallery/', '/g/')) .. (WORKID + 1) .. '/'
-
-    if not HTTP.GET(u) then return false end
-    local x = CreateTXQuery(HTTP.Document)
-    local img_url = x.XPathString('//img[@id="page"]/@src')
-    TASK.PageLinks[WORKID] = MaybeFillHost(MODULE.RootURL, img_url)
-    return true
-end
-```
-
-**Workflow:**
-1. FMD2 calls `OnGetImageURL` once per work item (per page not yet resolved)
-2. `WORKID` global contains the current work index
-3. `URL` contains the **chapter URL** — take the page URL from `TASK.PageContainerLinks[WORKID]` or derive it with `WORKID`
-4. Module must set `TASK.PageLinks[WORKID]` to the image URL
-5. FMD2 then downloads the image
-
----
-
-#### 10. Before Download Image (`OnBeforeDownloadImage`)
-
-**When:** Before downloading each image
-**Called by:** TDownloadThread
-**Purpose:** set request headers/cookies before the image download
-
-```lua
-function BeforeDownloadImage()
-    -- Set required headers
-    HTTP.Headers.Values['Origin'] = MODULE.RootURL
-    HTTP.Headers.Values['Referer'] = MODULE.RootURL .. '/'
-
-    return true
-end
-```
-
-**Workflow:**
-1. FMD2 is about to download an image
-2. Calls `OnBeforeDownloadImage`
-3. `WORKID` global contains image index
-4. Module can set headers and cookies; to change the URL itself, rewrite `TASK.PageLinks[WORKID]` here (a later retry picks it up — the current download still uses the old URL), or handle the download in `OnDownloadImage`
-5. The return value is **ignored** — it is always overwritten by `OnDownloadImage` or the default download, so this hook cannot skip an image
-
----
-
-#### 11. Download Image (`OnDownloadImage`)
-
-**When:** Custom image download logic (optional, replaces default)
-**Called by:** TDownloadThread
-
-```lua
-function DownloadImage()
-    -- Custom download logic (e.g., decrypt, decode, etc.)
-    if not HTTP.GET(URL) then return false end
-    -- Image data is in HTTP.Document
-    return true
-end
-```
-
-**Workflow:**
-1. Only called if `OnDownloadImage` is defined
-2. Replaces default image download behavior
-3. `WORKID` global contains image index
-4. Module handles downloading image data
-5. Image data should be in `HTTP.Document` after GET
-
----
-
-#### 12. Save Image (`OnSaveImage`)
-
-**When:** Custom image save logic (optional)
-**Called by:** TDownloadThread
-
-```lua
-function SaveImage()
-    -- Save the image yourself and return the full path of the saved file
-    local filename = PATH .. '/' .. string.format('%03d', WORKID + 1) .. '.jpg'
-    HTTP.Document.SaveToFile(filename)
-    return filename
-end
-```
-
-**Workflow:**
-1. Only called if `OnSaveImage` is defined (and the file does not already exist on disk)
-2. `PATH` global contains target directory
-3. `FILENAME` global contains default filename
-4. The module **saves the image data itself** — the downloaded bytes are in `HTTP.Document` (e.g. `HTTP.Document.SaveToFile(path)`)
-5. Return the full path of the saved file; FMD2 then checks that the file exists
-
----
-
-#### 13. After Image Saved (`OnAfterImageSaved`)
-
-**When:** After image is saved to disk
-**Called by:** TDownloadThread
-
-```lua
-function AfterImageSaved()
-    -- Post-processing (e.g., remove watermark)
-    require('fmd.mangafoxwatermark').RemoveWatermark(FILENAME, true)
-    return true
-end
-```
-
-**Workflow:**
-1. Image has been saved to disk
-2. FMD2 calls `OnAfterImageSaved`
-3. `FILENAME` global contains saved file path
-4. Module can process the saved file
-5. Common use: watermark removal
-
----
-
-#### 14. Login (`OnLogin`)
-
-**When:** Authenticating user account
-**Called by:** TAccountCheckThread — when the user clicks the check button in the Account Manager dialog
-**Sets:** `MODULE.Account.Status`
-
-```lua
-function Login()
-    if not MODULE.Account.Enabled then
-        return false
-    end
-
-    local crypto = require 'fmd.crypto'
-    local data = 'username=' .. crypto.EncodeURLElement(MODULE.Account.Username) ..
-                 '&password=' .. crypto.EncodeURLElement(MODULE.Account.Password)
-
-    MODULE.Account.Status = asChecking
-
-    if HTTP.POST(MODULE.RootURL .. '/login', data) then
-        if HTTP.ResultCode == 200 then
-            MODULE.Account.Status = asValid
-            return true
-        else
-            MODULE.Account.Status = asInvalid
-            return false
-        end
-    end
-
-    MODULE.Account.Status = asUnknown
-    return false
-end
-```
-
-**Workflow:**
-1. User opens the Account Manager and clicks "check" for the module's account
-2. FMD2 sets `MODULE.Account.Status = asChecking`, then calls `OnLogin`
-3. Module should:
-   - Check `MODULE.Account.Enabled`
-   - Access `MODULE.Account.Username` and `.Password`
-   - Perform login request
-   - Set status to `asValid`, `asInvalid`, or `asUnknown`
-4. The return value itself is **not used by the host** — the `Status` you set is what the UI shows
-
----
-
-#### 15. Account State (`OnAccountState`)
-
-**When:** The user toggles the account's enabled checkbox in the Account Manager
-**Called by:** TAccountManagerForm.vtAccountListChecked — synchronously, on the UI thread, right after the host writes `MODULE.Account.Enabled`
-
-```lua
-function AccountState()
-    -- MODULE is available; HTTP is NOT injected here.
-    -- This is a toggle notification, not a validation hook.
-    if not MODULE.Account.Enabled then
-        MODULE.Account.Cookies = ''   -- forget the saved token/session
-        MODULE.ClearCookies()         -- forget the module's stored cookies
-    end
-    MODULE.Account.Status = asUnknown
-    return true
-end
-```
-
-**Workflow:**
-1. The user (un)checks the module's account in the Account Manager list
-2. The host updates `MODULE.Account.Enabled`, then calls `OnAccountState` (if registered) on the UI thread
-3. Use it to react to the toggle — clear a cached token (`MODULE.Account.Cookies`), clear stored cookies (`MODULE.ClearCookies()`), reset `MODULE.Account.Status`
-4. The return value is **not used by the host**
-
-> [!NOTE]
-> This handler is a **notification, not a validator**: it is never called at
-> app startup or on a timer, and it cannot make network requests. Validating
-> credentials is the job of [Login](#14-login-onlogin), which the host runs
-> in a background thread when the user clicks "check" or saves new credentials.
-> The call also runs on the UI thread, so keep it quick — no waiting, no heavy work.
-
----
-
-#### 16. Check Site (`OnCheckSite`)
-
-**When:** The user runs the module checker dialog (optional)
-**Called by:** FormCheckModules
-**Sets:** `MANGACHECK` properties
-
-```lua
-function CheckSite()
-    -- Provide a known-good manga and chapter for the module checker to test with
-    MANGACHECK.MangaURL     = '/manga/6rUzU'
-    MANGACHECK.MangaTitle   = 'The Academy’s Sashimi Sword Master'
-    MANGACHECK.ChapterURL   = '/6rUzU/pIEtz'
-    MANGACHECK.ChapterTitle = 'Episode 74'
-    MANGACHECK.ChapterURLAddRootHost = false
-end
-```
-
-**Workflow:**
-1. User opens the module checker tool
-2. FMD2 calls `OnCheckSite` (if defined) with a `MANGACHECK` object injected
-3. Module fills `MANGACHECK` with a test manga and chapter (URLs and titles) it knows exist
-4. The checker then runs a full `GetInfo`/chapter test against those URLs to verify the module still works
-5. The return value is **not used by the host** — the `MANGACHECK` fields are the output
-
-Available `MANGACHECK` properties: `MangaURL`, `MangaTitle`, `ChapterURL`,
-`ChapterTitle`, `ChapterURLPrefix` (prefix the checker uses to build chapter
-links), `MangaURLAddRootHost` and `ChapterURLAddRootHost` (prepend
-`MODULE.RootURL` to the given URLs; default `true`).
-
----
-
-### Complete Event Flow Example
-
-**Scenario: User updates manga list and downloads a chapter**
-
-```
-1. Init()                              -- Module loads at startup
-2. OnAfterUpdateList()                 -- Optional: reset state from previous run
-3. OnBeforeUpdateList()                -- Optional: prepare for update
-4. OnGetDirectoryPageNumber()          -- Get total pages (sets PAGENUMBER)
-5. OnGetNameAndLink()                  -- Called for each page (fills LINKS/NAMES)
-   - Page 0: GetNameAndLink()
-   - Page 1: GetNameAndLink()
-   - ...
-   - Page N: GetNameAndLink()
-6. OnBeforeUpdateList()                -- Called again before the manga-info stage
-7. OnGetInfo()                         -- For each new manga found (fills MANGAINFO)
-
--- User clicks on manga to view info
-8. OnGetInfo()                         -- Fetch manga details (fills MANGAINFO)
-
--- User selects chapter to download
-9. OnTaskStart()                       -- Optional: initialize task
-10. OnGetPageNumber()                  -- Get chapter pages (fills TASK.PageLinks)
-
--- For each image in chapter:
-11. OnBeforeDownloadImage()             -- Set headers, modify URL if needed
-12. OnDownloadImage()                   -- Optional: custom download logic
-    -- OR default download if not defined
-13. OnSaveImage()                       -- Optional: save the image yourself, return path
-14. OnAfterImageSaved()                -- Post-process saved image
-
--- Repeat 11-14 for each image
-```
-
-**Scenario: User has account enabled**
-
-```
-1. Init()
-2. User clicks "check" in Account Manager
-3. OnLogin()                           -- Host sets Status=asChecking, then calls Login
-   - Module sets MODULE.Account.Status (asValid/asInvalid/asUnknown)
-4. [Normal workflow continues]
-5. OnAccountState()                    -- When the account checkbox is toggled
-```
-
----
+- While `HTTP.EnabledCookies` is `true` (the default), stored cookies are
+  matched by domain and path and attached automatically as a `Cookie:` header
+  on every request. They also survive `HTTP.Reset()`.
+- `HTTP.AddServerCookies(url, cookie_string)` derives the domain and path from
+  `url`. The first argument may be omitted — but then the cookie is stored with
+  an **empty domain**, which matches no host, so it is never sent back (unless
+  the cookie string itself carries a `domain=` attribute). Prefer the
+  two-argument form, or `MODULE.AddServerCookies(domain, cookie_string)`,
+  which takes the domain directly.
+- Several cookies can be passed at once, separated by newlines. Recognized
+  attributes: `domain`, `path`, `expires`, `max-age`, `secure`, `httponly`,
+  `samesite` — anything else is ignored.
+- **A cookie is written to disk only when its string contains `expires=` or
+  `max-age=`** (a *persistent* cookie in RFC 6265 terms). Without either
+  attribute it is a *session* cookie: it lives in memory for the current run
+  and is lost when the app restarts — even though `AddServerCookies` was used.
+- Persistent cookies are saved to `modules.json` under the module's `ID`,
+  together with the account and the user options, and are reloaded on startup.
+
+The cookie storage can only ever produce a `Cookie:` header — it cannot feed
+an `Authorization: Bearer ...` header. For token-based APIs keep the token in
+`MODULE.Account.Cookies` instead (see
+[MODULE.Account Properties](#moduleaccount-properties)).
 
 ### MANGAINFO Object (TMangaInfo)
 
@@ -1090,9 +1288,9 @@ function GetInfo()
 end
 ```
 
-A full example is in [Get Info](#6-get-info-ongetinfo).
+A full example is in [`OnGetInfo`](#ongetinfo).
 
-#### Properties
+#### MANGAINFO Properties
 
 | Property | Type | Description |
 |----------|------|-------------|
@@ -1109,8 +1307,6 @@ A full example is in [Get Info](#6-get-info-ongetinfo).
 | `MANGAINFO.ChapterLinks` | TStringList | Chapter URLs |
 | `MANGAINFO.ChapterNames` | TStringList | Chapter names |
 
----
-
 ### TASK Object (TTaskContainer)
 
 Current download task information.
@@ -1123,9 +1319,9 @@ function GetPageNumber()
 end
 ```
 
-A full example is in [Get Page Number](#8-get-page-number-ongetpagenumber).
+A full example is in [`OnGetPageNumber`](#ongetpagenumber).
 
-#### Properties
+#### TASK Properties
 
 | Property | Type | Description |
 |----------|------|-------------|
@@ -1138,8 +1334,6 @@ A full example is in [Get Page Number](#8-get-page-number-ongetpagenumber).
 | `TASK.CurrentDownloadChapterPtr` | Integer | 0-based index into `ChapterLinks` of the chapter being downloaded (useful for Referer headers) |
 | `TASK.CurrentMaxFileNameLength` | Integer | Maximum file name length enforced for this task |
 | `TASK.Link` | String | Current download link |
-
----
 
 ### LINKS and NAMES (TStringList)
 
@@ -1154,9 +1348,9 @@ end
 ```
 
 `x.XPathHREFAll(xpath, LINKS, NAMES)` fills both lists in one call; see
-[Get Name And Link](#4-get-name-and-link-ongetnameandlink).
+[`OnGetNameAndLink`](#ongetnameandlink).
 
-#### Methods
+#### LINKS and NAMES Methods
 
 | Method | Description |
 |--------|-------------|
@@ -1172,8 +1366,6 @@ API** (`Text`, `Values`, `IndexOf`, `Sort`, `SaveToFile`, …) from
 [fmd.strings](#fmdstrings) works on them — and on `HTTP.Headers`,
 `HTTP.Cookies`, `TASK.PageLinks`, `MANGAINFO.ChapterLinks`, … alike.
 
----
-
 ### UPDATELIST Object (TUpdateListManagerThread)
 
 Manga list update manager.
@@ -1188,48 +1380,105 @@ function GetNameAndLink()
 end
 ```
 
-#### Properties
+#### UPDATELIST Properties
 
 | Property | Type | Description |
 |----------|------|-------------|
 | `UPDATELIST.CurrentDirectoryPageNumber` | Integer (read/write) | Current page in manga list |
 
-#### Methods
+#### UPDATELIST Methods
 
 | Method | Description |
 |--------|-------------|
 | `UPDATELIST.UpdateStatusText(text)` | Update status message in UI |
 
----
+### Storage and Persistence
 
-### PAGENUMBER (Global Variable)
+What survives an app restart — and what does not:
 
-Total pages in manga list directory.
+| Data | Persisted? | Where |
+|------|-----------|-------|
+| `MODULE.Account.Username` / `.Password` / `.Cookies` | yes | `modules.json`, encrypted, keyed by the module `ID` |
+| `MODULE.Account.Status` | yes | `modules.json` |
+| user options (`MODULE.GetOption`) and module settings | yes | `modules.json` |
+| cookies stored with an `expires=` / `max-age=` attribute | yes | `modules.json` |
+| cookies stored without an expiry (session cookies) | no | memory only |
+| `MODULE.Storage` key/value pairs | **no** | memory only |
+| `HTTP` state (headers, document, `HTTP.Cookies`) | no | memory only |
+
+`MODULE.Storage` is a plain in-memory key-value store — handy for caching
+within one run of the application, but nothing in it is written to disk, so it
+starts empty after every restart. There is **one storage per module**: every
+handler call and every running task of the website shares the same keys, so
+concurrent downloads from the same site see and overwrite each other's
+entries.
+
+Values are always stored and returned as **strings** — a number is converted
+on write, so convert it back when reading:
 
 ```lua
-PAGENUMBER = tonumber(x.XPathString('//last-page')) or 1
+MODULE.Storage['last_update'] = os.time()             -- gone after a restart
+local last = tonumber(MODULE.Storage['last_update'])  -- reads back as a string
 ```
 
-Set it in `OnGetDirectoryPageNumber`; see
-[Get Directory Page Number](#3-get-directory-page-number-ongetdirectorypagenumber).
+Reading a key that was never set returns the **empty string**, never `nil` —
+and storing a boolean or a table yields `''` as well:
+
+```lua
+if MODULE.Storage['token'] ~= '' then  -- check for '', not for nil
+    ...
+end
+```
+
+`MODULE.Storage` also exposes:
+
+| Member | Description |
+|--------|-------------|
+| `.Text` | Get or set the whole storage as `name=value` lines — `MODULE.Storage.Text = ''` drops every key at once |
+| `.Remove(name)` | Delete a single key (a no-op when the key does not exist) |
+| `.Tag`, `.Enable`, `.Status` | Spare read/write fields (integer, boolean, string), also memory-only |
+
+Real usage — cache the rotating key of the site and drop the whole cache when
+it goes stale (`lua/modules/CapibaraTraductor.lua`):
+
+```lua
+if MODULE.Storage.Text == '' then  -- nothing cached yet
+    -- fetch the chapter page and store its key variables
+    for name, hex in HTTP.Document.ToString():gmatch('([%w_$]+)%s*=%s*"([0-9a-f]+)"') do
+        if #hex == 24 then MODULE.Storage[name] = hex end
+    end
+end
+...
+MODULE.Storage.Text = ''  -- the key did not match, clear everything
+```
+
+Single writes are internally locked, but reads are not — a read-modify-write
+sequence is not atomic. When several tasks can touch the same keys at the same
+time, guard the whole sequence with `MODULE.Guardian`:
+
+```lua
+MODULE.Guardian.Enter()
+local n = tonumber(MODULE.Storage['count']) or 0
+MODULE.Storage['count'] = n + 1
+MODULE.Guardian.Leave()
+```
+
+For data that must survive a restart, use the account fields or a persistent
+cookie:
+
+```lua
+-- an auth token: saved encrypted and reloaded on startup
+MODULE.Account.Cookies = token
+
+-- a cookie the server accepts: the expiry attribute is what makes it persist
+HTTP.AddServerCookies(MODULE.RootURL, 'session=abc; path=/; max-age=2592000')
+```
 
 ---
 
-### URL (Global Variable)
+## 7. Parsing and Helper Functions
 
-The current URL being processed. What it holds depends on the handler:
-
-| Handler | `URL` contains |
-|---------|----------------|
-| `OnGetNameAndLink` | Current page number of the manga list (0-based) |
-| `OnGetInfo` | Manga URL |
-| `OnGetPageNumber` | Chapter URL |
-| `OnGetImageURL` | Chapter URL — take the page URL from `TASK.PageContainerLinks[WORKID]` or derive it with `WORKID` |
-| `OnBeforeDownloadImage`, `OnDownloadImage` | Image URL (read-only in `OnBeforeDownloadImage`; the host does not read changes back) |
-
----
-
-## Built-in Functions
+Global functions available in every handler. `CreateTXQuery` is the main tool for reading HTML, XML and JSON; the utility functions cover common string and URL chores.
 
 ### TXQuery (XML/HTML/JSON Parser)
 
@@ -1494,7 +1743,30 @@ print('Debug message')  -- Output to log
 
 ---
 
-## Lua Libraries
+## 8. Libraries
+
+Load a library with `require`. `fmd.*` libraries are implemented natively by the host application; `utils.*` libraries are Lua (or JavaScript) files shipped in `lua/utils/`.
+
+| Library | Purpose |
+|---------|---------|
+| [`fmd.crypto`](#fmdcrypto) | Hashing, HMAC, AES, RC4, key exchange, Base64/URL/HTML/hex encoding, checksums |
+| [`fmd.duktape`](#fmdduktape) | Run JavaScript (Duktape) |
+| [`fmd.env`](#fmdenv) | FMD2 paths, version and language |
+| [`fmd.fileutil`](#fmdfileutil) | File name helpers |
+| [`fmd.logger`](#fmdlogger) | Write to the FMD2 log |
+| [`fmd.subprocess`](#fmdsubprocess) | Run external programs |
+| [`fmd.mangafoxwatermark`](#fmdmangafoxwatermark) | Remove the FanFox/MangaHere watermark |
+| [`fmd.gzip`](#fmdgzip) | Inflate gzip/zlib/deflate data |
+| [`fmd.pcre2`](#fmdpcre2) | PCRE2 regular expressions |
+| [`fmd.imagepuzzle`](#fmdimagepuzzle) | Descramble tile-shuffled images |
+| [`fmd.strings`](#fmdstrings) | `TStringList` objects |
+| [`utils.json`](#utilsjson) | JSON encode/decode in Lua |
+| [`utils.lzstring`](#utilslzstring) | LZ-String decompression |
+| [`utils.jsunpack`](#utilsjsunpack) | `p,a,c,k,e,d` string-table unpacker |
+| [`utils.nodejs`](#utilsnodejs) | Render JS-heavy pages through Node.js |
+| [`utils.nextjs`](#utilsnextjs) | Extract data from Next.js flight payloads |
+| [`utils.sha256`](#utilssha256) | Pure-Lua SHA-256 (temporary) |
+| [`utils.protoc`](#utilsprotoc-with-the-pb-runtime) | Protocol Buffers |
 
 ### fmd.* Modules (Injected by the host application)
 
@@ -1938,7 +2210,7 @@ HTTP.GET(base .. path .. '?' .. params .. '&sign=' .. sign)
 
 #### fmd.duktape
 
-JavaScript execution engine (Duktape 2.5, ES5.1+ parts of ES6).
+JavaScript execution engine (Duktape 2.7.0; ES5.1 plus parts of ES6).
 
 ```lua
 local duktape = require 'fmd.duktape'
@@ -2237,8 +2509,6 @@ chapter-list reversal pattern:
 MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 ```
 
----
-
 ### utils.* Modules (Lua Files)
 
 #### utils.json
@@ -2441,7 +2711,7 @@ And the essential `pb` runtime calls:
 
 ---
 
-## Templates
+## 9. Templates
 
 Templates are reusable module components that handle common website patterns.
 
@@ -2519,7 +2789,9 @@ end
 
 ---
 
-## Common Patterns
+## 10. Cookbook
+
+Short, proven patterns for situations that come up in many modules.
 
 ### Error Handling
 
@@ -2536,113 +2808,6 @@ if HTTP.GET(url) then
 else
     return net_problem
 end
-```
-
-### Account Support
-
-```lua
-function Init()
-    local m = NewWebsiteModule()
-    m.ID = '...'
-    m.AccountSupport = true
-    m.OnLogin = 'Login'
-end
-```
-
-The `Login` handler itself is described in [Login](#14-login-onlogin), and
-Example 3 below is a complete module with login.
-
-For sites whose login returns a **token** (JWT/Bearer) instead of a session
-cookie, store it in `MODULE.Account.Cookies` — the account field that is saved
-to disk and reloaded on startup — and send it yourself as a header:
-
-```lua
-function Login()
-    if not MODULE.Account.Enabled then return false end
-    local crypto = require 'fmd.crypto'
-    local data = 'email='    .. crypto.EncodeURLElement(MODULE.Account.Username) ..
-                 '&password=' .. crypto.EncodeURLElement(MODULE.Account.Password)
-    MODULE.Account.Status = asChecking
-    HTTP.Reset()  -- drop stale headers, e.g. the expired Authorization
-    if HTTP.POST(MODULE.RootURL .. '/api/auth/login', data) and HTTP.ResultCode == 200 then
-        MODULE.Account.Cookies = CreateTXQuery(HTTP.Document).XPathString('json(*).data.token')
-        if MODULE.Account.Cookies ~= '' then
-            MODULE.Account.Status = asValid
-            return true
-        end
-    end
-    MODULE.Account.Status = asInvalid
-    return false
-end
-
-function GetPageNumber()
-    -- first request after enabling the account: log in once
-    if MODULE.Account.Enabled and MODULE.Account.Cookies == '' then Login() end
-
-    local retried = false
-    ::request:: -- on a rejected token, log in again below and jump back here
-
-    HTTP.Reset()  -- the task's HTTP object is reused for every chapter
-    HTTP.Headers.Values['Authorization'] = 'Bearer ' .. MODULE.Account.Cookies
-    if not HTTP.GET(MODULE.RootURL .. '/api/.../pages') then return false end
-
-    local x = CreateTXQuery(HTTP.Document)
-    -- rejection signal 1: an explicit 401 status
-    -- rejection signal 2: the body — this API answers 200 with an error
-    -- payload such as {"status":false,"data":[],"errorType":"login_required"}
-    local rejected = HTTP.ResultCode == 401
-        or x.XPathString('json(*).errorType') == 'login_required'
-
-    if rejected then
-        -- token expired or rejected: clear it, log in again, retry once here
-        if not retried and MODULE.Account.Enabled then
-            MODULE.Account.Cookies = ''
-            retried = true
-            if Login() then goto request end
-        end
-        return false
-    end
-
-    -- rejection signal 3: a field the normal response always carries (here
-    -- `rv`) is missing — XPathString returns '' for a missing key and the
-    -- string 'null' for an explicit JSON null
-    local rv = x.XPathString('json(*).rv')
-    if rv == '' or rv == 'null' then return false end
-
-    for v in x.XPath('json(*).data()').Get() do
-        TASK.PageLinks.Add(v.GetProperty('imageUrl').ToString())
-    end
-
-    return true
-end
-```
-
-Not every API signals a rejected token with a `401` — some answer `200` with
-an error body instead, e.g.
-`{"status":false,"data":[],"message":"...","errorType":"login_required"}`, so
-the only reliable signal is the **content** of the response: an error field
-such as `errorType`, or the absence of a field the normal response always
-carries. Whatever the signal, the pattern is the same: clear the token, log
-in again, and retry **once, inside the same handler**. The retry is a backward
-`goto` to the request: the `retried` flag is declared *before* the label, so it
-survives the jump and limits the retry to a single attempt (Lua has no
-`continue`; a backward `goto` is the standard way to restart a block).
-
-### User Options
-
-```lua
-function Init()
-    local m = NewWebsiteModule()
-    m.ID = '...'
-    m.AddOptionSpinEdit('timeout', 'Timeout (s)', 60)
-    m.AddOptionCheckBox('showgroup', 'Show group name', false)
-    m.AddOptionComboBox('imagesize', 'Image size:', 'Auto\n780x\n980x\nOriginal', 0)
-end
-
--- Get option values
-local timeout = tonumber(MODULE.GetOption('timeout') or '60')
-local show_group = MODULE.GetOption('showgroup')
-local image_size = MODULE.GetOption('imagesize')
 ```
 
 ### JSON API Handling
@@ -2666,25 +2831,6 @@ end
 All the JSON query styles (dot, `?` lookup, `parse-json`) are described in
 [XPath Extensions](#xpath-extensions).
 
-### Multi-Directory Sites
-
-```lua
-local directories = {'action', 'romance', 'fantasy'}
-
-function Init()
-    local m = NewWebsiteModule()
-    m.ID = '...'
-    m.TotalDirectory = #directories
-end
-
-function GetNameAndLink()
-    local directory = directories[MODULE.CurrentDirectoryIndex + 1]
-    HTTP.GET(MODULE.RootURL .. '/category/' .. directory)
-    -- process
-    return no_error
-end
-```
-
 ### Iterating Over Nodes
 
 ```lua
@@ -2704,9 +2850,54 @@ for i = 1, nodes.Count do
 end
 ```
 
+### Headers, Referer and Origin
+
+Many sites require specific headers (usually `Referer` and `Origin`). Set them in
+`OnBeforeDownloadImage`; see [`OnBeforeDownloadImage`](#onbeforedownloadimage).
+For JSON APIs, see [JSON API Handling](#json-api-handling).
+
+**Always call `HTTP.Reset()` before setting custom headers** — especially in
+`OnGetPageNumber`. The reason is explained in
+[HTTP.Reset() and Header Lifecycle](#httpreset-and-header-lifecycle).
+
+### Sites That Need JavaScript
+
+For sites that require JavaScript execution:
+
+```lua
+-- Simple JS execution
+local duktape = require 'fmd.duktape'
+local script = x.XPathString('//script[contains(., "eval")]')
+local result = duktape.ExecJS(script .. ';resultVariable;')
+
+-- Complex sites (requires Node.js)
+local nodejs = require 'utils.nodejs'
+local html = nodejs.run_html_load(url)
+```
+
+### Skipping Locked or Premium Chapters
+
+Skip locked chapters:
+
+```lua
+for v in x.XPath('//ul[@class="chapters"]/a').Get() do
+    if v.GetAttribute('href') ~= '#' then
+        MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
+        MANGAINFO.ChapterNames.Add(v.ToString())
+    end
+end
+
+for v in x.XPath('json(*).capitulos()').Get() do
+    if v.GetProperty('es_premium').ToString() ~= 'true' then
+        MANGAINFO.ChapterLinks.Add(slug .. '/' .. v.GetProperty('slug').ToString())
+        MANGAINFO.ChapterNames.Add('Capítulo ' .. v.GetProperty('numero').ToString())
+    end
+end
+```
+
 ---
 
-## Examples
+## 11. Complete Examples
 
 ### Example 1: Simple Module
 
@@ -2888,7 +3079,9 @@ function Login()
 end
 
 function GetNameAndLink()
-    -- Login will be called automatically
+    -- Login() is NOT called automatically: the user triggers it with the check button in
+    -- the Account Manager. Cookies set by the login response are kept in the module's
+    -- shared cookie storage and sent with later requests.
     local u = MODULE.RootURL .. '/manga-list'
 
     if not HTTP.GET(u) then return net_problem end
@@ -2943,9 +3136,9 @@ end
 
 ---
 
-## Development Tips
+## 12. Development and Debugging
 
-### 1. Use `--lua-dofile` for Development
+### Reloading Modules While Developing
 
 When testing modules, use the `--lua-dofile` command-line argument to reload Lua files on each request instead of using cached bytecode:
 
@@ -2953,143 +3146,7 @@ When testing modules, use the `--lua-dofile` command-line argument to reload Lua
 FMD2.exe --lua-dofile
 ```
 
-### 2. Use Templates When Possible
-
-Many websites use common CMS themes. Check the
-[Available Templates](#available-templates) before writing a module from scratch.
-
-### 3. Set Proper Headers
-
-Many sites require specific headers (usually `Referer` and `Origin`). Set them in
-`OnBeforeDownloadImage`; see [Before Download Image](#10-before-download-image-onbeforedownloadimage).
-For JSON APIs, see [JSON API Handling](#json-api-handling).
-
-**Always call `HTTP.Reset()` before setting custom headers.** `HTTP.Headers`
-holds the *previous response's* headers after each request, and the request
-functions silently reset the list when they detect that — dropping any header
-you set in the meantime. This bites hardest in `OnGetPageNumber`, which runs
-once per chapter on the task's shared `HTTP` object: the first chapter works,
-the rest fail. See
-[HTTP.Reset() and Header Lifecycle](#httpreset-and-header-lifecycle).
-
-### 4. Handle JavaScript-Heavy Sites
-
-For sites that require JavaScript execution:
-
-```lua
--- Simple JS execution
-local duktape = require 'fmd.duktape'
-local script = x.XPathString('//script[contains(., "eval")]')
-local result = duktape.ExecJS(script .. ';resultVariable;')
-
--- Complex sites (requires Node.js)
-local nodejs = require 'utils.nodejs'
-local html = nodejs.run_html_load(url)
-```
-
-### 5. Check for Paywalls
-
-Skip locked chapters:
-
-```lua
-for v in x.XPath('//ul[@class="chapters"]/a').Get() do
-    if v.GetAttribute('href') ~= '#' then
-        MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
-        MANGAINFO.ChapterNames.Add(v.ToString())
-    end
-end
-
-for v in x.XPath('json(*).capitulos()').Get() do
-    if v.GetProperty('es_premium').ToString() ~= 'true' then
-        MANGAINFO.ChapterLinks.Add(slug .. '/' .. v.GetProperty('slug').ToString())
-        MANGAINFO.ChapterNames.Add('Capítulo ' .. v.GetProperty('numero').ToString())
-    end
-end
-```
-
-### 6. Use Persistent Storage
-
-What survives an app restart — and what does not:
-
-| Data | Persisted? | Where |
-|------|-----------|-------|
-| `MODULE.Account.Username` / `.Password` / `.Cookies` | yes | `modules.json`, encrypted, keyed by the module `ID` |
-| `MODULE.Account.Status` | yes | `modules.json` |
-| user options (`MODULE.GetOption`) and module settings | yes | `modules.json` |
-| cookies stored with an `expires=` / `max-age=` attribute | yes | `modules.json` |
-| cookies stored without an expiry (session cookies) | no | memory only |
-| `MODULE.Storage` key/value pairs | **no** | memory only |
-| `HTTP` state (headers, document, `HTTP.Cookies`) | no | memory only |
-
-`MODULE.Storage` is a plain in-memory key-value store — handy for caching
-within one run of the application, but nothing in it is written to disk, so it
-starts empty after every restart. There is **one storage per module**: every
-handler call and every running task of the website shares the same keys, so
-concurrent downloads from the same site see and overwrite each other's
-entries.
-
-Values are always stored and returned as **strings** — a number is converted
-on write, so convert it back when reading:
-
-```lua
-MODULE.Storage['last_update'] = os.time()             -- gone after a restart
-local last = tonumber(MODULE.Storage['last_update'])  -- reads back as a string
-```
-
-Reading a key that was never set returns the **empty string**, never `nil` —
-and storing a boolean or a table yields `''` as well:
-
-```lua
-if MODULE.Storage['token'] ~= '' then  -- check for '', not for nil
-    ...
-end
-```
-
-`MODULE.Storage` also exposes:
-
-| Member | Description |
-|--------|-------------|
-| `.Text` | Get or set the whole storage as `name=value` lines — `MODULE.Storage.Text = ''` drops every key at once |
-| `.Remove(name)` | Delete a single key (a no-op when the key does not exist) |
-| `.Tag`, `.Enable`, `.Status` | Spare read/write fields (integer, boolean, string), also memory-only |
-
-Real usage — cache the rotating key of the site and drop the whole cache when
-it goes stale (`lua/modules/CapibaraTraductor.lua`):
-
-```lua
-if MODULE.Storage.Text == '' then  -- nothing cached yet
-    -- fetch the chapter page and store its key variables
-    for name, hex in HTTP.Document.ToString():gmatch('([%w_$]+)%s*=%s*"([0-9a-f]+)"') do
-        if #hex == 24 then MODULE.Storage[name] = hex end
-    end
-end
-...
-MODULE.Storage.Text = ''  -- the key did not match, clear everything
-```
-
-Single writes are internally locked, but reads are not — a read-modify-write
-sequence is not atomic. When several tasks can touch the same keys at the same
-time, guard the whole sequence with `MODULE.Guardian`:
-
-```lua
-MODULE.Guardian.Enter()
-local n = tonumber(MODULE.Storage['count']) or 0
-MODULE.Storage['count'] = n + 1
-MODULE.Guardian.Leave()
-```
-
-For data that must survive a restart, use the account fields or a persistent
-cookie:
-
-```lua
--- an auth token: saved encrypted and reloaded on startup
-MODULE.Account.Cookies = token
-
--- a cookie the server accepts: the expiry attribute is what makes it persist
-HTTP.AddServerCookies(MODULE.RootURL, 'session=abc; path=/; max-age=2592000')
-```
-
-### 7. Debug with Logging
+### Logging
 
 ```lua
 print('Debug: ' .. variable)
@@ -3099,34 +3156,22 @@ logger.Send('Info message')
 logger.SendError('Error: ' .. error_message)
 ```
 
-### 8. Generate Unique IDs
+### Common Pitfalls
 
-`m.ID` is the module's permanent identifier. Create it with a GUID generator
-and **remove the hyphens** — a GUID without hyphens is exactly 32 hexadecimal
-characters:
-
-```lua
--- Generate at https://guidgenerator.com/, then strip the dashes:
---   56473ae4-47f0-4cee-9368-3d7404b32e60
--- becomes
-m.ID = '56473ae447f04cee93683d7404b32e60'
-```
-
-The host does not validate the format — any unique string is accepted — but
-keep to the plain dash-less GUID convention used by the bundled modules:
-
-- **Unique** — no two modules may share an ID; the module list is sorted and
-  searched by ID, so a duplicate breaks module lookup.
-- **Stable** — never change or reuse an ID after release. Favorites, download
-  history, module settings, user options, account credentials and persistent
-  cookies are all stored under the ID; a new ID silently orphans the user's
-  existing data.
-- **Plain form** — no hyphens, no `{}` braces; the 32-character dash-less
-  form like every bundled module.
+| Symptom | Cause and fix |
+|---------|---------------|
+| Custom headers work for the first chapter only | `OnGetPageNumber` reuses one `HTTP` object for every chapter. Call `HTTP.Reset()` before setting headers: [HTTP.Reset() and Header Lifecycle](#httpreset-and-header-lifecycle) |
+| `OnGetImageURL` cannot find the page | `URL` is the **chapter** URL there. Use `TASK.PageContainerLinks[WORKID]`: [`OnGetImageURL`](#ongetimageurl) |
+| Changing a return value has no effect | Several handlers' return values are ignored by the host: [Handler Reference](#handler-reference) |
+| `HTTP` is not available in a handler | `HTTP` is not injected in `OnAccountState`, `OnCheckSite`, `OnAfterImageSaved` and `OnTaskStart` |
+| `MODULE.Account` raises an error | The module did not set `AccountSupport = true` |
+| `MODULE.Storage[...]` is empty after a restart | It is memory-only and reads missing keys as `''`: [Storage and Persistence](#storage-and-persistence) |
+| A saved cookie is gone after a restart | Only cookies with `expires=`/`max-age=` are persisted: [Cookie Storage and Persistence](#cookie-storage-and-persistence) |
+| Library call returns `''` | Crypto functions return `''` on malformed input: [`fmd.crypto`](#fmdcrypto) |
 
 ---
 
-## File Locations
+## Appendix: File Locations and Resources
 
 ```
 FMD2/
@@ -3135,18 +3180,14 @@ FMD2/
 │   ├── templates/        # Shared templates (.lua)
 │   ├── utils/            # Utility libraries (.lua, .js)
 │   ├── extras/           # Additional helpers
-│   └── websitebypass/    # Cloudflare bypass scripts
+│   └── websitebypass/    # Cloudflare / anti-bot bypass scripts
 ├── baseunits/
 │   └── lua/              # Pascal Lua integration files (.pas)
 └── docs/
     └── SUPPORTED_WEBSITES.md
 ```
 
----
-
-## Additional Resources
-
-- **Supported Websites:** `docs/SUPPORTED_WEBSITES.md`
-- **Example Modules:** `lua/modules/` folder (400+ examples)
-- **Templates:** `lua/templates/` folder
-- **Utilities:** `lua/utils/` folder
+- **Supported websites:** `docs/SUPPORTED_WEBSITES.md`
+- **Example modules:** `lua/modules/`
+- **Templates:** `lua/templates/`
+- **Host bindings (source of truth for the Lua API):** `baseunits/lua/*.pas`
