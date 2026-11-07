@@ -82,7 +82,7 @@ function _M.GetInfo()
 
 		if not href:find('/chapter/', 1, true) then
 			seen[title] = (seen[title] or 0) + 1
-			local id = ChapterStableId(title, seen[title])
+			local id = ChapterStableId(URL .. '@' .. title, seen[title])
 			MODULE.Storage[id] = href
 			href = id
 		end

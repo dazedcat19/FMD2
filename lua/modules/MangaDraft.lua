@@ -1,22 +1,5 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = 'd7f782e7fc464d32bb6d0fec507cec7f'
-	m.Name                     = 'MangaDraft'
-	m.RootURL                  = 'https://www.mangadraft.com'
-	m.Category                 = 'English'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-	m.MaxTaskLimit             = 1
-	m.MaxConnectionLimit       = 1
-end
-
-----------------------------------------------------------------------------------------------------
--- Local Constants
+-- Module Constants
 ----------------------------------------------------------------------------------------------------
 
 local DirectoryPagination = '/api/catalog/projects?number=10000&order=name'
@@ -73,17 +56,31 @@ function GetInfo()
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('project_status_id', info), '0', '1', '2')
 	MANGAINFO.Summary   = x.XPathString('description', info)
 
-	for v in x.XPath('//div[@class="mt-7 w-full"]//a[not(h5/small)]').Get() do
-		local url = v.GetAttribute('href')
+	local counters = {}
+	for v in x.XPath('//div[@class="mt-7 w-full"]//a[(h3 or h5) and not((h3|h5)/small)]').Get() do
+		local volume = x.XPathString('normalize-space(replace(preceding::h3[contains(@class, "uppercase")][1], "^[^:]*:", ""))', v)
+		local number = x.XPathString('normalize-space(.//b)', v)
+		local title  = x.XPathString('normalize-space((h3|h5)/text()[1])', v)
+		local parts  = {}
 
-		MANGAINFO.ChapterLinks.Add(url)
-
-		if not url:find('c.', 1, true) then
-			MANGAINFO.ChapterNames.Add(MANGAINFO.Title)
-			break
+		if number == '' then
+			counters[volume] = (counters[volume] or 0) + 1
+			number = '#' .. counters[volume]
 		end
 
-		MANGAINFO.ChapterNames.Add(x.XPathString('h5/text()', v))
+		for _, part in ipairs({volume, number, title}) do
+			if part ~= '' then
+				table.insert(parts, part)
+			end
+		end
+
+		MANGAINFO.ChapterLinks.Add(v.GetAttribute('href'))
+		MANGAINFO.ChapterNames.Add(table.concat(parts, ' - '))
+	end
+
+	if MANGAINFO.ChapterLinks.Count == 0 then
+		MANGAINFO.ChapterLinks.Add(x.XPathString('(//div[@class="mt-7 w-full"]//a[starts-with(@href, "/reader/")])[1]/@href'))
+		MANGAINFO.ChapterNames.Add(MANGAINFO.Title)
 	end
 
 	return no_error
@@ -123,4 +120,21 @@ function GetPageNumber()
 	end
 
 	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = 'd7f782e7fc464d32bb6d0fec507cec7f'
+	m.Name                     = 'MangaDraft'
+	m.RootURL                  = 'https://www.mangadraft.com'
+	m.Category                 = 'English'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
+	m.MaxTaskLimit             = 1
+	m.MaxConnectionLimit       = 1
 end

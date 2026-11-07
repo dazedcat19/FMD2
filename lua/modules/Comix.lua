@@ -294,31 +294,30 @@ local function GetPageFetchScript()
 	]]
 end
 
-local function DecodeRunnerOutput(output)
-	local json = require 'utils.json'
-	local ok, decoded = pcall(json.decode, output)
-	if ok then return decoded end
-	local candidates = {}
-	for line in output:gmatch('[^\r\n]+') do
-		table.insert(candidates, line)
-	end
-	for i = #candidates, 1, -1 do
-		local ok2, decoded2 = pcall(json.decode, candidates[i])
-		if ok2 and type(decoded2) == 'table' then return decoded2 end
-	end
-	return nil
+local function IsTimedOut(output)
+	if output == '' then return true end
+	return output:find('Timed out waiting', 1, true) ~= nil
 end
 
 local function RunBrowserScript(url, js_code)
-	local json = require 'utils.json'
 	local nodejs = require 'utils.nodejs'
-	local output = nodejs.run_html_load_with_js(url, js_code)
-	local decoded = DecodeRunnerOutput(output)
-	if decoded and decoded.error and decoded.error:find('Execution context was destroyed', 1, true) then
-		output = nodejs.run_html_load_with_js(url, js_code)
-		decoded = DecodeRunnerOutput(output)
+	local flag_key = 'visible_' .. url
+	local force_visible = MODULE.Storage[flag_key] ~= ''
+	local show_browser = MODULE.GetOption('showbrowser')
+
+	local output = nodejs.run_html_load_with_js(url, js_code, {
+		headless = not (show_browser or force_visible)
+	})
+
+	if IsTimedOut(output) and not (show_browser or force_visible) then
+		MODULE.Storage[flag_key] = '1'
+		output = nodejs.run_html_load_with_js(url, js_code, { headless = false })
 	end
-	if decoded then return json.encode(decoded) end
+
+	if force_visible and not IsTimedOut(output) then
+		MODULE.Storage[flag_key] = ''
+	end
+
 	return output
 end
 
@@ -521,9 +520,7 @@ function GetInfo()
 	local timestamp = tonumber(MODULE.Storage[mid .. '_time']) or 0
 
 	if output == '' or (now - timestamp) >= 900 then
-		local js_code = GetChapterFetchScript(mid)
-		output = RunBrowserScript(MODULE.RootURL .. URL, js_code)
-
+		output = RunBrowserScript(MODULE.RootURL .. URL, GetChapterFetchScript(mid))
 		if not json.decode(output).error then
 			MODULE.Storage[mid] = output
 			MODULE.Storage[mid .. '_time'] = now
@@ -567,7 +564,7 @@ function GetInfo()
 
 	MANGAINFO.Title     = info.title
 	MANGAINFO.AltTitles = table.concat(info.altTitles or {}, ', ')
-	MANGAINFO.CoverLink = info.poster and info.poster.medium
+	MANGAINFO.CoverLink = MaybeFillHost(MODULE.RootURL, info.poster and info.poster.medium)
 	MANGAINFO.Authors   = table.concat(authors, ', ')
 	MANGAINFO.Artists   = table.concat(artists, ', ')
 	MANGAINFO.Genres    = table.concat(genres, ', ')
@@ -687,9 +684,7 @@ function GetPageNumber()
 	local json = require 'utils.json'
 	local output = MODULE.Storage[URL]
 	if output == '' then
-		local js_code = GetPageFetchScript()
-		output = RunBrowserScript(MODULE.RootURL .. URL, js_code)
-
+		output = RunBrowserScript(MODULE.RootURL .. URL, GetPageFetchScript())
 		if not json.decode(output).error then
 			MODULE.Storage[URL] = output
 		end
@@ -780,15 +775,18 @@ function Init()
 	local slang = fmd.SelectedLanguage
 	local translations = {
 		['en'] = {
+			['showbrowser'] = 'Show the browser window while loading pages',
 			['showscangroup'] = 'Show scanlation group',
 			['deduplicatechapters'] = 'Deduplicate chapters (prefer official chapters, followed by the highest-voted or most recent)'
 		},
 		['id_ID'] = {
+			['showbrowser'] = 'Tampilkan jendela peramban saat memuat halaman',
 			['showscangroup'] = 'Tampilkan grup scanlation',
 			['deduplicatechapters'] = 'Hapus bab ganda (utamakan bab resmi, diikuti oleh yang paling banyak mendapat suara atau terbaru)'
 		}
 	}
 	local lang = translations[slang] or translations['en']
+	m.AddOptionCheckBox('showbrowser', lang.showbrowser, false)
 	m.AddOptionCheckBox('showscangroup', lang.showscangroup, false)
 	m.AddOptionCheckBox('deduplicatechapters', lang.deduplicatechapters, false)
 end

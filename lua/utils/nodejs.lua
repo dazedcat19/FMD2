@@ -199,7 +199,8 @@ local function save_stored_data(cookies_json, ua_str)
 end
 
 -- Function to load HTML content and optionally execute JavaScript on it
-local function run_html_with_js(url, js_code)
+local function run_html_with_js(url, js_code, opts)
+    opts = opts or {}
     local fs_ip, fs_port, use_fs = get_flaresolverr_config()
     local stored_cookies, stored_ua = get_stored_data()
 
@@ -259,10 +260,10 @@ local function run_html_with_js(url, js_code)
             let browser;
             try {
                 browser = await puppeteer.launch({
-                    headless: true,
+                    headless: ]] .. ((opts.headless == false) and "false" or "true") .. [[,
                     args: [
                         '--disable-extensions', // Prevent browser extensions
-                        '--disable-webgl', // Disable WebGL
+						]] .. (opts.webgl and "" or "'--disable-webgl', // Disable WebGL") .. [[
                         '--disable-webrtc', // Disable WebRTC
                         '--disable-background-networking', // Prevents background requests
 						'--disable-blink-features=AutomationControlled' // Prevents detection of automation
@@ -365,8 +366,8 @@ function node_executor.run_html_load(url)
     return run_html_with_js(url)
 end
 
-function node_executor.run_html_load_with_js(url, js_code)
-    return run_html_with_js(url, isolatevm_js(js_code, true))
+function node_executor.run_html_load_with_js(url, js_code, opts)
+    return run_html_with_js(url, isolatevm_js(js_code, true), opts)
 end
 
 return node_executor
