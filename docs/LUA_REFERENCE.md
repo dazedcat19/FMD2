@@ -98,12 +98,12 @@
 
 ## Overview
 
-**Free Manga Downloader 2 (FMD2)** is a manga downloading application written in Object Pascal (Lazarus) that uses Lua scripts for website modules. The application supports 600+ manga websites through a modular Lua-based plugin system.
+**Free Manga Downloader 2 (FMD2)** is a manga downloading application written in Object Pascal (Lazarus) that uses Lua scripts for website modules. The application supports 400+ manga websites through a modular Lua-based plugin system.
 
-**Modules:** 600+ website modules
-**Templates:** 35+ reusable templates
-**Lua Version:** 5.4.8 (also supports LuaJIT)
-**JavaScript Engine:** Duktape 2.5.0 (embedded) + Node.js (optional)
+**Modules:** 400+ website modules  
+**Templates:** 35+ reusable templates  
+**Lua Version:** 5.4.9  
+**JavaScript Engine:** Duktape 2.7.0 (embedded) + Node.js (optional)
 
 ---
 
@@ -3147,6 +3147,6 @@ FMD2/
 ## Additional Resources
 
 - **Supported Websites:** `docs/SUPPORTED_WEBSITES.md`
-- **Example Modules:** `lua/modules/` folder (600+ examples)
+- **Example Modules:** `lua/modules/` folder (400+ examples)
 - **Templates:** `lua/templates/` folder
 - **Utilities:** `lua/utils/` folder
