@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------------------------------
--- Local Constants
+-- Module Constants
 ----------------------------------------------------------------------------------------------------
 
 local API_URL = '/api/v2'
@@ -170,7 +170,7 @@ function GetPageNumber()
 	HTTP.Reset()
 	HTTP.Headers.Values['X-Integrity-Token'] = MODULE.Storage['token']
 
-	local u = MODULE.RootURL .. API_URL .. '/books' .. URL
+	local u = MODULE.RootURL .. API_URL .. '/books' .. URL .. '?intent=Read'
 
 	if not HTTP.POST(u) then return false end
 
@@ -178,10 +178,14 @@ function GetPageNumber()
 	local data = x.XPath('json(*)')
 	local CDN_URL = x.XPathString('cache_url', data)
 	local token = x.XPathString('access_token', data)
-	local datasaver = MODULE.GetOption('datasaver')
+	local datasaver = MODULE.GetOption('datasaver') and '/datasaver' or ''
+
 	for v in x.XPath('manifest?pages?*', data).Get() do
-		TASK.PageLinks.Add(string.format('%s/api/v2/books/page%s/%s.%s?token=%s&is_datasaver=%s', 
-			CDN_URL, URL, v.GetProperty('page_id').ToString(), v.GetProperty('ext').ToString(), token, datasaver))
+		TASK.PageLinks.Add(string.format('%s/api/v2/books/page%s%s/%s.%s?token=%s',
+			CDN_URL, datasaver, URL,
+			v.GetProperty('page_id').ToString(),
+			v.GetProperty('ext').ToString(),
+			token))
 	end
 
 	return true
