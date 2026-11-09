@@ -37,7 +37,7 @@ function GetInfo()
 	if not HTTP.GET(u) then return net_problem end
 
 	local x = CreateTXQuery(HTTP.Document)
-	MANGAINFO.Title     = x.XPathString('//h1')
+	MANGAINFO.Title     = x.XPathString('//h1[@class="entry-title"]')
 	MANGAINFO.CoverLink = x.XPathString('//div[@class="wp-block-image"]//img/@data-src')
 	MANGAINFO.Authors   = x.XPathString('//p[contains(., "Author")] ! substring-after(., ":")')
 	MANGAINFO.Genres    = x.XPathStringAll('//p[contains(., "Category")]/a')
