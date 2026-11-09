@@ -5,10 +5,10 @@
 local _M = {}
 
 ----------------------------------------------------------------------------------------------------
--- Local Constants
+-- Template Configuration
 ----------------------------------------------------------------------------------------------------
 
-local API_URL = 'https://api.mghcdn.com/graphql'
+local API_URL = '/graphql'
 local CRYPTO_URL = '/api/chapter-crypto'
 local CDN_URL = 'https://imgx.mghcdn.com/'
 local MangaPerPage = 50
@@ -61,7 +61,7 @@ function _M.GetDirectoryPageNumber()
 	local s = '{"query":"{search(x:' .. source .. ',q:\\"\\",genre:\\"all\\",mod:ALPHABET,limit:' .. MangaPerPage .. ',count:true,offset:0){count}}"}'
 	SetRequestHeaders(RandomHex())
 
-	if not HTTP.POST(API_URL, s) then return net_problem end
+	if not HTTP.POST(MODULE.RootURL .. API_URL, s) then return net_problem end
 
 	PAGENUMBER = math.ceil(json.decode(HTTP.Document.ToString()).data.search.count / MangaPerPage)
 
@@ -74,7 +74,7 @@ function _M.GetNameAndLink()
 	local s = '{"query":"{search(x:' .. source .. ',q:\\"\\",genre:\\"all\\",mod:ALPHABET,limit:' .. MangaPerPage .. ',count:true,offset:' .. offset .. '){rows{title,slug}}}"}'
 	SetRequestHeaders(RandomHex())
 
-	if not HTTP.POST(API_URL, s) then return net_problem end
+	if not HTTP.POST(MODULE.RootURL .. API_URL, s) then return net_problem end
 
 	local data = json.decode(HTTP.Document.ToString()).data.search.rows
 	for _, v in ipairs(data) do
@@ -90,9 +90,10 @@ function _M.GetInfo()
 	local s = '{"query":"{manga(x:' .. source .. ',slug:\\"' .. URL:match('manga/(.-)$') .. '\\"){title,slug,status,image,author,artist,genres,description,alternativeTitle,chapters{number,title}}}"}'
 	SetRequestHeaders(RandomHex())
 
-	if not HTTP.POST(API_URL, s) then return net_problem end
+	if not HTTP.POST(MODULE.RootURL .. API_URL, s) then return net_problem end
 
-	local x = json.decode(HTTP.Document.ToString())
+	local ok, x = pcall(json.decode, HTTP.Document.ToString())
+	if not ok then return net_problem end
 	if x.errors then MANGAINFO.Title = 'Error: ' .. x.errors[1].message return no_error end
 	MANGAINFO.Title     = x.data.manga.title
 	MANGAINFO.AltTitles = x.data.manga.alternativeTitle
@@ -128,21 +129,25 @@ function _M.GetPageNumber()
 
 	HTTP.Reset()
 	SetRequestHeaders(token)
+
 	if not HTTP.GET(MODULE.RootURL .. CRYPTO_URL) then return false end
 
-	local crypto = json.decode(HTTP.Document.ToString())
+	local ok, crypto = pcall(json.decode, HTTP.Document.ToString())
+	if not ok then return false end
 	if not crypto or not crypto.key then
 		print('MangaHub: could not obtain chapter crypto key')
 		return false
 	end
 
 	local s = '{"query":"{chapter(x:' .. source .. ',slug:\\"' .. slug .. '\\",number:' .. chapter .. '){pages}}"}'
+
 	HTTP.Reset()
 	SetRequestHeaders(token)
 
-	if not HTTP.POST(API_URL, s) then return false end
+	if not HTTP.POST(MODULE.RootURL .. API_URL, s) then return false end
 
-	local x = json.decode(HTTP.Document.ToString())
+	local ok, x = pcall(json.decode, HTTP.Document.ToString())
+	if not ok then return false end
 	if x.errors then 
 		print('Error: ' .. x.errors[1].message)
 		return false
