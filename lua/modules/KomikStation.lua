@@ -1,25 +1,9 @@
 ----------------------------------------------------------------------------------------------------
--- Module Initialization
-----------------------------------------------------------------------------------------------------
-
-function Init()
-	local m = NewWebsiteModule()
-	m.ID                       = 'b5586745030a45bba05d0c360caa6d1a'
-	m.Name                     = 'KomikStation'
-	m.RootURL                  = 'https://komikstation.co'
-	m.Category                 = 'Indonesian'
-	m.OnGetNameAndLink         = 'GetNameAndLink'
-	m.OnGetInfo                = 'GetInfo'
-	m.OnGetPageNumber          = 'GetPageNumber'
-end
-
-----------------------------------------------------------------------------------------------------
--- Local Constants
+-- Template Configuration
 ----------------------------------------------------------------------------------------------------
 
 local Template = require 'templates.MangaThemesia'
--- DirectoryPagination = '/manga/list-mode/'
-XPathTokenAuthors   = 'Pengarang'
+XPathTokenAuthors   = 'Penulis'
 XPathTokenArtists   = 'Ilustrator'
 
 ----------------------------------------------------------------------------------------------------
@@ -40,9 +24,24 @@ function GetInfo()
 	return no_error
 end
 
--- Get the page count for the current chapter.
+-- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
 	Template.GetPageNumber()
 
 	return no_error
+end
+
+----------------------------------------------------------------------------------------------------
+-- Module Initialization
+----------------------------------------------------------------------------------------------------
+
+function Init()
+	local m = NewWebsiteModule()
+	m.ID                       = 'b5586745030a45bba05d0c360caa6d1a'
+	m.Name                     = 'KomikStation'
+	m.RootURL                  = 'https://komikstation.org'
+	m.Category                 = 'Indonesian'
+	m.OnGetNameAndLink         = 'GetNameAndLink'
+	m.OnGetInfo                = 'GetInfo'
+	m.OnGetPageNumber          = 'GetPageNumber'
 end
