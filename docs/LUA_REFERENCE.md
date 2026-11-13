@@ -2395,19 +2395,27 @@ end
 #### fmd.imagepuzzle
 
 Native image tile **descrambler** for sites that cut pages into a grid and
-shuffle the tiles (plus optional flips). It decodes the image (JPG/PNG/WebP
-are handled natively), rearranges the blocks, and writes the fixed image —
-no external tool needed.
+shuffle the tiles (plus optional flips and quarter-turn rotations). It decodes
+the image (JPG/PNG/WebP are handled natively), rearranges the blocks, and
+writes the fixed image — no external tool needed. Grids can be **uniform**
+(all tiles the same size) or **uneven** (every column/row may have its own
+size), which is what sites like SoraRaw ("canva") need.
 
-**Constructor:**
+**Constructors:**
 
 ```lua
 local imagepuzzle = require 'fmd.imagepuzzle'
-local puzzle = imagepuzzle.Create(hblocks, vblocks)   -- or .New(...)
+
+-- uniform grid: hblocks x vblocks equal-size tiles
+local puzzle = imagepuzzle.Create(hblocks, vblocks)          -- or .New(...)
+
+-- uneven grid: each column/row has its own size
+local puzzle = imagepuzzle.Create({w1, w2, w3}, {h1, h2})    -- or .New(...)
 ```
 
-`hblocks`/`vblocks` are the grid size (columns × rows of tiles). New puzzles
-start **unscrambled** — `Matrix[i] = i`, `Flips[i] = 0`.
+New puzzles start **unscrambled** — `Matrix[i] = i`, `Flips[i] = 0`,
+`Rotations[i] = 0`. On an uneven puzzle, `HorBlock`/`VerBlock` become the
+number of column widths/row heights passed in.
 
 **Members:**
 
@@ -2417,8 +2425,10 @@ start **unscrambled** — `Matrix[i] = i`, `Flips[i] = 0`.
 | `puzzle.VerBlock` | read | number of vertical blocks (rows) |
 | `puzzle.Matrix[i]` | read/write | destination tile index for source tile `i` — **0-based**, range `0 .. hblocks*vblocks-1` |
 | `puzzle.Flips[i]` | read/write | flip flags for tile `i` (0 = none) — 0-based |
-| `puzzle.Multiply` | read/write | scaling multiplier, default 1 (used when the scrambled image is scaled up/down) |
-| `puzzle:DeScramble(input, output)` | method | descrambles a `TStream` into another `TStream` (`input` = scrambled, `output` = fixed) |
+| `puzzle.Rotations[i]` | read/write | quarter turns applied to tile `i`: 0 = none, 1 = 90° counter-clockwise, 2 = 180°, 3 = 90° clockwise — 0-based |
+| `puzzle.Multiply` | read/write | scaling multiplier, default 1 (uniform grids only) |
+| `puzzle.SetUnevenGrid(colWidths, rowHeights)` | method | switch to an uneven grid; both arguments are Lua tables of positive integers (`{w1, w2, ...}`, `{h1, h2, ...}`), returns `true` on success |
+| `puzzle.DeScramble(input, output)` | method | descrambles a `TStream` into another `TStream` (`input` = scrambled, `output` = fixed) |
 
 `HTTP.Document` is a `TMemoryStream`, so the usual pattern is to descramble
 **in place** during `OnDownloadImage`.
@@ -2446,9 +2456,47 @@ function DownloadImage()
 end
 ```
 
+Uneven-grid usage — `lua/modules/SoraRaw.lua` (the grid is derived from the
+downloaded image size, so `ImageSize` reads it first; then the uneven grid is
+set and every tile gets its source/rotation/flip):
+
+```lua
+function DownloadImage()
+    if not HTTP.GET(url) then return false end          -- URL carries a
+    local mode, args = URL:match('^.-#(canva2?)=(.+)$') -- '#canva...' fragment
+    local imagepuzzle = require 'fmd.imagepuzzle'
+    local w, h = imagepuzzle.ImageSize(HTTP.Document)   -- header-only size probe
+    if not w then return false end
+
+    local cols, rows, matrix, rotations, flips = BuildPuzzleConfig(mode, args, w, h)
+
+    local puzzle = imagepuzzle.Create(#cols, #rows)
+    puzzle.SetUnevenGrid(cols, rows)                    -- per-column/row tile sizes
+    for i = 0, #cols * #rows - 1 do
+        puzzle.Matrix[i] = matrix[i]
+        puzzle.Rotations[i] = rotations[i]
+        puzzle.Flips[i] = flips[i]
+    end
+    puzzle.DeScramble(HTTP.Document, HTTP.Document)     -- in place
+    return true
+end
+```
+
 > [!NOTE]
 > - `Matrix` mapping semantics: `Matrix[src] = dst` — source tile `src` is
->   moved to position `dst`.
+>   moved to position `dst`, with `Rotations[src]` quarter turns and
+>   `Flips[src]` flip flags applied while the tile is moved. Extensions that
+>   describe moves as "destination takes from source" must be inverted when
+>   filling `Matrix`.
+> - On uneven grids `Rotations` matters: a 90°/270°-rotated tile takes its
+>   pixels from a *transposed* tile (a `w x h` destination reads from a
+>   `h x w` source), and tiles that cannot be mapped completely reproduce the
+>   site's canvas rendering, including its clipped (white) areas.
+> - On uneven grids the column widths / row heights must add up exactly to
+>   the image size, and `Multiply` is ignored.
+> - `imagepuzzle.ImageSize(stream)` returns `width, height` for JPG/PNG/WebP/
+>   GIF/BMP/TIFF by reading the headers only (the stream position is
+>   preserved). It returns nothing if the format is unknown.
 > - The streams can be the same object (in-place) or two different streams
 >   (both are `TStream` userdata — in practice `HTTP.Document`).
 > - The output format follows the input image (JPG/PNG/WebP all supported).
