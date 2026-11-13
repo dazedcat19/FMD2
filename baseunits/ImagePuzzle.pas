@@ -13,16 +13,29 @@ type
     FHorBlock, FVerBlock, FMultiply: Integer;
     FMatrix: TIntegerDynArray;
     FFlips: TIntegerDynArray;
+    FRotations: TIntegerDynArray;
+    FColWidths: TIntegerDynArray;
+    FRowHeights: TIntegerDynArray;
+    FUnevenGrid: Boolean;
     function GetFlip(const Index: Integer): Integer;
     procedure Ensure32bit(var AIntf: TLazIntfImage);
+    procedure ResetCells;
+    procedure CopyTileRotated(ASrc, ADst: TLazIntfImage;
+      ASrcX, ASrcY, ASrcW, ASrcH, ADstX, ADstY, ARotation, AFlips: Integer);
   public
-    constructor Create(horBlockCount, verBlockCount: Integer);
+    constructor Create(horBlockCount, verBlockCount: Integer); overload;
+    constructor Create(const AColWidths, ARowHeights: array of Integer); overload;
+    function SetUnevenGrid(const AColWidths, ARowHeights: array of Integer): Boolean;
     procedure DeScramble(input, output: TStream);
     property HorBlock: Integer read FHorBlock;
     property VerBlock: Integer read FVerBlock;
     property Multiply: Integer read FMultiply write FMultiply default 1;
     property Matrix: TIntegerDynArray read FMatrix;
     property Flips: TIntegerDynArray read FFlips;
+    property Rotations: TIntegerDynArray read FRotations;
+    property ColWidths: TIntegerDynArray read FColWidths;
+    property RowHeights: TIntegerDynArray read FRowHeights;
+    property UnevenGrid: Boolean read FUnevenGrid;
   end;
 
 implementation
@@ -30,16 +43,137 @@ implementation
 uses Math, MemBitmap, webp, GraphType, MultiLog;
 
 constructor TImagePuzzle.Create(horBlockCount, verBlockCount: Integer);
-var i: Integer;
 begin
+  inherited Create;
+  FMultiply := 1;
   FHorBlock := horBlockCount;
   FVerBlock := verBlockCount;
+  if FHorBlock < 0 then FHorBlock := 0;
+  if FVerBlock < 0 then FVerBlock := 0;
+  FUnevenGrid := False;
+  ResetCells;
+end;
+
+constructor TImagePuzzle.Create(const AColWidths, ARowHeights: array of Integer);
+begin
+  inherited Create;
+  FMultiply := 1;
+  FHorBlock := 0;
+  FVerBlock := 0;
+  FUnevenGrid := False;
+  SetUnevenGrid(AColWidths, ARowHeights);
+end;
+
+procedure TImagePuzzle.ResetCells;
+var i: Integer;
+begin
   SetLength(FMatrix, FHorBlock * FVerBlock);
   SetLength(FFlips, FHorBlock * FVerBlock);
+  SetLength(FRotations, FHorBlock * FVerBlock);
   for i := 0 to High(FMatrix) do
   begin
     FMatrix[i] := i;
     FFlips[i] := 0;
+    FRotations[i] := 0;
+  end;
+end;
+
+function TImagePuzzle.SetUnevenGrid(const AColWidths, ARowHeights: array of Integer): Boolean;
+var
+  i: Integer;
+begin
+  Result := False;
+  if (Length(AColWidths) = 0) or (Length(ARowHeights) = 0) then
+  begin
+    Logger.SendError(Self.ClassName + '.SetUnevenGrid: column widths or row heights are empty');
+    Exit;
+  end;
+  for i := 0 to Length(AColWidths) - 1 do
+  begin
+    if AColWidths[i] <= 0 then
+    begin
+      Logger.SendError(Self.ClassName + Format('.SetUnevenGrid: invalid column width %d at index %d', [AColWidths[i], i]));
+      Exit;
+    end;
+  end;
+  for i := 0 to Length(ARowHeights) - 1 do
+  begin
+    if ARowHeights[i] <= 0 then
+    begin
+      Logger.SendError(Self.ClassName + Format('.SetUnevenGrid: invalid row height %d at index %d', [ARowHeights[i], i]));
+      Exit;
+    end;
+  end;
+  FHorBlock := Length(AColWidths);
+  FVerBlock := Length(ARowHeights);
+  SetLength(FColWidths, FHorBlock);
+  SetLength(FRowHeights, FVerBlock);
+  for i := 0 to FHorBlock - 1 do
+    FColWidths[i] := AColWidths[i];
+  for i := 0 to FVerBlock - 1 do
+    FRowHeights[i] := ARowHeights[i];
+  FUnevenGrid := True;
+  ResetCells;
+  Result := True;
+end;
+
+procedure TImagePuzzle.CopyTileRotated(ASrc, ADst: TLazIntfImage;
+  ASrcX, ASrcY, ASrcW, ASrcH, ADstX, ADstY, ARotation, AFlips: Integer);
+var
+  r00, r01, r10, r11: Integer;
+  a00, a01, a10, a11: Integer;
+  sx, sy, t2x, t2y, t1x, t1y: Integer;
+  bx, by, outW, outH: Integer;
+  x, y, ox, oy: Integer;
+  srcLine, dstLine: PByte;
+begin
+  case ARotation of
+    1: begin r00 := 0;  r01 := 1;  r10 := -1; r11 := 0;  end;
+    2: begin r00 := -1; r01 := 0;  r10 := 0;  r11 := -1; end;
+    3: begin r00 := 0;  r01 := -1; r10 := 1;  r11 := 0;  end;
+  else
+       begin r00 := 1;  r01 := 0;  r10 := 0;  r11 := 1;  end;
+  end;
+  outW := ASrcW;
+  outH := ASrcH;
+  if (ARotation mod 2) = 1 then
+  begin
+    outW := ASrcH;
+    outH := ASrcW;
+  end;
+  if (AFlips and 1) <> 0 then sx := -1 else sx := 1;
+  if (AFlips and 2) <> 0 then sy := -1 else sy := 1;
+  a00 := r00 * sx;
+  a01 := r01 * sy;
+  a10 := r10 * sx;
+  a11 := r11 * sy;
+  if (AFlips and 1) <> 0 then t2x := outW else t2x := 0;
+  if (AFlips and 2) <> 0 then t2y := outH else t2y := 0;
+  case ARotation of
+    1: begin t1x := 0;    t1y := outW; end;
+    2: begin t1x := outW; t1y := outH; end;
+    3: begin t1x := outH; t1y := 0;    end;
+  else
+       begin t1x := 0;    t1y := 0;    end;
+  end;
+  bx := r00 * t2x + r01 * t2y + t1x;
+  if a00 + a01 < 0 then Dec(bx);
+  by := r10 * t2x + r11 * t2y + t1y;
+  if a10 + a11 < 0 then Dec(by);
+  for y := 0 to ASrcH - 1 do
+  begin
+    srcLine := ASrc.GetDataLineStart(ASrcY + y) + ASrcX * 4;
+    for x := 0 to ASrcW - 1 do
+    begin
+      ox := a00 * x + a01 * y + bx;
+      oy := a10 * x + a11 * y + by;
+      if (ox >= 0) and (ox < outW) and (oy >= 0) and (oy < outH)
+        and (ADstX + ox < ADst.Width) and (ADstY + oy < ADst.Height) then
+      begin
+        dstLine := ADst.GetDataLineStart(ADstY + oy) + (ADstX + ox) * 4;
+        Move((srcLine + x * 4)^, dstLine^, 4);
+      end;
+    end;
   end;
 end;
 
@@ -142,11 +276,14 @@ var
   srcIntf, dstIntf: TLazIntfImage;
   blockWidth, blockHeight: Double;
   i, row, col, x, k: Integer;
-  dx1, dy1, dx2, dy2, sx1, sy1: Integer;
+  dx1, dy1, sx1, sy1: Integer;
   tileWidth, tileHeight, srcRow, flags: Integer;
   width, height: Integer;
   srcLine, dstLine: PByte;
   ext: String = 'jpg';
+  Uneven: Boolean;
+  ColX, ColW, RowY, RowH: TIntegerDynArray;
+  c, sumSize, rotation: Integer;
 
   procedure LogAndFail(const AMsg: String);
   begin
@@ -233,15 +370,70 @@ begin
       FillChar(dstIntf.GetDataLineStart(i)^, dstIntf.DataDescription.BytesPerLine, 255);
     end;
 
-    if Multiply <= 1 then
+    Uneven := FUnevenGrid and (Length(FColWidths) > 0) and (Length(FRowHeights) > 0);
+    SetLength(ColX, HorBlock);
+    SetLength(ColW, HorBlock);
+    SetLength(RowY, VerBlock);
+    SetLength(RowH, VerBlock);
+    if Uneven then
     begin
-      blockWidth := width div HorBlock;
-      blockHeight := height div VerBlock;
+      sumSize := 0;
+      for c := 0 to HorBlock - 1 do
+      begin
+        Inc(sumSize, FColWidths[c]);
+      end;
+      if sumSize <> width then
+      begin
+        LogAndFail(Format('uneven grid columns do not add up to image width: %d vs %d', [sumSize, width]));
+        Exit;
+      end;
+      sumSize := 0;
+      for c := 0 to VerBlock - 1 do
+      begin
+        Inc(sumSize, FRowHeights[c]);
+      end;
+      if sumSize <> height then
+      begin
+        LogAndFail(Format('uneven grid rows do not add up to image height: %d vs %d', [sumSize, height]));
+        Exit;
+      end;
+      col := 0;
+      for c := 0 to HorBlock - 1 do
+      begin
+        ColX[c] := col;
+        ColW[c] := FColWidths[c];
+        Inc(col, ColW[c]);
+      end;
+      row := 0;
+      for c := 0 to VerBlock - 1 do
+      begin
+        RowY[c] := row;
+        RowH[c] := FRowHeights[c];
+        Inc(row, RowH[c]);
+      end;
     end
     else
     begin
-      blockWidth := Trunc(width div (HorBlock * Multiply)) * Multiply;
-      blockHeight := Trunc(height div (VerBlock * Multiply)) * Multiply;
+      if Multiply <= 1 then
+      begin
+        blockWidth := width div HorBlock;
+        blockHeight := height div VerBlock;
+      end
+      else
+      begin
+        blockWidth := Trunc(width div (HorBlock * Multiply)) * Multiply;
+        blockHeight := Trunc(height div (VerBlock * Multiply)) * Multiply;
+      end;
+      for c := 0 to HorBlock - 1 do
+      begin
+        ColX[c] := Trunc(c * blockWidth);
+        ColW[c] := Trunc((c + 1) * blockWidth) - ColX[c];
+      end;
+      for c := 0 to VerBlock - 1 do
+      begin
+        RowY[c] := Trunc(c * blockHeight);
+        RowH[c] := Trunc((c + 1) * blockHeight) - RowY[c];
+      end;
     end;
     for i := 0 to HorBlock * VerBlock - 1 do
     begin
@@ -250,43 +442,63 @@ begin
         LogAndFail(Format('Matrix[%d]=%d out of range', [i, Matrix[i]]));
         Exit;
       end;
-      row := Matrix[i] div HorBlock;
-      col := Matrix[i] mod HorBlock;
-      dx1 := Trunc(col * blockWidth);
-      dy1 := Trunc(row * blockHeight);
-      dx2 := Trunc((col + 1) * blockWidth);
-      dy2 := Trunc((row + 1) * blockHeight);
       row := i div HorBlock;
       col := i mod HorBlock;
-      sx1 := Trunc(col * blockWidth);
-      sy1 := Trunc(row * blockHeight);
-      tileWidth := dx2 - dx1;
-      tileHeight := dy2 - dy1;
+      sx1 := ColX[col];
+      sy1 := RowY[row];
+      row := Matrix[i] div HorBlock;
+      col := Matrix[i] mod HorBlock;
+      dx1 := ColX[col];
+      dy1 := RowY[row];
+      tileWidth := ColW[col];
+      tileHeight := RowH[row];
       if (tileWidth <= 0) or (tileHeight <= 0) then
       begin
         Continue;
       end;
-      flags := GetFlip(i);
-      for k := 0 to tileHeight - 1 do
+      if tileWidth > ColW[i mod HorBlock] then
       begin
-        srcRow := sy1 + k;
-        if (flags and 2) <> 0 then
+        tileWidth := ColW[i mod HorBlock];
+      end;
+      if tileHeight > RowH[i div HorBlock] then
+      begin
+        tileHeight := RowH[i div HorBlock];
+      end;
+      flags := GetFlip(i);
+      rotation := 0;
+      if i < Length(FRotations) then
+      begin
+        rotation := ((FRotations[i] mod 4) + 4) mod 4;
+      end;
+      if rotation = 0 then
+      begin
+        for k := 0 to tileHeight - 1 do
         begin
-          srcRow := sy1 + (tileHeight - 1 - k);
-        end;
-        srcLine := srcIntf.GetDataLineStart(srcRow) + sx1 * 4;
-        dstLine := dstIntf.GetDataLineStart(dy1 + k) + dx1 * 4;
-        if (flags and 1) <> 0 then
-        begin
-          for x := 0 to tileWidth - 1 do
+          srcRow := sy1 + k;
+          if (flags and 2) <> 0 then
           begin
-            Move((srcLine + (tileWidth - 1 - x) * 4)^, (dstLine + x * 4)^, 4);
+            srcRow := sy1 + (tileHeight - 1 - k);
           end;
-        end
-        else
-        begin
-          Move(srcLine^, dstLine^, tileWidth * 4);
+          srcLine := srcIntf.GetDataLineStart(srcRow) + sx1 * 4;
+          dstLine := dstIntf.GetDataLineStart(dy1 + k) + dx1 * 4;
+          if (flags and 1) <> 0 then
+          begin
+            for x := 0 to tileWidth - 1 do
+            begin
+              Move((srcLine + (tileWidth - 1 - x) * 4)^, (dstLine + x * 4)^, 4);
+            end;
+          end
+          else
+          begin
+            Move(srcLine^, dstLine^, tileWidth * 4);
+          end;
         end;
+      end
+      else
+      begin
+        CopyTileRotated(srcIntf, dstIntf, sx1, sy1,
+          ColW[i mod HorBlock], RowH[i div HorBlock],
+          dx1, dy1, rotation, flags);
       end;
     end;
 
