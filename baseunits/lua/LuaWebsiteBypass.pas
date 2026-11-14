@@ -26,9 +26,8 @@ procedure doInitialization;
 implementation
 
 uses
-  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif},
-  LuaWebsiteModules, LuaHandler, LuaBase, LuaUtils, LuaHTTPSend, LuaClass,
-  WebsiteModules, FMDOptions, uBaseUnit, MultiLog;
+  lua55, LuaWebsiteModules, LuaHandler, LuaBase, LuaUtils, LuaHTTPSend,
+  LuaClass, WebsiteModules, FMDOptions, uBaseUnit, MultiLog;
 
 var
   checkantibot_dump,

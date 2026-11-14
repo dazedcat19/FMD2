@@ -5,7 +5,7 @@ unit LuaImagePuzzle;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
+  Classes, SysUtils, lua55;
 
 procedure luaImagePuzzleAddMetaTable(const L: Plua_State; const Obj: Pointer;
   const MetaTable, UserData: Integer);

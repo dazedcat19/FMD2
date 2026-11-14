@@ -5,7 +5,7 @@ unit LuaBase;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
+  Classes, SysUtils, lua55;
 
 procedure LuaBaseRegisterBasic(const L: Plua_State); inline;
 procedure LuaBaseRegisterCreateObject(const L: Plua_State); inline;
@@ -158,10 +158,7 @@ begin
     LUA_ERRSYNTAX: Result := 'LUA_ERRSYNTAX';
     LUA_ERRMEM:    Result := 'LUA_ERRMEM';
     LUA_ERRERR:    Result := 'LUA_ERRERR';
-    {$ifndef luajit}
-    //LUA_ERRGCMM:   Result := 'LUA_ERRGCMM';
     LUA_ERRFILE:   Result := 'LUA_ERRFILE';
-    {$endif}
     else
       Result := IntToStr(ReturnCode);
   end;
@@ -202,7 +199,7 @@ begin
       raise Exception.Create('luaL_loadfile ' + LuaGetReturnString(r) + ': ' + luaToString(L, -1));
     // disabled strip to print line info
     Result := TMemoryStream.Create;
-    r := lua_dump(L, @_luawriter, Result{$ifndef luajit}, 0{$endif});
+    r := lua_dump(L, @_luawriter, Result, 0);
     if r <> 0 then
     begin
       FreeAndNil(Result);

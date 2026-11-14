@@ -95,7 +95,7 @@ Reference for writing and maintaining Lua website modules for Free Manga Downloa
 
 **Modules:** 400+ website modules  
 **Templates:** 40+ reusable CMS templates  
-**Lua Version:** 5.4.9  
+**Lua Version:** 5.5.1  
 **JavaScript Engine:** Duktape 2.7.0 (embedded) + Node.js (optional)
 
 ### Where to find what
