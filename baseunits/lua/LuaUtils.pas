@@ -5,7 +5,7 @@ unit LuaUtils;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif}, LuaClass;
+  Classes, SysUtils, lua55, LuaClass;
 
 procedure luaNewLib(const L: Plua_State; const lr: PluaL_Reg); inline;
 function luaNewLibTable(const L: Plua_State; const lr: PluaL_Reg; const Table: Integer = -1): Integer; overload; inline;
@@ -232,7 +232,7 @@ begin
       LUA_TFUNCTION      : Result := 'function'#32#9 + HexStr(lua_topointer(L, idx));
       LUA_TUSERDATA      : Result := 'userdata'#32#9 + HexStr(lua_topointer(L, idx));
       LUA_TTHREAD        : Result := 'thread'#32#9 + HexStr(lua_topointer(L, idx));
-      {$ifndef luajit}LUA_NUMTAGS        : Result := 'numtags'#32#9 + HexStr(lua_topointer(L, idx));{$endif}
+      LUA_NUMTAGS        : Result := 'numtags'#32#9 + HexStr(lua_topointer(L, idx));
       else
                            Result := 'else'#32#9 + IntToStr(t) + ' = ' + HexStr(lua_topointer(L, idx));
     end;
@@ -251,33 +251,6 @@ begin
     Result += Format('%.3d[%s]: %s'#13#10,[i, HexStr(lua_topointer(L, i)), LuaToTypeString(L,i)]);
   SetLength(Result, Length(Result) - 2);
 end;
-
-{$ifdef luajit}
-procedure luaL_newlibtable(L: Plua_State; lr: array of luaL_Reg);
-begin
-   lua_createtable(L, 0, High(lr));
-end;
-
-procedure luaL_setfuncs(L: Plua_State; lr: PluaL_Reg; nup: Integer); cdecl; external LUA_LIB_NAME;
-
-procedure luaL_newlibtable(L: Plua_State; lr: PluaL_Reg);
-var
-  n: Integer;
-begin
-  n := 0;
-  while lr^.name <> nil do begin
-     inc(n);
-     inc(lr);
-  end;
-  lua_createtable(L, 0, n);
-end;
-
-procedure luaL_newlib(L: Plua_State; lr: PluaL_Reg);
-begin
-   luaL_newlibtable(L, lr);
-   luaL_setfuncs(L, lr, 0);
-end;
-{$endif}
 
 procedure luaL_newlib(const L: Plua_State; const Name: String;
   const lr: PluaL_Reg);

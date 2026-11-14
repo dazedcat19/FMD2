@@ -5,7 +5,7 @@ unit LuaPackage;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif}, LuaBase;
+  Classes, SysUtils, lua55, LuaBase;
 
 procedure RegisterLoader(const L: Plua_State);
 procedure AddLib(const AName: String; const ARegLib: lua_CFunction);

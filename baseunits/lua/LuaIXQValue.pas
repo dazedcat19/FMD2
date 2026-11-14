@@ -5,7 +5,7 @@ unit LuaIXQValue;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif}, xquery;
+  Classes, SysUtils, lua55, xquery;
 
 type
   { TLuaIXQValue }
