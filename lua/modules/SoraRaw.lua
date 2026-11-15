@@ -397,8 +397,10 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	if tonumber(require 'fmd.env'.Revision) < 7007 then
-		print('Require unreleased FMD2 build')
+	local rev = tonumber(require 'fmd.env'.Revision)
+	if rev < 7007 then
+		print('Require FMD2 revision 7007 and later')
+		print('Revision ' .. rev .. ' detected')
 		return false
 	end
 	local json = require 'utils.json'
