@@ -120,8 +120,10 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function _M.GetPageNumber()
-	if tonumber(require 'fmd.env'.Revision) < 6920 then
-		print('Require unreleased FMD2 build')
+	local rev = tonumber(require 'fmd.env'.Revision)
+	if rev < 6920 then
+		print('Require FMD2 revision 6920 and later')
+		print('Revision ' .. rev .. ' detected')
 		return false
 	end
 	local slug, chapter = URL:match('/([^/]+)/chapter%-([%d.]+)$')
