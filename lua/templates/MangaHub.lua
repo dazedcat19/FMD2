@@ -69,26 +69,11 @@ local function DecryptPages(enc, key)
 
 	-- Fallback for FMD builds that lack native AESDecryptGCM (uses Node.js crypto)
 	local subprocess = require 'fmd.subprocess'
-	local script_candidates = {
-		'lua/utils/mhub_decrypt.js',
-		'lua\\utils\\mhub_decrypt.js',
-		'./lua/utils/mhub_decrypt.js',
-		'../utils/mhub_decrypt.js',
-		'..\\utils\\mhub_decrypt.js'
-	}
-	local script_path = 'lua/utils/mhub_decrypt.js'
-	for _, p in ipairs(script_candidates) do
-		local chk = io.open(p, 'r')
-		if chk then
-			chk:close()
-			script_path = p
-			break
-		end
-	end
+	local js_code = "const c=require('crypto');const [k,iv,t,cp]=process.argv.slice(1);const d=c.createDecipheriv('aes-256-gcm',Buffer.from(k,'base64url'),Buffer.from(iv,'base64url'));d.setAuthTag(Buffer.from(t,'base64url'));process.stdout.write(Buffer.concat([d.update(Buffer.from(cp,'base64url')),d.final()]))"
 
-	local ok, out, err = subprocess.RunCommandHide('cmd.exe', '/c', 'node', script_path, key, parts[4], parts[5], parts[6])
+	local ok, out, err = subprocess.RunCommandHide('node', '-e', js_code, key, parts[4], parts[5], parts[6])
 	if not ok or not out or out == '' or out:find('Error') then
-		ok, out, err = subprocess.RunCommandHide('node', script_path, key, parts[4], parts[5], parts[6])
+		ok, out, err = subprocess.RunCommandHide('cmd.exe', '/c', 'node', '-e', js_code, key, parts[4], parts[5], parts[6])
 	end
 	log_debug(string.format('DecryptPages Node result: ok=%s, out_len=%s, err=%s', tostring(ok), tostring(out and #out or 0), tostring(err)))
 	if ok and out and out ~= '' and not out:find('Error') then
