@@ -227,26 +227,10 @@ function GetInfo()
 				goto continue
 			end
 
-			if not deduplicate then
-				local chapter_name = (MODULE.Storage['listtype'] == 'chapters') and 'Ch. ' .. number or 'Vol. ' .. number
-				if name ~= '' then
-					chapter_name = chapter_name .. ' - ' .. name
-				end
-
-				if ctype == 'official' then
-					chapter_name = chapter_name .. ' (Official)'
-				end
-
-				lang = not optlangid and ' [' .. lang .. ']' or ''
-
-				MANGAINFO.ChapterLinks.Add(hid .. '/' .. slug .. '/' .. cid)
-				MANGAINFO.ChapterNames.Add(chapter_name .. lang)
-			else
-				table.insert(raw_chapters, {
-					cid = cid, number = number, name = name,
-					ctype = ctype, lang = lang
-				})
-			end
+			table.insert(raw_chapters, {
+				cid = cid, number = number, name = name,
+				ctype = ctype, lang = lang
+			})
 
 			::continue::
 		end
@@ -278,9 +262,48 @@ function GetInfo()
 			end
 		end
 
+		table.sort(chapter_list, function(a, b)
+			local numA = tonumber(a) or 0
+			local numB = tonumber(b) or 0
+			if numA ~= numB then return numA < numB end
+			return a < b
+		end)
+
 		for _, key in ipairs(chapter_list) do
 			local ch = chapter_map[key]
 
+			local chapter_name = (MODULE.Storage['listtype'] == 'chapters') and 'Ch. ' .. ch.number or 'Vol. ' .. ch.number
+			if ch.name ~= '' then
+				chapter_name = chapter_name .. ' - ' .. ch.name
+			end
+
+			if ch.ctype == 'official' then
+				chapter_name = chapter_name .. ' (Official)'
+			end
+
+			local lang_suffix = not optlangid and ' [' .. ch.lang .. ']' or ''
+
+			MANGAINFO.ChapterLinks.Add(hid .. '/' .. slug .. '/' .. ch.cid)
+			MANGAINFO.ChapterNames.Add(chapter_name .. lang_suffix)
+		end
+	else
+		-- Group by publisher/type (official first, then unofficial), then by chapter number ascending
+		table.sort(raw_chapters, function(a, b)
+			if a.ctype ~= b.ctype then
+				return a.ctype == 'official'
+			end
+			if a.lang ~= b.lang then
+				return a.lang < b.lang
+			end
+			local numA = tonumber(a.number) or 0
+			local numB = tonumber(b.number) or 0
+			if numA ~= numB then
+				return numA < numB
+			end
+			return a.cid < b.cid
+		end)
+
+		for _, ch in ipairs(raw_chapters) do
 			local chapter_name = (MODULE.Storage['listtype'] == 'chapters') and 'Ch. ' .. ch.number or 'Vol. ' .. ch.number
 			if ch.name ~= '' then
 				chapter_name = chapter_name .. ' - ' .. ch.name
@@ -300,7 +323,6 @@ function GetInfo()
 		MODULE.Storage['listtype'] = 'chapters'
 		goto fetch_start
 	end
-	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
 	return no_error
 end
