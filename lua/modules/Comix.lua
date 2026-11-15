@@ -2,7 +2,8 @@
 -- Helper Functions
 ----------------------------------------------------------------------------------------------------
 
-local function GetMangaListFetchScript(page)
+local function GetMangaListFetchScript(page, is_headless)
+	local headless_val = is_headless and 'true' or 'false'
 	return [[
 	const hookCode = `
 		window.__comixBrowsePayloads = [];
@@ -25,7 +26,7 @@ local function GetMangaListFetchScript(page)
 	await page.evaluateOnNewDocument(hookCode);
 	await page.reload({ waitUntil: 'domcontentloaded', timeout: 90000 });
 
-	const resultJSON = await page.evaluate(async (pageNumber) => {
+	const resultJSON = await page.evaluate(async (pageNumber, isHeadless) => {
 		return await new Promise((resolve) => {
 			let submitted = false;
 			let watchdog = null;
@@ -36,11 +37,20 @@ local function GetMangaListFetchScript(page)
 				clearInterval(poll);
 				resolve(data);
 			};
-			watchdog = setTimeout(() => finish({ error: 'Timed out waiting for browse data' }), 45000);
+			const maxWait = isHeadless ? 3500 : 45000;
+			watchdog = setTimeout(() => finish({ error: 'Timed out waiting for browse data' }), maxWait);
 			const isMangaItems = (items) => items.length > 0 && items.every((item) => item &&
 				typeof item.title === 'string' &&
 				(typeof item.hid === 'string' || typeof item.url === 'string'));
 			const poll = setInterval(() => {
+				if (isHeadless) {
+					const hasWaf = document.querySelector('iframe[src*="@waf/challenge"], iframe[src*="challenges.cloudflare.com"], iframe[src*="turnstile"], div#cf-turnstile, .cf-turnstile, #challenge-stage, #challenge-form');
+					const isCfTitle = /Just a moment|Attention Required|Cloudflare/i.test(document.title || '');
+					if (hasWaf || isCfTitle) {
+						finish({ error: 'Timed out waiting for browse data (Cloudflare challenge detected)' });
+						return;
+					}
+				}
 				const payloads = window.__comixBrowsePayloads || [];
 				for (const result of payloads) {
 					if (!isMangaItems(result.items)) continue;
@@ -59,47 +69,16 @@ local function GetMangaListFetchScript(page)
 				}
 			}, 100);
 		});
-	}, ]] .. page .. [[);
+	}, ]] .. page .. [[, ]] .. headless_val .. [[);
 
 	console.log(JSON.stringify(resultJSON));
 	]]
 end
 
-local function GetChapterFetchScript(mid)
+local function GetChapterFetchScript(mid, is_headless)
+	local headless_val = is_headless and 'true' or 'false'
 	return [[
-	const hookCode = `
-		window.__comixChapterPages = [];
-		(() => {
-			const defineProperty = Object.defineProperty;
-			const consider = (holder) => setTimeout(() => {
-				try {
-					if (!holder.meta || !Array.isArray(holder.items)) return;
-					window.__comixChapterPages.push({ items: holder.items, meta: holder.meta });
-				} catch (e) {}
-			});
-			defineProperty(Object.prototype, 'items', {
-				configurable: true,
-				set(value) {
-					defineProperty(this, 'items', {
-						value: value,
-						writable: true,
-						enumerable: true,
-						configurable: true
-					});
-					consider(this);
-				}
-			});
-			Object.defineProperty = function (target, key, descriptor) {
-				const result = defineProperty.apply(this, arguments);
-				if (key === 'items' && descriptor && 'value' in descriptor) consider(target);
-				return result;
-			};
-		})();
-	`;
-	await page.evaluateOnNewDocument(hookCode);
-	await page.reload({ waitUntil: 'domcontentloaded', timeout: 90000 });
-
-	const resultJSON = await page.evaluate(async (mangaId) => {
+	const resultJSON = await page.evaluate(async (mangaId, isHeadless) => {
 		let info = null;
 		try {
 			const initialData = document.querySelector('script#initial-data');
@@ -115,110 +94,106 @@ local function GetChapterFetchScript(mid)
 		} catch (e) {}
 
 		try {
-			return await new Promise((resolve) => {
-				let settled = false;
-				let watchdog = null;
-				const finish = (data) => {
-					if (settled) return;
-					settled = true;
-					if (watchdog) clearTimeout(watchdog);
-					clearInterval(poll);
-					resolve(data);
-				};
-				const fail = (message) => finish({ error: String(message) });
-				const resetWatchdog = () => {
-					if (watchdog) clearTimeout(watchdog);
-					watchdog = setTimeout(() => fail('Timed out waiting for chapter data'), 90000);
-				};
+			const startWait = Date.now();
+			const maxWait = isHeadless ? 3500 : 60000;
+			while (Date.now() - startWait < maxWait) {
+				if (document.querySelector('li.mchap-item')) break;
 
-				const chapterPath = '/title/' + mangaId + '-';
-				const maxPages = 1000;
-				const pagesInFlight = 4;
-				const chapters = [];
-				const received = new Map();
-				const isChapter = (item) => item &&
-					typeof item.id === 'number' &&
-					typeof item.number === 'number' &&
-					typeof item.url === 'string' &&
-					item.url.includes(chapterPath);
-				let lastPage = null;
-				let nextToRead = 1;
-				let nextToRequest = 2;
-				let done = false;
-
-				const navigateToPage = (page) => {
-					const url = new URL(location.href);
-					url.searchParams.set('page', String(page));
-					history.pushState(history.state, '', url);
-					dispatchEvent(new PopStateEvent('popstate', { state: history.state }));
-				};
-
-				const advance = () => {
-					while (received.has(nextToRead)) {
-						const pageData = received.get(nextToRead);
-						received.delete(nextToRead);
-						chapters.push(...pageData.items);
-						const meta = pageData.meta;
-						if (!meta.hasNext || nextToRead >= lastPage) {
-							done = true;
-							const count = new Set(chapters.map((item) => item.id)).size;
-							if (count === meta.total) {
-								chapters.sort((a, b) => (a.number || 0) - (b.number || 0) || (a.id || 0) - (b.id || 0));
-								finish({ items: chapters, info: info });
-							} else {
-								fail('Got ' + count + ' of ' + meta.total + ' chapters');
-							}
-							return;
-						}
-						nextToRead++;
+				if (isHeadless) {
+					const hasWaf = document.querySelector('iframe[src*="@waf/challenge"], iframe[src*="challenges.cloudflare.com"], iframe[src*="turnstile"], div#cf-turnstile, .cf-turnstile, #challenge-stage, #challenge-form');
+					const isCfTitle = /Just a moment|Attention Required|Cloudflare/i.test(document.title || '');
+					if (hasWaf || isCfTitle) {
+						return { error: 'Timed out waiting for chapter elements (Cloudflare challenge detected)' };
 					}
-					while (nextToRequest <= lastPage && nextToRequest < nextToRead + pagesInFlight) {
-						const page = nextToRequest++;
-						setTimeout(() => { try { navigateToPage(page); } catch (e) {} });
-					}
-				};
+				}
 
-				const handle = (holder) => {
-					if (done) return;
-					const items = holder.items;
-					const meta = holder.meta;
-					if (!meta || !Array.isArray(items) || !items.every(isChapter)) return;
-					if (items.length === 0 && meta.total !== 0) return;
-					if (typeof meta.page !== 'number' || typeof meta.lastPage !== 'number') {
-						done = true;
-						fail('Chapter list has no page numbers');
-						return;
-					}
-					if (meta.page < nextToRead || received.has(meta.page)) return;
-					if (lastPage === null) lastPage = Math.min(meta.lastPage, maxPages);
-					received.set(meta.page, { items: items, meta: meta });
-					resetWatchdog();
-					advance();
-				};
+				await new Promise(r => setTimeout(r, 100));
+			}
 
-				const poll = setInterval(() => {
-					const queue = window.__comixChapterPages;
-					while (queue.length > 0) {
-						handle(queue.shift());
-						if (settled) return;
-					}
-				}, 100);
-				resetWatchdog();
+			if (!document.querySelector('li.mchap-item')) {
+				return { error: 'Timed out waiting for chapter elements' };
+			}
 
-				navigateToPage(1);
-				setTimeout(() => { if (!received.has(1) && !done) navigateToPage(2); }, 4000);
-				setTimeout(() => { if (!received.has(1) && !done) navigateToPage(1); }, 8000);
-			});
+			const chapters = [];
+			const seenUrls = new Set();
+
+			const parseCurrentPage = () => {
+				const items = document.querySelectorAll('li.mchap-item');
+				for (const li of items) {
+					const a = li.querySelector('a.mchap-row__primary');
+					if (!a) continue;
+					const url = a.getAttribute('href');
+					if (!url || seenUrls.has(url)) continue;
+					seenUrls.add(url);
+
+					const chSpan = li.querySelector('.mchap-row__ch');
+					const titleSpan = li.querySelector('.mchap-row__title');
+					const groupA = li.querySelector('.mchap-row__group');
+					const groupSpan = groupA ? groupA.querySelector('span') : null;
+					const isOfficial = groupA ? groupA.classList.contains('is-official') : false;
+					const likesSpan = li.querySelector('.mchap-row__likes');
+
+					const chText = chSpan ? chSpan.innerText.trim() : '';
+					const numMatch = chText.match(/(\d+(?:\.\d+)?)/);
+					const number = numMatch ? parseFloat(numMatch[1]) : 0;
+					const name = titleSpan ? titleSpan.innerText.trim() : '';
+					const groupName = groupSpan ? groupSpan.innerText.trim() : (isOfficial ? 'Official' : 'Unknown');
+					const groupId = groupA && groupA.getAttribute('href') ? parseInt(groupA.getAttribute('href').replace(/\D/g, '')) || 0 : 0;
+					const votes = likesSpan ? parseInt(likesSpan.innerText.trim()) || 0 : 0;
+					const volMatch = (a.innerText || '').match(/Vol\.?\s*(\d+)/i);
+					const vol_num = volMatch ? parseInt(volMatch[1]) || 0 : 0;
+
+					const idMatch = url.match(/\/(\d+)-chapter/);
+					const id = idMatch ? parseInt(idMatch[1]) || 0 : 0;
+
+					chapters.push({
+						id: id,
+						url: url,
+						number: number,
+						name: name,
+						volume: vol_num,
+						isOfficial: isOfficial,
+						group: { id: groupId, name: groupName },
+						votes: votes
+					});
+				}
+			};
+
+			parseCurrentPage();
+
+			let pageNum = 2;
+			while (true) {
+				const nextBtn = Array.from(document.querySelectorAll('button.npager__num')).find(b => b.innerText.trim() === String(pageNum));
+				if (!nextBtn) break;
+
+				const prevFirstHref = document.querySelector('li.mchap-item a.mchap-row__primary')?.getAttribute('href');
+				nextBtn.click();
+
+				const start = Date.now();
+				while (Date.now() - start < 5000) {
+					await new Promise(r => setTimeout(r, 100));
+					const currentFirstHref = document.querySelector('li.mchap-item a.mchap-row__primary')?.getAttribute('href');
+					if (currentFirstHref && currentFirstHref !== prevFirstHref) {
+						break;
+					}
+				}
+
+				parseCurrentPage();
+				pageNum++;
+			}
+
+			return { items: chapters, info: info };
 		} catch (e) {
 			return { error: e.message || String(e) };
 		}
-	}, ]] .. string.format('%q', mid) .. [[);
+	}, ]] .. string.format('%q', mid) .. [[, ]] .. headless_val .. [[);
 
 	console.log(JSON.stringify(resultJSON));
 	]]
 end
 
-local function GetPageFetchScript()
+local function GetPageFetchScript(is_headless)
+	local headless_val = is_headless and 'true' or 'false'
 	return [[
 	const hookCode = `
 		window.__comixPagesHolder = null;
@@ -255,7 +230,7 @@ local function GetPageFetchScript()
 	await page.evaluateOnNewDocument(hookCode);
 	await page.reload({ waitUntil: 'domcontentloaded', timeout: 90000 });
 
-	const resultJSON = await page.evaluate(async () => {
+	const resultJSON = await page.evaluate(async (isHeadless) => {
 		return await new Promise((resolve) => {
 			let submitted = false;
 			let watchdog = null;
@@ -266,8 +241,17 @@ local function GetPageFetchScript()
 				clearInterval(poll);
 				resolve(data);
 			};
-			watchdog = setTimeout(() => finish({ error: 'Timed out waiting for chapter pages' }), 60000);
+			const maxWait = isHeadless ? 3500 : 60000;
+			watchdog = setTimeout(() => finish({ error: 'Timed out waiting for chapter pages' }), maxWait);
 			const poll = setInterval(() => {
+				if (isHeadless) {
+					const hasWaf = document.querySelector('iframe[src*="@waf/challenge"], iframe[src*="challenges.cloudflare.com"], iframe[src*="turnstile"], div#cf-turnstile, .cf-turnstile, #challenge-stage, #challenge-form');
+					const isCfTitle = /Just a moment|Attention Required|Cloudflare/i.test(document.title || '');
+					if (hasWaf || isCfTitle) {
+						finish({ error: 'Timed out waiting for chapter pages (Cloudflare challenge detected)' });
+						return;
+					}
+				}
 				const holder = window.__comixPagesHolder;
 				if (!holder) return;
 				const base = String(holder.baseUrl || '').replace(/\/$/, '');
@@ -289,7 +273,7 @@ local function GetPageFetchScript()
 				finish({ links: links });
 			}, 100);
 		});
-	});
+	}, ]] .. headless_val .. [[);
 	console.log(JSON.stringify(resultJSON));
 	]]
 end
@@ -299,19 +283,28 @@ local function IsTimedOut(output)
 	return output:find('Timed out waiting', 1, true) ~= nil
 end
 
-local function RunBrowserScript(url, js_code)
+local function RunBrowserScript(url, script_generator)
 	local nodejs = require 'utils.nodejs'
 	local flag_key = 'visible_' .. url
 	local force_visible = MODULE.Storage[flag_key] ~= ''
 	local show_browser = MODULE.GetOption('showbrowser')
+	if show_browser == nil then show_browser = true end
+
+	local headless_first = not (show_browser or force_visible)
+	local js_code = type(script_generator) == 'function' and script_generator(headless_first) or script_generator
 
 	local output = nodejs.run_html_load_with_js(url, js_code, {
-		headless = not (show_browser or force_visible)
+		headless = headless_first,
+		webgl = true
 	})
 
-	if IsTimedOut(output) and not (show_browser or force_visible) then
+	if IsTimedOut(output) and headless_first then
 		MODULE.Storage[flag_key] = '1'
-		output = nodejs.run_html_load_with_js(url, js_code, { headless = false })
+		local visible_js_code = type(script_generator) == 'function' and script_generator(false) or script_generator
+		output = nodejs.run_html_load_with_js(url, visible_js_code, {
+			headless = false,
+			webgl = true
+		})
 	end
 
 	if force_visible and not IsTimedOut(output) then
@@ -329,8 +322,9 @@ local function GetDirectoryPage(page)
 	local timestamp = tonumber(MODULE.Storage[key .. '_time']) or 0
 
 	if output == '' or (now - timestamp) >= 900 then
-		local js_code = GetMangaListFetchScript(page)
-		output = RunBrowserScript(MODULE.RootURL .. '/browse?order%5Bcreated_at%5D=desc&page=' .. page, js_code)
+		output = RunBrowserScript(MODULE.RootURL .. '/browse?order%5Bcreated_at%5D=desc&page=' .. page, function(is_headless)
+			return GetMangaListFetchScript(page, is_headless)
+		end)
 
 		if not json.decode(output).error then
 			MODULE.Storage[key] = output
@@ -520,7 +514,9 @@ function GetInfo()
 	local timestamp = tonumber(MODULE.Storage[mid .. '_time']) or 0
 
 	if output == '' or (now - timestamp) >= 900 then
-		output = RunBrowserScript(MODULE.RootURL .. URL, GetChapterFetchScript(mid))
+		output = RunBrowserScript(MODULE.RootURL .. URL, function(is_headless)
+			return GetChapterFetchScript(mid, is_headless)
+		end)
 		if not json.decode(output).error then
 			MODULE.Storage[mid] = output
 			MODULE.Storage[mid .. '_time'] = now
@@ -578,25 +574,41 @@ function GetInfo()
 	local has_integer  = {}
 	local raw_chapters = {}
 
-	for _, v in ipairs(data.items or {}) do
-		local number = tostring(v.number)
-		local id = v.id
-		local name = v.name
-		local vol_num = v.volume
-		local group = type(v.group) == 'table' and v.group or {}
-		local scan_group_id = group.id or 0
-		local scan_group_name = group.name
-		local votes = v.votes or 0
-		local official = v.isOfficial
-		local url = v.url
+	if not deduplicate then
+		table.sort(data.items or {}, function(a, b)
+			local aOff = a.isOfficial and 1 or 0
+			local bOff = b.isOfficial and 1 or 0
+			if aOff ~= bOff then
+				return aOff > bOff
+			end
+			local gA = ((type(a.group) == 'table' and a.group.name) or ''):lower()
+			local gB = ((type(b.group) == 'table' and b.group.name) or ''):lower()
+			if gA ~= gB then
+				return gA < gB
+			end
+			local numA = tonumber(a.number) or 0
+			local numB = tonumber(b.number) or 0
+			if numA ~= numB then
+				return numA < numB
+			end
+			return (a.url or '') < (b.url or '')
+		end)
 
-		if not deduplicate then
+		for _, v in ipairs(data.items or {}) do
+			local number = tostring(v.number)
+			local name = v.name or ''
+			local vol_num = v.volume or 0
+			local group = type(v.group) == 'table' and v.group or {}
+			local scan_group_name = group.name
+			local official = v.isOfficial
+			local url = v.url
+
 			local volume = (vol_num ~= 0) and ('Vol. ' .. vol_num .. ' ') or ''
 			local chapter = number ~= '' and ('Ch. ' .. number) or ''
 			local title = name ~= '' and (' - ' .. name) or ''
 			local scanlator = ''
 			if optgroup then
-				if scan_group_name then
+				if scan_group_name and scan_group_name ~= '' then
 					scanlator = ' [' .. scan_group_name .. ']'
 				elseif official then
 					scanlator = ' [Official]'
@@ -607,7 +619,20 @@ function GetInfo()
 
 			MANGAINFO.ChapterLinks.Add(url)
 			MANGAINFO.ChapterNames.Add(volume .. chapter .. title .. scanlator)
-		else
+		end
+	else
+		for _, v in ipairs(data.items or {}) do
+			local number = tostring(v.number)
+			local id = v.id or 0
+			local name = v.name or ''
+			local vol_num = v.volume or 0
+			local group = type(v.group) == 'table' and v.group or {}
+			local scan_group_id = group.id or 0
+			local scan_group_name = group.name
+			local votes = v.votes or 0
+			local official = v.isOfficial
+			local url = v.url
+
 			table.insert(raw_chapters, {
 				id = id, name = name, vol_num = vol_num, number = number,
 				scan_group_id = scan_group_id, scan_group_name = scan_group_name,
@@ -684,7 +709,9 @@ function GetPageNumber()
 	local json = require 'utils.json'
 	local output = MODULE.Storage[URL]
 	if output == '' then
-		output = RunBrowserScript(MODULE.RootURL .. URL, GetPageFetchScript())
+		output = RunBrowserScript(MODULE.RootURL .. URL, function(is_headless)
+			return GetPageFetchScript(is_headless)
+		end)
 		if not json.decode(output).error then
 			MODULE.Storage[URL] = output
 		end
@@ -786,7 +813,7 @@ function Init()
 		}
 	}
 	local lang = translations[slang] or translations['en']
-	m.AddOptionCheckBox('showbrowser', lang.showbrowser, false)
-	m.AddOptionCheckBox('showscangroup', lang.showscangroup, false)
+	m.AddOptionCheckBox('showbrowser', lang.showbrowser, true)
+	m.AddOptionCheckBox('showscangroup', lang.showscangroup, true)
 	m.AddOptionCheckBox('deduplicatechapters', lang.deduplicatechapters, false)
 end
