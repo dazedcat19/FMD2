@@ -177,6 +177,7 @@ local function GetChapterFetchScript(mid, is_headless)
 						const meta = pageData.meta;
 						if (!meta.hasNext || nextToRead >= lastPage) {
 							done = true;
+							chapters.sort((a, b) => (parseFloat(a.number) || 0) - (parseFloat(b.number) || 0) || (a.id || 0) - (b.id || 0));
 							finish({ items: chapters, info: info });
 							return;
 						}
@@ -341,22 +342,20 @@ local function RunBrowserScript(url, script_generator)
 	local flag_key = 'visible_' .. url
 	local force_visible = MODULE.Storage[flag_key] ~= ''
 	local show_browser = MODULE.GetOption('showbrowser')
-	if show_browser == nil then show_browser = true end
+	if show_browser == nil then show_browser = false end
 
 	local headless_first = not (show_browser or force_visible)
 	local js_code = type(script_generator) == 'function' and script_generator(headless_first) or script_generator
 
 	local output = nodejs.run_html_load_with_js(url, js_code, {
-		headless = headless_first,
-		webgl = true
+		headless = headless_first
 	})
 
 	if IsTimedOut(output) and headless_first then
 		MODULE.Storage[flag_key] = '1'
 		local visible_js_code = type(script_generator) == 'function' and script_generator(false) or script_generator
 		output = nodejs.run_html_load_with_js(url, visible_js_code, {
-			headless = false,
-			webgl = true
+			headless = false
 		})
 	end
 
@@ -732,6 +731,15 @@ function GetInfo()
 			end
 		end
 
+		table.sort(chapter_list, function(a, b)
+			local numA = tonumber(a) or 0
+			local numB = tonumber(b) or 0
+			if numA ~= numB then
+				return numA < numB
+			end
+			return a < b
+		end)
+
 		for _, key in ipairs(chapter_list) do
 			local ch = chapter_map[key]
 
@@ -866,7 +874,7 @@ function Init()
 		}
 	}
 	local lang = translations[slang] or translations['en']
-	m.AddOptionCheckBox('showbrowser', lang.showbrowser, true)
-	m.AddOptionCheckBox('showscangroup', lang.showscangroup, true)
+	m.AddOptionCheckBox('showbrowser', lang.showbrowser, false)
+	m.AddOptionCheckBox('showscangroup', lang.showscangroup, false)
 	m.AddOptionCheckBox('deduplicatechapters', lang.deduplicatechapters, false)
 end
