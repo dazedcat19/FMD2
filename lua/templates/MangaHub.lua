@@ -28,19 +28,8 @@ local function RandomHex()
 	return hex
 end
 
-local function log_debug(msg)
-	local f = io.open("mhub_debug.log", "a")
-	if f then
-		f:write(os.date('%Y-%m-%d %H:%M:%S') .. ' ' .. tostring(msg) .. '\n')
-		f:close()
-	end
-end
-
 -- Set the required http headers for making a request.
 local function SetRequestHeaders(token)
-	if HTTP.UserAgent == '' then
-		HTTP.UserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36'
-	end
 	HTTP.Headers.Values['X-Mhub-Access'] = token
 	HTTP.Cookies.Values['mhub_access'] = token
 	HTTP.MimeType = 'application/json'
@@ -67,17 +56,13 @@ local function DecryptPages(enc, key)
 		end
 	end
 
-	-- Fallback for FMD builds that lack native AESDecryptGCM (uses Node.js crypto)
-	local subprocess = require 'fmd.subprocess'
-	local js_code = "const c=require('crypto');const [k,iv,t,cp]=process.argv.slice(1);const d=c.createDecipheriv('aes-256-gcm',Buffer.from(k,'base64url'),Buffer.from(iv,'base64url'));d.setAuthTag(Buffer.from(t,'base64url'));process.stdout.write(Buffer.concat([d.update(Buffer.from(cp,'base64url')),d.final()]))"
+	-- Fallback for FMD builds that lack native AESDecryptGCM (uses Node.js crypto via run_js)
+	local js_code = string.format([[try { const c = typeof require !== 'undefined' ? require('crypto') : (this.constructor.constructor('return process'))().mainModule.require('crypto'); const B = typeof Buffer !== 'undefined' ? Buffer : this.constructor.constructor('return Buffer')(); const d = c.createDecipheriv('aes-256-gcm', B.from('%s', 'base64url'), B.from('%s', 'base64url')); d.setAuthTag(B.from('%s', 'base64url')); console.log(d.update(B.from('%s', 'base64url'), null, 'utf8') + d.final('utf8')); } catch (e) { console.error('DecryptPages error: ' + e.message); }]], key, parts[4], parts[5], parts[6])
 
-	local ok, out, err = subprocess.RunCommandHide('node', '-e', js_code, key, parts[4], parts[5], parts[6])
-	if not ok or not out or out == '' or out:find('Error') then
-		ok, out, err = subprocess.RunCommandHide('cmd.exe', '/c', 'node', '-e', js_code, key, parts[4], parts[5], parts[6])
-	end
-	log_debug(string.format('DecryptPages Node result: ok=%s, out_len=%s, err=%s', tostring(ok), tostring(out and #out or 0), tostring(err)))
-	if ok and out and out ~= '' and not out:find('Error') then
-		return out
+	local nodejs = require 'utils.nodejs'
+	local out = nodejs.run_js(js_code)
+	if out and out ~= '' and not out:find('Error') then
+		return Trim(out)
 	end
 
 	return enc
@@ -151,11 +136,9 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function _M.GetPageNumber()
-	log_debug("GetPageNumber called for URL: " .. tostring(URL))
 	local slug, chapter = URL:match('([^/]+)/chapter%-([%d.]+)$')
-	log_debug(string.format("Parsed slug=%s, chapter=%s", tostring(slug), tostring(chapter)))
 	if not slug or not chapter then
-		log_debug("Failed to parse slug or chapter!")
+		print('MangaHub: failed to parse slug and chapter from ' .. tostring(URL))
 		return false
 	end
 	local token = RandomHex()
@@ -163,14 +146,12 @@ function _M.GetPageNumber()
 	HTTP.Reset()
 	SetRequestHeaders(token)
 
-	if not HTTP.GET(MODULE.RootURL .. CRYPTO_URL) then
-		log_debug("HTTP.GET crypto failed! ResultCode: " .. tostring(HTTP.ResultCode))
-		return false
-	end
+	if not HTTP.GET(MODULE.RootURL .. CRYPTO_URL) then return false end
 
 	local ok, crypto = pcall(json.decode, HTTP.Document.ToString())
-	if not ok or not crypto or not crypto.key then
-		log_debug("Failed to decode crypto key: " .. tostring(HTTP.Document.ToString():sub(1, 100)))
+	if not ok then return false end
+	if not crypto or not crypto.key then
+		print('MangaHub: could not obtain chapter crypto key')
 		return false
 	end
 
@@ -179,28 +160,25 @@ function _M.GetPageNumber()
 	HTTP.Reset()
 	SetRequestHeaders(token)
 
-	if not HTTP.POST(MODULE.RootURL .. API_URL, s) then
-		log_debug("HTTP.POST chapter failed! ResultCode: " .. tostring(HTTP.ResultCode))
-		return false
-	end
+	if not HTTP.POST(MODULE.RootURL .. API_URL, s) then return false end
 
 	local ok, x = pcall(json.decode, HTTP.Document.ToString())
-	if not ok or not x or x.errors then 
-		log_debug("GraphQL error: " .. tostring(HTTP.Document.ToString():sub(1, 100)))
+	if not ok then return false end
+	if x.errors then
+		print('Error: ' .. x.errors[1].message)
 		return false
 	end
 
 	local plain = DecryptPages(x.data.chapter.pages, crypto.key)
 	local ok_j, w = pcall(json.decode, plain)
 	if not ok_j or not w or not w.p or not w.i then
-		log_debug("Failed to decode decrypted json: " .. tostring(plain:sub(1, 100)))
+		print('MangaHub: failed to decode decrypted chapter pages')
 		return false
 	end
 	local p = w.p
 	for _, v in ipairs(w.i) do
 		TASK.PageLinks.Add(CDN_URL .. p .. v)
 	end
-	log_debug(string.format("Successfully added %d page links!", #w.i))
 
 	return true
 end
