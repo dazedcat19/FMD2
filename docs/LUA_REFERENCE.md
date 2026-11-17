@@ -49,6 +49,7 @@ Reference for writing and maintaining Lua website modules for Free Manga Downloa
         - [HTTP Methods](#http-methods)
         - [HTTP.Document (TMemoryStream)](#httpdocument-tmemorystream)
         - [HTTP.Reset() and Header Lifecycle](#httpreset-and-header-lifecycle)
+        - [Reading and Writing Header Values](#reading-and-writing-header-values)
         - [Cookie Storage and Persistence](#cookie-storage-and-persistence)
     - [MANGAINFO Object (TMangaInfo)](#mangainfo-object-tmangainfo)
         - [MANGAINFO Properties](#mangainfo-properties)
@@ -1062,10 +1063,10 @@ end
 | `HTTP.MimeType` | String | Request content type |
 | `HTTP.UserAgent` | String | User agent string |
 | `HTTP.RetryCount` | Integer | Number of retry attempts |
-| `HTTP.Headers` | TStrings | Request headers (same object kind as `LINKS` — full API in [fmd.strings](#fmdstrings)) |
+| `HTTP.Headers` | TStrings | Request headers (same object kind as `LINKS` — full API in [fmd.strings](#fmdstrings); leading space on read, no space on write — see [Reading and Writing Header Values](#reading-and-writing-header-values)) |
 | `HTTP.Cookies` | TStrings | Cookies (same object kind as `LINKS` — full API in [fmd.strings](#fmdstrings)) |
 | `HTTP.EnabledCookies` | Boolean | Enable cookie handling |
-| `HTTP.FollowRedirection` | Boolean | Automatically follow 301/302/303/307 redirects (default `true`). Set to `false` before a request to receive the raw 3xx response and inspect `HTTP.Headers.Values['Location']` yourself |
+| `HTTP.FollowRedirection` | Boolean | Automatically follow 301/302/303/307 redirects (default `true`). Set to `false` before a request to receive the raw 3xx response and inspect `HTTP.Headers.Values['Location']` yourself (wrap the read in `Trim()` — see [Reading and Writing Header Values](#reading-and-writing-header-values)) |
 | `HTTP.MaxRedirect` | Integer | Maximum number of redirects followed per request while `HTTP.FollowRedirection` is `true` (default `5`) |
 | `HTTP.AllowServerErrorResponse` | Boolean | When `false` (default), a 5xx response is treated as a failure and the request is retried; set to `true` to receive 5xx bodies as-is |
 | `HTTP.Compress` | Boolean | When `true` (default), `Reset()`/`ResetBasic()` add `Accept-Encoding: gzip, deflate, br, zstd` and compressed responses are auto-decompressed |
@@ -1237,6 +1238,53 @@ socket (a fresh connection is made on the next request). The module's shared
 cookie storage is **not** touched — stored cookies are re-applied
 automatically when the next request is made, so a logged-in session survives
 a `Reset()`. Which properties survive a reset is listed in the note under [HTTP Methods](#http-methods).
+
+#### Reading and Writing Header Values
+
+`HTTP.Headers` is a `TStrings` holding **raw header lines** in `Name: Value`
+form (the host sets its name/value separator to `:`), and
+`HTTP.Headers.Values[...]` is the generic string-list name/value machinery
+pointed at that colon. Reading and writing are therefore **asymmetric**:
+
+- **Reading** `HTTP.Headers.Values['Name']` returns everything after the
+  **first** colon of the first matching line **verbatim, without trimming**.
+  Servers send `Name: value` with a space after the colon, and that space ends
+  up at the start of the value: `' https://example.com/'`. Name matching is
+  configured case-insensitive; a missing header returns `''`.
+- **Writing** `HTTP.Headers.Values['Name'] = 'value'` replaces the first line
+  with that name (or appends a new one) as the line `Name:Value` — **no space
+  after the colon**. Whitespace after the colon is optional in HTTP and the
+  line is sent verbatim, so setting a value without one works as expected.
+
+Because of the leading space on reads, **always wrap reads in `Trim()`** —
+otherwise comparisons and prefix tests fail silently
+(`v == 'application/json'` is `false` against `' application/json'`,
+`v:find('^image/')` never matches):
+
+```lua
+if HTTP.GET(u) then
+    local etag    = Trim(HTTP.Headers.Values['ETag'])           -- '"a1b2c3"'
+    local expires = Trim(HTTP.Headers.Values['Last-Modified'])  -- date string
+    ...
+end
+```
+
+On the wire, `Values['Referer'] = 'https://example.com/'` sends
+`Referer:https://example.com/` with no space. That is accepted everywhere, but
+if a site is picky you can reproduce the conventional browser spacing by
+prepending the space yourself.
+
+> [!NOTE]
+> - `Values[...]` matches names case-insensitively and only reads or replaces
+>   the **first** line with that name. A header the server sent more than once
+>   (two `Set-Cookie` lines, for example) needs the raw list, walked line by
+>   line.
+> - Only the **first** colon of a line splits it, so values that contain
+>   colons themselves (`Location: http://example.com/`) read back in full.
+> - An absent header returns `''` (no space), so
+>   `HTTP.Headers.Values['X'] == ''` detects a missing one — but a
+>   present-but-empty header (`X:`) returns `''` too; use the raw list when
+>   the two cases must be told apart.
 
 #### Cookie Storage and Persistence
 
@@ -1716,7 +1764,7 @@ local full_url = MaybeFillHost('https://example.com', '/page')
 | `SeparateLeft(text, delimiter)` | Get left part of split string |
 | `SeparateRight(text, delimiter)` | Get right part of split string |
 | `Trim(text[, chars])` | Remove whitespace (or the given characters) |
-| `MaybeFillHost(rootURL, url)` | Ensure URL has full host prefix |
+| `MaybeFillHost(RootURL, url)` | Ensure URL has full host prefix |
 
 #### Status Helper
 
@@ -2908,6 +2956,11 @@ For JSON APIs, see [JSON API Handling](#json-api-handling).
 `OnGetPageNumber`. The reason is explained in
 [HTTP.Reset() and Header Lifecycle](#httpreset-and-header-lifecycle).
 
+**Reading response headers:** `HTTP.Headers.Values['Name']` returns the value
+verbatim — including the space the server put after `Name:`, so wrap reads in
+`Trim()`. Writing (`Values['Name'] = 'value'`) works as-is. Both are detailed
+in [Reading and Writing Header Values](#reading-and-writing-header-values).
+
 ### Sites That Need JavaScript
 
 For sites that require JavaScript execution:
@@ -3209,6 +3262,7 @@ logger.SendError('Error: ' .. error_message)
 | Symptom | Cause and fix |
 |---------|---------------|
 | Custom headers work for the first chapter only | `OnGetPageNumber` reuses one `HTTP` object for every chapter. Call `HTTP.Reset()` before setting headers: [HTTP.Reset() and Header Lifecycle](#httpreset-and-header-lifecycle) |
+| Header value comparison fails (extra leading space) | `HTTP.Headers.Values['Name']` returns everything after the colon verbatim, including the space after `Name:`. Wrap reads in `Trim()`: [Reading and Writing Header Values](#reading-and-writing-header-values) |
 | `OnGetImageURL` cannot find the page | `URL` is the **chapter** URL there. Use `TASK.PageContainerLinks[WORKID]`: [`OnGetImageURL`](#ongetimageurl) |
 | Changing a return value has no effect | Several handlers' return values are ignored by the host: [Handler Reference](#handler-reference) |
 | `HTTP` is not available in a handler | `HTTP` is not injected in `OnAccountState`, `OnCheckSite`, `OnAfterImageSaved` and `OnTaskStart` |
