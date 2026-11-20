@@ -1,9 +1,10 @@
 ----------------------------------------------------------------------------------------------------
--- Local Constants
+-- Module Constants
 ----------------------------------------------------------------------------------------------------
 
-local API_URL = 'https://panel.olympusxyz.com/api'
-local DirectoryPagination = '/api/series?type=comic&direction=asc&page='
+local domain = 'https://olympusxyz.com'
+local API_URL = domain .. '/api'
+local DirectoryPages = '/api/series?type=comic&direction=asc&page='
 
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
@@ -11,7 +12,7 @@ local DirectoryPagination = '/api/series?type=comic&direction=asc&page='
 
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
-	local u = MODULE.RootURL .. DirectoryPagination .. 1
+	local u = MODULE.RootURL .. DirectoryPages .. 1
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -22,7 +23,7 @@ end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1)
+	local u = MODULE.RootURL .. DirectoryPages .. (URL + 1)
 
 	if not HTTP.GET(u) then return net_problem end
 
@@ -45,17 +46,21 @@ function GetInfo()
 	local info = x.XPath('json(*).data')
 	MANGAINFO.Title     = x.XPathString('name', info)
 	MANGAINFO.CoverLink = x.XPathString('cover', info)
-	MANGAINFO.Genres    = x.XPathString('string-join((genres?*?name, concat(upper-case(substring(type, 1, 1)), lower-case(substring(type, 2)))), ", ")', info)
+	MANGAINFO.Genres    = x.XPathStringAll('(genres?*?name, upper-case(substring(type, 1, 1)) || lower-case(substring(type, 2)))', ', ', info)
 	MANGAINFO.Status    = MangaInfoStatusIfPos(x.XPathString('status?id', info), '1', '4', '3', '5|7')
 	MANGAINFO.Summary   = x.XPathString('summary', info)
 
 	local page = 1
-	local pages = tonumber(math.ceil(x.XPathString('chapter_count', info) / 40)) or 1
+	local pages = math.ceil(x.XPathString('chapter_count', info) / 40) or 1
 	while true do
 		if not HTTP.GET(API_URL .. '/series/' .. slug .. '/chapters?direction=asc&type=comic&page=' .. page) then return net_problem end
 		for v in CreateTXQuery(HTTP.Document).XPath('json(*).data()').Get() do
-			MANGAINFO.ChapterLinks.Add(slug .. '/chapters/' .. v.GetProperty('id').ToString())
-			MANGAINFO.ChapterNames.Add('Capítulo ' .. v.GetProperty('name').ToString())
+			local link = slug .. '/chapters/' .. v.GetProperty('id').ToString()
+			local name = v.GetProperty('name').ToString()
+			MODULE.Storage[link] = name
+
+			MANGAINFO.ChapterLinks.Add(link)
+			MANGAINFO.ChapterNames.Add('Capítulo ' .. name)
 		end
 		if page >= pages then break end
 		page = page + 1
@@ -66,12 +71,12 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	local mid, cid = URL:match('^/(.-)/chapters/(.-)$')
-	local u = MODULE.RootURL .. '/api/capitulo/comic-' .. mid .. '/' .. cid
+	local mid = URL:match('^/(.-)/chapters/.-$')
+	local u = MODULE.RootURL .. '/series/comic-' .. mid .. '/capitulo/' .. MODULE.Storage[URL:gsub('^/', '')]
 
 	if not HTTP.GET(u) then return false end
 
-	CreateTXQuery(HTTP.Document).XPathStringAll('json(*).chapter.pages()', TASK.PageLinks)
+	CreateTXQuery(HTTP.Document).XPathStringAll('//main//img/@src', TASK.PageLinks)
 
 	return true
 end
@@ -84,7 +89,7 @@ function Init()
 	local m = NewWebsiteModule()
 	m.ID                       = '760d177b1f6d4763a08971c0c1b5572b'
 	m.Name                     = 'Olympus Scanlation'
-	m.RootURL                  = 'https://olympusxyz.com'
+	m.RootURL                  = domain
 	m.Category                 = 'Spanish-Scanlation'
 	m.OnGetDirectoryPageNumber = 'GetDirectoryPageNumber'
 	m.OnGetNameAndLink         = 'GetNameAndLink'
