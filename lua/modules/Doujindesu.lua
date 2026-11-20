@@ -157,8 +157,13 @@ function GetInfo()
 	MANGAINFO.Summary   = info.description
 
 	for _, chapter in ipairs(info.chapters or {}) do
+		local title = 'Chapter ' .. chapter.chapter_number
+		if chapter.title and not chapter.title:find('Chapter', 1, true) then
+			title = title .. ' - ' .. chapter.title
+		end
+
 		MANGAINFO.ChapterLinks.Add(chapter.id)
-		MANGAINFO.ChapterNames.Add('Chapter ' .. chapter.chapter_number .. ' - ' .. chapter.title)
+		MANGAINFO.ChapterNames.Add(title)
 	end
 	MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 
@@ -177,13 +182,6 @@ function GetPageNumber()
 	local data = json.decode(s).content_urls
 	for _, v in ipairs(data) do
 		TASK.PageLinks.Add(v)
-	end
-
-	for i = 0, TASK.PageLinks.Count - 1 do
-		local link = TASK.PageLinks[i]
-		if string.find(link, '/upload', 1, true) and not string.find(link, '/storage/upload', 1, true) then
-			TASK.PageLinks[i] = link:gsub('/upload', '/storage/upload')
-		end
 	end
 
 	return true
