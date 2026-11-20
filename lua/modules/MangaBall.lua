@@ -1,9 +1,9 @@
 ----------------------------------------------------------------------------------------------------
--- Local Constants
+-- Module Constants
 ----------------------------------------------------------------------------------------------------
 
 local domain = 'mangaball.com'
-local API_URL = 'https://api.' .. domain .. '/api/v1'
+local API_URL = 'https://' .. domain .. '/api/v1'
 local DirectoryPagination = '/title/search-advanced?sort_by=created_at&sort_order=desc&adult_mode=all&limit=10000&page='
 local Langs = {
     {  nil, 'All' },
@@ -105,7 +105,7 @@ end
 -- Get info and chapter list for the current manga.
 function GetInfo()
 	local crypto = require 'fmd.crypto'
-	local mid = URL:match('(%x+)/?$')
+	local mid = URL:match('/title%-detail/(%x+)')
 	local u = API_URL .. '/title/detail/' .. mid
 
 	if not HTTP.GET(u) then return net_problem end
@@ -124,11 +124,10 @@ function GetInfo()
 	local optlang   = MODULE.GetOption('lang')
 	local optlangid = FindLanguage(optlang)
 	local langparam = optlangid and '&language=' .. optlangid or ''
-	local page      = 1
-	local pages     = nil
+	local page, pages = 1
 
 	while true do
-		u = API_URL .. '/title/chapter-listing?title_id=' .. mid .. '&page=' .. page .. '&limit=100&group_by=chapter_number' .. langparam
+		u = API_URL .. '/title/chapter-listing?title_id=' .. mid .. '&page=' .. page .. '&sort_order=asc&limit=10000' .. langparam
 
 		if not HTTP.GET(u) then return net_problem end
 
@@ -156,9 +155,6 @@ function GetInfo()
 		end
 		if page >= pages then break end
 		page = page + 1
-	end
-	if optlang == 0 then
-		MANGAINFO.ChapterLinks.Reverse(); MANGAINFO.ChapterNames.Reverse()
 	end
 
 	HTTP.Reset()
