@@ -1583,10 +1583,10 @@ object.
 | `v.Get()` | Get iterator — `for v in x.XPath(...).Get() do ... end` |
 | `v.GetProperty(name)` | Get JSON property value (on JSON objects) |
 | `v.GetAttribute(name)` | Get HTML attribute value (on element nodes) |
-| `v.InnerHTML()` | Inner HTML of the node |
-| `v.OuterHTML()` | Outer HTML of the node |
-| `v.InnerText()` | Text content of the node |
-| `v.ToString()` | String conversion |
+| `v.InnerHTML()` | Inner HTML of the node: the markup between the opening and closing tag |
+| `v.OuterHTML()` | Outer HTML of the node: the markup including the tags themselves |
+| `v.InnerText()` | Visible text of the node — descendant text with whitespace normalized, non-visible elements (`script`, `style`, `template`, …) skipped. Returns `''` on non-node values |
+| `v.ToString()` | Convert the value to a string — works on every value kind (numbers, booleans, JSON values, nodes). On element nodes this is the XPath string-value: all descendant text concatenated verbatim, with the ends trimmed |
 
 Full pipeline example (from `lua/modules/HitomiLa.lua`):
 
