@@ -37,7 +37,6 @@ end
 
 -- Decode the encrypted chapter pages field.
 local function DecryptPages(enc, key)
-	local crypto = require 'fmd.crypto'
 	if enc:sub(1, 7) ~= 'enc:v1:' then
 		return enc
 	end
@@ -45,11 +44,28 @@ local function DecryptPages(enc, key)
 	for v in enc:gmatch('[^:]+') do
 		parts[#parts + 1] = v
 	end
-	local iv = crypto.DecodeBase64URL(parts[4])
-	local tag = crypto.DecodeBase64URL(parts[5])
-	local cip = crypto.DecodeBase64URL(parts[6])
-	local key_bytes = crypto.DecodeBase64URL(key)
-	return crypto.AESDecryptGCM(cip .. tag, key_bytes, iv)
+	local crypto = require 'fmd.crypto'
+	if crypto.AESDecryptGCM and crypto.DecodeBase64URL then
+		local iv = crypto.DecodeBase64URL(parts[4])
+		local tag = crypto.DecodeBase64URL(parts[5])
+		local cip = crypto.DecodeBase64URL(parts[6])
+		local key_bytes = crypto.DecodeBase64URL(key)
+		local ok, res = pcall(crypto.AESDecryptGCM, cip .. tag, key_bytes, iv)
+		if ok and res and res ~= '' then
+			return res
+		end
+	end
+
+	-- Fallback for FMD builds that lack native AESDecryptGCM (uses Node.js crypto via run_js)
+	local js_code = string.format([[try { const c = typeof require !== 'undefined' ? require('crypto') : (this.constructor.constructor('return process'))().mainModule.require('crypto'); const B = typeof Buffer !== 'undefined' ? Buffer : this.constructor.constructor('return Buffer')(); const d = c.createDecipheriv('aes-256-gcm', B.from('%s', 'base64url'), B.from('%s', 'base64url')); d.setAuthTag(B.from('%s', 'base64url')); console.log(d.update(B.from('%s', 'base64url'), null, 'utf8') + d.final('utf8')); } catch (e) { console.error('DecryptPages error: ' + e.message); }]], key, parts[4], parts[5], parts[6])
+
+	local nodejs = require 'utils.nodejs'
+	local out = nodejs.run_js(js_code)
+	if out and out ~= '' and not out:find('Error') then
+		return Trim(out)
+	end
+
+	return enc
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -120,13 +136,11 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function _M.GetPageNumber()
-	local rev = tonumber(require 'fmd.env'.Revision)
-	if rev < 6920 then
-		print('Require FMD2 revision 6920 and later')
-		print('Revision ' .. rev .. ' detected')
+	local slug, chapter = URL:match('([^/]+)/chapter%-([%d.]+)$')
+	if not slug or not chapter then
+		print('MangaHub: failed to parse slug and chapter from ' .. tostring(URL))
 		return false
 	end
-	local slug, chapter = URL:match('/([^/]+)/chapter%-([%d.]+)$')
 	local token = RandomHex()
 
 	HTTP.Reset()
@@ -150,13 +164,17 @@ function _M.GetPageNumber()
 
 	local ok, x = pcall(json.decode, HTTP.Document.ToString())
 	if not ok then return false end
-	if x.errors then 
+	if x.errors then
 		print('Error: ' .. x.errors[1].message)
 		return false
 	end
 
 	local plain = DecryptPages(x.data.chapter.pages, crypto.key)
-	local w = json.decode(plain)
+	local ok_j, w = pcall(json.decode, plain)
+	if not ok_j or not w or not w.p or not w.i then
+		print('MangaHub: failed to decode decrypted chapter pages')
+		return false
+	end
 	local p = w.p
 	for _, v in ipairs(w.i) do
 		TASK.PageLinks.Add(CDN_URL .. p .. v)
