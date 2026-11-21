@@ -901,7 +901,8 @@ function GetPageNumber()
 
     -- rejection signal 3: a field the normal response always carries (here
     -- `rv`) is missing — XPathString returns '' for a missing key and the
-    -- string 'null' for an explicit JSON null
+    -- string 'null' for an explicit JSON null (parsing with parse-json(.)
+    -- instead of json(*) also returns '' for null — see “Reading JSON”)
     local rv = x.XPathString('json(*).rv')
     if rv == '' or rv == 'null' then return false end
 
@@ -1632,6 +1633,29 @@ What the pieces mean:
 | `.items()` | (dot style) Get all members of the array `items`. |
 | `?name` | (lookup style) Get the key `name`. |
 | `?*` | (lookup style) Get all members of the array or map. |
+
+###### JSON null
+
+The two parsing styles handle an explicit JSON `null` differently:
+
+- `json(*)` turns a `null` field into the **string `'null'`**. `XPathString`
+  returns that literal string, so code has to test against `''` *and*
+  `'null'` (see rejection signal 3 in the [OnGetPageNumber](#ongetpagenumber)
+  account example).
+- `parse-json(.)` follows XPath 3.1 semantics and turns a `null` field into
+  the **empty sequence**. `XPathString` returns `''`, exactly as for a
+  missing key, and `GetProperty('field').ToString()` is `''` as well — no
+  special-casing needed.
+
+When a response can contain explicit nulls, prefer `parse-json(.)`:
+
+```lua
+local x = CreateTXQuery(HTTP.Document)
+
+-- {"data": {"subTitle": null}}
+x.XPathString('json(*)?data?subTitle')          -- 'null'
+x.XPathString('parse-json(.)?data?subTitle')    -- ''
+```
 
 ###### JSON examples
 
