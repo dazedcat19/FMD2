@@ -5,7 +5,7 @@ unit LuaSubprocess;
 interface
 
 uses
-  Classes, SysUtils, process, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
+  Classes, SysUtils, process, lua55;
 
 procedure luaSubprocessAddMetaTable(const L: Plua_State; const Obj: Pointer;
   const MetaTable, UserData: Integer);
