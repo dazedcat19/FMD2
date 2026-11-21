@@ -416,7 +416,6 @@
 | YakshaComics | [![https://yakshacomics.com](https://img.shields.io/website?url=https://yakshacomics.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://yakshacomics.com)](https://yakshacomics.com) | OK | 07.11.2026 | - |
 | YakshaScans | [![https://yakshascans.com](https://img.shields.io/website?url=https://yakshascans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://yakshascans.com)](https://yakshascans.com) | Broken | 07.11.2026 | https://ravenscans.org |
 | YaoiChan | [![https://v12.yaoi-chan.me](https://img.shields.io/website?url=https://v12.yaoi-chan.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://v12.yaoi-chan.me)](https://v12.yaoi-chan.me) | OK | 09.11.2026 | - |
-| YoungAceUp | [![https://web-ace.jp/youngaceup](https://img.shields.io/website?url=https://web-ace.jp/youngaceup%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://web-ace.jp/youngaceup)](https://web-ace.jp/youngaceup) | Broken | 02.11.2026 | https://comic-walker.com/ |
 | ZazaZa | [![https://a.zazaza.me](https://img.shields.io/website?url=https://a.zazaza.me%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://a.zazaza.me)](https://a.zazaza.me) | OK | 09.11.2026 | An account is required |
 | Zenko | [![https://zenko.online](https://img.shields.io/website?url=https://zenko.online%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://zenko.online)](https://zenko.online) | Broken | 22.10.2025 | - |
 | ZinManga | [![https://www.zinmanga.net](https://img.shields.io/website?url=https://www.zinmanga.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.zinmanga.net)](https://www.zinmanga.net) | OK | 07.11.2026 | - |
@@ -427,6 +426,7 @@
 | となりのヤングジャンプ (Tonari no Young Jump) | [![https://tonarinoyj.jp](https://img.shields.io/website?url=https://tonarinoyj.jp%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://tonarinoyj.jp)](https://tonarinoyj.jp) | OK | 21.11.2026 | - |
 | まんがタイムSquare (Manga Time Square) | [![https://mangatime-square.com](https://img.shields.io/website?url=https://mangatime-square.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mangatime-square.com)](https://mangatime-square.com) | OK | 21.11.2026 | - |
 | アワフィール (OUR FEEL) | [![https://ourfeel.jp](https://img.shields.io/website?url=https://ourfeel.jp%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://ourfeel.jp)](https://ourfeel.jp) | OK | 21.11.2026 | - |
+| カドコミ (KadoComi) | [![https://comic-walker.com](https://img.shields.io/website?url=https://comic-walker.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comic-walker.com)](https://comic-walker.com) | OK | 22.11.2026 | - |
 | コミック アース・スター (Comic Earth Star) | [![https://comic-earthstar.com](https://img.shields.io/website?url=https://comic-earthstar.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comic-earthstar.com)](https://comic-earthstar.com) | OK | 21.11.2026 | - |
 | コミックDAYS (Comic Days) | [![https://comic-days.com](https://img.shields.io/website?url=https://comic-days.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comic-days.com)](https://comic-days.com) | OK | 21.11.2026 | - |
 | コミックオギャー (Comic Ogyaaa) | [![https://comic-ogyaaa.com](https://img.shields.io/website?url=https://comic-ogyaaa.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://comic-ogyaaa.com)](https://comic-ogyaaa.com) | OK | 21.11.2026 | - |
@@ -894,6 +894,7 @@
 | ~YaoiIsLife~ | ~http://yaoislife.shounen-ai.net~ | Removed | 06.08.2025 | - |
 | ~YaoiToshokan~ | ~https://www.yaoitoshokan.com.br~ | Removed | 03.08.2025 | - |
 | ~YoManga~ | ~https://yomanga.info~ | Removed | 03.08.2025 | - |
+| ~YoungAceUp~ | ~https://web-ace.jp/youngaceup~ | Removed | 22.11.2026 | Redirected to カドコミ (KadoComi) |
 | ~YugenMangás~ | ~https://yugenmangasbr.voblog.xyz~ | Removed | 03.11.2026 | - |
 | ~Yuri-ism~ | ~https://www.yuri-ism.net~ | Removed | 06.08.2025 | - |
 | ~ZeroScans~ | ~https://zscans.com~ | Removed | 03.11.2026 | - |
