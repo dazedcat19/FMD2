@@ -66,7 +66,7 @@ local function GraphQLRequest(query, variables)
 end
 
 -- Fetch the series of the given serial group ids.
-local function FetchSeriesList(ids, items, seen)
+local function FetchSeriesList(ids, items)
 	local batch_size = 10
 	for start = 1, #ids, batch_size do
 		local batch = {}
@@ -95,9 +95,7 @@ local function FetchSeriesList(ids, items, seen)
 							permalink = item.firstVolume.permalink
 						end
 					end
-					local key = permalink:gsub('^%a+://[^/]+', '')
-					if key ~= '' and not seen[key] then
-						seen[key] = true
+					if permalink ~= '' then
 						items[#items + 1] = { title = item.title, permalink = permalink }
 					end
 				end
@@ -108,7 +106,7 @@ local function FetchSeriesList(ids, items, seen)
 end
 
 -- Scrape a series page.
-local function FetchSeriesPage(path, items, seen)
+local function FetchSeriesPage(path, items)
 	local over = GigaSeriesPageXPath or {}
 	local item_xpath  = over.item_xpath  or '//ul[contains(@class, "series-list")]/li/a'
 	local link_xpath  = over.link_xpath  or '@href'
@@ -120,9 +118,7 @@ local function FetchSeriesPage(path, items, seen)
 	for v in x.XPath(item_xpath).Get() do
 		local link = x.XPathString(link_xpath, v)
 		local title = x.XPathString(title_xpath, v)
-		local key = link:gsub('^%a+://[^/]+', '')
-		if link ~= '' and title ~= '' and not seen[key] then
-			seen[key] = true
+		if link ~= '' and title ~= '' then
 			items[#items + 1] = { title = title, permalink = link }
 		end
 	end
@@ -154,13 +150,13 @@ end
 
 -- Get links and names from the manga list of the current website.
 function _M.GetNameAndLink()
-	local items, seen = {}, {}
+	local items = {}
 
-	if #GigaDirectoryList > 0 and not FetchSeriesList(GigaDirectoryList, items, seen) then
+	if #GigaDirectoryList > 0 and not FetchSeriesList(GigaDirectoryList, items) then
 		return net_problem
 	end
 	for _, path in ipairs(GigaSeriesPages or {}) do
-		if not FetchSeriesPage(path, items, seen) then return net_problem end
+		if not FetchSeriesPage(path, items) then return net_problem end
 	end
 
 	for _, item in ipairs(items) do
