@@ -1853,7 +1853,7 @@ local crypto = require 'fmd.crypto'
 
 The library merges two registration tables from `baseunits/lua/LuaCrypto.pas`
 (43 methods from `BaseCrypto.pas` and 16 methods from the Synapse `synacode`
-unit), so all **59 functions** below live on the same `crypto` table.
+unit), so all **60 functions** below live on the same `crypto` table.
 
 **Conventions**
 
@@ -1871,7 +1871,7 @@ unit), so all **59 functions** below live on the same `crypto` table.
   internal converter that expects only hex characters — non-hex input there
   can raise an internal error, so validate scraped values first.
 
-**Quick reference (59 functions)**
+**Quick reference (60 functions)**
 
 | Category | Functions |
 |----------|-----------|
@@ -1880,7 +1880,7 @@ unit), so all **59 functions** below live on the same `crypto` table.
 | AES (raw modes) | `AESEncryptCBC` `AESDecryptCBC` `AESEncryptECBPkcs7` `AESDecryptECBPkcs7` `AESEncryptCFB` `AESDecryptCFB` `AESCTR` `AESOFB` `AESEncryptGCM` `AESDecryptGCM` |
 | AES (composite) | `AESEncryptCBCSHA256Base64Pkcs7` `AESDecryptCBCSHA256Base64Pkcs7` `AESDecryptCBCMD5Base64ZerosPadding` `AESDecryptCBCHexBase64ZerosPadding` |
 | Other ciphers | `RC4` |
-| KDF / key exchange | `PBKDF2SHA256` `X25519_PublicKey` `X25519_SharedSecret` `P256_GenerateKeyPair` `P256_PublicKey` `P256_SharedSecret` |
+| KDF / key exchange | `PBKDF2SHA256` `PBKDF2SHA512` `X25519_PublicKey` `X25519_SharedSecret` `P256_GenerateKeyPair` `P256_PublicKey` `P256_SharedSecret` |
 | Authenticated streaming | `SecretStream_InitPull` `SecretStream_Pull` |
 | Encoding / decoding | `EncodeBase64` `DecodeBase64` `EncodeBase64URL` `DecodeBase64URL` `EncodeURL` `DecodeURL` `EncodeURLElement` `HTMLEncode` `HTMLDecode` `EncodeUU` `DecodeUU` `HexToStr` `StrToHexStr` |
 | Checksums | `CRC16` `CRC32` |
@@ -2090,6 +2090,19 @@ local crypto = require 'fmd.crypto'
 -- matches hashlib.pbkdf2_hmac('sha256', b'data', b'salt', 1000, 16)
 print(crypto.StrToHexStr(crypto.PBKDF2SHA256('data', 'salt', 1000, 16)))
 -- D204735BDB5BD30638F3A45B5CDE2A84
+```
+
+**`PBKDF2SHA512(password, salt, iterations, dkLen)`** — standard
+PBKDF2-HMAC-SHA512 (RFC 2898/8018). Same contract as `PBKDF2SHA256`, with the
+SHA-512 PRF: HMAC block size 128, 64-byte digest, so one block covers
+`dkLen` up to 64. Returns the derived key as **raw binary** (`dkLen` bytes).
+Returns `''` if `password` or `salt` is empty or the integers are < 1.
+
+```lua
+local crypto = require 'fmd.crypto'
+-- matches hashlib.pbkdf2_hmac('sha512', b'data', b'salt', 1000, 16)
+print(crypto.StrToHexStr(crypto.PBKDF2SHA512('data', 'salt', 1000, 16)))
+-- 88EAA814D0D5D7C90111BAB6EFD07C0B
 ```
 
 **`X25519_PublicKey(privKey)`** — derives the 32-byte public key from a

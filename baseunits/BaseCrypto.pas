@@ -32,6 +32,7 @@ function MD5Hex(const s: String): String;
 function HMAC_MD5Hex(const s, key: String): String;
 function RC4(const s, key: String): String;
 function PBKDF2SHA256(const password, salt: String; iterations, dkLen: Integer): String;
+function PBKDF2SHA512(const password, salt: String; iterations, dkLen: Integer): String;
 function EncodeBase64URL(const s: String): String;
 function DecodeBase64URL(const s: String): String;
 function AESEncryptGCM(const s, key, iv, aad: String): String;
@@ -903,6 +904,41 @@ begin
     begin
       U := HMAC_SHA256(U, password);
       for k := 1 to 32 do
+        T[k] := Char(Byte(T[k]) xor Byte(U[k]));
+    end;
+
+    Result := Result + T;
+  end;
+
+  SetLength(Result, dkLen);
+end;
+
+function PBKDF2SHA512(const password, salt: String; iterations, dkLen: Integer): String;
+var
+  blockCount, i, j, k: Integer;
+  T, U: String;
+  saltBlock: String;
+  blockNum: array[0..3] of Byte;
+begin
+  Result := '';
+  if (password = '') or (salt = '') or (iterations < 1) or (dkLen < 1) then Exit;
+
+  blockCount := (dkLen + 63) div 64;
+
+  for i := 1 to blockCount do
+  begin
+    blockNum[0] := (i shr 24) and $FF;
+    blockNum[1] := (i shr 16) and $FF;
+    blockNum[2] := (i shr 8) and $FF;
+    blockNum[3] := i and $FF;
+    SetString(saltBlock, PChar(@blockNum[0]), 4);
+    U := HMAC_SHA512(salt + saltBlock, password);
+    T := U;
+
+    for j := 2 to iterations do
+    begin
+      U := HMAC_SHA512(U, password);
+      for k := 1 to 64 do
         T[k] := Char(Byte(T[k]) xor Byte(U[k]));
     end;
 
