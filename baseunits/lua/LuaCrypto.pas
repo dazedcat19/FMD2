@@ -301,6 +301,12 @@ begin
   Result := 1;
 end;
 
+function crypto_pbkdf2sha512(L: Plua_State): Integer; cdecl;
+begin
+  PushLuaString(L, PBKDF2SHA512(GetLuaString(L, 1), GetLuaString(L, 2), lua_tointeger(L, 3), lua_tointeger(L, 4)));
+  Result := 1;
+end;
+
 function crypto_encodebase64url(L: Plua_State): Integer; cdecl;
 begin
   lua_pushstring(L, EncodeBase64URL(GetLuaString(L, 1)));
@@ -426,7 +432,7 @@ begin
 end;
 
 const
-  cryptomethods: packed array [0..43] of luaL_Reg = (
+  cryptomethods: packed array [0..44] of luaL_Reg = (
     (name: 'EncryptString'; func: @lua_encryptstring),
     (name: 'DecryptString'; func: @lua_decryptstring),
     (name: 'HTMLDecode'; func: @lua_htmldecode),
@@ -459,6 +465,7 @@ const
     (name: 'AESOFB'; func: @crypto_aesofb),
     (name: 'RC4'; func: @crypto_rc4),
     (name: 'PBKDF2SHA256'; func: @crypto_pbkdf2sha256),
+    (name: 'PBKDF2SHA512'; func: @crypto_pbkdf2sha512),
     (name: 'EncodeBase64URL'; func: @crypto_encodebase64url),
     (name: 'DecodeBase64URL'; func: @crypto_decodebase64url),
     (name: 'AESEncryptGCM'; func: @crypto_aesencryptgcm),
