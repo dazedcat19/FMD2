@@ -145,7 +145,6 @@
 | LerHentais | [![https://lerhentais.com](https://img.shields.io/website?url=https://lerhentais.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lerhentais.com)](https://lerhentais.com) | OK | 17.07.2026 | - |
 | LewdManhwa | [![https://lewdmanhwa.com](https://img.shields.io/website?url=https://lewdmanhwa.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lewdmanhwa.com)](https://lewdmanhwa.com) | Broken | 02.11.2026 | - |
 | LHTranslation | [![https://lhtranslation.net](https://img.shields.io/website?url=https://lhtranslation.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lhtranslation.net)](https://lhtranslation.net) | OK | 07.11.2026 | - |
-| Like Manga | [![https://likemanga.ink](https://img.shields.io/website?url=https://likemanga.ink%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://likemanga.ink)](https://likemanga.ink) | OK | 30.01.2026 | - |
 | Lily Manga | [![https://lilymanga.net](https://img.shields.io/website?url=https://lilymanga.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lilymanga.net)](https://lilymanga.net) | OK | 07.11.2026 | - |
 | LoliVault | [![https://lector.lolivault.net](https://img.shields.io/website?url=https://lector.lolivault.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://lector.lolivault.net)](https://lector.lolivault.net) | OK | 09.11.2026 | - |
 | Love4u | [![https://love4u.net](https://img.shields.io/website?url=https://love4u.net%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://love4u.net)](https://love4u.net) | Broken | 21.11.2025 | - |
@@ -264,6 +263,7 @@
 | Menudo-Slide | [![https://www.menudo-fansub.com](https://img.shields.io/website?url=https://www.menudo-fansub.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://www.menudo-fansub.com)](https://www.menudo-fansub.com) | OK | 09.11.2026 | - |
 | MGJinx | [![https://mgjinx.com](https://img.shields.io/website?url=https://mgjinx.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mgjinx.com)](https://mgjinx.com) | OK | 27.04.2026 | - |
 | MGKomik | [![https://id.mgkomik.cc](https://img.shields.io/website?url=https://id.mgkomik.cc%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://id.mgkomik.cc)](https://id.mgkomik.cc) | OK | 07.11.2026 | - |
+| Mgread | [![https://mgread.io](https://img.shields.io/website?url=https://mgread.io%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mgread.io)](https://mgread.io) | OK | 24.11.2026 | - |
 | MHScans | [![https://mhscans.com](https://img.shields.io/website?url=https://mhscans.com%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://mhscans.com)](https://mhscans.com) | OK | 04.11.2026 | - |
 | Milftoon | [![https://milftoon.xxx](https://img.shields.io/website?url=https://milftoon.xxx%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://milftoon.xxx)](https://milftoon.xxx) | Broken | 07.11.2026 | - |
 | MintManga | [![https://2.mintmanga.one](https://img.shields.io/website?url=https://2.mintmanga.one%2F&up_message=%E2%9C%93&down_message=%E2%9A%A0&label=https://2.mintmanga.one)](https://2.mintmanga.one) | OK | 09.11.2026 | An account is required |
@@ -587,6 +587,7 @@
 | ~LevelerScans~ | ~https://levelerscans.xyz~ | Removed | 03.08.2025 | - |
 | ~LeviatanScans~ | ~https://es.leviatanscans.com~ | Removed | 03.08.2025 | - |
 | ~LHTranslationArchive~ | ~https://archive.lhtranslation.net~ | Removed | 07.02.2025 | - |
+| ~Like Manga~ | ~https://likemanga.ink~ | Removed | 24.11.2026 | Redirected to Mgread |
 | ~LSComic~ | ~https://lscomic.com~ | Removed | 03.11.2026 | - |
 | ~LuminousScans~ | ~https://luminousscans.net~ | Removed | 03.11.2026 | - |
 | ~LunarScans~ | ~https://lunarscan.org~ | Removed | 03.11.2026 | - |
