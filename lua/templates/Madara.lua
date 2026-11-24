@@ -26,7 +26,7 @@ function _M.GetDirectoryPageNumber()
 
 	if not HTTP.GET(u) then return net_problem end
 
-	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//div[@class="wp-pagenavi"]/(a[@class="last" or @class="page-numbers"])[last()]/@href'):match('/(%d+)/')) or 1
+	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//div[@class="wp-pagenavi" or @class="nav-links"]/a[@class="last" or @class="page-numbers"][last()]/@href'):match('/(%d+)/')) or 1
 
 	return no_error
 end
