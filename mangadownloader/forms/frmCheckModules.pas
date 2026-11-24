@@ -9,8 +9,7 @@ uses
   ComCtrls, Buttons, uCustomControls, WebsiteModules, LuaMangaInfo,
   LuaMangaCheck, LuaHTTPSend, LuaWebsiteModuleHandler, LuaWebsiteModules, uData,
   LuaUtils, uBaseUnit, uDownloadsManager, LuaDownloadTask, httpsendthread,
-  StrUtils, frmCustomMessageDlg, StatusBarDownload,
-  {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
+  StrUtils, frmCustomMessageDlg, StatusBarDownload, lua55;
 
 type
   TTestResult = record

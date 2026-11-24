@@ -5,7 +5,7 @@ unit LuaPCRE2;
 interface
 
 uses
-  Classes, SysUtils, {$ifdef luajit}lua{$else}{$ifdef lua54}lua54{$else}lua53{$endif}{$endif};
+  Classes, SysUtils, lua55;
 
 implementation
 

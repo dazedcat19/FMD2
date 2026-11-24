@@ -26,7 +26,7 @@ uses
   frmAccountSet, frmWebsiteOptionCustom, frmCustomColor, frmLogger, frmTransferFavorites,
   frmLuaModulesUpdater, CheckUpdate, DBDataProcess, uDarkStyleParams, uWin32WidgetSetDark,
   SimpleTranslator, httpsendthread, DateUtils, SimpleException, uCustomControls,
-  uCustomControlsMultiLog, ImageMagickManager, frmCheckModules;
+  uCustomControlsMultiLog, ImageMagickManager, frmCheckModules, lua55;
 
 type
 
@@ -2496,6 +2496,7 @@ begin
   AddToAboutStatus('WidgetSet', GetWidgetSetName);
   AddToAboutStatus('Target CPU-OS', GetTargetCPU_OS);
   AddToAboutStatus('Build Time', GetBuildTime);
+  AddToAboutStatus('Lua Version', lua_release);
   if SQLiteLibraryHandle = 0 then InitializeSqlite();
   if SQLiteLibraryHandle <> 0 then try AddToAboutStatus('SQLite Version', sqlite3_version()); except end;
 
