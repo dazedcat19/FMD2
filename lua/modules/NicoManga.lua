@@ -1,8 +1,8 @@
 ----------------------------------------------------------------------------------------------------
--- Local Constants
+-- Module Constants
 ----------------------------------------------------------------------------------------------------
 
-local DirectoryPagination = '/manga-list.html?pr=new&l=60p='
+local DirectoryPages = '/manga-list.html?pr=new&p='
 
 ----------------------------------------------------------------------------------------------------
 -- Helper Functions
@@ -24,45 +24,52 @@ local function DecodeChaoticPayload(payload)
 	return require 'utils.json'.decode(table.concat(out))
 end
 
+local function FetchChaoticData(html)
+	local key = html:match('payloadKey\\?":\\?"(%w+_%w+)')
+	if not key then return nil end
+
+	if not HTTP.GET(MODULE.RootURL .. '/ad-frame/data?k=' .. key) then return nil end
+
+	local data = require 'utils.json'.decode(HTTP.Document.ToString())
+	if not data or not data.chaotic_payload then return nil end
+
+	return DecodeChaoticPayload(data.chaotic_payload)
+end
+
 ----------------------------------------------------------------------------------------------------
 -- Event Functions
 ----------------------------------------------------------------------------------------------------
 
 -- Get the page count of the manga list of the current website.
 function GetDirectoryPageNumber()
-	local u = MODULE.RootURL .. DirectoryPagination .. 1
+	local u = MODULE.RootURL .. DirectoryPages .. 1
 
 	if not HTTP.GET(u) then return net_problem end
 
-	PAGENUMBER = tonumber(CreateTXQuery(HTTP.Document).XPathString('//div[@class="custom-pagination"]/a[last()-2]')) or 1
+	PAGENUMBER = tonumber(HTTP.Document.ToString():match('\\?"last_page\\?":(%d+)')) or 1
 
 	return no_error
 end
 
 -- Get links and names from the manga list of the current website.
 function GetNameAndLink()
-	local u = MODULE.RootURL .. DirectoryPagination .. (URL + 1)
+	local u = MODULE.RootURL .. DirectoryPages .. (URL + 1)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	CreateTXQuery(HTTP.Document).XPathHREFAll('//a[@class="manga-title"]', LINKS, NAMES)
+	CreateTXQuery(HTTP.Document).XPathHREFAll('//nav[@aria-label="Manga list"]/a[not(contains(@href, "?"))]', LINKS, NAMES)
 
 	return no_error
 end
 
 -- Get info and chapter list for the current manga.
 function GetInfo()
-	local crypto = require 'fmd.crypto'
 	local u = MaybeFillHost(MODULE.RootURL, URL)
 
 	if not HTTP.GET(u) then return net_problem end
 
-	local html = HTTP.Document.ToString()
-	local ref = html:match('chaotic_payload\\":\\"%$(.-)\\"')
-	local payload = html:match(ref .. ':T%x+,%"%]%)</script><script>self%.__next_f%.push%(%[1,%"([^"]+)')
-	if not payload then return net_problem end
-
-	local info = DecodeChaoticPayload(payload)
+	local info = FetchChaoticData(HTTP.Document.ToString())
+	if not info then return net_problem end
 
 	local manga = info.manga
 	MANGAINFO.Title     = manga.n
@@ -104,14 +111,12 @@ function GetPageNumber()
 
 	if not HTTP.GET(u) then return false end
 
-	local html = HTTP.Document.ToString()
-	local ref = html:match('chaotic_payload\\":\\"%$(.-)\\"')
-	local payload = html:match(ref .. ':T%x+,%"%]%)</script><script>self%.__next_f%.push%(%[1,%"([^"]+)')
-	if not payload then return false end
+	local info = FetchChaoticData(HTTP.Document.ToString())
+	if not info then return false end
 
-	local images = DecodeChaoticPayload(payload).images
+	local images = info.images
 
-	for _, v in ipairs(images) do
+	for _, v in ipairs(images or {}) do
 		TASK.PageLinks.Add(v)
 	end
 
