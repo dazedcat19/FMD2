@@ -38,6 +38,13 @@ type
     property UnevenGrid: Boolean read FUnevenGrid;
   end;
 
+{ Decodes the base image from input, pastes the overlay image (raw bytes of a
+  webp/png/jpg file, as delivered to Lua as a string) onto it at pixel position
+  (AX, AY) and writes the result back to input in place. The output keeps the
+  format of the base image: webp/png bases are saved as png, everything else as jpg. }
+function ImagePuzzleMergeOverlay(const input: TStream; const overlayData: RawByteString;
+  AX, AY: Integer): Boolean;
+
 implementation
 
 uses Math, MemBitmap, webp, GraphType, MultiLog;
@@ -233,6 +240,183 @@ begin
         (dst + x * 4 + ab)^ := (src + x * 4 + 3)^;
       end;
     end;
+  end;
+end;
+
+function ImagePuzzleMergeOverlay(const input: TStream; const overlayData: RawByteString;
+  AX, AY: Integer): Boolean;
+var
+  image, overlayPic, outPic: TPicture;
+  memStream, overlayStream: TMemoryStream;
+  tmpMemBitmap: TMemBitmap;
+  tmpBitmap: TBitmap;
+  srcIntf, ovIntf, Intf32: TLazIntfImage;
+  width, height, ovWidth, ovHeight: Integer;
+  x0, y0, copyW, copyH, x, y: Integer;
+  ovLine, dstLine: PByte;
+  ext: String = 'jpg';
+begin
+  Result := False;
+  if not Assigned(input) or (Length(overlayData) = 0) then
+    Exit;
+
+  image := TPicture.Create;
+  overlayPic := TPicture.Create;
+  outPic := TPicture.Create;
+  memStream := TMemoryStream.Create;
+  overlayStream := TMemoryStream.Create;
+  tmpBitmap := nil;
+  srcIntf := nil;
+  ovIntf := nil;
+  Intf32 := nil;
+  try
+    // decode the base image (same path as DeScramble)
+    memStream.LoadFromStream(input);
+    memStream.Position := 0;
+
+    tmpMemBitmap := WebPToMemBitmap(memStream);
+    if Assigned(tmpMemBitmap) then
+    begin
+      try
+        ext := 'png';
+        width := tmpMemBitmap.Width;
+        height := tmpMemBitmap.Height;
+        if (width <= 0) or (height <= 0) then
+        begin
+          Logger.SendError('ImagePuzzleMergeOverlay: invalid base webp size');
+          Exit;
+        end;
+        srcIntf := TLazIntfImage.Create(width, height, [riqfRGB, riqfAlpha]);
+        CopyMemBitmapToIntf(tmpMemBitmap, srcIntf);
+      finally
+        FreeAndNil(tmpMemBitmap);
+      end;
+    end
+    else
+    begin
+      memStream.Position := 0;
+      image.LoadFromStream(memStream);
+      if image.Graphic is TPortableNetworkGraphic then
+        ext := 'png';
+      if (image.Graphic = nil) or (image.Width <= 0) or (image.Height <= 0) then
+      begin
+        Logger.SendError('ImagePuzzleMergeOverlay: could not decode base image');
+        Exit;
+      end;
+      tmpBitmap := TBitmap.Create;
+      tmpBitmap.SetSize(image.Width, image.Height);
+      tmpBitmap.PixelFormat := pf32bit;
+      tmpBitmap.Canvas.Draw(0, 0, image.Graphic);
+      width := tmpBitmap.Width;
+      height := tmpBitmap.Height;
+      srcIntf := TLazIntfImage.Create(width, height, [riqfRGB, riqfAlpha]);
+      srcIntf.LoadFromBitmap(tmpBitmap.Handle, tmpBitmap.MaskHandle);
+    end;
+
+    if srcIntf.DataDescription.Depth <> 32 then
+    begin
+      Intf32 := TLazIntfImage.Create(width, height, [riqfRGB, riqfAlpha]);
+      try
+        for y := 0 to height - 1 do
+          for x := 0 to width - 1 do
+            Intf32.Colors[x, y] := srcIntf.Colors[x, y];
+        FreeAndNil(srcIntf);
+        srcIntf := Intf32;
+        Intf32 := nil;
+      except
+        on E: Exception do
+        begin
+          Logger.SendException('ImagePuzzleMergeOverlay: conversion to 32bit failed', E);
+          FreeAndNil(Intf32);
+          Exit;
+        end;
+      end;
+    end;
+
+    // decode the overlay patch (the site delivers webp overlays)
+    overlayStream.WriteBuffer(Pointer(overlayData)^, Length(overlayData));
+    overlayStream.Position := 0;
+    ovWidth := 0;
+    ovHeight := 0;
+    tmpMemBitmap := WebPToMemBitmap(overlayStream);
+    if Assigned(tmpMemBitmap) then
+    begin
+      try
+        ovWidth := tmpMemBitmap.Width;
+        ovHeight := tmpMemBitmap.Height;
+        ovIntf := TLazIntfImage.Create(ovWidth, ovHeight, [riqfRGB, riqfAlpha]);
+        CopyMemBitmapToIntf(tmpMemBitmap, ovIntf);
+      finally
+        FreeAndNil(tmpMemBitmap);
+      end;
+    end
+    else
+    begin
+      overlayStream.Position := 0;
+      overlayPic.LoadFromStream(overlayStream);
+      if (overlayPic.Graphic = nil) or (overlayPic.Width <= 0) or (overlayPic.Height <= 0) then
+      begin
+        Logger.SendError('ImagePuzzleMergeOverlay: could not decode overlay image');
+        Exit;
+      end;
+      ovWidth := overlayPic.Width;
+      ovHeight := overlayPic.Height;
+      FreeAndNil(tmpBitmap);
+      tmpBitmap := TBitmap.Create;
+      tmpBitmap.SetSize(ovWidth, ovHeight);
+      tmpBitmap.PixelFormat := pf32bit;
+      tmpBitmap.Canvas.Draw(0, 0, overlayPic.Graphic);
+      ovIntf := TLazIntfImage.Create(ovWidth, ovHeight, [riqfRGB, riqfAlpha]);
+      ovIntf.LoadFromBitmap(tmpBitmap.Handle, tmpBitmap.MaskHandle);
+    end;
+    if ovIntf.DataDescription.Depth <> 32 then
+    begin
+      Logger.SendError('ImagePuzzleMergeOverlay: could not obtain 32bit pixel data of the overlay');
+      Exit;
+    end;
+
+    // paste the overlay, clipped to the base image
+    x0 := AX;
+    y0 := AY;
+    if x0 < 0 then x0 := 0;
+    if y0 < 0 then y0 := 0;
+    if (x0 >= width) or (y0 >= height) then
+    begin
+      Logger.SendError('ImagePuzzleMergeOverlay: overlay position outside of the base image');
+      Exit;
+    end;
+    copyW := ovWidth;
+    if copyW > width - x0 then copyW := width - x0;
+    copyH := ovHeight;
+    if copyH > height - y0 then copyH := height - y0;
+    if (copyW <= 0) or (copyH <= 0) then
+    begin
+      Logger.SendError('ImagePuzzleMergeOverlay: overlay has no visible area');
+      Exit;
+    end;
+
+    for y := 0 to copyH - 1 do
+    begin
+      ovLine := ovIntf.GetDataLineStart(y);
+      dstLine := PByte(srcIntf.GetDataLineStart(y0 + y) + x0 * 4);
+      Move(ovLine^, dstLine^, copyW * 4);
+    end;
+
+    outPic.Bitmap.LoadFromIntfImage(srcIntf);
+    input.Position := 0;
+    input.Size := 0;
+    outPic.SaveToStreamWithFileExt(input, ext);
+    Result := True;
+  finally
+    FreeAndNil(ovIntf);
+    FreeAndNil(Intf32);
+    FreeAndNil(srcIntf);
+    FreeAndNil(tmpBitmap);
+    memStream.Free;
+    overlayStream.Free;
+    outPic.Free;
+    overlayPic.Free;
+    image.Free;
   end;
 end;
 

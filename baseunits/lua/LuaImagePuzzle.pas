@@ -163,11 +163,38 @@ begin
   Result := 1;
 end;
 
+{ MergeOverlay(baseStream, overlayData, X, Y): boolean
+  Decodes the image in baseStream, pastes overlayData (raw bytes of a webp/png/jpg
+  image) onto it at pixel position (X, Y) and writes the result back to baseStream
+  in place. Binary-safe: overlayData may contain #0 bytes. }
+function imagepuzzle_mergeoverlay(L: Plua_State): Integer; cdecl;
+var
+  Stream: TStream;
+  overlay: String;
+  P: PAnsiChar;
+  slen: size_t;
+begin
+  Result := 0;
+  if (lua_gettop(L) < 4) or not lua_isuserdata(L, 1) then
+    Exit;
+  Stream := TStream(luaToUserData(L, 1));
+  if Stream = nil then
+    Exit;
+  P := lua_tolstring(L, 2, @slen);
+  if (P = nil) or (slen = 0) then
+    Exit;
+  SetString(overlay, P, slen);
+  lua_pushboolean(L, ImagePuzzleMergeOverlay(Stream, overlay,
+    lua_tointeger(L, 3), lua_tointeger(L, 4)));
+  Result := 1;
+end;
+
 const
-  constructs: packed array [0..3] of luaL_Reg = (
+  constructs: packed array [0..4] of luaL_Reg = (
     (name: 'New'; func: @imagepuzzle_create),
     (name: 'Create'; func: @imagepuzzle_create),
     (name: 'ImageSize'; func: @imagepuzzle_imagesize),
+    (name: 'MergeOverlay'; func: @imagepuzzle_mergeoverlay),
     (name: nil; func: nil)
     );
   props: packed array[0..2] of luaL_Reg_prop = (
