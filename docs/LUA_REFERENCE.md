@@ -61,6 +61,7 @@ Reference for writing and maintaining Lua website modules for Free Manga Downloa
         - [UPDATELIST Properties](#updatelist-properties)
         - [UPDATELIST Methods](#updatelist-methods)
     - [Storage and Persistence](#storage-and-persistence)
+        - [Module-Level Variables and the Lua State](#module-level-variables-and-the-lua-state)
 - [7. Parsing and Helper Functions](#7-parsing-and-helper-functions)
     - [TXQuery (XML/HTML/JSON Parser)](#txquery-xmlhtmljson-parser)
     - [Utility Functions](#utility-functions)
@@ -1151,7 +1152,8 @@ end
 >   HTTP.MimeType = 'application/...'; HTTP.Request('POST', url)`.
 > - `HTTP.Document` is a `TStream`, so it can be fed directly to
 >   [fmd.imagepuzzle](#fmdimagepuzzle) — in-place descrambling works:
->   `puzzle.DeScramble(HTTP.Document, HTTP.Document)`.
+>   `puzzle.DeScramble(HTTP.Document, HTTP.Document)` — and to
+>   [fmd.imagepatch](#fmdimagepatch) in the same way.
 
 #### HTTP.Reset() and Header Lifecycle
 
@@ -1453,6 +1455,7 @@ What survives an app restart — and what does not:
 | cookies stored with an `expires=` / `max-age=` attribute | yes | `modules.json` |
 | cookies stored without an expiry (session cookies) | no | memory only |
 | `MODULE.Storage` key/value pairs | **no** | memory only |
+| module-level Lua variables (`local x = ...` / globals outside functions) | no | memory only, **separate copy per thread** — see [below](#module-level-variables-and-the-lua-state) |
 | `HTTP` state (headers, document, `HTTP.Cookies`) | no | memory only |
 
 `MODULE.Storage` is a plain in-memory key-value store — handy for caching
@@ -1522,6 +1525,49 @@ MODULE.Account.Cookies = token
 -- a cookie the server accepts: the expiry attribute is what makes it persist
 HTTP.AddServerCookies(MODULE.RootURL, 'session=abc; path=/; max-age=2592000')
 ```
+
+#### Module-Level Variables and the Lua State
+
+Every FMD2 worker thread has **its own Lua state**, and a module's `.lua` file
+is loaded into that state the first time the thread calls one of its handlers.
+So everything at the top level of the file (`local` variables, tables and
+globals defined outside the handler functions) exists **once per thread**, not
+once per module:
+
+- Threads do not see each other's variables, so no locking is needed — but a
+  value one thread computed is **not** available to another thread. Use
+  `MODULE.Storage` when threads must share data.
+- Values **survive between handler calls on the same thread**, so a
+  module-level table works as a private cache (for example, the decrypted
+  patch list of the chapter being downloaded in `Royscans.lua`).
+- The state is **discarded** when the thread starts running a *different*
+  module, and the file is then loaded again from the top. Nothing is kept
+  after an app restart either. Treat module-level variables as a best-effort
+  cache and be ready to rebuild them on a miss.
+- Which thread runs which handler is not fixed: consecutive images of one
+  chapter can be downloaded by different threads, so never rely on a variable
+  set in `OnGetPageNumber` being visible in `OnDownloadImage`. Pass such data
+  through the page links (`TASK.PageLinks` / `TASK.PageContainerLinks`) or
+  `MODULE.Storage`.
+
+```lua
+-- one cache entry per thread: re-fetched at most once per chapter and thread
+local Cache = { key = nil, data = nil }
+
+function DownloadImage()
+    local key = URL:match('/manga%-images/(%d+/[^/]+)/')
+    if Cache.key ~= key then
+        Cache.key, Cache.data = key, LoadChapterData(key)   -- module-side helper
+    end
+    ...
+end
+```
+
+| Need | Use |
+|------|-----|
+| Private, fast cache; fine to rebuild per thread | module-level variable |
+| Data shared by all threads/tasks of the site (not persisted) | `MODULE.Storage` (+ `MODULE.Guardian` for read-modify-write) |
+| Data that must survive a restart | account fields or a persistent cookie |
 
 ---
 
@@ -1831,6 +1877,7 @@ Load a library with `require`. `fmd.*` libraries are implemented natively by the
 | [`fmd.gzip`](#fmdgzip) | Inflate gzip/zlib/deflate data |
 | [`fmd.pcre2`](#fmdpcre2) | PCRE2 regular expressions |
 | [`fmd.imagepuzzle`](#fmdimagepuzzle) | Descramble tile-shuffled images |
+| [`fmd.imagepatch`](#fmdimagepatch) | Paste replacement patches over parts of an image |
 | [`fmd.strings`](#fmdstrings) | `TStringList` objects |
 | [`utils.json`](#utilsjson) | JSON encode/decode in Lua |
 | [`utils.lzstring`](#utilslzstring) | LZ-String decompression |
@@ -2587,6 +2634,73 @@ end
 > - The output format follows the input image (JPG/PNG/WebP all supported).
 > - This is CPU-bound native code — keep grids modest and expect a short
 >   delay per image.
+
+#### fmd.imagepatch
+
+Native image **patcher** for sites that serve every page with a watermark
+burned in and restore the original pixels in the browser by laying small
+replacement images ("patches") over it. It decodes the page (JPG/PNG/WebP),
+pastes each patch at its position, and writes the result — no external tool
+needed. Patch rectangles are given in **percent** of the page size (like CSS
+`left` / `top` / `width` / `height`), so one patch list works at any
+resolution.
+
+**Constructors:**
+
+```lua
+local imagepatch = require 'fmd.imagepatch'
+
+local patch = imagepatch.Create()    -- or .New()
+```
+
+**Members:**
+
+| Member | Access | Description |
+|--------|--------|-------------|
+| `patch.Add(left, top, width, height, data)` | method | queue one patch. `left`, `top`, `width`, `height` are numbers in percent (0-100) of the destination image; `data` is the patch image (WebP/PNG/JPG) as a **Base64 string** |
+| `patch.Apply(input, output)` | method | decodes `input` (a `TStream`), pastes all queued patches, writes the result to `output` (a `TStream`); returns `true` on success, `false` if the image could not be decoded |
+| `patch.Clear()` | method | remove all queued patches |
+| `patch.Count` | read | number of queued patches |
+| `patch.JpegQuality` | read/write | JPEG quality (0-100) used when the source is a JPG, default `90` |
+
+`HTTP.Document` is a `TMemoryStream`, so the usual pattern is to patch
+**in place** during `OnDownloadImage`.
+
+Real usage — `lua/modules/Royscans.lua` (the site publishes an encrypted
+`patches.js` per chapter; the module decrypts it, then restores the banner
+area of each page):
+
+```lua
+function DownloadImage()
+    if not HTTP.GET(URL) then return false end
+
+    local list = GetPatchesForFile(json, file)   -- module-side: { {left, top, width, height, base64}, ... }
+    if #list > 0 then
+        local patch = require 'fmd.imagepatch'.Create()
+        patch.JpegQuality = 90
+        for _, p in ipairs(list) do
+            patch.Add(p[1], p[2], p[3], p[4], p[5])
+        end
+        if not patch.Apply(HTTP.Document, HTTP.Document) then return false end  -- in place
+    end
+    return true
+end
+```
+
+> [!NOTE]
+> - Positions are rounded to whole pixels: `x = round(imageWidth * left / 100)`,
+>   `y = round(imageHeight * top / 100)`. Patches are pasted **as they are** —
+>   no scaling and no alpha blending — so the patch should already have the
+>   exact size of its region.
+> - Patches that extend past the image edge are clipped.
+> - Patches are pasted in the order they were added; later ones overwrite
+>   earlier ones.
+> - The output format follows the input: JPG stays JPG (re-encoded with
+>   `JpegQuality`, so the whole page is recompressed, not just the patched
+>   area), WebP and PNG become PNG.
+> - A patch that cannot be decoded is skipped and an error is written to the
+>   FMD2 log; `Apply` still returns `true` for the rest.
+> - The streams can be the same object (in-place) or two different streams.
 
 #### fmd.strings
 
