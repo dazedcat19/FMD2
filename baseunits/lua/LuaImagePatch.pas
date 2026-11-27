@@ -23,7 +23,6 @@ begin
   Result := 1;
 end;
 
-// Add(left, top, width, height, base64Data)  -- left/top/width/height in percent
 function imagepatch_add(L: Plua_State): Integer; cdecl;
 begin
   Result := 0;
@@ -38,7 +37,6 @@ begin
   TUserData(luaClassGetObject(L)).Clear;
 end;
 
-// Apply(inputStream, outputStream) -> boolean
 function imagepatch_apply(L: Plua_State): Integer; cdecl;
 begin
   lua_pushboolean(L, TUserData(luaClassGetObject(L)).Apply(

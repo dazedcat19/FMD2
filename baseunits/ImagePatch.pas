@@ -1,15 +1,5 @@
 unit ImagePatch;
 
-{
-  Paste (alpha-blend) small replacement images ("patches") onto a larger image.
-
-  Patch rectangles are given in percent of the destination image size, exactly like
-  CSS left/top/width/height, so the same patch list works for any image resolution.
-
-  Output format: JPEG input -> JPEG (JpegQuality, default 95), everything else
-  (WebP/PNG) -> PNG.
-}
-
 {$mode objfpc}{$H+}
 
 interface
@@ -19,8 +9,8 @@ uses
 
 type
   TImagePatchItem = record
-    Left, Top, Width, Height: Double; // percent of destination image size
-    Data: String;                     // raw (already base64-decoded) WebP/PNG/JPEG bytes
+    Left, Top, Width, Height: Double;
+    Data: String;
   end;
 
   { TImagePatch }
@@ -48,7 +38,7 @@ uses
 constructor TImagePatch.Create;
 begin
   inherited Create;
-  FJpegQuality := 95;
+  FJpegQuality := 80;
   SetLength(FItems, 0);
 end;
 
@@ -75,7 +65,6 @@ begin
   FItems[n].Data := DecodeStringBase64(ABase64Data);
 end;
 
-// Decode WebP / PNG / JPEG bytes into a 32-bit memory bitmap.
 function DecodeToMem(const AData: String; out AIsJpeg: Boolean): TMemBitmap;
 var
   ms: TMemoryStream;
@@ -127,9 +116,9 @@ end;
 function TImagePatch.Apply(input, output: TStream): Boolean;
 var
   data: String;
-  base, patch, scaled: TMemBitmap;
+  base, patch: TMemBitmap;
   isJpeg, dummy: Boolean;
-  i, dx, dy, dw, dh: Integer;
+  i, dx, dy: Integer;
   jw: TFPWriterJPEG;
   pw: TFPWriterPNG;
 begin
@@ -161,20 +150,8 @@ begin
       try
         dx := Round(base.Width * FItems[i].Left / 100);
         dy := Round(base.Height * FItems[i].Top / 100);
-        dw := Round(base.Width * FItems[i].Width / 100);
-        dh := Round(base.Height * FItems[i].Height / 100);
-        // Native-size patch (+-1px rounding): paste as is. Otherwise scale like a browser would.
-        if (Abs(patch.Width - dw) > 1) or (Abs(patch.Height - dh) > 1) then
-        begin
-          if (dw > 0) and (dh > 0) then
-          begin
-            scaled := patch.Resample(dw, dh);
-            patch.Free;
-            patch := scaled;
-          end;
-        end;
-        base.PutImage(dx, dy, patch, dmDrawWithTransparency);
-      finally
+        base.PutImage(dx, dy, patch, dmSet);
+            finally
         patch.Free;
       end;
     end;

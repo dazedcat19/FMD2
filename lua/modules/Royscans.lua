@@ -8,18 +8,12 @@ local Template = require 'templates.MangaThemesia'
 -- Helper Functions
 ----------------------------------------------------------------------------------------------------
 
--- Rosyscans serves every page with a "ROSYSCANS.ID" banner burned into the image and, in the browser,
--- hides it again by laying small replacement images (patches) over it:
---   * <img_host>/uploads/manga-images/<id>/<chapter>/patches.js?v=<v> defines window.__rsP, an XOR
---     stream-ciphered JSON { "<file>": [[left%, top%, width%, height%, "<base64 webp>"], ...], ... }
---   * the chapter's image list is padded with blocks of decoy images from other series (other <id>/<chapter>)
--- Patches are only used for chapters where (v % 89) is 79 or 83, exactly like the site's own script.
-
 local PatchSecret  = 'r0sy_p4tch_8831_m7z'
+local ShieldSecret = 'r0sy_sh1eld_9472_k9x'
 local PatchModulus = 89
 local PatchMinV    = 1760000000
 
--- Cache of the decrypted patches JSON of the last chapter (each download thread has its own Lua state).
+-- Cache of the decrypted patches JSON of the last chapter.
 local PatchCache = { key = nil, json = nil }
 
 local function Fnv1a(s)
@@ -95,10 +89,60 @@ local function UsesPatches(v)
 	return rem == 79 or rem == 83
 end
 
+-- Indexes of the decoy images the site's script hides.
+local function DecoyBlocks(id, chapter, total, tag, size, t2, t3, t4)
+	local b = 0
+	if total >= t4 then b = 4 elseif total >= t3 then b = 3 elseif total >= t2 then b = 2 end
+	if b <= 0 then return {} end
+	local rest = total - b * size
+	if rest < b + 1 then return {} end
+	local lo, span = 1, rest - 1
+	local seed = Fnv1a(ShieldSecret .. '|' .. tag .. '|' .. id .. '|' .. chapter .. '|' .. total)
+	local out = {}
+	for i = 0, b - 1 do
+		local a = lo + (i * span) // b
+		local e = lo + ((i + 1) * span) // b - 1
+		if e < a then e = a end
+		seed = XorShift(seed)
+		local start = a + seed % (e - a + 1) + i * size
+		for off = 0, size - 1 do out[#out + 1] = start + off end
+	end
+	return out
+end
+
+local function DecoyScattered(id, chapter, total)
+	if total < 8 then return {} end
+	local k = math.min(6, math.max(2, total // 8))
+	local lo, span = 1, total - 2
+	if span < k then return {} end
+	local seed = Fnv1a(ShieldSecret .. '|' .. id .. '|' .. chapter .. '|' .. total)
+	local out = {}
+	for i = 0, k - 1 do
+		local a = lo + (i * span) // k
+		local e = lo + ((i + 1) * span) // k - 1
+		if e < a then e = a end
+		seed = XorShift(seed)
+		out[#out + 1] = a + seed % (e - a + 1)
+	end
+	return out
+end
+
+local function GetDecoyIndexes(info, total)
+	if not info.v or info.v < PatchMinV then return {} end
+	local rem = info.v % PatchModulus
+	if rem == 79 or rem == 71 then
+		return DecoyBlocks(info.id, info.chapter, total, 'v3', 16, 38, 64, 99)
+	elseif rem == 53 then
+		return DecoyBlocks(info.id, info.chapter, total, 'v2', 8, 22, 40, 67)
+	elseif rem == 37 then
+		return DecoyScattered(info.id, info.chapter, total)
+	end
+	return {}
+end
+
 -- Download and decrypt patches.js of the chapter the given image belongs to (cached per chapter).
--- Returns the JSON text ('' when the chapter has no patches) or nil on a network problem.
 local function GetPatchesJSON(info)
-	local key = info.id .. '/' .. info.chapter .. '/' .. tostring(info.v)
+	local key = info.id .. '/' .. info.chapter .. '/' .. info.v
 	if PatchCache.key == key then return PatchCache.json end
 
 	HTTP.Headers.Values['Referer'] = MODULE.RootURL
@@ -163,17 +207,15 @@ end
 
 -- Get the page count and/or page links for the current chapter.
 function GetPageNumber()
-	if not Template.GetPageNumber() then return false end
+	Template.GetPageNumber()
 
-	-- Drop the decoy images that belong to other series: the first image is always a real one.
 	local first = ParseImageURL(TASK.PageLinks[0])
 	if first then
+		local hidden = {}
+		for _, idx in ipairs(GetDecoyIndexes(first, TASK.PageLinks.Count)) do hidden[idx] = true end
 		local keep = {}
 		for i = 0, TASK.PageLinks.Count - 1 do
-			local info = ParseImageURL(TASK.PageLinks[i])
-			if info and info.id == first.id and info.chapter == first.chapter then
-				keep[#keep + 1] = TASK.PageLinks[i]
-			end
+			if not hidden[i] then keep[#keep + 1] = TASK.PageLinks[i] end
 		end
 		if #keep > 0 then
 			TASK.PageLinks.Clear()
@@ -205,6 +247,7 @@ function DownloadImage()
 				return true
 			end
 			local patch = lib.Create()
+			patch.JpegQuality = 90
 			for _, p in ipairs(list) do
 				patch.Add(p[1], p[2], p[3], p[4], p[5])
 			end
