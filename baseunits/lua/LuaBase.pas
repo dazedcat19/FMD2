@@ -46,6 +46,7 @@ uses
   LuaGZip,
   LuaStrings,
   LuaImagePuzzle,
+  LuaImagePatch,
   LuaMangaFox,
   LuaLogger,
   LuaSubprocess;
